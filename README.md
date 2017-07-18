@@ -1,3 +1,4 @@
+
 [![codecov](https://codecov.io/gh/inkenbrandt/loggerloader/branch/master/graph/badge.svg)](https://codecov.io/gh/inkenbrandt/loggerloader)
 
 # loggerloader
