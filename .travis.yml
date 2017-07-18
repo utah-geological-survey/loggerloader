@@ -17,6 +17,7 @@ env:
 
 install: 
   - pip install codecov
+  - pip install mock
   - pip install pytest-cov
   - pip install -r requirements.txt   
     
