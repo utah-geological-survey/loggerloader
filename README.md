@@ -1,4 +1,5 @@
 [![codecov](https://codecov.io/gh/inkenbrandt/loggerloader/branch/master/graph/badge.svg)](https://codecov.io/gh/inkenbrandt/loggerloader)
+[![Build Status](https://travis-ci.org/inkenbrandt/loggerloader.svg?branch=master)](https://travis-ci.org/inkenbrandt/loggerloader)
 
 # loggerloader
 
