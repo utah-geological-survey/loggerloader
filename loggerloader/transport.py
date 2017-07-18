@@ -587,7 +587,7 @@ def compilation(inputfile):
                 indices = fd.readlines().index('[Data]\n')
 
             # convert data to pandas dataframe starting at the indexed data line
-            f[wa.getfilename(infile)] = pd.read_table(infile, parse_dates=True, sep='     ', index_col=0,
+            f[getfilename(infile)] = pd.read_table(infile, parse_dates=True, sep='     ', index_col=0,
                                                    skiprows=indices + 2,
                                                    names=['DateTime', 'Level', 'Temperature'],
                                                    skipfooter=1, engine='python')
