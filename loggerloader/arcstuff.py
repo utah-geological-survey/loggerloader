@@ -1,6 +1,6 @@
-import arcpy
 
 def get_field_names(table):
+    import arcpy
     read_descr = arcpy.Describe(table)
     field_names = []
     for field in read_descr.fields:
@@ -16,6 +16,8 @@ def table_to_pandas_dataframe(table, field_names=None, query=None):
     :param field_names: List of fields.
     :return: Pandas DataFrame object.
     """
+    import arcpy
+
     # if field names are not specified
     if not field_names:
         field_names = get_field_names(table)
