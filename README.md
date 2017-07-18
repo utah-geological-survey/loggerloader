@@ -1,12 +1,12 @@
 # loggerloader
 
 Set of tools for importing and interpreting data logger files. Can currently handle the following file types:
-<ul>
-    <li>.xle</li>
-    <li>.lev</li>
-    <li>.csv</li>
-</ul>
+* .xle
+* .lev
+* .csv
+
 ## Installation 
+
 loggerloader should be compatible with both Python 2.7 and 3.5.  It has been tested most rigously on Python 2.7.  It should work on both 32 and 64-bit platforms.  I have used it on Linux and Windows machines.
 
 To install the most recent version, use <a href='https://pypi.python.org/pypi/pip'>pip</a>.
