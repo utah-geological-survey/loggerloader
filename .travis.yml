@@ -6,9 +6,6 @@ python:
   
 sudo: required
 
-codecov:
-  token: 19924fa6-a118-483e-80cb-c8473126cc0a
-
 before_install:
   - pip install pytest
   - "export DISPLAY=:99.0"
