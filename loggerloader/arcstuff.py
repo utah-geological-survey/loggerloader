@@ -33,3 +33,72 @@ def table_to_pandas_dataframe(table, field_names=None, query=None):
 
     # return the pandas data frame
     return df
+
+def find_max(table, site_number):
+    query = "LOCATIONID = {:}".format(site_number)
+    field_names = ['READINGDATE', 'LOCATIONID']
+    sql_sn = ('TOP 1','ORDER BY READINGDATE DESC')
+    # use a search cursor to iterate rows
+    dateval = []
+    with arcpy.da.SearchCursor(table, field_names, query, sql_clause=sql_sn) as search_cursor:
+        # iterate the rows
+        for row in search_cursor:
+            dateval.append(row[0])
+    try:
+        read_max = max(dateval)
+    except ValueError:
+        read_max = None
+    return read_max
+
+
+def upload_data(table, df, lev_field, temp_field = None, site_number = None, return_df=False):
+    if site_number is None:
+        bpdict = {'pw03':'9003','pw10':'9027','pw19':'9049','twin':'9024','leland':'9025'}  
+        site_number = int(bpdict.get(lev_field))
+
+    df.sort_index(inplace=True)
+    first_index = df.first_valid_index()
+    
+    # Get last reading at the specified location
+    read_max = find_max(table, site_number)
+
+    if read_max is None or read_max < first_index:
+        arcpy.env.overwriteOutput=True
+        edit = arcpy.da.Editor(arcpy.env.workspace)
+        edit.startEditing(False, False)
+        edit.startOperation()
+
+        if temp_field is None:
+            fieldnames = ['READINGDATE', 'MEASUREDLEVEL', 'LOCATIONID']
+        else:
+            fieldnames = ['READINGDATE', 'MEASUREDLEVEL', 'TEMP', 'LOCATIONID']
+            df.rename(columns={temp_field:'TEMP'},inplace=True)
+            df['TEMP'] =df['TEMP'].apply(lambda x: round(x, 4),1) 
+
+        cursor = arcpy.da.InsertCursor(read_table, fieldnames)
+
+        #subset bp df and add relevant fields
+        df['LOCATIONID'] = site_number
+        df.rename(columns={lev_field:'MEASUREDLEVEL'},inplace=True)
+        df['MEASUREDLEVEL'] =df['MEASUREDLEVEL'].apply(lambda x: round(x, 4),1) 
+        df.index.name = 'READINGDATE'
+
+        if read_max is None:
+            subset = df.reset_index()
+        else:
+            subset = df[df.index.get_level_values(0) > max(readings['READINGDATE'])].reset_index()
+
+        subset = subset[fieldnames]
+        rowlist = subset.values.tolist()
+
+        for j in range(len(rowlist)):
+            cursor.insertRow(rowlist[j])
+
+        del cursor
+        edit.stopOperation()
+        edit.stopEditing(True)
+        if return_df:
+            return subset
+    else:
+        print('Dates later than import data for this station already exist!')
+        pass
