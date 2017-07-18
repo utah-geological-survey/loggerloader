@@ -3,11 +3,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import os
 
 from .transport import *
-from .usgs import *
-from .chem import *
-from .mesopy import *
-from .graphs import *
-from .MannKendall import *
 
 __version__ = '0.1.0'
 __author__ = 'Paul Inkenbrandt'
