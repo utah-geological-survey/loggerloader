@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/gh/inkenbrandt/loggerloader/branch/master/graph/badge.svg)](https://codecov.io/gh/inkenbrandt/loggerloader)
+
 # loggerloader
 
 Set of tools for importing and interpreting data logger files. Can currently handle the following file types:
