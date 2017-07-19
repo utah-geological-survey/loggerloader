@@ -28,8 +28,7 @@ def well_baro_merge(wellfile, barofile, barocolumn='Level', sampint=60):
     well = hourly_resample(wellfile, 0, sampint)
 
     # reassign `Level` to reduce ambiguity
-    if 'Level' in list(baro.columns):
-        baro = baro.rename(columns={barocolumn: 'barometer'})
+    baro = baro.rename(columns={barocolumn: 'barometer'})
     # combine baro and well data for easy calculations, graphing, and manipulation
     wellbaro = pd.merge(well, baro, left_index=True, right_index=True, how='inner')
 
@@ -105,6 +104,7 @@ def fix_drift_linear(well, manualfile, meas='Level', manmeas='MeasuredDTW', outc
         dtnm = well.index.name
     else:
         dtnm = 'DateTime'
+        well.index.name = 'DateTime'
 
     if type(manualfile.index) == pd.tseries.index.DatetimeIndex:
         pass
@@ -147,13 +147,17 @@ def fix_drift_linear(well, manualfile, meas='Level', manmeas='MeasuredDTW', outc
     return wellbarofixed, drift_info
 
 
-def fix_drift_stepwise(wellbaro, manualfile):
+def fix_drift_stepwise(wellbaro, manualfile, meas='Level'):
     """
     fixes drift using a step-wise difference method.  Can work with multiple manual measurements.
     :param wellbaro:
     :param manualfile:
     :return:
     """
+    if wellbaro.index.name:
+        dtnm = wellbaro.index.name
+    else:
+        well.index.name = 'DateTime'
     breakpoints = []
     for i in range(len(manualfile) + 1):
         breakpoints.append(fcl(wellbaro, pd.to_datetime(manualfile.index)[i - 1]).name)
@@ -177,10 +181,10 @@ def fix_drift_stepwise(wellbaro, manualfile):
         else:
 
             # get difference in transducer water measurements
-            bracketedwls[i + 1].loc[:, 'diff_wls'] = bracketedwls[i + 1]['adjusted_levelogger'].diff()
+            bracketedwls[i + 1].loc[:, 'diff_wls'] = bracketedwls[i + 1][meas].diff()
             # get difference of each depth to water from initial measurement
-            bracketedwls[i + 1].loc[:, 'DeltaLevel'] = bracketedwls[i + 1].ix[0, 'adjusted_levelogger'] -\
-                                                        bracketedwls[i + 1].loc[:, 'adjusted_levelogger']
+            bracketedwls[i + 1].loc[:, 'DeltaLevel'] = bracketedwls[i + 1].ix[0, meas] -\
+                                                        bracketedwls[i + 1].loc[:, meas]
 
             bracketedwls[i + 1].loc[:, 'MeasuredDTW'] = fcl(manualfile, breakpoints[i + 1])[0] - \
                                                         bracketedwls[i + 1].loc[:, 'DeltaLevel']
