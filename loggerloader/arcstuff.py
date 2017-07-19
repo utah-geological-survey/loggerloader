@@ -35,11 +35,17 @@ def table_to_pandas_dataframe(table, field_names=None, query=None, sql_sn=(None,
     # return the pandas data frame
     return df
 
-def get_location_data(read_table, site_number, first_date, last_date=None, limit=None):
-    
+def get_location_data(read_table, site_number, first_date=None, last_date=None, limit=None):
+    import datetime
+    if not first_date:
+        first_date = datetime.datetime(1900,1,1)
+    elif type(first_date)==str:
+        try:
+            datetime.datetime.strptime(first_date, '%m/%d/%Y')
+        except:
+            first_date = datetime.datetime(1900,1,1)
     # Get last reading at the specified location
     if not last_date:
-        import datetime        
         last_date = datetime.datetime.now()
     query_txt = "LOCATIONID = '{:}' and (READINGDATE >= '{:%m/%d/%Y}' and READINGDATE <= '{:%m/%d/%Y}')"
     query = query_txt.format(site_number, first_date, last_date)
