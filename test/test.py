@@ -58,7 +58,7 @@ def test_well_baro_merge():
     baro['Level'] = baro['pw03']
     assert len(wa.well_baro_merge(xle_df, baro, sampint=60)) > 10
 
-def test_fix_drift():
+def test_fix_drift_linear():
     xle = "test/ag13c 2016-08-02.xle"
     xle_df = wa.new_xle_imp(xle)
     manualwls = "test/All tape measurements.csv"
@@ -67,7 +67,7 @@ def test_fix_drift():
     manual35['dt'] = pd.to_datetime(manual35.index)
     manual_35 = manual35.reset_index()
     manual_35.set_index('dt',inplace=True)
-    fd = wa.fix_drift(xle_df, manual_35, meas='Level', manmeas='MeasuredDTW', outcolname='DriftCorrection')
+    fd = wa.fix_drift_linear(xle_df, manual_35, meas='Level', manmeas='MeasuredDTW', outcolname='DriftCorrection')
     assert 'DriftCorrection' in list(fd[0].columns)
     
 def test_getwellid():

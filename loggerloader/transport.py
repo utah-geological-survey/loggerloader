@@ -179,8 +179,9 @@ def fix_drift_stepwise(wellbaro, manualfile):
             # get difference in transducer water measurements
             bracketedwls[i + 1].loc[:, 'diff_wls'] = bracketedwls[i + 1]['adjusted_levelogger'].diff()
             # get difference of each depth to water from initial measurement
-            bracketedwls[i + 1].loc[:, 'DeltaLevel'] = bracketedwls[i + 1].loc[:, 'adjusted_levelogger'] - \
-                                                       bracketedwls[i + 1].ix[0, 'adjusted_levelogger']
+            bracketedwls[i + 1].loc[:, 'DeltaLevel'] = bracketedwls[i + 1].ix[0, 'adjusted_levelogger'] -\
+                                                        bracketedwls[i + 1].loc[:, 'adjusted_levelogger']
+
             bracketedwls[i + 1].loc[:, 'MeasuredDTW'] = fcl(manualfile, breakpoints[i + 1])[0] - \
                                                         bracketedwls[i + 1].loc[:, 'DeltaLevel']
             last_man_wl.append(fcl(manualfile, breakpoints[i + 2])[0])
