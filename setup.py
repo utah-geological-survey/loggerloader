@@ -21,15 +21,15 @@ except:
 setup(name='loggerloader',
       description = 'Interface with xle files; analyze hydrographs; plot hydrographs',
       long_description = long_description,
-      version = '0.1.2',
+      version = '0.1.3',
       author = 'Paul Inkenbrandt',
       author_email = 'paulinkenbrandt@utah.gov',
       url = 'https://github.com/inkenbrandt/loggerloader',
       license = 'LICENSE.txt',
       install_requires=["Pandas >= 0.16.0", 
-                        "Numpy >= 0.7.0", 
+                        "Numpy >= 0.6.0",
                         "Matplotlib >= 1.1", 
-                        "xmltodict >= 0.6.2",
+                        "xmltodict >= 0.5.2",
                         "xlrd >= 0.5.4"],
       packages = find_packages(exclude=['contrib', 'docs', 'tests*']))
 

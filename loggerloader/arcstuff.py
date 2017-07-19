@@ -1,3 +1,4 @@
+import pandas as pd
 
 def get_field_names(table):
     import arcpy
@@ -9,7 +10,7 @@ def get_field_names(table):
     return field_names
 
 
-def table_to_pandas_dataframe(table, field_names=None, query=None):
+def table_to_pandas_dataframe(table, field_names=None, query=None, sql_sn=(None,None)):
     """
     Load data into a Pandas Data Frame for subsequent analysis.
     :param table: Table readable by ArcGIS.
@@ -25,7 +26,7 @@ def table_to_pandas_dataframe(table, field_names=None, query=None):
     df = pd.DataFrame(columns=field_names)
 
     # use a search cursor to iterate rows
-    with arcpy.da.SearchCursor(table, field_names,query) as search_cursor:
+    with arcpy.da.SearchCursor(table, field_names,query, sql_clause=sql_sn) as search_cursor:
         # iterate the rows
         for row in search_cursor:
             # combine the field names and row items together, and append them
@@ -34,7 +35,7 @@ def table_to_pandas_dataframe(table, field_names=None, query=None):
     # return the pandas data frame
     return df
 
-def get_location_data(site_number, first_date, last_date=None, limit=None):
+def get_location_data(read_table, site_number, first_date, last_date=None, limit=None):
     
     # Get last reading at the specified location
     if not last_date:
@@ -43,16 +44,32 @@ def get_location_data(site_number, first_date, last_date=None, limit=None):
     query_txt = "LOCATIONID = '{:}' and (READINGDATE >= '{:%m/%d/%Y}' and READINGDATE <= '{:%m/%d/%Y}')"
     query = query_txt.format(site_number, first_date, last_date)
     sql_sn = (limit,'ORDER BY READINGDATE ASC')
-    readings = table_to_pandas_dataframe(read_table, fieldnames, query)
+
+    fieldnames = get_field_names(read_table)
+
+    readings = table_to_pandas_dataframe(read_table, fieldnames, query, sql_sn)
+
     if len(readings) == 0:
         print('No Records for location {:}'.format(site_number))
-    return readings, read_max
+    return readings
 
 
-def find_max(table, site_number):
+def find_extreme(table, site_number, extma = 'max'):
+    """
+    Find extrema from a SDE table using query parameters
+    :param table: SDE table to be queried
+    :param site_number: LocationID of the site of interest
+    :param extma: options are 'max' (default) or 'min'
+    :return: read_max
+    """
+    import arcpy
+    if extma == 'max':
+        sort = 'DESC'
+    else:
+        sort = 'ASC'
     query = "LOCATIONID = {:}".format(site_number)
     field_names = ['READINGDATE', 'LOCATIONID']
-    sql_sn = ('TOP 1','ORDER BY READINGDATE DESC')
+    sql_sn = ('TOP 1','ORDER BY READINGDATE {:}'.format(sort))
     # use a search cursor to iterate rows
     dateval = []
     with arcpy.da.SearchCursor(table, field_names, query, sql_clause=sql_sn) as search_cursor:
@@ -60,37 +77,23 @@ def find_max(table, site_number):
         for row in search_cursor:
             dateval.append(row[0])
     try:
-        read_max = max(dateval)
+        if extma == 'max':
+            read_max = max(dateval)
+        else:
+            read_max = min(dateval)
     except ValueError:
         read_max = None
     return read_max
 
-def find_min(table, site_number):
-    query = "LOCATIONID = {:}".format(site_number)
-    field_names = ['READINGDATE', 'LOCATIONID']
-    sql_sn = ('TOP 1','ORDER BY READINGDATE ASC')
-    # use a search cursor to iterate rows
-    dateval = []
-    with arcpy.da.SearchCursor(table, field_names, query, sql_clause=sql_sn) as search_cursor:
-        # iterate the rows
-        for row in search_cursor:
-            dateval.append(row[0])
-    try:
-        read_min = min(dateval)
-    except ValueError:
-        read_min = None
-    return read_min
 
-def upload_data(table, df, lev_field, temp_field = None, site_number = None, return_df=False):
-    if site_number is None:
-        bpdict = {'pw03':'9003','pw10':'9027','pw19':'9049','twin':'9024','leland':'9025'}  
-        site_number = int(bpdict.get(lev_field))
+def upload_data(table, df, lev_field, site_number, temp_field = None, return_df=False):
+    import arcpy
 
     df.sort_index(inplace=True)
     first_index = df.first_valid_index()
     
     # Get last reading at the specified location
-    read_max = find_max(table, site_number)
+    read_max = find_extreme(table, site_number)
 
     if read_max is None or read_max < first_index:
         arcpy.env.overwriteOutput=True
@@ -105,7 +108,7 @@ def upload_data(table, df, lev_field, temp_field = None, site_number = None, ret
             df.rename(columns={temp_field:'TEMP'},inplace=True)
             df['TEMP'] =df['TEMP'].apply(lambda x: round(x, 4),1) 
 
-        cursor = arcpy.da.InsertCursor(read_table, fieldnames)
+        cursor = arcpy.da.InsertCursor(table, fieldnames)
 
         #subset bp df and add relevant fields
         df['LOCATIONID'] = site_number
@@ -116,7 +119,7 @@ def upload_data(table, df, lev_field, temp_field = None, site_number = None, ret
         if read_max is None:
             subset = df.reset_index()
         else:
-            subset = df[df.index.get_level_values(0) > max(readings['READINGDATE'])].reset_index()
+            subset = df[df.index.get_level_values(0) > read_max].reset_index()
 
         subset = subset[fieldnames]
         rowlist = subset.values.tolist()

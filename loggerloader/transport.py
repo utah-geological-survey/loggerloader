@@ -49,8 +49,8 @@ def xle_head_table(folder):
     Returns:
         A Pandas DataFrame containing the transducer header data
     Example::
-        >>> import wellapplication as wa
-        >>> wa.xle_head_table('C:/folder_with_xles/')
+        >>> import loggerloader as ll
+        >>> ll.xle_head_table('C:/folder_with_xles/')
     """
     # open text file
     df = {}
@@ -118,14 +118,12 @@ def fix_drift(well, manualfile, meas='Level', manmeas='MeasuredDTW', outcolname=
             # intercept of line = value of first manual measurement
             b = first_man[manmeas] - first_trans
             # slope of line = change in difference between manual and transducer over time
-            m = ((last_man[manmeas] - last_trans) - (first_man[manmeas] - first_trans)) / (
-            last_man['julian'] - first_man['julian'])
+            m = ((last_man[manmeas] - last_trans) - (first_man[manmeas] - first_trans)) / (last_man['julian'] - first_man['julian'])
             # datechange = amount of time between manual measurements
             bracketedwls[i].loc[:, 'datechange'] = bracketedwls[i].ix[:, 'julian'] - bracketedwls[i].ix[0, 'julian']
 
             # bracketedwls[i].loc[:, 'wldiff'] = bracketedwls[i].loc[:, meas] - first_trans
-            bracketedwls[i].loc[:, outcolname] = bracketedwls[i][['datechange', meas]].apply(
-                lambda x: x[1] + (m * x[0] + b), 1)
+            bracketedwls[i].loc[:, outcolname] = bracketedwls[i][['datechange', meas]].apply(lambda x: x[1] + (m * x[0] + b), 1)
             drift_features[i] = {'begining': first_man, 'end': last_man, 'intercept': b, 'slope': m,
                                  'first_meas': first_man[manmeas], 'last_meas': last_man[manmeas]}
         else:
@@ -195,10 +193,8 @@ def baro_drift_correct(wellfile, barofile, manualfile, sampint=60, wellelev=4800
         last_tran_wl.append(
             float(bracketedwls[i + 1].loc[max(bracketedwls[i + 1].index.to_datetime()), 'MeasuredDTW']))
         driftlen.append(len(bracketedwls[i + 1].index))
-        bracketedwls[i + 1].loc[:, 'last_diff_int'] = np.round((last_tran_wl[i] - last_man_wl[i]), 4) / np.round(
-            driftlen[i] - 1.0, 4)
-        bracketedwls[i + 1].loc[:, 'DriftCorrection'] = np.round(
-            bracketedwls[i + 1].loc[:, 'last_diff_int'].cumsum() - bracketedwls[i + 1].loc[:, 'last_diff_int'], 4)
+        bracketedwls[i + 1].loc[:, 'last_diff_int'] = np.round((last_tran_wl[i] - last_man_wl[i]), 4) / np.round(driftlen[i] - 1.0, 4)
+        bracketedwls[i + 1].loc[:, 'DriftCorrection'] = np.round(bracketedwls[i + 1].loc[:, 'last_diff_int'].cumsum() - bracketedwls[i + 1].loc[:, 'last_diff_int'], 4)
 
     wellbarofixed = pd.concat(bracketedwls)
     wellbarofixed.reset_index(inplace=True)
@@ -207,8 +203,7 @@ def baro_drift_correct(wellfile, barofile, manualfile, sampint=60, wellelev=4800
     wellbarofixed.loc[:, 'DTWBelowCasing'] = wellbarofixed['MeasuredDTW'] - wellbarofixed['DriftCorrection']
 
     # subtract casing height from depth to water below casing
-    wellbarofixed.loc[:, 'DTWBelowGroundSurface'] = wellbarofixed.loc[:,
-                                                    'DTWBelowCasing'] - stickup  # well riser height
+    wellbarofixed.loc[:, 'DTWBelowGroundSurface'] = wellbarofixed.loc[:, 'DTWBelowCasing'] - stickup  # well riser height
 
     # subtract depth to water below ground surface from well surface elevation
     wellbarofixed.loc[:, 'WaterElevation'] = wellelev - wellbarofixed.loc[:, 'DTWBelowGroundSurface']
@@ -381,8 +376,7 @@ def imp_new_well(infile, wellinfo, manual, baro):
     g['DeltaLevel'] = g['BaroEfficiencyLevel'] - g['BaroEfficiencyLevel'][0]
 
     # Match manual water level to closest date ------------------------
-    g['MeasuredDTW'] = fcl(manual[manual['WellID'] == wellid], min(g.index.to_datetime()))[1] - g[
-        'DeltaLevel']
+    g['MeasuredDTW'] = fcl(manual[manual['WellID'] == wellid], min(g.index.to_datetime()))[1] - g['DeltaLevel']
 
     # Drift Correction ------------------------
     # get first and last manual measurements that match 1st and last transducer measurements
