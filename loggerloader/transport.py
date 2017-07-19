@@ -8,7 +8,7 @@ import xmltodict
 import sys
 
 
-def well_baro_merge(wellfile, barofile, sampint=60):
+def well_baro_merge(wellfile, barofile, barocolumn='Level', sampint=60):
     """Remove barometric pressure from nonvented transducers.
     Args:
         wellfile (pd.DataFrame):
@@ -29,14 +29,14 @@ def well_baro_merge(wellfile, barofile, sampint=60):
 
     # reassign `Level` to reduce ambiguity
     if 'Level' in list(baro.columns):
-        baro = baro.rename(columns={'Level': 'barometer'})
+        baro = baro.rename(columns={barocolumn: 'barometer'})
     # combine baro and well data for easy calculations, graphing, and manipulation
     wellbaro = pd.merge(well, baro, left_index=True, right_index=True, how='inner')
 
     wellbaro['dbp'] = wellbaro.barometer.diff()
     wellbaro['dwl'] = wellbaro.Level.diff()
     first_well = wellbaro.Level[0]
-
+    wellbaro.ix[0,'corrwl'] = first_well
     wellbaro['corrwl'] = wellbaro[['dbp', 'dwl']].apply(lambda x: x[1] - x[0], 1).cumsum() + first_well
 
     return wellbaro
@@ -68,10 +68,12 @@ def xle_head_table(folder):
             cols = list(d['Body_xle']['Instrument_info_data_header'].keys()) + list(d['Body_xle']['Instrument_info'].keys())
 
             df[basename[:-4]] = pd.DataFrame( data=data, index=cols).T
-    return pd.concat(df)
+    allwells = pd.concat(df)
+
+    return allwells
 
 
-def fix_drift(well, manualfile, meas='Level', manmeas='MeasuredDTW', outcolname='DriftCorrection'):
+def fix_drift_linear(well, manualfile, meas='Level', manmeas='MeasuredDTW', outcolname='DriftCorrection'):
     """Remove transducer drift from nonvented transducer data.
     Args:
         well (pd.DataFrame):
@@ -98,9 +100,18 @@ def fix_drift(well, manualfile, meas='Level', manmeas='MeasuredDTW', outcolname=
     breakpoints = sorted(list(set(breakpoints)))
 
     bracketedwls, drift_features = {}, {}
-    dtnm = well.index.name
-    manualfile['julian'] = manualfile.index.to_julian_date()
 
+    if well.index.name:
+        dtnm = well.index.name
+    else:
+        dtnm = 'DateTime'
+
+    if type(manualfile.index) == pd.tseries.index.DatetimeIndex:
+        pass
+    else:
+        manualfile.index = pd.to_datetime(manualfile.index)
+
+    manualfile['julian'] = manualfile.index.to_julian_date()
     for i in range(len(breakpoints) - 1):
         # Break up pandas dataframe time series into pieces based on timing of manual measurements
         bracketedwls[i] = well.loc[
@@ -131,8 +142,66 @@ def fix_drift(well, manualfile, meas='Level', manmeas='MeasuredDTW', outcolname=
     wellbarofixed = pd.concat(bracketedwls)
     wellbarofixed.reset_index(inplace=True)
     wellbarofixed.set_index(dtnm, inplace=True)
-    drift_info = pd.DataFrame(drift_features)
+    drift_info = pd.DataFrame(drift_features).T
+    drift_info['drift'] = drift_info['first_meas'] - drift_info['last_meas']
     return wellbarofixed, drift_info
+
+
+def fix_drift_stepwise(wellbaro, manualfile):
+    """
+    fixes drift using a step-wise difference method.  Can work with multiple manual measurements.
+    :param wellbaro:
+    :param manualfile:
+    :return:
+    """
+    breakpoints = []
+    for i in range(len(manualfile) + 1):
+        breakpoints.append(fcl(wellbaro, pd.to_datetime(manualfile.index)[i - 1]).name)
+
+    last_man_wl, first_man_wl, last_tran_wl, driftlen = [], [], [], []
+    bracketedwls = {}
+
+    for i in range(len(manualfile) - 1):
+
+        # Break up time series into pieces based on timing of manual measurements
+        bracketedwls[i + 1] = wellbaro.loc[
+            (wellbaro.index.to_datetime() > breakpoints[i + 1]) & (wellbaro.index.to_datetime() < breakpoints[i + 2])]
+        if len(bracketedwls[i + 1]) == 0:
+
+            last_man_wl.append(fcl(manualfile, breakpoints[i + 2])[0])
+            first_man_wl.append(fcl(manualfile, breakpoints[i + 1])[0])
+            driftlen.append(len(bracketedwls[i + 1].index))
+            # placeholder
+            last_tran_wl.append(0)
+            pass
+        else:
+
+            # get difference in transducer water measurements
+            bracketedwls[i + 1].loc[:, 'diff_wls'] = bracketedwls[i + 1]['adjusted_levelogger'].diff()
+            # get difference of each depth to water from initial measurement
+            bracketedwls[i + 1].loc[:, 'DeltaLevel'] = bracketedwls[i + 1].loc[:, 'adjusted_levelogger'] - \
+                                                       bracketedwls[i + 1].ix[0, 'adjusted_levelogger']
+            bracketedwls[i + 1].loc[:, 'MeasuredDTW'] = fcl(manualfile, breakpoints[i + 1])[0] - \
+                                                        bracketedwls[i + 1].loc[:, 'DeltaLevel']
+            last_man_wl.append(fcl(manualfile, breakpoints[i + 2])[0])
+            first_man_wl.append(fcl(manualfile, breakpoints[i + 1])[0])
+            last_tran_wl.append(
+                float(bracketedwls[i + 1].loc[max(bracketedwls[i + 1].index.to_datetime()),
+                                              'MeasuredDTW']))
+            driftlen.append(len(bracketedwls[i + 1].index))
+            bracketedwls[i + 1].loc[:, 'last_diff_int'] = np.round((last_tran_wl[i] - last_man_wl[i]), 4) / np.round(
+                driftlen[i] - 1.0, 4)
+            bracketedwls[i + 1].loc[:, 'DriftCorrection'] = np.round(
+                bracketedwls[i + 1].loc[:, 'last_diff_int'].cumsum() - bracketedwls[i + 1].loc[:, 'last_diff_int'], 4)
+
+    wellbarofixed = pd.concat(bracketedwls)
+    wellbarofixed.reset_index(inplace=True)
+    wellbarofixed.set_index('DateTime', inplace=True)
+    # Get Depth to water below casing
+    wellbarofixed.loc[:, 'DTWBelowCasing'] = wellbarofixed['MeasuredDTW'] - wellbarofixed['DriftCorrection']
+    max_drift = wellbarofixed['DriftCorrection'][-1]
+    return wellbarofixed, max_drift
+
 
 def baro_drift_correct(wellfile, barofile, manualfile, sampint=60, wellelev=4800, stickup=0):
     """Remove barometric pressure and corrects drift.

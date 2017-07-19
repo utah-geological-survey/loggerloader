@@ -48,13 +48,13 @@ def get_location_data(read_table, site_number, first_date=None, last_date=None, 
     if not last_date:
         last_date = datetime.datetime.now()
     query_txt = "LOCATIONID = '{:}' and (READINGDATE >= '{:%m/%d/%Y}' and READINGDATE <= '{:%m/%d/%Y}')"
-    query = query_txt.format(site_number, first_date, last_date)
+    query = query_txt.format(site_number, first_date, last_date + datetime.timedelta(days=1))
     sql_sn = (limit,'ORDER BY READINGDATE ASC')
 
     fieldnames = get_field_names(read_table)
 
     readings = table_to_pandas_dataframe(read_table, fieldnames, query, sql_sn)
-
+    readings.set_index('READINGDATE',inplace=True)
     if len(readings) == 0:
         print('No Records for location {:}'.format(site_number))
     return readings
