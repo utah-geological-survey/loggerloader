@@ -34,6 +34,21 @@ def table_to_pandas_dataframe(table, field_names=None, query=None):
     # return the pandas data frame
     return df
 
+def get_location_data(site_number, first_date, last_date=None, limit=None):
+    
+    # Get last reading at the specified location
+    if not last_date:
+        import datetime        
+        last_date = datetime.datetime.now()
+    query_txt = "LOCATIONID = '{:}' and (READINGDATE >= '{:%m/%d/%Y}' and READINGDATE <= '{:%m/%d/%Y}')"
+    query = query_txt.format(site_number, first_date, last_date)
+    sql_sn = (limit,'ORDER BY READINGDATE ASC')
+    readings = table_to_pandas_dataframe(read_table, fieldnames, query)
+    if len(readings) == 0:
+        print('No Records for location {:}'.format(site_number))
+    return readings, read_max
+
+
 def find_max(table, site_number):
     query = "LOCATIONID = {:}".format(site_number)
     field_names = ['READINGDATE', 'LOCATIONID']
@@ -50,6 +65,21 @@ def find_max(table, site_number):
         read_max = None
     return read_max
 
+def find_min(table, site_number):
+    query = "LOCATIONID = {:}".format(site_number)
+    field_names = ['READINGDATE', 'LOCATIONID']
+    sql_sn = ('TOP 1','ORDER BY READINGDATE ASC')
+    # use a search cursor to iterate rows
+    dateval = []
+    with arcpy.da.SearchCursor(table, field_names, query, sql_clause=sql_sn) as search_cursor:
+        # iterate the rows
+        for row in search_cursor:
+            dateval.append(row[0])
+    try:
+        read_min = min(dateval)
+    except ValueError:
+        read_min = None
+    return read_min
 
 def upload_data(table, df, lev_field, temp_field = None, site_number = None, return_df=False):
     if site_number is None:
