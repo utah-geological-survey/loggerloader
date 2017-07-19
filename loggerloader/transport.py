@@ -5,7 +5,7 @@ import os
 import glob
 import re
 import xmltodict
-import sys
+
 
 
 def well_baro_merge(wellfile, barofile, barocolumn='Level', sampint=60):
@@ -157,7 +157,7 @@ def fix_drift_stepwise(wellbaro, manualfile, meas='Level'):
     if wellbaro.index.name:
         dtnm = wellbaro.index.name
     else:
-        well.index.name = 'DateTime'
+        wellbaro.index.name = 'DateTime'
     breakpoints = []
     for i in range(len(manualfile) + 1):
         breakpoints.append(fcl(wellbaro, pd.to_datetime(manualfile.index)[i - 1]).name)
