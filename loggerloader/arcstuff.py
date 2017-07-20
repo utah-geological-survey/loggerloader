@@ -155,8 +155,8 @@ def match_files_to_wellid(well_table, station_table = "UGGP.UGGPADMIN.UGS_NGWMN_
         loc_name_strip = str(x[0]).lower().replace(" ", "").replace("-","")
         nameparts = str(x[1]).split(' ')
         try_match = iddict.get(loc_name_strip)
-        if (try_match is None or int(str(try_match)) > 140) and str(nameparts[0]):
-            file_name_strip =  str(nameparts[0]).lower().replace(" ", "").replace("-","")
+        if try_match is None or int(str(try_match)) > 140:
+            file_name_strip =  str(' '.join(nameparts[:-1])).lower().replace(" ", "").replace("-","")
             wl_value = iddict.get(file_name_strip)
             return wl_value
         else:

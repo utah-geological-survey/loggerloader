@@ -3,7 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/loggerloader/transport.py" afterPath="$PROJECT_DIR$/loggerloader/transport.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/loggerloader/arcstuff.py" afterPath="$PROJECT_DIR$/loggerloader/arcstuff.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -50,19 +50,32 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="transport.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="transport.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/loggerloader/transport.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="170">
-              <caret line="206" column="43" lean-forward="true" selection-start-line="206" selection-start-column="43" selection-end-line="206" selection-end-column="43" />
+            <state relative-caret-position="239">
+              <caret line="292" column="0" lean-forward="false" selection-start-line="292" selection-start-column="0" selection-end-line="292" selection-end-column="0" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
                 <element signature="e#273#1515#0" expanded="false" />
+                <element signature="e#1549#3005#0" expanded="false" />
+                <element signature="e#3118#6781#0" expanded="false" />
+                <element signature="e#6847#9805#0" expanded="false" />
+                <element signature="e#9905#14053#0" expanded="false" />
+                <element signature="e#14094#15791#0" expanded="false" />
+                <element signature="e#15847#22661#0" expanded="false" />
+                <element signature="e#22695#24026#0" expanded="false" />
+                <element signature="e#24072#25643#0" expanded="false" />
                 <element signature="e#25689#28152#0" expanded="false" />
                 <element signature="e#28186#30623#0" expanded="false" />
                 <element signature="e#30654#33564#0" expanded="false" />
                 <element signature="e#33590#35005#0" expanded="false" />
                 <element signature="e#35039#36478#0" expanded="false" />
+                <element signature="e#36524#37582#0" expanded="false" />
+                <element signature="e#37632#39414#0" expanded="false" />
+                <element signature="e#39453#39908#0" expanded="false" />
+                <element signature="e#39934#40297#0" expanded="false" />
+                <element signature="e#40363#41252#0" expanded="false" />
                 <element signature="e#41299#42285#0" expanded="false" />
                 <element signature="e#42314#42599#0" expanded="false" />
               </folding>
@@ -82,11 +95,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="arcstuff.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="arcstuff.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/arcstuff.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="476">
-              <caret line="170" column="41" lean-forward="true" selection-start-line="170" selection-start-column="41" selection-end-line="170" selection-end-column="41" />
+            <state relative-caret-position="408">
+              <caret line="167" column="31" lean-forward="false" selection-start-line="167" selection-start-column="31" selection-end-line="167" selection-end-column="31" />
               <folding />
             </state>
           </provider>
@@ -111,8 +124,8 @@
         <option value="$PROJECT_DIR$/loggerloader/__init__.py" />
         <option value="$PROJECT_DIR$/VERSION" />
         <option value="$PROJECT_DIR$/setup.py" />
-        <option value="$PROJECT_DIR$/loggerloader/arcstuff.py" />
         <option value="$PROJECT_DIR$/loggerloader/transport.py" />
+        <option value="$PROJECT_DIR$/loggerloader/arcstuff.py" />
       </list>
     </option>
   </component>
@@ -571,7 +584,14 @@
       <option name="project" value="LOCAL" />
       <updated>1500570561406</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="change some variable names">
+      <created>1500571139062</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1500571139062</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="TodoView" selected-index="1">
@@ -589,7 +609,7 @@
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24960506" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3387978" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32896176" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32896176" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32943678" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -620,7 +640,8 @@
     <MESSAGE value="fix dependency" />
     <MESSAGE value="flip axis on drift fixes" />
     <MESSAGE value="accomodating for ix deprecations in pandas 20" />
-    <option name="LAST_COMMIT_MESSAGE" value="accomodating for ix deprecations in pandas 20" />
+    <MESSAGE value="change some variable names" />
+    <option name="LAST_COMMIT_MESSAGE" value="change some variable names" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -691,29 +712,42 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/loggerloader/arcstuff.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="476">
-          <caret line="170" column="41" lean-forward="true" selection-start-line="170" selection-start-column="41" selection-end-line="170" selection-end-column="41" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/transport.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="170">
-          <caret line="206" column="43" lean-forward="true" selection-start-line="206" selection-start-column="43" selection-end-line="206" selection-end-column="43" />
+        <state relative-caret-position="239">
+          <caret line="292" column="0" lean-forward="false" selection-start-line="292" selection-start-column="0" selection-end-line="292" selection-end-column="0" />
           <folding>
             <element signature="e#0#82#0" expanded="true" />
             <element signature="e#273#1515#0" expanded="false" />
+            <element signature="e#1549#3005#0" expanded="false" />
+            <element signature="e#3118#6781#0" expanded="false" />
+            <element signature="e#6847#9805#0" expanded="false" />
+            <element signature="e#9905#14053#0" expanded="false" />
+            <element signature="e#14094#15791#0" expanded="false" />
+            <element signature="e#15847#22661#0" expanded="false" />
+            <element signature="e#22695#24026#0" expanded="false" />
+            <element signature="e#24072#25643#0" expanded="false" />
             <element signature="e#25689#28152#0" expanded="false" />
             <element signature="e#28186#30623#0" expanded="false" />
             <element signature="e#30654#33564#0" expanded="false" />
             <element signature="e#33590#35005#0" expanded="false" />
             <element signature="e#35039#36478#0" expanded="false" />
+            <element signature="e#36524#37582#0" expanded="false" />
+            <element signature="e#37632#39414#0" expanded="false" />
+            <element signature="e#39453#39908#0" expanded="false" />
+            <element signature="e#39934#40297#0" expanded="false" />
+            <element signature="e#40363#41252#0" expanded="false" />
             <element signature="e#41299#42285#0" expanded="false" />
             <element signature="e#42314#42599#0" expanded="false" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/loggerloader/arcstuff.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="408">
+          <caret line="167" column="31" lean-forward="false" selection-start-line="167" selection-start-column="31" selection-end-line="167" selection-end-column="31" />
+          <folding />
         </state>
       </provider>
     </entry>
