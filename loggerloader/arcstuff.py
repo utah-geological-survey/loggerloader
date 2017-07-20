@@ -150,9 +150,6 @@ def match_files_to_wellid(folder, station_table = "UGGP.UGGPADMIN.UGS_NGWMN_Moni
 
     iddict = dict(zip(names,ids))
 
-    xle_info_table['fileroot'] = xle_info_table.index
-    xle_info_table['full_filepath'] = xle_info_table['fileroot'].apply(lambda x: folder+x+'.xle',1)
-
     def tryfile(x):
         loc_name_strip = str(x[0]).lower().replace(" ", "")
         nameparts = str(x[1]).split(' ')

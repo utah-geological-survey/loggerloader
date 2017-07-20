@@ -70,11 +70,14 @@ def xle_head_table(folder):
     allwells = pd.concat(df)
     allwells.index = allwells.index.droplevel(1)
     allwells.index.name = 'filename'
+    allwells['trans type'] = 'Solinst'
+    allwells['fileroot'] = allwells.index
+    allwells['full_filepath'] = allwells['fileroot'].apply(lambda x: folder+x+'.xle',1)
     return allwells
 
 
 def fix_drift_linear(well, manualfile, meas='Level', manmeas='MeasuredDTW', outcolname='DriftCorrection'):
-    """Remove transducer drift from nonvented transducer data.
+    """Remove transducer drift from nonvented transducer data. Faster and should produce same output as fix_drift_stepwise
     Args:
         well (pd.DataFrame):
             Pandas DataFrame of merged water level and barometric data; index must be datetime
@@ -548,10 +551,10 @@ def make_files_table(folder, wellinfo):
     files['LoggerTypeName'] = files['extensions'].apply(lambda x: 'Global Water' if x == '.csv' else 'Solinst', 1)
     files.drop_duplicates(subset='siteid', keep='last', inplace=True)
 
-    wellinfo = wellinfo[wellinfo['Well'] != np.nan]
-    wellinfo["G_Elev_m"] = np.divide(wellinfo["GroundElevation"], 3.2808)
-    wellinfo['Well'] = wellinfo['Well'].apply(lambda x: str(x).lower().strip())
-    files = pd.merge(files, wellinfo, left_on='siteid', right_on='Well')
+    wellinfo = wellinfo[wellinfo['WellID'] != np.nan]
+
+    wellinfo['WellID'] = wellinfo['WellID'].apply(lambda x: str(x).lower().strip())
+    files = pd.merge(files, wellinfo, left_on='siteid', right_on='WellID')
 
     return files
 
@@ -761,6 +764,70 @@ def new_xle_imp(infile):
 
     return f
 
+def new_csv_imp(x):
+    f = pd.read_csv(x, skiprows=1, parse_dates=[[0, 1]])
+    # f = f.reset_index()
+    f['DateTime'] = pd.to_datetime(f['Date_ Time'], errors='coerce')
+    f = f[f.DateTime.notnull()]
+    if ' Feet' in list(f.columns.values):
+        f['Level'] = f[' Feet']
+        f.drop([' Feet'], inplace=True, axis=1)
+    elif 'Feet' in list(f.columns.values):
+        f['Level'] = f['Feet']
+        f.drop(['Feet'], inplace=True, axis=1)
+    else:
+        f['Level'] = f.iloc[:, 1]
+    # Remove first and/or last measurements if the transducer was out of the water
+    #f = dataendclean(f, 'Level')
+    flist = f.columns.tolist()
+    if ' Temp C' in flist:
+        f['Temperature'] = f[' Temp C']
+        f['Temp'] = f['Temperature']
+        f.drop([' Temp C', 'Temperature'], inplace=True, axis=1)
+    elif ' Temp F' in flist:
+        f['Temperature'] = (f[' Temp F'] - 32)* 5/9
+        f['Temp'] = f['Temperature']
+        f.drop([' Temp F', 'Temperature'], inplace=True, axis=1)
+    else:
+        f['Temp'] = np.nan
+    f.set_index(['DateTime'], inplace=True)
+    f['date'] = f.index.to_julian_date().values
+    f['datediff'] = f['date'].diff()
+    f = f[f['datediff'] > 0]
+    f = f[f['datediff'] < 1]
+    #bse = int(pd.to_datetime(f.index).minute[0])
+    #f = ll.hourly_resample(f, bse)
+    f.rename(columns={' Volts':'Volts'},inplace=True)
+    f.drop([u'date', u'datediff', u'Date_ Time'], inplace=True, axis=1)
+    return f
+
+def csv_info_table(folder):
+    csv = {}
+    files = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
+    field_names = ['filename','Start_time','Stop_time']
+    df = pd.DataFrame(columns=field_names)
+    for file in files:
+        fileparts = os.path.basename(file).split('.')
+        filetype = fileparts[1]
+        basename = fileparts[0]
+        if filetype == 'csv':
+            try:
+                cfile = {}
+                csv[basename] = new_csv_imp(os.path.join(folder, file))
+                cfile['Battery_level'] = int(round(csv[basename].ix[-1,'Volts']/csv[basename].ix[0,'Volts']*100,0))
+                cfile['Sample_rate'] = (csv[basename].index[1] - csv[basename].index[0]).seconds*100
+                cfile['filename'] = basename
+                cfile['fileroot'] = basename
+                cfile['full_filepath'] = os.path.join(folder, file)
+                cfile['Start_time'] = csv[basename].first_valid_index()
+                cfile['Stop_time'] = csv[basename].last_valid_index()
+                cfile['Location'] = ' '.join(basename.split(' ')[:-1])
+                cfile['trans type'] = 'Global Water'
+                df = df.append(cfile, ignore_index=True)
+            except KeyError:
+                pass
+    df.set_index('filename',inplace=True)
+    return df,csv
 
 def dataendclean(df, x, inplace=False):
     """Trims off ends and beginnings of datasets that exceed 2.0 standard deviations of the first and last 30 values
