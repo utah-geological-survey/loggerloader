@@ -132,7 +132,7 @@ def fix_drift_linear(well, manualfile, meas='Level', manmeas='MeasuredDTW', outc
             b = first_man[manmeas] - first_trans
             # slope of line = change in difference between manual and transducer over time;
             # made negative to flip readings to match dtw measurements
-            m = ((last_man[manmeas] - last_trans) - (first_man[manmeas] - first_trans)) / (last_man['julian'] - first_man['julian'])*-1
+            m = ((last_man[manmeas] - last_trans) - (first_man[manmeas] - first_trans)) / (last_man['julian'] - first_man['julian'])#*-1
             # datechange = amount of time between manual measurements
             bracketedwls[i].loc[:, 'datechange'] = bracketedwls[i].loc[bracketedwls[i].index, 'julian'] -\
                                                    bracketedwls[i].loc[bracketedwls[i].index[0], 'julian']
