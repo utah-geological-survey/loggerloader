@@ -138,7 +138,8 @@ def fix_drift_linear(well, manualfile, meas='Level', manmeas='MeasuredDTW', outc
                                                    bracketedwls[i].loc[bracketedwls[i].index[0], 'julian']
 
             # bracketedwls[i].loc[:, 'wldiff'] = bracketedwls[i].loc[:, meas] - first_trans
-            bracketedwls[i].loc[:, outcolname] = bracketedwls[i][['datechange', meas]].apply(lambda x: x[1] + (m * x[0] + b), 1)
+            # fliped x to match drift
+            bracketedwls[i].loc[:, outcolname] = bracketedwls[i][['datechange', meas]].apply(lambda x: (m * x[0] + b) - x[1], 1)
             drift_features[i] = {'begining': first_man, 'end': last_man, 'intercept': b, 'slope': m,
                                  'first_meas': first_man[manmeas], 'last_meas': last_man[manmeas]}
         else:
