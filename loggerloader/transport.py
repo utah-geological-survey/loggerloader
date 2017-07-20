@@ -122,7 +122,7 @@ def fix_drift_linear(well, manualfile, meas='Level', manmeas='MeasuredDTW', outc
         if len(bracketedwls[i]) > 0:
             bracketedwls[i].loc[:, 'julian'] = bracketedwls[i].index.to_julian_date()
 
-            last_trans = bracketedwls[i].loc[bracketedwls[i].index[-1], meas]  # last transducer measurment
+            last_trans = bracketedwls[i].loc[bracketedwls[i].index[-1], meas]  # last transducer measurement
             first_trans = bracketedwls[i].loc[bracketedwls[i].index[0], meas]  # first transducer measurement
 
             last_man = fcl(manualfile, breakpoints[i + 1])  # first manual measurment
@@ -165,7 +165,7 @@ def fix_drift_stepwise(wellbaro, manualfile, meas='Level'):
     for i in range(len(manualfile) + 1):
         breakpoints.append(fcl(wellbaro, pd.to_datetime(manualfile.index)[i - 1]).name)
 
-    last_man_wl, first_man_wl, last_tran_wl, driftlen = [], [], [], []
+    last_man, first_man, last_trans, driftlen = [], [], [], []
     bracketedwls = {}
 
     for i in range(len(manualfile) - 1):
@@ -175,11 +175,11 @@ def fix_drift_stepwise(wellbaro, manualfile, meas='Level'):
             (wellbaro.index.to_datetime() > breakpoints[i + 1]) & (wellbaro.index.to_datetime() < breakpoints[i + 2])]
         if len(bracketedwls[i + 1]) == 0:
 
-            last_man_wl.append(fcl(manualfile, breakpoints[i + 2])[0])
-            first_man_wl.append(fcl(manualfile, breakpoints[i + 1])[0])
+            last_man.append(fcl(manualfile, breakpoints[i + 2])[0])
+            first_man.append(fcl(manualfile, breakpoints[i + 1])[0])
             driftlen.append(len(bracketedwls[i + 1].index))
             # placeholder
-            last_tran_wl.append(0)
+            last_trans.append(0)
             pass
         else:
 
@@ -193,13 +193,13 @@ def fix_drift_stepwise(wellbaro, manualfile, meas='Level'):
 
             bracketedwls[i + 1].loc[:, 'MeasuredDTW'] = fcl(manualfile, breakpoints[i + 1])[0] - \
                                                         bracketedwls[i + 1].loc[:, 'DeltaLevel']
-            last_man_wl.append(fcl(manualfile, breakpoints[i + 2])[0])
-            first_man_wl.append(fcl(manualfile, breakpoints[i + 1])[0])
-            last_tran_wl.append(
+            last_man.append(fcl(manualfile, breakpoints[i + 2])[0])
+            first_man.append(fcl(manualfile, breakpoints[i + 1])[0])
+            last_trans.append(
                 float(bracketedwls[i + 1].loc[max(bracketedwls[i + 1].index.to_datetime()),
                                               'MeasuredDTW']))
             driftlen.append(len(bracketedwls[i + 1].index))
-            bracketedwls[i + 1].loc[:, 'last_diff_int'] = np.round((last_tran_wl[i] - last_man_wl[i]), 4) / np.round(
+            bracketedwls[i + 1].loc[:, 'last_diff_int'] = np.round((last_trans[i] - last_man[i]), 4) / np.round(
                 driftlen[i] - 1.0, 4)
             bracketedwls[i + 1].loc[:, 'DriftCorrection'] = np.round(
                 bracketedwls[i + 1].loc[:, 'last_diff_int'].cumsum() - bracketedwls[i + 1].loc[:, 'last_diff_int'], 4)
