@@ -8,7 +8,7 @@ import xmltodict
 
 
 
-def well_baro_merge(wellfile, barofile, barocolumn='Level', sampint=60):
+def well_baro_merge(wellfile, barofile, barocolumn='Level', wellcolumn = 'Level', sampint=60):
     """Remove barometric pressure from nonvented transducers.
     Args:
         wellfile (pd.DataFrame):
@@ -29,12 +29,13 @@ def well_baro_merge(wellfile, barofile, barocolumn='Level', sampint=60):
 
     # reassign `Level` to reduce ambiguity
     baro = baro.rename(columns={barocolumn: 'barometer'})
+
     # combine baro and well data for easy calculations, graphing, and manipulation
     wellbaro = pd.merge(well, baro, left_index=True, right_index=True, how='inner')
 
-    wellbaro['dbp'] = wellbaro.barometer.diff()
-    wellbaro['dwl'] = wellbaro.Level.diff()
-    first_well = wellbaro.Level[0]
+    wellbaro['dbp'] = wellbaro['barometer'].diff()
+    wellbaro['dwl'] = wellbaro[wellcolumn].diff()
+    first_well = wellbaro[wellcolumn][0]
     wellbaro.ix[0,'corrwl'] = first_well
     wellbaro['corrwl'] = wellbaro[['dbp', 'dwl']].apply(lambda x: x[1] - x[0], 1).cumsum() + first_well
 
@@ -74,7 +75,6 @@ def xle_head_table(folder):
     allwells['fileroot'] = allwells.index
     allwells['full_filepath'] = allwells['fileroot'].apply(lambda x: folder+x+'.xle',1)
     return allwells
-
 
 def fix_drift_linear(well, manualfile, meas='Level', manmeas='MeasuredDTW', outcolname='DriftCorrection'):
     """Remove transducer drift from nonvented transducer data. Faster and should produce same output as fix_drift_stepwise
@@ -130,8 +130,9 @@ def fix_drift_linear(well, manualfile, meas='Level', manmeas='MeasuredDTW', outc
 
             # intercept of line = value of first manual measurement
             b = first_man[manmeas] - first_trans
-            # slope of line = change in difference between manual and transducer over time
-            m = ((last_man[manmeas] - last_trans) - (first_man[manmeas] - first_trans)) / (last_man['julian'] - first_man['julian'])
+            # slope of line = change in difference between manual and transducer over time;
+            # made negative to flip readings to match dtw measurements
+            m = ((last_man[manmeas] - last_trans) - (first_man[manmeas] - first_trans)) / (last_man['julian'] - first_man['julian'])*-1
             # datechange = amount of time between manual measurements
             bracketedwls[i].loc[:, 'datechange'] = bracketedwls[i].ix[:, 'julian'] - bracketedwls[i].ix[0, 'julian']
 
@@ -147,7 +148,6 @@ def fix_drift_linear(well, manualfile, meas='Level', manmeas='MeasuredDTW', outc
     drift_info = pd.DataFrame(drift_features).T
     drift_info['drift'] = drift_info['first_meas'] - drift_info['last_meas']
     return wellbarofixed, drift_info
-
 
 def fix_drift_stepwise(wellbaro, manualfile, meas='Level'):
     """
@@ -185,8 +185,10 @@ def fix_drift_stepwise(wellbaro, manualfile, meas='Level'):
             # get difference in transducer water measurements
             bracketedwls[i + 1].loc[:, 'diff_wls'] = bracketedwls[i + 1][meas].diff()
             # get difference of each depth to water from initial measurement
-            bracketedwls[i + 1].loc[:, 'DeltaLevel'] = bracketedwls[i + 1].ix[0, meas] -\
-                                                        bracketedwls[i + 1].loc[:, meas]
+            # order reversed to accomodate for calibrating to depth to water measurements
+            bracketedwls[i + 1].loc[:, 'DeltaLevel'] =  bracketedwls[i + 1].loc[:, meas] -\
+                                                        bracketedwls[i + 1].ix[0, meas]
+
 
             bracketedwls[i + 1].loc[:, 'MeasuredDTW'] = fcl(manualfile, breakpoints[i + 1])[0] - \
                                                         bracketedwls[i + 1].loc[:, 'DeltaLevel']
@@ -208,7 +210,6 @@ def fix_drift_stepwise(wellbaro, manualfile, meas='Level'):
     wellbarofixed.loc[:, 'DTWBelowCasing'] = wellbarofixed['MeasuredDTW'] - wellbarofixed['DriftCorrection']
     max_drift = wellbarofixed['DriftCorrection'][-1]
     return wellbarofixed, max_drift
-
 
 def baro_drift_correct(wellfile, barofile, manualfile, sampint=60, wellelev=4800, stickup=0):
     """Remove barometric pressure and corrects drift.
@@ -288,7 +289,6 @@ def baro_drift_correct(wellfile, barofile, manualfile, sampint=60, wellelev=4800
 
     return wellbarofinal
 
-
 def smoother(df, p, win=30, sd=3):
     """Remove outliers from a pandas dataframe column and fill with interpolated values.
     warning: this will fill all NaN values in the DataFrame with the interpolate function
@@ -337,7 +337,6 @@ def smoother(df, p, win=30, sd=3):
     df = df.interpolate(method='time', limit=30)
     df = df[1:-1]
     return df
-
 
 def imp_new_well(infile, wellinfo, manual, baro):
     """Imports Solinst xle file or GlobalWater csv as DataFrame, removing barometric pressure effects and correcting for drift.
@@ -495,7 +494,6 @@ def imp_new_well(infile, wellinfo, manual, baro):
 
     # Use `g[wellinfo[wellinfo['Well']==wellname]['closest_baro']]` to match the closest barometer to the data
 
-
 def barodistance(wellinfo):
     """Determines Closest Barometer to Each Well using wellinfo DataFrame"""
     barometers = {'barom': ['pw03', 'pw10', 'pw19'], 'X': [240327.49, 271127.67, 305088.9],
@@ -515,7 +513,6 @@ def barodistance(wellinfo):
                                (barolocal.loc['pw19', 'Z'] - wellinfo['G_Elev_m']) ** 2)
     wellinfo['closest_baro'] = wellinfo[['pw03', 'pw10', 'pw19']].T.idxmin()
     return wellinfo
-
 
 def make_files_table(folder, wellinfo):
     """This tool will make a descriptive table (Pandas DataFrame) containing filename, date, and site id.
@@ -557,7 +554,6 @@ def make_files_table(folder, wellinfo):
     files = pd.merge(files, wellinfo, left_on='siteid', right_on='WellID')
 
     return files
-
 
 def appendomatic(infile, existingfile):
     """Appends data from one table to an existing compilation this tool will delete and replace the existing file
@@ -684,7 +680,6 @@ def compilation(inputfile):
     g = g.sort_index()
     outfile = g
     return outfile
-
 
 def new_xle_imp(infile):
     """This function uses an exact file path to upload a xle transducer file.
@@ -863,7 +858,6 @@ def dataendclean(df, x, inplace=False):
         print('No Jumps')
     return df
 
-
 def hourly_resample(df, bse=0, minutes=60):
     """
     Args:
@@ -899,7 +893,6 @@ def hourly_resample(df, bse=0, minutes=60):
         df = df.resample(str(minutes) + 'Min', closed='left', label='left', base=bse).first()  
     return df
 
-
 def getwellid(infile, wellinfo):
     """Specialized function that uses a well info table and file name to lookup a well's id number"""
     m = re.search("\d", getfilename(infile))
@@ -910,7 +903,6 @@ def getwellid(infile, wellinfo):
         wellname = getfilename(infile)[0:s.start()].strip().lower()
     wellid = wellinfo[wellinfo['Well'] == wellname]['WellID'].values[0]
     return wellname, wellid
-
 
 def fcl(df, dtObj):
     """Finds closest date index in a dataframe to a date object
@@ -923,7 +915,6 @@ def fcl(df, dtObj):
     taken from: http://stackoverflow.com/questions/15115547/find-closest-row-of-dataframe-to-given-time-in-pandas
     """
     return df.iloc[np.argmin(np.abs(pd.to_datetime(df.index) - dtObj))]  # remove to_pydatetime()
-
 
 def jumpfix(df, meas, threashold=0.005, return_jump=False):
     """Removes jumps or jolts in time series data (where offset is lasting)
@@ -954,7 +945,6 @@ def jumpfix(df, meas, threashold=0.005, return_jump=False):
         return df1, jump
     else:
         return df1
-
 
 def rollmeandiff(df1, p1, df2, p2, win):
     """Returns the rolling mean difference of two columns from two different dataframes
@@ -988,7 +978,6 @@ def rollmeandiff(df1, p1, df2, p2, win):
     diff = round(df5.mean(), 3)
     del (df3, df4, df5)
     return diff
-
 
 def getfilename(path):
     """This function extracts the file name without file path or extension

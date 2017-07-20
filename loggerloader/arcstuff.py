@@ -1,5 +1,5 @@
 import pandas as pd
-from .transport import xle_head_table
+
 
 def get_field_names(table):
     import arcpy
@@ -146,24 +146,24 @@ def upload_data(table, df, lev_field, site_number, temp_field = None, return_df=
 def match_files_to_wellid(well_table, station_table = "UGGP.UGGPADMIN.UGS_NGWMN_Monitoring_Locations"):
     xle_info_table = well_table
     stations = table_to_pandas_dataframe(station_table)
-    names = stations['LocationName'].apply(lambda x: str(x).lower().replace(" ", ""),1)
+    names = stations['LocationName'].apply(lambda x: str(x).lower().replace(" ", "").replace("-",""),1)
     ids = stations['AltLocationID'].apply(lambda x: pd.to_numeric(x, errors='coerce'),1)
-
+    baros = stations['BaroLoggerType'].apply(lambda x: pd.to_datetime(x, errors='coerce'),1)
     iddict = dict(zip(names,ids))
-
+    bdict = dict(zip(ids,baros))
     def tryfile(x):
-        loc_name_strip = str(x[0]).lower().replace(" ", "")
+        loc_name_strip = str(x[0]).lower().replace(" ", "").replace("-","")
         nameparts = str(x[1]).split(' ')
         try_match = iddict.get(loc_name_strip)
         if (try_match is None or int(str(try_match)) > 140) and str(nameparts[0]):
-            file_name_strip =  str(nameparts[0]).lower().replace(" ", "")
+            file_name_strip =  str(nameparts[0]).lower().replace(" ", "").replace("-","")
             wl_value = iddict.get(file_name_strip)
             return wl_value
         else:
             return try_match
 
     xle_info_table['WellID'] = xle_info_table[['Location','fileroot']].apply(lambda x: tryfile(x), 1)
-
+    xle_info_table['baronum'] = xle_info_table['WellID'].apply(lambda x: bdict.get(x), 1)
     nomatch = xle_info_table[pd.isnull(xle_info_table['WellID'])].index
     match = xle_info_table[pd.notnull(xle_info_table['WellID'])]['WellID']
     print('The following wells did not match: {:}.'.format(*nomatch.values))
