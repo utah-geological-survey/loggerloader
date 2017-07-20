@@ -65,7 +65,7 @@ def test_fix_drift_linear():
     manual = pd.read_csv(manualwls, index_col="DateTime", engine="python")
     manual35 = manual[manual['WellID']==35]
     manual35.index = pd.to_datetime(manual35.index)
-    manual_35.index.name = 'dt'
+    manual35.index.name = 'dt'
     fd = wa.fix_drift_linear(xle_df, manual_35, meas='Level', manmeas='MeasuredDTW', outcolname='DriftCorrection')
     assert 'DriftCorrection' in list(fd[0].columns)
     
