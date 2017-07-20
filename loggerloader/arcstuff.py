@@ -143,8 +143,8 @@ def upload_data(table, df, lev_field, site_number, temp_field = None, return_df=
         print('Dates later than import data for this station already exist!')
         pass
 
-def match_files_to_wellid(folder, station_table = "UGGP.UGGPADMIN.UGS_NGWMN_Monitoring_Locations"):
-    xle_info_table = xle_head_table(folder)
+def match_files_to_wellid(well_table, station_table = "UGGP.UGGPADMIN.UGS_NGWMN_Monitoring_Locations"):
+    xle_info_table = well_table
     stations = table_to_pandas_dataframe(station_table)
     names = stations['LocationName'].apply(lambda x: str(x).lower().replace(" ", ""),1)
     ids = stations['AltLocationID'].apply(lambda x: pd.to_numeric(x, errors='coerce'),1)
