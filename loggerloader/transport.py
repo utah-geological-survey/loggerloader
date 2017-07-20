@@ -68,7 +68,8 @@ def xle_head_table(folder):
 
             df[basename[:-4]] = pd.DataFrame( data=data, index=cols).T
     allwells = pd.concat(df)
-
+    allwells.index = allwells.index.droplevel(1)
+    allwells.index.name = 'filename'
     return allwells
 
 
@@ -106,10 +107,8 @@ def fix_drift_linear(well, manualfile, meas='Level', manmeas='MeasuredDTW', outc
         dtnm = 'DateTime'
         well.index.name = 'DateTime'
 
-    if type(manualfile.index) == pd.tseries.index.DatetimeIndex:
-        pass
-    else:
-        manualfile.index = pd.to_datetime(manualfile.index)
+
+    manualfile.index = pd.to_datetime(manualfile.index)
 
     manualfile['julian'] = manualfile.index.to_julian_date()
     for i in range(len(breakpoints) - 1):
