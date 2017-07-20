@@ -130,16 +130,18 @@ def fix_drift_linear(well, manualfile, meas='Level', manmeas='MeasuredDTW', outc
 
             # intercept of line = value of first manual measurement
             b = first_man[manmeas] - first_trans
+
             # slope of line = change in difference between manual and transducer over time;
-            # made negative to flip readings to match dtw measurements
-            m = ((last_man[manmeas] - last_trans) - (first_man[manmeas] - first_trans)) / (last_man['julian'] - first_man['julian'])#*-1
+            m = ((last_man[manmeas] - last_trans) - (first_man[manmeas] - first_trans)) / (last_man['julian'] - first_man['julian'])
+
             # datechange = amount of time between manual measurements
-            bracketedwls[i].loc[:, 'datechange'] = bracketedwls[i].loc[bracketedwls[i].index, 'julian'] -\
-                                                   bracketedwls[i].loc[bracketedwls[i].index[0], 'julian']
+
+            bracketedwls[i].loc[:, 'datechange'] = bracketedwls[i]['julian'].apply(lambda x: \
+                                                   x - bracketedwls[i].loc[bracketedwls[i].index[0], 'julian'],1)
 
             # bracketedwls[i].loc[:, 'wldiff'] = bracketedwls[i].loc[:, meas] - first_trans
-            # fliped x to match drift
-            bracketedwls[i].loc[:, outcolname] = bracketedwls[i][['datechange', meas]].apply(lambda x: (m * x[0] + b) - x[1], 1)
+            # apply linear drift to transducer data to fix drift; flipped x to match drift
+            bracketedwls[i].loc[:, outcolname] = bracketedwls[i][['datechange', meas]].apply(lambda x: x[1] - (m * x[0] + b), 1)
             drift_features[i] = {'begining': first_man, 'end': last_man, 'intercept': b, 'slope': m,
                                  'first_meas': first_man[manmeas], 'last_meas': last_man[manmeas]}
         else:
@@ -151,7 +153,7 @@ def fix_drift_linear(well, manualfile, meas='Level', manmeas='MeasuredDTW', outc
     drift_info['drift'] = drift_info['first_meas'] - drift_info['last_meas']
     return wellbarofixed, drift_info
 
-def fix_drift_stepwise(wellbaro, manualfile, meas='Level'):
+def fix_drift_stepwise(wellbaro, manualfile, meas='Level', outcolname='DriftCorrection'):
     """
     fixes drift using a step-wise difference method.  Can work with multiple manual measurements.
     :param wellbaro:
