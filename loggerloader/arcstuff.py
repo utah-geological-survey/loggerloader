@@ -1,4 +1,5 @@
 import pandas as pd
+from .transport import xle_head_table
 
 def get_field_names(table):
     import arcpy
