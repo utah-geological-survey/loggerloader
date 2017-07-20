@@ -36,7 +36,7 @@ def well_baro_merge(wellfile, barofile, barocolumn='Level', wellcolumn = 'Level'
     wellbaro['dbp'] = wellbaro['barometer'].diff()
     wellbaro['dwl'] = wellbaro[wellcolumn].diff()
     first_well = wellbaro[wellcolumn][0]
-    wellbaro.ix[0,'corrwl'] = first_well
+    wellbaro.loc[wellbaro.index[0],'corrwl'] = first_well
     wellbaro['corrwl'] = wellbaro[['dbp', 'dwl']].apply(lambda x: x[1] - x[0], 1).cumsum() + first_well
 
     return wellbaro
@@ -122,8 +122,8 @@ def fix_drift_linear(well, manualfile, meas='Level', manmeas='MeasuredDTW', outc
         if len(bracketedwls[i]) > 0:
             bracketedwls[i].loc[:, 'julian'] = bracketedwls[i].index.to_julian_date()
 
-            last_trans = bracketedwls[i].ix[-1, meas]  # last transducer measurment
-            first_trans = bracketedwls[i].ix[0, meas]  # first transducer measurement
+            last_trans = bracketedwls[i].loc[bracketedwls[i].index[-1], meas]  # last transducer measurment
+            first_trans = bracketedwls[i].loc[bracketedwls[i].index[0], meas]  # first transducer measurement
 
             last_man = fcl(manualfile, breakpoints[i + 1])  # first manual measurment
             first_man = fcl(manualfile, breakpoints[i])  # last manual mesurement
@@ -134,7 +134,8 @@ def fix_drift_linear(well, manualfile, meas='Level', manmeas='MeasuredDTW', outc
             # made negative to flip readings to match dtw measurements
             m = ((last_man[manmeas] - last_trans) - (first_man[manmeas] - first_trans)) / (last_man['julian'] - first_man['julian'])*-1
             # datechange = amount of time between manual measurements
-            bracketedwls[i].loc[:, 'datechange'] = bracketedwls[i].ix[:, 'julian'] - bracketedwls[i].ix[0, 'julian']
+            bracketedwls[i].loc[:, 'datechange'] = bracketedwls[i].loc[bracketedwls[i].index, 'julian'] -\
+                                                   bracketedwls[i].loc[bracketedwls[i].index[0], 'julian']
 
             # bracketedwls[i].loc[:, 'wldiff'] = bracketedwls[i].loc[:, meas] - first_trans
             bracketedwls[i].loc[:, outcolname] = bracketedwls[i][['datechange', meas]].apply(lambda x: x[1] + (m * x[0] + b), 1)
@@ -187,7 +188,7 @@ def fix_drift_stepwise(wellbaro, manualfile, meas='Level'):
             # get difference of each depth to water from initial measurement
             # order reversed to accomodate for calibrating to depth to water measurements
             bracketedwls[i + 1].loc[:, 'DeltaLevel'] =  bracketedwls[i + 1].loc[:, meas] -\
-                                                        bracketedwls[i + 1].ix[0, meas]
+                                                        bracketedwls[i + 1].loc[bracketedwls[i + 1].index[0], meas]
 
 
             bracketedwls[i + 1].loc[:, 'MeasuredDTW'] = fcl(manualfile, breakpoints[i + 1])[0] - \
@@ -262,7 +263,7 @@ def baro_drift_correct(wellfile, barofile, manualfile, sampint=60, wellelev=4800
         bracketedwls[i + 1]['diff_wls'] = bracketedwls[i + 1]['abs_feet_above_levelogger'].diff()
         # get difference of each depth to water from initial measurement
         bracketedwls[i + 1].loc[:, 'DeltaLevel'] = bracketedwls[i + 1].loc[:, 'adjusted_levelogger'] - \
-                                                   bracketedwls[i + 1].ix[0, 'adjusted_levelogger']
+                                                   bracketedwls[i + 1].loc[bracketedwls[i + 1].index[0], 'adjusted_levelogger']
         bracketedwls[i + 1].loc[:, 'MeasuredDTW'] = fcl(manualfile, breakpoints[i + 1])[0] - \
                                                     bracketedwls[i + 1].loc[:,'DeltaLevel']
         last_man_wl.append(fcl(manualfile, breakpoints[i + 2])[0])
@@ -809,7 +810,9 @@ def csv_info_table(folder):
             try:
                 cfile = {}
                 csv[basename] = new_csv_imp(os.path.join(folder, file))
-                cfile['Battery_level'] = int(round(csv[basename].ix[-1,'Volts']/csv[basename].ix[0,'Volts']*100,0))
+                cfile['Battery_level'] = int(round(csv[basename].loc[csv[basename].\
+                                                   index[-1],'Volts']/csv[basename].\
+                                                   loc[csv[basename].index[0],'Volts']*100,0))
                 cfile['Sample_rate'] = (csv[basename].index[1] - csv[basename].index[0]).seconds*100
                 cfile['filename'] = basename
                 cfile['fileroot'] = basename

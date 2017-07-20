@@ -166,5 +166,6 @@ def match_files_to_wellid(well_table, station_table = "UGGP.UGGPADMIN.UGS_NGWMN_
     xle_info_table['baronum'] = xle_info_table['WellID'].apply(lambda x: bdict.get(x), 1)
     nomatch = xle_info_table[pd.isnull(xle_info_table['WellID'])].index
     match = xle_info_table[pd.notnull(xle_info_table['WellID'])]['WellID']
-    print('The following wells did not match: {:}.'.format(*nomatch.values))
+
+    print('The following wells did not match: {:}.'.format(list(nomatch.values)))
     return xle_info_table, match, nomatch
