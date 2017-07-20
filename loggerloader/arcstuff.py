@@ -148,7 +148,7 @@ def match_files_to_wellid(well_table, station_table = "UGGP.UGGPADMIN.UGS_NGWMN_
     stations = table_to_pandas_dataframe(station_table)
     names = stations['LocationName'].apply(lambda x: str(x).lower().replace(" ", "").replace("-",""),1)
     ids = stations['AltLocationID'].apply(lambda x: pd.to_numeric(x, errors='coerce'),1)
-    baros = stations['BaroLoggerType'].apply(lambda x: pd.to_datetime(x, errors='coerce'),1)
+    baros = stations['BaroLoggerType'].apply(lambda x: pd.to_numeric(x, errors='coerce'),1)
     iddict = dict(zip(names,ids))
     bdict = dict(zip(ids,baros))
     def tryfile(x):
