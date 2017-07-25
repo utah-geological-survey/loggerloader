@@ -21,7 +21,7 @@ except:
 setup(name='loggerloader',
       description = 'Interface with xle files; analyze hydrographs; plot hydrographs',
       long_description = long_description,
-      version = '0.1.6',
+      version = '0.1.7',
       author = 'Paul Inkenbrandt',
       author_email = 'paulinkenbrandt@utah.gov',
       url = 'https://github.com/inkenbrandt/loggerloader',
