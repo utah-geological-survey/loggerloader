@@ -75,23 +75,54 @@ def find_extreme(table, site_number, extma = 'max'):
     else:
         sort = 'ASC'
     query = "LOCATIONID = {:}".format(site_number)
-    field_names = ['READINGDATE', 'LOCATIONID']
+    field_names = ['READINGDATE', 'LOCATIONID','DTWBELOWGROUNDSURFACE','WATERELEVATION']
     sql_sn = ('TOP 1','ORDER BY READINGDATE {:}'.format(sort))
     # use a search cursor to iterate rows
-    dateval = []
+    dateval, dtw, wlelev = [],[],[]
     with arcpy.da.SearchCursor(table, field_names, query, sql_clause=sql_sn) as search_cursor:
         # iterate the rows
         for row in search_cursor:
             dateval.append(row[0])
-    try:
-        if extma == 'max':
-            read_max = max(dateval)
-        else:
-            read_max = min(dateval)
-    except ValueError:
-        read_max = None
-    return read_max
+            dtw.append(row[1])
+            wlelev.append(row[2])
 
+    return dateval[0],dtw[0],wlelev[0]
+
+def get_gw_elevs(site_number, stations, manual, stable_elev = True, lev_table = "UGGP.UGGPADMIN.UGS_GW_reading"):
+    """
+    Gets basic well parameters and most recent groundwater level data for a well id for dtw calculations.
+    :param site_number: well site number in the site table
+    :param manual: Pandas Dataframe of manual data
+    :param table: pandas dataframe of site table;
+    :param lev_table: groundwater level table; defaults to "UGGP.UGGPADMIN.UGS_GW_reading"
+    :return: stickup, well_elev, be, maxdate, dtw, wl_elev
+    """
+
+    stdata = stations[(stations['AltLocationID'] == site_number) & (stations['LocationType'] == 'Well')]
+    man_sub = manual[manual['Location ID']==site_number]
+    well_elev = float(stdata['Altitude'].values[0])
+
+    if stable_elev:
+        stickup = float(stdata['Offset'].values[0])
+    else:
+        stickup = man_sub['Current Stickup Height']
+
+    #manual = manual['MeasuredDTW'].to_frame()
+    man_sub['MeasuredDTW'] = man_sub['Water Level (ft)']*-1
+    try:
+        man_sub['Meas_GW_Elev'] = man_sub['MeasuredDTW'].apply(lambda x: well_elev + (x + stickup),1)
+    except:
+        print('Manual correction data for well id {:} missing (stickup: {:}; elevation: {:})'.format(site_number,stickup,well_elev))
+        pass
+
+    return man_sub
+
+def correct_be(site_number, stations, welldata):
+    stdata = stations[(stations['AltLocationID'] == site_number) & (stations['LocationType'] == 'Well')]
+    be = float(stdata['BaroEfficiency'].values[0])
+    welldata['corrwlbp'] = welldata[['corrwl', 'barometer']].\
+        apply(lambda x: x[0] - be * (x[1] - welldata['barometer'].mean()), 1)
+    return welldata
 
 def upload_data(table, df, lev_field, site_number, temp_field = None, return_df=False):
     import arcpy

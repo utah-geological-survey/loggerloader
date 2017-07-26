@@ -8,7 +8,7 @@ import xmltodict
 
 
 
-def well_baro_merge(wellfile, barofile, barocolumn='Level', wellcolumn = 'Level', sampint=60):
+def well_baro_merge(wellfile, barofile, barocolumn='Level', wellcolumn = 'Level', outcolumn = 'corrwl', vented = False, sampint=60):
     """Remove barometric pressure from nonvented transducers.
     Args:
         wellfile (pd.DataFrame):
@@ -36,8 +36,11 @@ def well_baro_merge(wellfile, barofile, barocolumn='Level', wellcolumn = 'Level'
     wellbaro['dbp'] = wellbaro['barometer'].diff()
     wellbaro['dwl'] = wellbaro[wellcolumn].diff()
     first_well = wellbaro[wellcolumn][0]
-    wellbaro.loc[wellbaro.index[0],'corrwl'] = first_well
-    wellbaro['corrwl'] = wellbaro[['dbp', 'dwl']].apply(lambda x: x[1] - x[0], 1).cumsum() + first_well
+    wellbaro.loc[wellbaro.index[0], outcolumn] = first_well
+    if vented:
+        wellbaro[outcolumn] = wellbaro[wellcolumn]
+    else:
+        wellbaro[outcolumn] = wellbaro[['dbp', 'dwl']].apply(lambda x: x[1] - x[0], 1).cumsum() + first_well
 
     return wellbaro
 
@@ -842,8 +845,17 @@ def new_xle_imp(infile):
 
     return f
 
-def new_csv_imp(x):
-    f = pd.read_csv(x, skiprows=1, parse_dates=[[0, 1]])
+def new_csv_imp(infile):
+    """This function uses an exact file path to upload a csv transducer file.
+
+    Args:
+        infile (file):
+            complete file path to input file
+
+    Returns:
+        A Pandas DataFrame containing the transducer data
+    """
+    f = pd.read_csv(infile, skiprows=1, parse_dates=[[0, 1]])
     # f = f.reset_index()
     f['DateTime'] = pd.to_datetime(f['Date_ Time'], errors='coerce')
     f = f[f.DateTime.notnull()]
@@ -878,6 +890,24 @@ def new_csv_imp(x):
     f.rename(columns={' Volts':'Volts'},inplace=True)
     f.drop([u'date', u'datediff', u'Date_ Time'], inplace=True, axis=1)
     return f
+
+def new_trans_imp(infile, xle = True):
+    """This function uses an imports and cleans the ends of transducer file.
+
+    Args:
+        infile (file):
+            complete file path to input file
+        xle (bool):
+            if true, then the file type should be xle; else it should be csv
+
+    Returns:
+        A Pandas DataFrame containing the transducer data
+    """
+    if xle:
+        well = new_xle_imp(infile)
+    else:
+        well = new_csv_imp(infile)
+    return dataendclean(well,'Level')
 
 def csv_info_table(folder):
     csv = {}
