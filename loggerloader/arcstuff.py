@@ -46,7 +46,7 @@ def get_location_data(read_table, site_number, first_date=None, last_date=None, 
         except:
             first_date = datetime.datetime(1900,1,1)
     # Get last reading at the specified location
-    if not last_date:
+    if not last_date or last_date > datetime.datetime.now():
         last_date = datetime.datetime.now()
     query_txt = "LOCATIONID = '{:}' and (READINGDATE >= '{:%m/%d/%Y}' and READINGDATE <= '{:%m/%d/%Y}')"
     query = query_txt.format(site_number, first_date, last_date + datetime.timedelta(days=1))
@@ -98,7 +98,7 @@ def get_gw_elevs(site_number, stations, manual, stable_elev = True, lev_table = 
     :return: stickup, well_elev, be, maxdate, dtw, wl_elev
     """
 
-    stdata = stations[(stations['AltLocationID'] == site_number) & (stations['LocationType'] == 'Well')]
+    stdata = stations[(stations['AltLocationID'] == str(site_number)) & (stations['LocationType'] == 'Well')]
     man_sub = manual[manual['Location ID']==site_number]
     well_elev = float(stdata['Altitude'].values[0])
 

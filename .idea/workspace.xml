@@ -99,12 +99,11 @@
       <file leaf-file-name="arcstuff.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/arcstuff.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="542">
-              <caret line="133" column="24" lean-forward="false" selection-start-line="133" selection-start-column="24" selection-end-line="133" selection-end-column="24" />
+            <state relative-caret-position="340">
+              <caret line="100" column="69" lean-forward="false" selection-start-line="100" selection-start-column="69" selection-end-line="100" selection-end-column="69" />
               <folding>
                 <element signature="e#354#1153#0" expanded="false" />
-                <element signature="e#1252#2168#0" expanded="false" />
-                <element signature="e#6632#7999#0" expanded="false" />
+                <element signature="e#6676#8043#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -543,7 +542,14 @@
       <option name="project" value="LOCAL" />
       <updated>1501086524731</updated>
     </task>
-    <option name="localTasksCounter" value="25" />
+    <task id="LOCAL-00025" summary="summary functions">
+      <created>1501086699473</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1501086699473</updated>
+    </task>
+    <option name="localTasksCounter" value="26" />
     <servers />
   </component>
   <component name="TodoView" selected-index="1">
@@ -679,8 +685,7 @@
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#354#1153#0" expanded="false" />
-            <element signature="e#1252#2168#0" expanded="false" />
-            <element signature="e#6632#7999#0" expanded="false" />
+            <element signature="e#6676#8043#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -759,8 +764,7 @@
           <caret line="143" column="12" lean-forward="false" selection-start-line="63" selection-start-column="0" selection-end-line="143" selection-end-column="12" />
           <folding>
             <element signature="e#354#1153#0" expanded="false" />
-            <element signature="e#1252#2168#0" expanded="false" />
-            <element signature="e#6632#7999#0" expanded="false" />
+            <element signature="e#6676#8043#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -839,8 +843,7 @@
           <caret line="150" column="68" lean-forward="false" selection-start-line="150" selection-start-column="68" selection-end-line="150" selection-end-column="68" />
           <folding>
             <element signature="e#354#1153#0" expanded="false" />
-            <element signature="e#1252#2168#0" expanded="false" />
-            <element signature="e#6632#7999#0" expanded="false" />
+            <element signature="e#6676#8043#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -938,12 +941,11 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/arcstuff.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="542">
-          <caret line="133" column="24" lean-forward="false" selection-start-line="133" selection-start-column="24" selection-end-line="133" selection-end-column="24" />
+        <state relative-caret-position="340">
+          <caret line="100" column="69" lean-forward="false" selection-start-line="100" selection-start-column="69" selection-end-line="100" selection-end-column="69" />
           <folding>
             <element signature="e#354#1153#0" expanded="false" />
-            <element signature="e#1252#2168#0" expanded="false" />
-            <element signature="e#6632#7999#0" expanded="false" />
+            <element signature="e#6676#8043#0" expanded="false" />
           </folding>
         </state>
       </provider>
