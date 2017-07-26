@@ -99,7 +99,7 @@ def get_gw_elevs(site_number, stations, manual, stable_elev = True, lev_table = 
     """
 
     stdata = stations[(stations['AltLocationID'] == str(site_number)) & (stations['LocationType'] == 'Well')]
-    man_sub = manual[manual['Location ID']==site_number]
+    man_sub = manual[manual['Location ID']==int(site_number)]
     well_elev = float(stdata['Altitude'].values[0])
 
     if stable_elev:
