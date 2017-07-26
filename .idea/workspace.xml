@@ -4,7 +4,6 @@
     <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/loggerloader/arcstuff.py" afterPath="$PROJECT_DIR$/loggerloader/arcstuff.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/loggerloader/transport.py" afterPath="$PROJECT_DIR$/loggerloader/transport.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -100,14 +99,12 @@
       <file leaf-file-name="arcstuff.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/arcstuff.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="516">
-              <caret line="110" column="59" lean-forward="true" selection-start-line="110" selection-start-column="59" selection-end-line="110" selection-end-column="59" />
+            <state relative-caret-position="542">
+              <caret line="133" column="24" lean-forward="false" selection-start-line="133" selection-start-column="24" selection-end-line="133" selection-end-column="24" />
               <folding>
                 <element signature="e#354#1153#0" expanded="false" />
                 <element signature="e#1252#2168#0" expanded="false" />
-                <element signature="e#2228#3144#0" expanded="false" />
-                <element signature="e#4899#6509#0" expanded="false" />
-                <element signature="e#6619#7986#0" expanded="false" />
+                <element signature="e#6632#7999#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -120,6 +117,7 @@
       <find>manualfile</find>
       <find>match_</find>
       <find>ix</find>
+      <find>find_ex</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -538,7 +536,14 @@
       <option name="project" value="LOCAL" />
       <updated>1501016467193</updated>
     </task>
-    <option name="localTasksCounter" value="24" />
+    <task id="LOCAL-00024" summary="summary functions">
+      <created>1501086524731</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1501086524731</updated>
+    </task>
+    <option name="localTasksCounter" value="25" />
     <servers />
   </component>
   <component name="TodoView" selected-index="1">
@@ -590,11 +595,12 @@
     <MESSAGE value="change some variable names" />
     <MESSAGE value="fix match" />
     <MESSAGE value=" fix match for baro" />
-    <option name="LAST_COMMIT_MESSAGE" value=" fix match for baro" />
+    <MESSAGE value="summary functions" />
+    <option name="LAST_COMMIT_MESSAGE" value="summary functions" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="3" />
+      <option name="time" value="4" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -674,9 +680,7 @@
           <folding>
             <element signature="e#354#1153#0" expanded="false" />
             <element signature="e#1252#2168#0" expanded="false" />
-            <element signature="e#2228#3144#0" expanded="false" />
-            <element signature="e#4899#6509#0" expanded="false" />
-            <element signature="e#6619#7986#0" expanded="false" />
+            <element signature="e#6632#7999#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -756,9 +760,7 @@
           <folding>
             <element signature="e#354#1153#0" expanded="false" />
             <element signature="e#1252#2168#0" expanded="false" />
-            <element signature="e#2228#3144#0" expanded="false" />
-            <element signature="e#4899#6509#0" expanded="false" />
-            <element signature="e#6619#7986#0" expanded="false" />
+            <element signature="e#6632#7999#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -838,9 +840,7 @@
           <folding>
             <element signature="e#354#1153#0" expanded="false" />
             <element signature="e#1252#2168#0" expanded="false" />
-            <element signature="e#2228#3144#0" expanded="false" />
-            <element signature="e#4899#6509#0" expanded="false" />
-            <element signature="e#6619#7986#0" expanded="false" />
+            <element signature="e#6632#7999#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -938,14 +938,12 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/arcstuff.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="516">
-          <caret line="110" column="59" lean-forward="true" selection-start-line="110" selection-start-column="59" selection-end-line="110" selection-end-column="59" />
+        <state relative-caret-position="542">
+          <caret line="133" column="24" lean-forward="false" selection-start-line="133" selection-start-column="24" selection-end-line="133" selection-end-column="24" />
           <folding>
             <element signature="e#354#1153#0" expanded="false" />
             <element signature="e#1252#2168#0" expanded="false" />
-            <element signature="e#2228#3144#0" expanded="false" />
-            <element signature="e#4899#6509#0" expanded="false" />
-            <element signature="e#6619#7986#0" expanded="false" />
+            <element signature="e#6632#7999#0" expanded="false" />
           </folding>
         </state>
       </provider>
