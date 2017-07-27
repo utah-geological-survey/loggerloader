@@ -29,6 +29,8 @@ def well_baro_merge(wellfile, barofile, barocolumn='Level', wellcolumn = 'Level'
 
     # reassign `Level` to reduce ambiguity
     baro = baro.rename(columns={barocolumn: 'barometer'})
+    if 'TEMP' in baro.columns:
+        baro.drop('TEMP', axis=1, inplace=True)
 
     # combine baro and well data for easy calculations, graphing, and manipulation
     wellbaro = pd.merge(well, baro, left_index=True, right_index=True, how='inner')
@@ -721,7 +723,7 @@ def hourly_resample(df, bse=0, minutes=60):
         see http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases
     """
     if int(str(pd.__version__).split('.')[0]) == 0 and int(str(pd.__version__).split('.')[1]) < 18: # pandas versioning
-        df = df.resample('1Min')
+        df = df.resample('1Min',how='first')
     else:
         # you can make this smaller to accomodate for a higher sampling frequency
         df = df.resample('1Min').first()  
@@ -730,7 +732,7 @@ def hourly_resample(df, bse=0, minutes=60):
     df = df.interpolate(method='time', limit=90)
     
     if int(str(pd.__version__).split('.')[0]) == 0 and int(str(pd.__version__).split('.')[1]) < 18: # pandas versioning
-        df = df.resample(str(minutes) + 'Min', closed='left', label='left', base=bse)
+        df = df.resample(str(minutes) + 'Min', closed='left', label='left', base=bse, how='first')
     else:
         # modify '60Min' to change the resulting frequency
         df = df.resample(str(minutes) + 'Min', closed='left', label='left', base=bse).first()  
