@@ -3,7 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/loggerloader/arcstuff.py" afterPath="$PROJECT_DIR$/loggerloader/arcstuff.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/loggerloader/transport.py" afterPath="$PROJECT_DIR$/loggerloader/transport.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -49,11 +49,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="transport.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="transport.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/transport.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="288">
-              <caret line="191" column="98" lean-forward="false" selection-start-line="191" selection-start-column="98" selection-end-line="191" selection-end-column="98" />
+            <state relative-caret-position="714">
+              <caret line="859" column="6" lean-forward="false" selection-start-line="859" selection-start-column="6" selection-end-line="859" selection-end-column="6" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
                 <element signature="e#311#1715#0" expanded="false" />
@@ -76,8 +76,7 @@
                 <element signature="e#31729#32618#0" expanded="false" />
                 <element signature="e#32665#33651#0" expanded="false" />
                 <element signature="e#33680#33965#0" expanded="false" />
-                <element signature="e#33997#34725#0" expanded="false" />
-                <element signature="e#34766#35712#0" expanded="false" />
+                <element signature="e#34787#35733#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -95,11 +94,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="arcstuff.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="arcstuff.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/loggerloader/arcstuff.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="96">
-              <caret line="6" column="0" lean-forward="true" selection-start-line="6" selection-start-column="0" selection-end-line="6" selection-end-column="0" />
+            <state relative-caret-position="560">
+              <caret line="35" column="26" lean-forward="true" selection-start-line="35" selection-start-column="26" selection-end-line="35" selection-end-column="26" />
               <folding>
                 <element signature="e#0#19#0" expanded="true" />
                 <element signature="e#4388#5187#0" expanded="false" />
@@ -135,8 +134,8 @@
         <option value="$PROJECT_DIR$/VERSION" />
         <option value="$PROJECT_DIR$/setup.py" />
         <option value="$PROJECT_DIR$/loggerloader/__init__.py" />
-        <option value="$PROJECT_DIR$/loggerloader/transport.py" />
         <option value="$PROJECT_DIR$/loggerloader/arcstuff.py" />
+        <option value="$PROJECT_DIR$/loggerloader/transport.py" />
       </list>
     </option>
   </component>
@@ -589,7 +588,14 @@
       <option name="project" value="LOCAL" />
       <updated>1501182256626</updated>
     </task>
-    <option name="localTasksCounter" value="34" />
+    <task id="LOCAL-00034" summary="added imp_well function; smoothed out table usage">
+      <created>1501182988224</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1501182988224</updated>
+    </task>
+    <option name="localTasksCounter" value="35" />
     <servers />
   </component>
   <component name="TodoView" selected-index="1">
@@ -711,8 +717,7 @@
             <element signature="e#31729#32618#0" expanded="false" />
             <element signature="e#32665#33651#0" expanded="false" />
             <element signature="e#33680#33965#0" expanded="false" />
-            <element signature="e#33997#34725#0" expanded="false" />
-            <element signature="e#34766#35712#0" expanded="false" />
+            <element signature="e#34787#35733#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -794,8 +799,7 @@
             <element signature="e#31729#32618#0" expanded="false" />
             <element signature="e#32665#33651#0" expanded="false" />
             <element signature="e#33680#33965#0" expanded="false" />
-            <element signature="e#33997#34725#0" expanded="false" />
-            <element signature="e#34766#35712#0" expanded="false" />
+            <element signature="e#34787#35733#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -877,8 +881,7 @@
             <element signature="e#31729#32618#0" expanded="false" />
             <element signature="e#32665#33651#0" expanded="false" />
             <element signature="e#33680#33965#0" expanded="false" />
-            <element signature="e#33997#34725#0" expanded="false" />
-            <element signature="e#34766#35712#0" expanded="false" />
+            <element signature="e#34787#35733#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -960,8 +963,7 @@
             <element signature="e#31729#32618#0" expanded="false" />
             <element signature="e#32665#33651#0" expanded="false" />
             <element signature="e#33680#33965#0" expanded="false" />
-            <element signature="e#33997#34725#0" expanded="false" />
-            <element signature="e#34766#35712#0" expanded="false" />
+            <element signature="e#34787#35733#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1050,10 +1052,25 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/loggerloader/arcstuff.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="560">
+          <caret line="35" column="26" lean-forward="true" selection-start-line="35" selection-start-column="26" selection-end-line="35" selection-end-column="26" />
+          <folding>
+            <element signature="e#0#19#0" expanded="true" />
+            <element signature="e#4388#5187#0" expanded="false" />
+            <element signature="e#5286#6241#0" expanded="false" />
+            <element signature="e#6301#7217#0" expanded="false" />
+            <element signature="e#7294#8466#0" expanded="false" />
+            <element signature="e#8560#10183#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/transport.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="288">
-          <caret line="191" column="98" lean-forward="false" selection-start-line="191" selection-start-column="98" selection-end-line="191" selection-end-column="98" />
+        <state relative-caret-position="714">
+          <caret line="859" column="6" lean-forward="false" selection-start-line="859" selection-start-column="6" selection-end-line="859" selection-end-column="6" />
           <folding>
             <element signature="e#0#82#0" expanded="true" />
             <element signature="e#311#1715#0" expanded="false" />
@@ -1076,23 +1093,7 @@
             <element signature="e#31729#32618#0" expanded="false" />
             <element signature="e#32665#33651#0" expanded="false" />
             <element signature="e#33680#33965#0" expanded="false" />
-            <element signature="e#33997#34725#0" expanded="false" />
-            <element signature="e#34766#35712#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/loggerloader/arcstuff.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="96">
-          <caret line="6" column="0" lean-forward="true" selection-start-line="6" selection-start-column="0" selection-end-line="6" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#19#0" expanded="true" />
-            <element signature="e#4388#5187#0" expanded="false" />
-            <element signature="e#5286#6241#0" expanded="false" />
-            <element signature="e#6301#7217#0" expanded="false" />
-            <element signature="e#7294#8466#0" expanded="false" />
-            <element signature="e#8560#10183#0" expanded="false" />
+            <element signature="e#34787#35733#0" expanded="false" />
           </folding>
         </state>
       </provider>

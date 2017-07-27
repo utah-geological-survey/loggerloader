@@ -845,9 +845,9 @@ def clarks(data, bp, wl):
     data['Swl'] = data[['dwl', 'beta']].apply(lambda x: -1 * np.abs(x[0]) if x[1] > 0 else np.abs(x[0]),
                                               axis=1).cumsum()
 
-    data.dropna(inplace=True)
-    x = data['Sbp'].values
-    y = data['Swl'].values
+    df = data.dropna(subset=['Sbp','Swl'], inplace=True)
+    x = df['Sbp'].values
+    y = df['Swl'].values
     X = sm.add_constant(x)
 
     model = sm.OLS(y, X).fit()
@@ -856,7 +856,7 @@ def clarks(data, bp, wl):
     m = model.params[1]
     r = model.rsquared
 
-    data.drop(['dwl', 'dbp', 'Sbp', 'Swl'], axis=1, inplace=True)
+    df.drop(['dwl', 'dbp', 'Sbp', 'Swl'], axis=1, inplace=True)
     return m, b, r
 
 def baro_eff(df, bp, wl, lag=200):
