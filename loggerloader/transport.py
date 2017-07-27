@@ -198,7 +198,7 @@ def correct_be(site_number, well_table, welldata, be = None, meas = 'corrwl', ba
         be = float(stdata['BaroEfficiency'].values[0])
 
     welldata['BAROEFFICIENCYLEVEL'] = welldata[[meas, baro]].\
-        apply(lambda x: x[0] + be * (x[1] - welldata[baro].mean()), 1)
+        apply(lambda x: x[0] + be * x[1], 1)
     return welldata, be
 
 def smoother(df, p, win=30, sd=3):
