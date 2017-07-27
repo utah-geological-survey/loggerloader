@@ -139,19 +139,19 @@ def fix_drift(well, manualfile, meas='Level', manmeas='MeasuredDTW', outcolname=
 
     bracketedwls, drift_features = {}, {}
 
-    if weindex.name:
-        dtnm = weindex.name
+    if well.index.name:
+        dtnm = well.index.name
     else:
         dtnm = 'DateTime'
-        weindex.name = 'DateTime'
+        well.index.name = 'DateTime'
 
     manualfile.index = pd.to_datetime(manualfile.index)
 
     manualfile.loc[:,'julian'] = manualfile.index.to_julian_date()
     for i in range(len(breakpoints) - 1):
         # Break up pandas dataframe time series into pieces based on timing of manual measurements
-        bracketedwls[i] = weloc[
-            (weindex.to_datetime() > breakpoints[i]) & (weindex.to_datetime() < breakpoints[i + 1])]
+        bracketedwls[i] = well.loc[
+            (well.index.to_datetime() > breakpoints[i]) & (well.index.to_datetime() < breakpoints[i + 1])]
         df = bracketedwls[i]
         if len(df) > 0:
             df['julian'] = df.index.to_julian_date()
@@ -845,7 +845,7 @@ def clarks(data, bp, wl):
     data['Swl'] = data[['dwl', 'beta']].apply(lambda x: -1 * np.abs(x[0]) if x[1] > 0 else np.abs(x[0]),
                                               axis=1).cumsum()
 
-    df = data.dropna(subset=['Sbp','Swl'], inplace=True)
+    df = data.dropna(subset=['Sbp','Swl'])
     x = df['Sbp'].values
     y = df['Swl'].values
     X = sm.add_constant(x)
