@@ -98,16 +98,15 @@
       <file leaf-file-name="arcstuff.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/arcstuff.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="416">
-              <caret line="80" column="37" lean-forward="true" selection-start-line="80" selection-start-column="37" selection-end-line="80" selection-end-column="37" />
+            <state relative-caret-position="96">
+              <caret line="6" column="0" lean-forward="true" selection-start-line="6" selection-start-column="0" selection-end-line="6" selection-end-column="0" />
               <folding>
                 <element signature="e#0#19#0" expanded="true" />
-                <element signature="e#4473#5272#0" expanded="false" />
-                <element signature="e#5371#6326#0" expanded="false" />
-                <element signature="e#6386#7302#0" expanded="false" />
-                <element signature="e#7379#8551#0" expanded="false" />
-                <element signature="e#8645#10268#0" expanded="false" />
-                <element signature="e#10374#12197#0" expanded="false" />
+                <element signature="e#4388#5187#0" expanded="false" />
+                <element signature="e#5286#6241#0" expanded="false" />
+                <element signature="e#6301#7217#0" expanded="false" />
+                <element signature="e#7294#8466#0" expanded="false" />
+                <element signature="e#8560#10183#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -583,7 +582,14 @@
       <option name="project" value="LOCAL" />
       <updated>1501181005671</updated>
     </task>
-    <option name="localTasksCounter" value="33" />
+    <task id="LOCAL-00033" summary="added imp_well function; smoothed out table usage">
+      <created>1501182256626</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1501182256626</updated>
+    </task>
+    <option name="localTasksCounter" value="34" />
     <servers />
   </component>
   <component name="TodoView" selected-index="1">
@@ -727,12 +733,11 @@
           <caret line="174" column="12" lean-forward="true" selection-start-line="129" selection-start-column="0" selection-end-line="174" selection-end-column="12" />
           <folding>
             <element signature="e#0#19#0" expanded="true" />
-            <element signature="e#4473#5272#0" expanded="false" />
-            <element signature="e#5371#6326#0" expanded="false" />
-            <element signature="e#6386#7302#0" expanded="false" />
-            <element signature="e#7379#8551#0" expanded="false" />
-            <element signature="e#8645#10268#0" expanded="false" />
-            <element signature="e#10374#12197#0" expanded="false" />
+            <element signature="e#4388#5187#0" expanded="false" />
+            <element signature="e#5286#6241#0" expanded="false" />
+            <element signature="e#6301#7217#0" expanded="false" />
+            <element signature="e#7294#8466#0" expanded="false" />
+            <element signature="e#8560#10183#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -811,12 +816,11 @@
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#0#19#0" expanded="true" />
-            <element signature="e#4473#5272#0" expanded="false" />
-            <element signature="e#5371#6326#0" expanded="false" />
-            <element signature="e#6386#7302#0" expanded="false" />
-            <element signature="e#7379#8551#0" expanded="false" />
-            <element signature="e#8645#10268#0" expanded="false" />
-            <element signature="e#10374#12197#0" expanded="false" />
+            <element signature="e#4388#5187#0" expanded="false" />
+            <element signature="e#5286#6241#0" expanded="false" />
+            <element signature="e#6301#7217#0" expanded="false" />
+            <element signature="e#7294#8466#0" expanded="false" />
+            <element signature="e#8560#10183#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -895,12 +899,11 @@
           <caret line="143" column="12" lean-forward="false" selection-start-line="63" selection-start-column="0" selection-end-line="143" selection-end-column="12" />
           <folding>
             <element signature="e#0#19#0" expanded="true" />
-            <element signature="e#4473#5272#0" expanded="false" />
-            <element signature="e#5371#6326#0" expanded="false" />
-            <element signature="e#6386#7302#0" expanded="false" />
-            <element signature="e#7379#8551#0" expanded="false" />
-            <element signature="e#8645#10268#0" expanded="false" />
-            <element signature="e#10374#12197#0" expanded="false" />
+            <element signature="e#4388#5187#0" expanded="false" />
+            <element signature="e#5286#6241#0" expanded="false" />
+            <element signature="e#6301#7217#0" expanded="false" />
+            <element signature="e#7294#8466#0" expanded="false" />
+            <element signature="e#8560#10183#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -979,12 +982,11 @@
           <caret line="150" column="68" lean-forward="false" selection-start-line="150" selection-start-column="68" selection-end-line="150" selection-end-column="68" />
           <folding>
             <element signature="e#0#19#0" expanded="true" />
-            <element signature="e#4473#5272#0" expanded="false" />
-            <element signature="e#5371#6326#0" expanded="false" />
-            <element signature="e#6386#7302#0" expanded="false" />
-            <element signature="e#7379#8551#0" expanded="false" />
-            <element signature="e#8645#10268#0" expanded="false" />
-            <element signature="e#10374#12197#0" expanded="false" />
+            <element signature="e#4388#5187#0" expanded="false" />
+            <element signature="e#5286#6241#0" expanded="false" />
+            <element signature="e#6301#7217#0" expanded="false" />
+            <element signature="e#7294#8466#0" expanded="false" />
+            <element signature="e#8560#10183#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1082,16 +1084,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/arcstuff.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="416">
-          <caret line="80" column="37" lean-forward="true" selection-start-line="80" selection-start-column="37" selection-end-line="80" selection-end-column="37" />
+        <state relative-caret-position="96">
+          <caret line="6" column="0" lean-forward="true" selection-start-line="6" selection-start-column="0" selection-end-line="6" selection-end-column="0" />
           <folding>
             <element signature="e#0#19#0" expanded="true" />
-            <element signature="e#4473#5272#0" expanded="false" />
-            <element signature="e#5371#6326#0" expanded="false" />
-            <element signature="e#6386#7302#0" expanded="false" />
-            <element signature="e#7379#8551#0" expanded="false" />
-            <element signature="e#8645#10268#0" expanded="false" />
-            <element signature="e#10374#12197#0" expanded="false" />
+            <element signature="e#4388#5187#0" expanded="false" />
+            <element signature="e#5286#6241#0" expanded="false" />
+            <element signature="e#6301#7217#0" expanded="false" />
+            <element signature="e#7294#8466#0" expanded="false" />
+            <element signature="e#8560#10183#0" expanded="false" />
           </folding>
         </state>
       </provider>

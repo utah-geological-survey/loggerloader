@@ -2,12 +2,11 @@ import pandas as pd
 from .transport import *
 
 def imp_well(well_table, ind, manual, baro_out, gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading"):
-    barotable = well_table[(pd.notnull(well_table['LocationName'])) & \
-                         ((well_table['LocationName'].str.contains("Baro")) | (
-                         well_table['LocationName'].str.contains("baro")))]
+    barotable = well_table[(well_table['Location'].str.contains("Baro"))|(
+                         well_table['Location'].str.contains("baro"))]
 
     welltable = well_table[(pd.notnull(well_table['WellID'])) & \
-                                  (~well_table['WellID'].isin(barotable['AltLocationID'].values))]
+                                  (~well_table['WellID'].isin(barotable['WellID'].values))]
 
     full_filepath = well_table.loc[ind, 'full_filepath']
     trans_type = well_table.loc[ind, 'trans type']
@@ -100,7 +99,7 @@ def imp_well(well_table, ind, manual, baro_out, gw_reading_table="UGGP.UGGPADMIN
     else:
         print('Dates later than import data for this station already exist!')
         pass
-    return df
+    return df,man
 
 def get_field_names(table):
     import arcpy
