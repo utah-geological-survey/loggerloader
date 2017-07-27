@@ -1,5 +1,105 @@
 import pandas as pd
+from .transport import *
 
+def imp_well(well_table, ind, manual, baro_out, gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading"):
+    barotable = well_table[(pd.notnull(well_table['LocationName'])) & \
+                         ((well_table['LocationName'].str.contains("Baro")) | (
+                         well_table['LocationName'].str.contains("baro")))]
+
+    welltable = well_table[(pd.notnull(well_table['WellID'])) & \
+                                  (~well_table['WellID'].isin(barotable['AltLocationID'].values))]
+
+    full_filepath = well_table.loc[ind, 'full_filepath']
+    trans_type = well_table.loc[ind, 'trans type']
+    wellid = well_table.loc[ind, 'WellID']
+
+    barocolumn = 'MEASUREDLEVEL'
+    import arcpy
+    # import well file
+    well = new_trans_imp(full_filepath, xle=(trans_type == 'Solinst'))
+
+    # remove barometric pressure
+    baroid = welltable.loc[ind, 'baronum']
+    try:
+        corrwl = well_baro_merge(well, baro_out[baroid], barocolumn=barocolumn,
+                                    vented=(trans_type != 'Solinst'))
+    except:
+        corrwl = well_baro_merge(well, baro_out['9003'], barocolumn=barocolumn,
+                                    vented=(trans_type != 'Solinst'))
+
+    be, intercept, r = clarks(corrwl, 'barometer', 'corrwl')
+    # correct barometric efficiency
+    wls, be = correct_be(wellid, well_table, corrwl, be=be)
+
+    # get manual groundwater elevations
+    man, stickup, well_elev = get_gw_elevs(wellid, well_table, manual, stable_elev=True)
+
+    # fix transducer drift
+    try:
+        dft = fix_drift(wls, man, meas='BAROEFFICIENCYLEVEL', manmeas='MeasuredDTW')
+        drift = round(float(dft[1]['drift'].values[0]), 3)
+    except (ValueError, ZeroDivisionError):
+        print('{:} failed, likely due to lack of manual measurement constraint'.format(ind))
+        pass
+
+    df = dft[0]
+    df['MEASUREDLEVEL'] = df['Level']
+    df['MEASUREDDTW'] = df['DTW_WL'] * -1
+    df['DTWBELOWCASING'] = df['MEASUREDDTW']
+    df['DTWBELOWGROUNDSURFACE'] = df['MEASUREDDTW'].apply(lambda x: x - stickup, 1)
+    df['WATERELEVATION'] = df['DTWBELOWGROUNDSURFACE'].apply(lambda x: well_elev - x, 1)
+    df['TAPE'] = 0
+    df['LOCATIONID'] = wellid
+
+    df.sort_index(inplace=True)
+    first_index = df.first_valid_index()
+
+    # Get last reading at the specified location
+    read_max, dtw, wlelev = find_extreme(gw_reading_table, wellid)
+    print('Last reading in database for well {:} was on {:}.\n\
+    The first reading from the raw file is on {:}. Drift = {:}.'.format(ind, read_max, first_index, drift))
+
+    if (read_max is None or read_max < first_index) and (drift < 0.3):
+        arcpy.env.overwriteOutput = True
+        edit = arcpy.da.Editor(arcpy.env.workspace)
+        edit.startEditing(False, False)
+        edit.startOperation()
+        fieldnames = ['READINGDATE', 'MEASUREDLEVEL', 'MEASUREDDTW', 'DRIFTCORRECTION',
+                      'TEMP', 'LOCATIONID', 'DTWBELOWCASING', 'BAROEFFICIENCYLEVEL',
+                      'DTWBELOWGROUNDSURFACE', 'WATERELEVATION', 'TAPE', ]
+
+        if 'Temperature' in df.columns:
+            df.rename(columns={'Temperature': 'TEMP'}, inplace=True)
+
+        if 'TEMP' in df.columns:
+            df['TEMP'] = df['TEMP'].apply(lambda x: np.round(x, 4), 1)
+        else:
+            df['TEMP'] = None
+        cursor = arcpy.da.InsertCursor(gw_reading_table, fieldnames)
+
+        # subset bp df and add relevant fields
+        df.index.name = 'READINGDATE'
+
+        if read_max is None:
+            subset = df.reset_index()
+        else:
+            subset = df[df.index.get_level_values(0) > read_max].reset_index()
+
+        subset = subset[fieldnames]
+        rowlist = subset.values.tolist()
+
+        for j in range(len(rowlist)):
+            cursor.insertRow(rowlist[j])
+
+        del cursor
+        edit.stopOperation()
+        edit.stopEditing(True)
+        print('Well {:} successfully imported!'.format(ind))
+    elif drift > 0.3:
+        print('Drift for well {:} exceeds tolerance!'.format(ind))
+    else:
+        print('Dates later than import data for this station already exist!')
+        pass
 
 def get_field_names(table):
     import arcpy
@@ -9,7 +109,6 @@ def get_field_names(table):
         field_names.append(field.name)
     field_names.remove('OBJECTID')
     return field_names
-
 
 def table_to_pandas_dataframe(table, field_names=None, query=None, sql_sn=(None,None)):
     """
@@ -88,7 +187,7 @@ def find_extreme(table, site_number, extma = 'max'):
 
     return dateval[0],dtw[0],wlelev[0]
 
-def get_gw_elevs(site_number, stations, manual, stable_elev = True, lev_table = "UGGP.UGGPADMIN.UGS_GW_reading"):
+def get_gw_elevs(site_number, well_table, manual, stable_elev = True):
     """
     Gets basic well parameters and most recent groundwater level data for a well id for dtw calculations.
     :param site_number: well site number in the site table
@@ -98,7 +197,7 @@ def get_gw_elevs(site_number, stations, manual, stable_elev = True, lev_table = 
     :return: stickup, well_elev, be, maxdate, dtw, wl_elev
     """
 
-    stdata = stations[(stations['AltLocationID'] == str(site_number)) & (stations['LocationType'] == 'Well')]
+    stdata = well_table[well_table['WellID'] == str(site_number)]
     man_sub = manual[manual['Location ID']==int(site_number)]
     well_elev = float(stdata['Altitude'].values[0])
 
@@ -108,16 +207,14 @@ def get_gw_elevs(site_number, stations, manual, stable_elev = True, lev_table = 
         stickup = man_sub['Current Stickup Height']
 
     #manual = manual['MeasuredDTW'].to_frame()
-    man_sub['MeasuredDTW'] = man_sub['Water Level (ft)']*-1
+    man_sub.loc[:,'MeasuredDTW'] = man_sub['Water Level (ft)']*-1
     try:
-        man_sub['Meas_GW_Elev'] = man_sub['MeasuredDTW'].apply(lambda x: well_elev + (x + stickup),1)
+        man_sub.loc[:,'Meas_GW_Elev'] = man_sub['MeasuredDTW'].apply(lambda x: well_elev + (x + stickup),1)
     except:
         print('Manual correction data for well id {:} missing (stickup: {:}; elevation: {:})'.format(site_number,stickup,well_elev))
         pass
 
     return man_sub, stickup, well_elev
-
-
 
 def upload_data(table, df, lev_field, site_number, temp_field = None, return_df=False):
     import arcpy
@@ -169,14 +266,22 @@ def upload_data(table, df, lev_field, site_number, temp_field = None, return_df=
         print('Dates later than import data for this station already exist!')
         pass
 
-def match_files_to_wellid(well_table, station_table = "UGGP.UGGPADMIN.UGS_NGWMN_Monitoring_Locations"):
-    xle_info_table = well_table
+def match_files_to_wellid(folder, station_table = "UGGP.UGGPADMIN.UGS_NGWMN_Monitoring_Locations"):
+    xles = xle_head_table(folder)
+    csvs = csv_info_table(folder)
+    well_table = pd.concat([xles, csvs[0]])
+
     stations = table_to_pandas_dataframe(station_table)
     names = stations['LocationName'].apply(lambda x: str(x).lower().replace(" ", "").replace("-",""),1)
     ids = stations['AltLocationID'].apply(lambda x: pd.to_numeric(x, errors='coerce'),1)
     baros = stations['BaroLoggerType'].apply(lambda x: pd.to_numeric(x, errors='coerce'),1)
+    elevs = stations['Altitude'].apply(lambda x: pd.to_numeric(x, errors='coerce'),1)
+    stickup = stations['Offset'].apply(lambda x: pd.to_numeric(x, errors='coerce'),1)
     iddict = dict(zip(names,ids))
     bdict = dict(zip(ids,baros))
+    elevdict = dict(zip(ids,elevs))
+    stickupdict = dict(zip(ids,stickup))
+
     def tryfile(x):
         loc_name_strip = str(x[0]).lower().replace(" ", "").replace("-","")
         nameparts = str(x[1]).split(' ')
@@ -188,10 +293,16 @@ def match_files_to_wellid(well_table, station_table = "UGGP.UGGPADMIN.UGS_NGWMN_
         else:
             return try_match
 
-    xle_info_table['WellID'] = xle_info_table[['Location','fileroot']].apply(lambda x: tryfile(x), 1)
-    xle_info_table['baronum'] = xle_info_table['WellID'].apply(lambda x: bdict.get(x), 1)
-    nomatch = xle_info_table[pd.isnull(xle_info_table['WellID'])].index
-    match = xle_info_table[pd.notnull(xle_info_table['WellID'])]['WellID']
+    well_table['WellID'] = well_table[['Location','fileroot']].apply(lambda x: tryfile(x), 1)
+    well_table['baronum'] = well_table['WellID'].apply(lambda x: bdict.get(x), 1)
+    well_table['Altitude'] = well_table['WellID'].apply(lambda x: elevdict.get(x), 1)
+    well_table['Offset'] = well_table['WellID'].apply(lambda x: stickupdict.get(x),1)
+
+
+
+    nomatch = well_table[pd.isnull(well_table['WellID'])].index
+    #match = well_table[pd.notnull(well_table['WellID'])]['WellID']
 
     print('The following wells did not match: {:}.'.format(list(nomatch.values)))
-    return xle_info_table, match, nomatch
+
+    return well_table

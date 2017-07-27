@@ -55,7 +55,7 @@ def xle_head_table(folder):
         A Pandas DataFrame containing the transducer header data
     Example::
         >>> import loggerloader as ll
-        >>> ll.xle_head_table('C:/folder_with_xles/')
+        >>> xle_head_table('C:/folder_with_xles/')
     """
     # open text file
     df = {}
@@ -139,19 +139,19 @@ def fix_drift(well, manualfile, meas='Level', manmeas='MeasuredDTW', outcolname=
 
     bracketedwls, drift_features = {}, {}
 
-    if well.index.name:
-        dtnm = well.index.name
+    if weindex.name:
+        dtnm = weindex.name
     else:
         dtnm = 'DateTime'
-        well.index.name = 'DateTime'
+        weindex.name = 'DateTime'
 
     manualfile.index = pd.to_datetime(manualfile.index)
 
-    manualfile['julian'] = manualfile.index.to_julian_date()
+    manualfile.loc[:,'julian'] = manualfile.index.to_julian_date()
     for i in range(len(breakpoints) - 1):
         # Break up pandas dataframe time series into pieces based on timing of manual measurements
-        bracketedwls[i] = well.loc[
-            (well.index.to_datetime() > breakpoints[i]) & (well.index.to_datetime() < breakpoints[i + 1])]
+        bracketedwls[i] = weloc[
+            (weindex.to_datetime() > breakpoints[i]) & (weindex.to_datetime() < breakpoints[i + 1])]
         df = bracketedwls[i]
         if len(df) > 0:
             df['julian'] = df.index.to_julian_date()
@@ -189,17 +189,16 @@ def fix_drift(well, manualfile, meas='Level', manmeas='MeasuredDTW', outcolname=
 
     return wellbarofixed, drift_info
 
-def correct_be(site_number, stations, welldata, be = None, meas = 'corrwl', baro = 'barometer'):
-    stdata = stations[(stations['AltLocationID'] == site_number) & (stations['LocationType'] == 'Well')]
+def correct_be(site_number, well_table, welldata, be = None, meas = 'corrwl', baro = 'barometer'):
 
     if be:
         pass
     else:
+        stdata = well_table[well_table['WellID'] == site_number]
         be = float(stdata['BaroEfficiency'].values[0])
 
-    be = float(stdata['BaroEfficiency'].values[0])
     welldata['BAROEFFICIENCYLEVEL'] = welldata[[meas, baro]].\
-        apply(lambda x: x[0] + be * x[1], 1)
+        apply(lambda x: x[0] - be * x[1], 1)
     return welldata, be
 
 def smoother(df, p, win=30, sd=3):
@@ -646,7 +645,7 @@ def new_csv_imp(infile):
     f = f[f['datediff'] > 0]
     f = f[f['datediff'] < 1]
     #bse = int(pd.to_datetime(f.index).minute[0])
-    #f = ll.hourly_resample(f, bse)
+    #f = hourly_resample(f, bse)
     f.rename(columns={' Volts':'Volts'},inplace=True)
     f.drop([u'date', u'datediff', u'Date_ Time'], inplace=True, axis=1)
     return f
@@ -836,7 +835,6 @@ def getfilename(path):
     """
     return path.split('\\').pop().split('/').pop().rsplit('.', 1)[0]
 
-
 def clarks(data, bp, wl):
     import statsmodels.api as sm
     data['dwl'] = data[wl].diff()
@@ -860,7 +858,6 @@ def clarks(data, bp, wl):
 
     data.drop(['dwl', 'dbp', 'Sbp', 'Swl'], axis=1, inplace=True)
     return m, b, r
-
 
 def baro_eff(df, bp, wl, lag=200):
     import statsmodels.tsa.tsatools as tools
