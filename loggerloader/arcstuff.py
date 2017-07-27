@@ -26,9 +26,9 @@ def imp_well(well_table, ind, manual, baro_out, gw_reading_table="UGGP.UGGPADMIN
         corrwl = well_baro_merge(well, baro_out['9003'], barocolumn=barocolumn,
                                     vented=(trans_type != 'Solinst'))
 
-    be, intercept, r = clarks(corrwl, 'barometer', 'corrwl')
+    #be, intercept, r = clarks(corrwl, 'barometer', 'corrwl')
     # correct barometric efficiency
-    wls, be = correct_be(wellid, well_table, corrwl, be=be)
+    wls, be = correct_be(wellid, well_table, corrwl)
 
     # get manual groundwater elevations
     man, stickup, well_elev = get_gw_elevs(wellid, well_table, manual, stable_elev=True)
