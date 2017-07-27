@@ -5,7 +5,7 @@ import os
 from .transport import *
 from .arcstuff import *
 
-__version__ = '0.1.7'
+__version__ = '0.1.8'
 __author__ = 'Paul Inkenbrandt'
 __name__ = 'loggerloader'
 

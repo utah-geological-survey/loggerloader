@@ -172,8 +172,8 @@ def fix_drift(well, manualfile, meas='Level', manmeas='MeasuredDTW', outcolname=
 
             # bracketedwls[i].loc[:, 'wldiff'] = bracketedwls[i].loc[:, meas] - first_trans
             # apply linear drift to transducer data to fix drift; flipped x to match drift
-            df['DRIFTCORRECTION'] = df['datechange'].apply(lambda x: m * x + b, 1)
-            df[outcolname] = df[meas] - df['DRIFTCORRECTION']
+            df['DRIFTCORRECTION'] = df['datechange'].apply(lambda x: m * x , 1)
+            df[outcolname] = df[meas] - (df['DRIFTCORRECTION'] + b)
 
             drift_features[i] = {'begining': first_man, 'end': last_man, 'intercept': b, 'slope': m,
                                  'first_meas': first_man[manmeas], 'last_meas': last_man[manmeas],
@@ -186,6 +186,13 @@ def fix_drift(well, manualfile, meas='Level', manmeas='MeasuredDTW', outcolname=
     drift_info = pd.DataFrame(drift_features).T
 
     return wellbarofixed, drift_info
+
+def correct_be(site_number, stations, welldata, meas = 'corrwl', baro = 'barometer'):
+    stdata = stations[(stations['AltLocationID'] == site_number) & (stations['LocationType'] == 'Well')]
+    be = float(stdata['BaroEfficiency'].values[0])
+    welldata['BAROEFFICIENCYLEVEL'] = welldata[[meas, baro]].\
+        apply(lambda x: x[0] - be * (x[1] - welldata[baro].mean()), 1)
+    return welldata, be
 
 def smoother(df, p, win=30, sd=3):
     """Remove outliers from a pandas dataframe column and fill with interpolated values.
@@ -820,3 +827,56 @@ def getfilename(path):
         name of file as string
     """
     return path.split('\\').pop().split('/').pop().rsplit('.', 1)[0]
+
+
+def clarks(data, bp, wl):
+    import statsmodels.api as sm
+    data['dwl'] = data[wl].diff()
+    data['dbp'] = data[bp].diff()
+
+    data['beta'] = data['dbp'] * data['dwl']
+    data['Sbp'] = np.abs(data['dbp']).cumsum()
+    data['Swl'] = data[['dwl', 'beta']].apply(lambda x: -1 * np.abs(x[0]) if x[1] > 0 else np.abs(x[0]),
+                                              axis=1).cumsum()
+
+    data.dropna(inplace=True)
+    x = data['Sbp'].values
+    y = data['Swl'].values
+    X = sm.add_constant(x)
+
+    model = sm.OLS(y, X).fit()
+    # y_reg = [data.ix[i,'Sbp']*m+b for i in range(len(data['Sbp']))]
+    b = model.params[0]
+    m = model.params[1]
+    r = model.rsquared
+
+    data.drop(['dwl', 'dbp', 'Sbp', 'Swl'], axis=1, inplace=True)
+    return m, b, r
+
+
+def baro_eff(df, bp, wl, lag=200):
+    import statsmodels.tsa.tsatools as tools
+    df.dropna(inplace=True)
+    dwl = df[wl].diff().values[1:-1]
+    dbp = df[bp].diff().values[1:-1]
+    # dwl = df[wl].values[1:-1]
+    # dbp = df[bp].values[1:-1]
+    df['j_dates'] = df.index.to_julian_date()
+    lag_time = df['j_dates'].diff().cumsum().values[1:-1]
+    df.drop('j_dates', axis=1, inplace=True)
+    # Calculate BP Response Function
+
+    ## create lag matrix for regression
+    bpmat = tools.lagmat(dbp, lag, original='in')
+    ## transpose matrix to determine required length
+    ## run least squared regression
+    sqrd = np.linalg.lstsq(bpmat, dwl)
+    wlls = sqrd[0]
+    cumls = np.cumsum(wlls)
+    negcumls = [-1 * cumls[i] for i in range(len(cumls))]
+    ymod = np.dot(bpmat, wlls)
+
+    ## resid gives the residual of the bp
+    resid = [(dwl[i] - ymod[i]) for i in range(len(dwl))]
+    lag_trim = lag_time[0:len(cumls)]
+    return negcumls, cumls, ymod, resid, lag_time, dwl, dbp

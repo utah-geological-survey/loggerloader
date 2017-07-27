@@ -117,12 +117,7 @@ def get_gw_elevs(site_number, stations, manual, stable_elev = True, lev_table = 
 
     return man_sub, stickup, well_elev
 
-def correct_be(site_number, stations, welldata):
-    stdata = stations[(stations['AltLocationID'] == site_number) & (stations['LocationType'] == 'Well')]
-    be = float(stdata['BaroEfficiency'].values[0])
-    welldata['BAROEFFICIENCYLEVEL'] = welldata[['corrwl', 'barometer']].\
-        apply(lambda x: x[0] - be * (x[1] - welldata['barometer'].mean()), 1)
-    return welldata, be
+
 
 def upload_data(table, df, lev_field, site_number, temp_field = None, return_df=False):
     import arcpy
