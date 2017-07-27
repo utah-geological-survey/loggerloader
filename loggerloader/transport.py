@@ -884,4 +884,4 @@ def baro_eff(df, bp, wl, lag=200):
     ## resid gives the residual of the bp
     resid = [(dwl[i] - ymod[i]) for i in range(len(dwl))]
     lag_trim = lag_time[0:len(cumls)]
-    return negcumls, cumls, ymod, resid, lag_time, dwl, dbp
+    return negcumls, cumls, ymod, resid, lag_time, dwl, dbp, wlls

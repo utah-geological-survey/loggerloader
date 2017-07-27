@@ -277,10 +277,12 @@ def match_files_to_wellid(folder, station_table = "UGGP.UGGPADMIN.UGS_NGWMN_Moni
     baros = stations['BaroLoggerType'].apply(lambda x: pd.to_numeric(x, errors='coerce'),1)
     elevs = stations['Altitude'].apply(lambda x: pd.to_numeric(x, errors='coerce'),1)
     stickup = stations['Offset'].apply(lambda x: pd.to_numeric(x, errors='coerce'),1)
+    beff = stations['BaroEfficiency'].apply(lambda x: pd.to_numeric(x, errors='coerce'),1)
     iddict = dict(zip(names,ids))
     bdict = dict(zip(ids,baros))
     elevdict = dict(zip(ids,elevs))
     stickupdict = dict(zip(ids,stickup))
+    bedict = dict(zip(ids,beff))
 
     def tryfile(x):
         loc_name_strip = str(x[0]).lower().replace(" ", "").replace("-","")
@@ -297,7 +299,7 @@ def match_files_to_wellid(folder, station_table = "UGGP.UGGPADMIN.UGS_NGWMN_Moni
     well_table['baronum'] = well_table['WellID'].apply(lambda x: bdict.get(x), 1)
     well_table['Altitude'] = well_table['WellID'].apply(lambda x: elevdict.get(x), 1)
     well_table['Offset'] = well_table['WellID'].apply(lambda x: stickupdict.get(x),1)
-
+    well_table['BaroEfficiency'] = well_table['WellID'].apply(lambda x: bedict.get(x),1)
 
 
     nomatch = well_table[pd.isnull(well_table['WellID'])].index
