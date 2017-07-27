@@ -99,7 +99,7 @@ def imp_well(well_table, ind, manual, baro_out, gw_reading_table="UGGP.UGGPADMIN
     else:
         print('Dates later than import data for this station already exist!')
         pass
-    return df,man
+    return df,man,be,drift
 
 def get_field_names(table):
     import arcpy
