@@ -1,6 +1,117 @@
 import pandas as pd
 from .transport import *
 
+
+def prepare_fieldnames(df, wellid, stickup, well_elev, read_max=None, level = 'Level',dtw = 'DTW_WL'):
+    """
+    This function adds the necessary field names to import well data into the SDE database.
+    :param df: pandas DataFrame of processed well data
+    :param wellid: wellid (alternateID) of well in Stations Table
+    :param level: raw transducer level from new_trans_imp, new_xle_imp, or new_csv_imp functions
+    :param dtw: drift-corrected depth to water from fix_drift function
+    :return: processed df with necessary field names for import
+    """
+
+    df['MEASUREDLEVEL'] = df[level]
+    df['MEASUREDDTW'] = df[dtw] * -1
+    df['DTWBELOWCASING'] = df['MEASUREDDTW']
+    df['DTWBELOWGROUNDSURFACE'] = df['MEASUREDDTW'].apply(lambda x: x - stickup, 1)
+    df['WATERELEVATION'] = df['DTWBELOWGROUNDSURFACE'].apply(lambda x: well_elev - x, 1)
+    df['TAPE'] = 0
+    df['LOCATIONID'] = wellid
+
+    df.sort_index(inplace=True)
+
+    fieldnames = ['READINGDATE', 'MEASUREDLEVEL', 'MEASUREDDTW', 'DRIFTCORRECTION',
+                  'TEMP', 'LOCATIONID', 'DTWBELOWCASING', 'BAROEFFICIENCYLEVEL',
+                  'DTWBELOWGROUNDSURFACE', 'WATERELEVATION', 'TAPE']
+
+    if 'Temperature' in df.columns:
+        df.rename(columns={'Temperature': 'TEMP'}, inplace=True)
+
+    if 'TEMP' in df.columns:
+        df['TEMP'] = df['TEMP'].apply(lambda x: np.round(x, 4), 1)
+    else:
+        df['TEMP'] = None
+
+    # subset bp df and add relevant fields
+    df.index.name = 'READINGDATE'
+
+    if read_max is None:
+        subset = df.reset_index()
+    else:
+        subset = df[df.index.get_level_values(0) > read_max].reset_index()
+
+    subset = subset[fieldnames]
+
+    rowlist = subset.values.tolist()
+
+    return rowlist, fieldnames
+
+def imp_one_well(well_file, baro_file, man_startdate, man_endate, man_start_level, man_end_level, conn_file_root, wellid=None, stickup=None, elevation=None, be=None, trans_type = 'Solinst', well_table="UGGP.UGGPADMIN.UGS_NGWMN_Monitoring_Locations", gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading", sde = "UGS_SDE.sde", drift_tol=0.3):
+    import arcpy
+    arcpy.env.workspace = conn_file_root + sde
+
+    well = new_trans_imp(well_file, xle=(trans_type == 'Solinst'))
+    baro = new_xle_imp(baro_file)
+
+    corrwl = well_baro_merge(well, baro, vented=(trans_type != 'Solinst'))
+
+    if be:
+        corrwl = correct_be(wellid,corrwl,be=be)
+        corrwl['corrwl'] = corrwl['BAROEFFICIENCYLEVEL']
+
+    if wellid:
+        stickup, well_elev = get_stickup_elev(wellid, well_table)
+    elif elevation:
+        if stickup:
+            pass
+        else:
+            stickup=0
+        well_elev = elevation
+
+    man = pd.DataFrame(
+        {'DateTime': [man_startdate, man_endate], 'MeasuredDTW': [man_start_level, man_end_level]}).set_index(
+        'DateTime')
+
+    dft = fix_drift(corrwl, man, meas='corrwl', manmeas='MeasuredDTW')
+    drift = round(float(dft[1]['drift'].values[0]), 3)
+
+    df = dft[0]
+
+    rowlist, fieldnames = prepare_fieldnames(df, wellid, stickup, well_elev)
+
+    if dft[1] >= drift_tol:
+        edit_table(rowlist, gw_reading_table, fieldnames)
+        print('Well {:} successfully imported!'.format(wellid))
+        arcpy.AddMessage('Well {:} successfully imported!'.format(wellid))
+    else:
+        print('Well {:} drift greater than tolerance!'.format(wellid))
+        arcpy.AddMessage('Well {:} drift greater than tolerance!'.format(wellid))
+
+def edit_table(rowlist, gw_reading_table, fieldnames):
+    """
+    Edits SDE table by inserting new rows
+    :param rowlist: pandas DataFrame converted to row list by df.values.tolist()
+    :param gw_reading_table: sde table to edit
+    :param fieldnames: field names that are being appended in order of appearance in dataframe or list row
+    :return:
+    """
+    import arcpy
+    arcpy.env.overwriteOutput = True
+    edit = arcpy.da.Editor(arcpy.env.workspace)
+    edit.startEditing(False, False)
+    edit.startOperation()
+
+    cursor = arcpy.da.InsertCursor(gw_reading_table, fieldnames)
+    for j in range(len(rowlist)):
+        cursor.insertRow(rowlist[j])
+
+    del cursor
+    edit.stopOperation()
+    edit.stopEditing(True)
+
+
 def imp_well(well_table, ind, manual, baro_out, gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading"):
     barotable = well_table[(well_table['Location'].str.contains("Baro"))|(
                          well_table['Location'].str.contains("baro"))]
@@ -38,69 +149,33 @@ def imp_well(well_table, ind, manual, baro_out, gw_reading_table="UGGP.UGGPADMIN
     try:
         dft = fix_drift(wls, man, meas='BAROEFFICIENCYLEVEL', manmeas='MeasuredDTW')
         drift = round(float(dft[1]['drift'].values[0]), 3)
+
+        df = dft[0]
+        df.sort_index(inplace=True)
+        first_index = df.first_valid_index()
+
+        # Get last reading at the specified location
+        read_max, dtw, wlelev = find_extreme(gw_reading_table, wellid)
+        print('Last reading in database for well {:} was on {:}.\n\
+        The first reading from the raw file is on {:}. Drift = {:}.'.format(ind, read_max, first_index, drift))
+
+        if (read_max is None or read_max < first_index) and (drift < 0.3):
+            rowlist, fieldnames = prepare_fieldnames(df, wellid, stickup, well_elev, read_max=read_max)
+
+            edit_table(rowlist, gw_reading_table, fieldnames)
+
+            print('Well {:} successfully imported!'.format(ind))
+            arcpy.AddMessage('Well {:} successfully imported!'.format(ind))
+        elif drift > 0.3:
+            print('Drift for well {:} exceeds tolerance!'.format(ind))
+        else:
+            print('Dates later than import data for this station already exist!')
+            pass
+        return df,man,be,drift
+
     except (ValueError, ZeroDivisionError):
         print('{:} failed, likely due to lack of manual measurement constraint'.format(ind))
         pass
-
-    df = dft[0]
-    df['MEASUREDLEVEL'] = df['Level']
-    df['MEASUREDDTW'] = df['DTW_WL'] * -1
-    df['DTWBELOWCASING'] = df['MEASUREDDTW']
-    df['DTWBELOWGROUNDSURFACE'] = df['MEASUREDDTW'].apply(lambda x: x - stickup, 1)
-    df['WATERELEVATION'] = df['DTWBELOWGROUNDSURFACE'].apply(lambda x: well_elev - x, 1)
-    df['TAPE'] = 0
-    df['LOCATIONID'] = wellid
-
-    df.sort_index(inplace=True)
-    first_index = df.first_valid_index()
-
-    # Get last reading at the specified location
-    read_max, dtw, wlelev = find_extreme(gw_reading_table, wellid)
-    print('Last reading in database for well {:} was on {:}.\n\
-    The first reading from the raw file is on {:}. Drift = {:}.'.format(ind, read_max, first_index, drift))
-
-    if (read_max is None or read_max < first_index) and (drift < 0.3):
-        arcpy.env.overwriteOutput = True
-        edit = arcpy.da.Editor(arcpy.env.workspace)
-        edit.startEditing(False, False)
-        edit.startOperation()
-        fieldnames = ['READINGDATE', 'MEASUREDLEVEL', 'MEASUREDDTW', 'DRIFTCORRECTION',
-                      'TEMP', 'LOCATIONID', 'DTWBELOWCASING', 'BAROEFFICIENCYLEVEL',
-                      'DTWBELOWGROUNDSURFACE', 'WATERELEVATION', 'TAPE', ]
-
-        if 'Temperature' in df.columns:
-            df.rename(columns={'Temperature': 'TEMP'}, inplace=True)
-
-        if 'TEMP' in df.columns:
-            df['TEMP'] = df['TEMP'].apply(lambda x: np.round(x, 4), 1)
-        else:
-            df['TEMP'] = None
-        cursor = arcpy.da.InsertCursor(gw_reading_table, fieldnames)
-
-        # subset bp df and add relevant fields
-        df.index.name = 'READINGDATE'
-
-        if read_max is None:
-            subset = df.reset_index()
-        else:
-            subset = df[df.index.get_level_values(0) > read_max].reset_index()
-
-        subset = subset[fieldnames]
-        rowlist = subset.values.tolist()
-
-        for j in range(len(rowlist)):
-            cursor.insertRow(rowlist[j])
-
-        del cursor
-        edit.stopOperation()
-        edit.stopEditing(True)
-        print('Well {:} successfully imported!'.format(ind))
-    elif drift > 0.3:
-        print('Drift for well {:} exceeds tolerance!'.format(ind))
-    else:
-        print('Dates later than import data for this station already exist!')
-        pass
-    return df,man,be,drift
 
 def get_field_names(table):
     import arcpy
@@ -160,7 +235,6 @@ def get_location_data(read_table, site_number, first_date=None, last_date=None, 
         print('No Records for location {:}'.format(site_number))
     return readings
 
-
 def find_extreme(table, site_number, extma = 'max'):
     """
     Find extrema from a SDE table using query parameters
@@ -187,6 +261,12 @@ def find_extreme(table, site_number, extma = 'max'):
             wlelev.append(row[2])
 
     return dateval[0],dtw[0],wlelev[0]
+
+def get_stickup_elev(site_number, well_table):
+    stdata = well_table[well_table['WellID'] == str(site_number)]
+    stickup = float(stdata['Offset'].values[0])
+    well_elev = float(stdata['Altitude'].values[0])
+    return stickup, well_elev
 
 def get_gw_elevs(site_number, well_table, manual, stable_elev = True):
     """
