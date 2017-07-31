@@ -18,8 +18,9 @@ def imp_well(well_table, ind, manual, baro_out, gw_reading_table="UGGP.UGGPADMIN
     well = new_trans_imp(full_filepath, xle=(trans_type == 'Solinst'))
 
     # remove barometric pressure
-    baroid = welltable.loc[ind, 'baronum']
+
     try:
+        baroid = welltable.loc[ind, 'baronum']
         corrwl = well_baro_merge(well, baro_out[baroid], barocolumn=barocolumn,
                                     vented=(trans_type != 'Solinst'))
     except:
