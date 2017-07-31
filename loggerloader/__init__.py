@@ -3,9 +3,8 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import os
 
 from .transport import *
-from .arcstuff import *
 
-__version__ = '0.2.0'
+__version__ = '0.2.2'
 __author__ = 'Paul Inkenbrandt'
 __name__ = 'loggerloader'
 

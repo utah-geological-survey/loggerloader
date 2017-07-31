@@ -40,16 +40,6 @@ def test_hourly_resample():
     df = wa.new_xle_imp(xle)
     xle1 = wa.hourly_resample(df, minutes=30)
 
-def test_imp_new_well():
-    inputfile = "test/ag13c 2016-08-02.xle"
-    manualwls = "test/All tape measurements.csv"
-    manual = pd.read_csv(manualwls, index_col="DateTime", engine="python")
-    barofile = "test/baro.csv"
-    baro = pd.read_csv(barofile,index_col=0, parse_dates=True)
-    wellinfo = pd.read_csv("test/wellinfo4.csv")
-    g, drift, wellname = wa.imp_new_well(inputfile, wellinfo, manual, baro)
-    assert wellname == 'ag13c'
-    
 def test_well_baro_merge():
     xle = "test/ag13c 2016-08-02.xle"
     xle_df = wa.new_xle_imp(xle)
@@ -58,7 +48,7 @@ def test_well_baro_merge():
     baro['Level'] = baro['pw03']
     assert len(wa.well_baro_merge(xle_df, baro, sampint=60)) > 10
 
-def test_fix_drift_linear():
+def test_fix_drift():
     xle = "test/ag13c 2016-08-02.xle"
     xle_df = wa.new_xle_imp(xle)
     manualwls = "test/All tape measurements.csv"
@@ -66,7 +56,7 @@ def test_fix_drift_linear():
     manual35 = manual[manual['WellID']==35]
     manual35.index = pd.to_datetime(manual35.index)
     manual35.index.name = 'dt'
-    fd = wa.fix_drift_linear(xle_df, manual35, meas='Level', manmeas='MeasuredDTW', outcolname='DriftCorrection')
+    fd = wa.fix_drift(xle_df, manual35, meas='Level', manmeas='MeasuredDTW', outcolname='DriftCorrection')
     assert 'DriftCorrection' in list(fd[0].columns)
     
 def test_getwellid():
