@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+
 """
 Created on Sat Jan 23 13:03:00 2016
 
@@ -64,11 +64,6 @@ def test_getwellid():
     wellinfo = pd.read_csv("test/wellinfo4.csv")
     wid =ll.getwellid(inputfile, wellinfo)
     assert wid[1] == 35
-
-def test_barodistance():
-    wellinfo = pd.read_csv("test/wellinfo4.csv")
-    bd =ll.barodistance(wellinfo)
-    assert 'closest_baro' in list(bd.columns)
 
 def test_imp_new_well_csv():
     inputfile = "test/ag14a 2016-08-02.csv"
