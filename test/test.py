@@ -10,7 +10,6 @@ import pandas as pd
 import matplotlib
 import numpy as np
 
-
 def test_new_xle_imp():
     xle = 'test/20160919_LittleHobble.xle'
     xle_df =ll.new_xle_imp(xle)
@@ -64,16 +63,6 @@ def test_getwellid():
     wellinfo = pd.read_csv("test/wellinfo4.csv")
     wid =ll.getwellid(inputfile, wellinfo)
     assert wid[1] == 35
-
-def test_imp_new_well_csv():
-    inputfile = "test/ag14a 2016-08-02.csv"
-    manualwls = "test/All tape measurements.csv"
-    manual = pd.read_csv(manualwls, index_col="DateTime", engine="python")
-    barofile = "test/baro.csv"
-    baro = pd.read_csv(barofile,index_col=0, parse_dates=True)
-    wellinfo = pd.read_csv("test/wellinfo4.csv")
-    g, drift, wellname =ll.imp_new_well(inputfile, wellinfo, manual, baro)
-    assert wellname == 'ag14a'
 
 def test_jumpfix():
     xle = "test/ag13c 2016-08-02.xle"

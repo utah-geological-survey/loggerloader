@@ -2,7 +2,7 @@
 import arcpy
 arcpy.env.overwriteOutput = True
 
-from loggerloader import transport, utilities
+from loggerloader import imp_one_well, find_extreme
 
 class Toolbox(object):
     def __init__(self):
@@ -112,9 +112,9 @@ class SingleTransducerImport(object):
         wellid = parameters[7].valueAsText
 
         if man_startdate  in ["#", "", None]:
-            man_startdate, man_start_level, wlelev = utilities.find_extreme(wellid)
+            man_startdate, man_start_level, wlelev = find_extreme(wellid)
 
-        transport.imp_one_well(well_file, baro_file, man_startdate, man_enddate, man_start_level, man_end_level, sde_conn, wellid)
+        imp_one_well(well_file, baro_file, man_startdate, man_enddate, man_start_level, man_end_level, sde_conn, wellid)
 
         arcpy.AddMessage('Well Imported!')
 
