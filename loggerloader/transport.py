@@ -291,6 +291,68 @@ def edit_table(df, gw_reading_table, fieldnames):
     else:
         arcpy.AddMessage('No data imported!')
 
+def simp_imp_well(well_table, file, wellid, manual, gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading"):
+
+
+    import arcpy
+    arcpy.env.workspace = conn_file_root
+    # import well file
+    well = new_trans_imp(file)
+
+    # remove barometric pressure
+    baroid = well_table.loc[wellid, 'BaroLoggerType']
+    stickup = well_table.loc[wellid, 'Offset']
+    well_elev = well_table.loc[wellid, 'Altitude']
+    be = well_table.loc[wellid, 'BaroEfficiency']
+
+    try:
+        baroid = welltable.loc[ind, 'baronum']
+        corrwl = well_baro_merge(well, baro_out[baroid], barocolumn='MEASUREDLEVEL',
+                                 vented=(trans_type != 'Solinst'))
+    except:
+        corrwl = well_baro_merge(well, baro_out['9003'], barocolumn='MEASUREDLEVEL',
+                                 vented=(trans_type != 'Solinst'))
+
+    # be, intercept, r = clarks(corrwl, 'barometer', 'corrwl')
+    # correct barometric efficiency
+    wls, be = correct_be(wellid, well_table, corrwl)
+
+    # get manual groundwater elevations
+    man, stickup, well_elev = get_gw_elevs(wellid, well_table, manual, stable_elev=True)
+
+    # fix transducer drift
+    try:
+        dft = fix_drift(wls, man, meas='BAROEFFICIENCYLEVEL', manmeas='MeasuredDTW')
+        drift = round(float(dft[1]['drift'].values[0]), 3)
+
+        df = dft[0]
+        df.sort_index(inplace=True)
+        first_index = df.first_valid_index()
+
+        # Get last reading at the specified location
+        read_max, dtw, wlelev = find_extreme(gw_reading_table, wellid)
+        print('Last reading in database for well {:} was on {:}.\n\
+        The first reading from the raw file is on {:}. Drift = {:}.'.format(ind, read_max, first_index, drift))
+
+        if (read_max is None or read_max < first_index) and (drift < 0.3):
+            rowlist, fieldnames = prepare_fieldnames(df, wellid, stickup, well_elev, read_max=read_max)
+
+            edit_table(rowlist, gw_reading_table, fieldnames)
+
+            print('Well {:} successfully imported!'.format(ind))
+            arcpy.AddMessage('Well {:} successfully imported!'.format(ind))
+        elif drift > 0.3:
+            print('Drift for well {:} exceeds tolerance!'.format(ind))
+        else:
+            print('Dates later than import data for this station already exist!')
+            pass
+        return df, man, be, drift
+
+    except (ValueError, ZeroDivisionError):
+        print('{:} failed, likely due to lack of manual measurement constraint'.format(ind))
+        pass
+
+
 def imp_well(well_table, ind, manual, baro_out, gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading"):
     barotable = well_table[(well_table['Location'].str.contains("Baro")) | (
         well_table['Location'].str.contains("baro"))]
