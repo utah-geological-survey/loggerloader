@@ -3,7 +3,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import pandas as pd
 import glob
 import os
-import re
 import xmltodict
 from loggerloader.utilities import *
 from loggerloader.data_fixers import *
@@ -264,23 +263,33 @@ def edit_table(df, gw_reading_table, fieldnames):
     :param fieldnames: field names that are being appended in order of appearance in dataframe or list row
     :return:
     """
-
-    subset = df[fieldnames]
-    rowlist = subset.values.tolist()
-
     import arcpy
-    arcpy.env.overwriteOutput = True
-    edit = arcpy.da.Editor(arcpy.env.workspace)
-    edit.startEditing(False, False)
-    edit.startOperation()
 
-    cursor = arcpy.da.InsertCursor(gw_reading_table, fieldnames)
-    for j in range(len(rowlist)):
-        cursor.insertRow(rowlist[j])
+    table_names = get_field_names(gw_reading_table)
 
-    del cursor
-    edit.stopOperation()
-    edit.stopEditing(True)
+    for name in fieldnames:
+        if name not in table_names:
+            fieldnames.remove(name)
+            arcpy.AddMessage("{:} not in {:} fieldnames!".format(name, gw_reading_table))
+
+    if len(fieldnames) > 0:
+        subset = df[fieldnames]
+        rowlist = subset.values.tolist()
+
+        arcpy.env.overwriteOutput = True
+        edit = arcpy.da.Editor(arcpy.env.workspace)
+        edit.startEditing(False, False)
+        edit.startOperation()
+
+        cursor = arcpy.da.InsertCursor(gw_reading_table, fieldnames)
+        for j in range(len(rowlist)):
+            cursor.insertRow(rowlist[j])
+
+        del cursor
+        edit.stopOperation()
+        edit.stopEditing(True)
+    else:
+        arcpy.AddMessage('No data imported!')
 
 def imp_well(well_table, ind, manual, baro_out, gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading"):
     barotable = well_table[(well_table['Location'].str.contains("Baro")) | (
