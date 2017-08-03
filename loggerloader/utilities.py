@@ -97,6 +97,10 @@ def prepare_fieldnames(df, wellid, stickup, well_elev, read_max=None, level='Lev
     else:
         df['TEMP'] = None
 
+    if 'BAROEFFICIENCYLEVEL' in df.columns:
+        pass
+    else:
+        df['BAROEFFICIENCYLEVEL'] = 0
     # subset bp df and add relevant fields
     df.index.name = 'READINGDATE'
 

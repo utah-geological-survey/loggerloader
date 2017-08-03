@@ -3,6 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/loggerloader/utilities.py" afterPath="$PROJECT_DIR$/loggerloader/utilities.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -30,11 +31,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="transport.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="transport.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/loggerloader/transport.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="659">
-              <caret line="291" column="43" lean-forward="false" selection-start-line="291" selection-start-column="43" selection-end-line="291" selection-end-column="43" />
+            <state relative-caret-position="483">
+              <caret line="234" column="56" lean-forward="true" selection-start-line="234" selection-start-column="56" selection-end-line="234" selection-end-column="56" />
               <folding>
                 <element signature="e#1#83#0" expanded="true" />
                 <element signature="e#5661#7315#0" expanded="false" />
@@ -358,21 +359,21 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="utilities.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="utilities.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/utilities.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="771">
-              <caret line="192" column="4" lean-forward="false" selection-start-line="192" selection-start-column="4" selection-end-line="192" selection-end-column="4" />
+            <state relative-caret-position="659">
+              <caret line="102" column="37" lean-forward="false" selection-start-line="102" selection-start-column="37" selection-end-line="102" selection-end-column="37" />
               <folding>
                 <element signature="e#2#84#0" expanded="true" />
                 <element signature="e#159#522#0" expanded="false" />
                 <element signature="e#572#2411#0" expanded="false" />
                 <element signature="e#2440#2725#0" expanded="false" />
-                <element signature="e#4474#5397#0" expanded="false" />
-                <element signature="e#5436#5891#0" expanded="false" />
-                <element signature="e#5944#6232#0" expanded="false" />
-                <element signature="e#6307#7601#0" expanded="false" />
-                <element signature="e#7935#8775#0" expanded="false" />
+                <element signature="e#4579#5502#0" expanded="false" />
+                <element signature="e#5541#5996#0" expanded="false" />
+                <element signature="e#6049#6337#0" expanded="false" />
+                <element signature="e#6412#7706#0" expanded="false" />
+                <element signature="e#8040#8880#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -435,8 +436,8 @@
         <option value="$PROJECT_DIR$/loggerloader/header_tables.py" />
         <option value="$PROJECT_DIR$/loggerloader/__init__.py" />
         <option value="$PROJECT_DIR$/loggerloader/data_fixers.py" />
-        <option value="$PROJECT_DIR$/loggerloader/utilities.py" />
         <option value="$PROJECT_DIR$/loggerloader/transport.py" />
+        <option value="$PROJECT_DIR$/loggerloader/utilities.py" />
       </list>
     </option>
   </component>
@@ -677,13 +678,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
-    </task>
-    <task id="LOCAL-00015" summary="accomodating for ix deprecations in pandas 20">
-      <created>1500570561406</created>
-      <option name="number" value="00015" />
-      <option name="presentableId" value="LOCAL-00015" />
-      <option name="project" value="LOCAL" />
-      <updated>1500570561406</updated>
     </task>
     <task id="LOCAL-00016" summary="change some variable names">
       <created>1500571139062</created>
@@ -1021,7 +1015,14 @@
       <option name="project" value="LOCAL" />
       <updated>1501781314553</updated>
     </task>
-    <option name="localTasksCounter" value="64" />
+    <task id="LOCAL-00064" summary="fix fixdrift to only return drift">
+      <created>1501781355697</created>
+      <option name="number" value="00064" />
+      <option name="presentableId" value="LOCAL-00064" />
+      <option name="project" value="LOCAL" />
+      <updated>1501781355697</updated>
+    </task>
+    <option name="localTasksCounter" value="65" />
     <servers />
   </component>
   <component name="TodoView" selected-index="1">
@@ -1685,28 +1686,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/loggerloader/utilities.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="771">
-          <caret line="192" column="4" lean-forward="false" selection-start-line="192" selection-start-column="4" selection-end-line="192" selection-end-column="4" />
-          <folding>
-            <element signature="e#2#84#0" expanded="true" />
-            <element signature="e#159#522#0" expanded="false" />
-            <element signature="e#572#2411#0" expanded="false" />
-            <element signature="e#2440#2725#0" expanded="false" />
-            <element signature="e#4474#5397#0" expanded="false" />
-            <element signature="e#5436#5891#0" expanded="false" />
-            <element signature="e#5944#6232#0" expanded="false" />
-            <element signature="e#6307#7601#0" expanded="false" />
-            <element signature="e#7935#8775#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/transport.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="659">
-          <caret line="291" column="43" lean-forward="false" selection-start-line="291" selection-start-column="43" selection-end-line="291" selection-end-column="43" />
+        <state relative-caret-position="483">
+          <caret line="234" column="56" lean-forward="true" selection-start-line="234" selection-start-column="56" selection-end-line="234" selection-end-column="56" />
           <folding>
             <element signature="e#1#83#0" expanded="true" />
             <element signature="e#5661#7315#0" expanded="false" />
@@ -1718,6 +1701,24 @@
             <element signature="e#17403#18900#0" expanded="false" />
             <element signature="e#18934#20388#0" expanded="false" />
             <element signature="e#20434#22005#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/loggerloader/utilities.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="659">
+          <caret line="102" column="37" lean-forward="false" selection-start-line="102" selection-start-column="37" selection-end-line="102" selection-end-column="37" />
+          <folding>
+            <element signature="e#2#84#0" expanded="true" />
+            <element signature="e#159#522#0" expanded="false" />
+            <element signature="e#572#2411#0" expanded="false" />
+            <element signature="e#2440#2725#0" expanded="false" />
+            <element signature="e#4579#5502#0" expanded="false" />
+            <element signature="e#5541#5996#0" expanded="false" />
+            <element signature="e#6049#6337#0" expanded="false" />
+            <element signature="e#6412#7706#0" expanded="false" />
+            <element signature="e#8040#8880#0" expanded="false" />
           </folding>
         </state>
       </provider>
