@@ -1,8 +1,8 @@
-
+from __future__ import absolute_import, division, print_function, unicode_literals
 import arcpy
 arcpy.env.overwriteOutput = True
 
-from loggerloader import imp_one_well, find_extreme
+import loggerloader as ll
 
 class Toolbox(object):
     def __init__(self):
@@ -29,7 +29,7 @@ class SingleTransducerImport(object):
             parameterType="Required",
             direction="Input")
 
-        param0.filter.type = "Workspace"
+        #param0.filter.type = "Workspace"
         #param0.filter.list = ["Remote Database"]
 
         # Sinuosity Field parameter
@@ -83,7 +83,6 @@ class SingleTransducerImport(object):
             direction="Input")
 
         params = [param0, param1, param2, param3, param4, param5, param6, param7]
-
         return params
 
     def isLicensed(self):
@@ -94,6 +93,16 @@ class SingleTransducerImport(object):
         """Modify the values and properties of parameters before internal
         validation is performed.  This method is called whenever a parameter
         has been changed."""
+        if parameters[0].value and arcpy.Exists(parameters[0].value):
+            arcpy.env.workspace = parameters[0].value
+            loc_table = "UGGP.UGGPADMIN.UGS_NGWMN_Monitoring_Locations"
+
+            # use a search cursor to iterate rows
+            loc_names = [str(row[0]) for row in arcpy.da.SearchCursor(loc_table, 'LocationName') if
+                         str(row[0]) != 'None' and str(row[0]) != '']
+
+            parameters[7].filter.list = sorted(loc_names)
+
         return
 
     def updateMessages(self, parameters):
@@ -111,10 +120,17 @@ class SingleTransducerImport(object):
         man_end_level = parameters[6].value
         wellid = parameters[7].valueAsText
 
-        if man_startdate  in ["#", "", None]:
-            man_startdate, man_start_level, wlelev = find_extreme(wellid)
+        arcpy.env.workspace = sde_conn
+        loc_table = "UGGP.UGGPADMIN.UGS_NGWMN_Monitoring_Locations"
+        df = ll.table_to_pandas_dataframe(loc_table, field_names=['LocationName', 'AltLocationID'])
+        df.dropna(inplace=True)
+        df.set_index('LocationName', inplace=True)
+        iddict = df.to_dict()['AltLocationID']
 
-        imp_one_well(well_file, baro_file, man_startdate, man_enddate, man_start_level, man_end_level, sde_conn, wellid)
+        if man_startdate  in ["#", "", None]:
+            man_startdate, man_start_level, wlelev = ll.find_extreme(wellid)
+
+        ll.imp_one_well(well_file, baro_file, man_startdate, man_enddate, man_start_level, man_end_level, sde_conn, iddict.get(wellid))
 
         arcpy.AddMessage('Well Imported!')
 

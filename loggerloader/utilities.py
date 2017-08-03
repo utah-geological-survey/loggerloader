@@ -215,3 +215,6 @@ def table_to_pandas_dataframe(table, field_names=None, query=None, sql_sn=(None,
 
     # return the pandas data frame
     return df
+
+if __name__ == "__main__":
+    pass
