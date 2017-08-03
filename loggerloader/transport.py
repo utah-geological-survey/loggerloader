@@ -392,15 +392,3 @@ def upload_bp_data(table, df, site_number, return_df=False, gw_reading_table = "
         print('Dates later than import data for this station already exist!')
         pass
 
-
-
-
-
-
-
-
-
-
-# testing area
-if __name__ == "__main__":
-    pass

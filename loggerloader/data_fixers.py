@@ -277,6 +277,3 @@ def well_baro_merge(wellfile, barofile, barocolumn='Level', wellcolumn = 'Level'
         wellbaro[outcolumn] = wellbaro[['dbp', 'dwl']].apply(lambda x: x[1] - x[0], 1).cumsum() + first_well
     wellbaro.loc[wellbaro.index[0], outcolumn] = first_well
     return wellbaro
-
-if __name__ == "__main__":
-    pass

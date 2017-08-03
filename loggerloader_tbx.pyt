@@ -3,6 +3,7 @@ import arcpy
 arcpy.env.overwriteOutput = True
 
 import loggerloader as ll
+import os
 
 class Toolbox(object):
     def __init__(self):
@@ -29,7 +30,7 @@ class SingleTransducerImport(object):
             parameterType="Required",
             direction="Input")
 
-        #param0.filter.type = "Workspace"
+        param0.value = "C:/Users/{:}/AppData/Roaming/ESRI/Desktop10.5/ArcCatalog/UGS_SDE.sde".format(os.environ.get('USERNAME'))
         #param0.filter.list = ["Remote Database"]
 
         # Sinuosity Field parameter
@@ -122,10 +123,11 @@ class SingleTransducerImport(object):
 
         arcpy.env.workspace = sde_conn
         loc_table = "UGGP.UGGPADMIN.UGS_NGWMN_Monitoring_Locations"
-        df = ll.table_to_pandas_dataframe(loc_table, field_names=['LocationName', 'AltLocationID'])
-        df.dropna(inplace=True)
-        df.set_index('LocationName', inplace=True)
-        iddict = df.to_dict()['AltLocationID']
+
+        loc_names = [str(row[0]) for row in arcpy.da.SearchCursor(loc_table, 'LocationName')]
+        loc_ids = [str(row[0]) for row in arcpy.da.SearchCursor(loc_table, 'AltLocationID')]
+
+        iddict = dict(zip(loc_names,loc_ids))
 
         if man_startdate  in ["#", "", None]:
             man_startdate, man_start_level, wlelev = ll.find_extreme(wellid)
