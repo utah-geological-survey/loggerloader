@@ -248,7 +248,7 @@ def imp_one_well(well_file, baro_file, man_startdate, man_endate, man_start_leve
 
     rowlist, fieldnames = prepare_fieldnames(df, wellid, stickup, well_elev)
 
-    if dft[1] >= drift_tol:
+    if drift >= drift_tol:
         edit_table(rowlist, gw_reading_table, fieldnames)
         print('Well {:} successfully imported!'.format(wellid))
         arcpy.AddMessage('Well {:} successfully imported!'.format(wellid))
