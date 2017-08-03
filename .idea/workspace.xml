@@ -53,16 +53,6 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="VERSION" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/VERSION">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="16">
-              <caret line="1" column="0" lean-forward="false" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="data_fixers.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/loggerloader/data_fixers.py">
           <provider selected="true" editor-type-id="text-editor">
@@ -357,26 +347,6 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="utilities.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/loggerloader/utilities.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="307">
-              <caret line="148" column="90" lean-forward="false" selection-start-line="148" selection-start-column="90" selection-end-line="148" selection-end-column="90" />
-              <folding>
-                <element signature="e#2#84#0" expanded="true" />
-                <element signature="e#159#522#0" expanded="false" />
-                <element signature="e#572#2411#0" expanded="false" />
-                <element signature="e#2440#2725#0" expanded="false" />
-                <element signature="e#2831#4385#0" expanded="false" />
-                <element signature="e#4474#5397#0" expanded="false" />
-                <element signature="e#5436#5891#0" expanded="false" />
-                <element signature="e#6293#7587#0" expanded="false" />
-                <element signature="e#7621#7826#0" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="test.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test/test.py">
           <provider selected="true" editor-type-id="text-editor">
@@ -386,6 +356,36 @@
                 <element signature="e#57#139#0" expanded="true" />
                 <marker date="1501717537879" expanded="true" signature="2039:2111" ph="..." />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="utilities.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/loggerloader/utilities.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="355">
+              <caret line="151" column="50" lean-forward="true" selection-start-line="151" selection-start-column="50" selection-end-line="151" selection-end-column="50" />
+              <folding>
+                <element signature="e#2#84#0" expanded="true" />
+                <element signature="e#159#522#0" expanded="false" />
+                <element signature="e#572#2411#0" expanded="false" />
+                <element signature="e#2440#2725#0" expanded="false" />
+                <element signature="e#2831#4385#0" expanded="false" />
+                <element signature="e#4474#5397#0" expanded="false" />
+                <element signature="e#5436#5891#0" expanded="false" />
+                <element signature="e#6307#7601#0" expanded="false" />
+                <element signature="e#7635#7840#0" expanded="false" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="VERSION" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/VERSION">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="16">
+              <caret line="1" column="0" lean-forward="false" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -679,13 +679,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
-    </task>
-    <task id="LOCAL-00010" summary="added match function">
-      <created>1500555499782</created>
-      <option name="number" value="00010" />
-      <option name="presentableId" value="LOCAL-00010" />
-      <option name="project" value="LOCAL" />
-      <updated>1500555499782</updated>
     </task>
     <task id="LOCAL-00011" summary="added csv functions">
       <created>1500560904961</created>
@@ -1023,7 +1016,14 @@
       <option name="project" value="LOCAL" />
       <updated>1501778453781</updated>
     </task>
-    <option name="localTasksCounter" value="59" />
+    <task id="LOCAL-00059" summary="fix table error in get_stickup_elev">
+      <created>1501779020149</created>
+      <option name="number" value="00059" />
+      <option name="presentableId" value="LOCAL-00059" />
+      <option name="project" value="LOCAL" />
+      <updated>1501779020149</updated>
+    </task>
+    <option name="localTasksCounter" value="60" />
     <servers />
   </component>
   <component name="TodoView" selected-index="1">
@@ -1068,7 +1068,6 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="remove build stuff" />
     <MESSAGE value="clean up functions" />
     <MESSAGE value="datetime exceptions" />
     <MESSAGE value="fixed and added drift functions" />
@@ -1093,7 +1092,8 @@
     <MESSAGE value="fixing lost modules" />
     <MESSAGE value="populate all" />
     <MESSAGE value="fix import error" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix import error" />
+    <MESSAGE value="fix table error in get_stickup_elev" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix table error in get_stickup_elev" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1656,14 +1656,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/VERSION">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="16">
-          <caret line="1" column="0" lean-forward="false" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/data_fixers.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="304">
@@ -1711,10 +1703,18 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/VERSION">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="16">
+          <caret line="1" column="0" lean-forward="false" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/utilities.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="307">
-          <caret line="148" column="90" lean-forward="false" selection-start-line="148" selection-start-column="90" selection-end-line="148" selection-end-column="90" />
+        <state relative-caret-position="355">
+          <caret line="151" column="50" lean-forward="true" selection-start-line="151" selection-start-column="50" selection-end-line="151" selection-end-column="50" />
           <folding>
             <element signature="e#2#84#0" expanded="true" />
             <element signature="e#159#522#0" expanded="false" />
@@ -1723,8 +1723,8 @@
             <element signature="e#2831#4385#0" expanded="false" />
             <element signature="e#4474#5397#0" expanded="false" />
             <element signature="e#5436#5891#0" expanded="false" />
-            <element signature="e#6293#7587#0" expanded="false" />
-            <element signature="e#7621#7826#0" expanded="false" />
+            <element signature="e#6307#7601#0" expanded="false" />
+            <element signature="e#7635#7840#0" expanded="false" />
           </folding>
         </state>
       </provider>

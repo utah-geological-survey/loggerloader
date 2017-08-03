@@ -146,8 +146,8 @@ def getwellid(infile, wellinfo):
     return wellname, wellid
 
 def get_stickup_elev(site_number, well_table):
-    wells = table_to_pandas_dataframe(well_table,field_names=['WellID','Offset','Altitude'])
-    stdata = wells[wells['WellID'] == str(site_number)]
+    wells = table_to_pandas_dataframe(well_table,field_names=['AltLocationID','Offset','Altitude'])
+    stdata = wells[wells['AltLocationID'] == str(site_number)]
     stickup = float(stdata['Offset'].values[0])
     well_elev = float(stdata['Altitude'].values[0])
     return stickup, well_elev
