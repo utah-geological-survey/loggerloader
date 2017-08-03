@@ -3,7 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/loggerloader/utilities.py" afterPath="$PROJECT_DIR$/loggerloader/utilities.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/loggerloader/data_fixers.py" afterPath="$PROJECT_DIR$/loggerloader/data_fixers.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -34,8 +34,8 @@
       <file leaf-file-name="transport.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/loggerloader/transport.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="451">
-              <caret line="237" column="51" lean-forward="false" selection-start-line="237" selection-start-column="51" selection-end-line="237" selection-end-column="51" />
+            <state relative-caret-position="643">
+              <caret line="250" column="9" lean-forward="false" selection-start-line="250" selection-start-column="9" selection-end-line="250" selection-end-column="9" />
               <folding>
                 <element signature="e#1#83#0" expanded="true" />
                 <element signature="e#5671#7325#0" expanded="false" />
@@ -53,20 +53,19 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="data_fixers.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="data_fixers.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/data_fixers.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="304">
-              <caret line="279" column="0" lean-forward="false" selection-start-line="279" selection-start-column="0" selection-end-line="279" selection-end-column="0" />
+            <state relative-caret-position="736">
+              <caret line="82" column="31" lean-forward="false" selection-start-line="82" selection-start-column="31" selection-end-line="82" selection-end-column="31" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
-                <element signature="e#275#3780#0" expanded="false" />
-                <element signature="e#3886#4168#0" expanded="false" />
-                <element signature="e#4209#5906#0" expanded="false" />
-                <element signature="e#5952#7010#0" expanded="false" />
-                <element signature="e#7076#7961#0" expanded="false" />
-                <element signature="e#8008#8990#0" expanded="false" />
-                <element signature="e#9129#10533#0" expanded="false" />
+                <element signature="e#3881#4163#0" expanded="false" />
+                <element signature="e#4204#5901#0" expanded="false" />
+                <element signature="e#5947#7005#0" expanded="false" />
+                <element signature="e#7071#7956#0" expanded="false" />
+                <element signature="e#8003#8985#0" expanded="false" />
+                <element signature="e#9124#10528#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -360,11 +359,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="utilities.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="utilities.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/loggerloader/utilities.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="355">
-              <caret line="151" column="50" lean-forward="true" selection-start-line="151" selection-start-column="50" selection-end-line="151" selection-end-column="50" />
+            <state relative-caret-position="368">
+              <caret line="151" column="50" lean-forward="false" selection-start-line="151" selection-start-column="50" selection-end-line="151" selection-end-column="50" />
               <folding>
                 <element signature="e#2#84#0" expanded="true" />
                 <element signature="e#159#522#0" expanded="false" />
@@ -433,12 +432,12 @@
         <option value="$PROJECT_DIR$/test/test.py" />
         <option value="$PROJECT_DIR$/setup.py" />
         <option value="$PROJECT_DIR$/VERSION" />
-        <option value="$PROJECT_DIR$/loggerloader/data_fixers.py" />
         <option value="$PROJECT_DIR$/loggerloader_tbx.pyt" />
         <option value="$PROJECT_DIR$/loggerloader/header_tables.py" />
         <option value="$PROJECT_DIR$/loggerloader/__init__.py" />
         <option value="$PROJECT_DIR$/loggerloader/transport.py" />
         <option value="$PROJECT_DIR$/loggerloader/utilities.py" />
+        <option value="$PROJECT_DIR$/loggerloader/data_fixers.py" />
       </list>
     </option>
   </component>
@@ -679,13 +678,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
-    </task>
-    <task id="LOCAL-00011" summary="added csv functions">
-      <created>1500560904961</created>
-      <option name="number" value="00011" />
-      <option name="presentableId" value="LOCAL-00011" />
-      <option name="project" value="LOCAL" />
-      <updated>1500560904961</updated>
     </task>
     <task id="LOCAL-00012" summary="fix dependency">
       <created>1500561635931</created>
@@ -1023,7 +1015,14 @@
       <option name="project" value="LOCAL" />
       <updated>1501779020149</updated>
     </task>
-    <option name="localTasksCounter" value="60" />
+    <task id="LOCAL-00060" summary="fix table error in get_stickup_elev">
+      <created>1501779320505</created>
+      <option name="number" value="00060" />
+      <option name="presentableId" value="LOCAL-00060" />
+      <option name="project" value="LOCAL" />
+      <updated>1501779320505</updated>
+    </task>
+    <option name="localTasksCounter" value="61" />
     <servers />
   </component>
   <component name="TodoView" selected-index="1">
@@ -1656,23 +1655,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/loggerloader/data_fixers.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="304">
-          <caret line="279" column="0" lean-forward="false" selection-start-line="279" selection-start-column="0" selection-end-line="279" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#82#0" expanded="true" />
-            <element signature="e#275#3780#0" expanded="false" />
-            <element signature="e#3886#4168#0" expanded="false" />
-            <element signature="e#4209#5906#0" expanded="false" />
-            <element signature="e#5952#7010#0" expanded="false" />
-            <element signature="e#7076#7961#0" expanded="false" />
-            <element signature="e#8008#8990#0" expanded="false" />
-            <element signature="e#9129#10533#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="32">
@@ -1683,10 +1665,18 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/VERSION">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="16">
+          <caret line="1" column="0" lean-forward="false" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/transport.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="451">
-          <caret line="237" column="51" lean-forward="false" selection-start-line="237" selection-start-column="51" selection-end-line="237" selection-end-column="51" />
+        <state relative-caret-position="643">
+          <caret line="250" column="9" lean-forward="false" selection-start-line="250" selection-start-column="9" selection-end-line="250" selection-end-column="9" />
           <folding>
             <element signature="e#1#83#0" expanded="true" />
             <element signature="e#5671#7325#0" expanded="false" />
@@ -1703,18 +1693,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/VERSION">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="16">
-          <caret line="1" column="0" lean-forward="false" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/utilities.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="355">
-          <caret line="151" column="50" lean-forward="true" selection-start-line="151" selection-start-column="50" selection-end-line="151" selection-end-column="50" />
+        <state relative-caret-position="368">
+          <caret line="151" column="50" lean-forward="false" selection-start-line="151" selection-start-column="50" selection-end-line="151" selection-end-column="50" />
           <folding>
             <element signature="e#2#84#0" expanded="true" />
             <element signature="e#159#522#0" expanded="false" />
@@ -1725,6 +1707,22 @@
             <element signature="e#5436#5891#0" expanded="false" />
             <element signature="e#6307#7601#0" expanded="false" />
             <element signature="e#7635#7840#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/loggerloader/data_fixers.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="736">
+          <caret line="82" column="31" lean-forward="false" selection-start-line="82" selection-start-column="31" selection-end-line="82" selection-end-column="31" />
+          <folding>
+            <element signature="e#0#82#0" expanded="true" />
+            <element signature="e#3881#4163#0" expanded="false" />
+            <element signature="e#4204#5901#0" expanded="false" />
+            <element signature="e#5947#7005#0" expanded="false" />
+            <element signature="e#7071#7956#0" expanded="false" />
+            <element signature="e#8003#8985#0" expanded="false" />
+            <element signature="e#9124#10528#0" expanded="false" />
           </folding>
         </state>
       </provider>

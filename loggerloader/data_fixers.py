@@ -80,7 +80,7 @@ def fix_drift(well, manualfile, meas='Level', manmeas='MeasuredDTW', outcolname=
     wellbarofixed.set_index(dtnm, inplace=True)
     drift_info = pd.DataFrame(drift_features).T
 
-    return wellbarofixed, drift_info
+    return wellbarofixed, drift
 
 def correct_be(site_number, well_table, welldata, be = None, meas = 'corrwl', baro = 'barometer'):
 
