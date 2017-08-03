@@ -2,7 +2,14 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import arcpy
 arcpy.env.overwriteOutput = True
 
+import loggerloader # add import
+import importlib
+try:
+    importlib.reload(loggerloader)  # add a forced reload
+except:
+    reload(loggerloader)
 import loggerloader as ll
+
 import os
 
 class Toolbox(object):

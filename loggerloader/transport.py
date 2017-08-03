@@ -6,7 +6,9 @@ import os
 import xmltodict
 import numpy as np
 
-import re
+from loggerloader.utilities import *
+from loggerloader.header_tables import *
+from loggerloader.data_fixers import *
 
 def compilation(inputfile):
     """This function reads multiple xle transducer files in a directory and generates a compiled Pandas DataFrame.
