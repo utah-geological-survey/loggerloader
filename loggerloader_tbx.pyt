@@ -21,6 +21,7 @@ class wellimport(object):
         self.well_files = None
         self.wellname = None
         self.welldict = None
+        self.man_file = None
 
     def one_well(self):
 
@@ -73,10 +74,16 @@ class wellimport(object):
                 barfile = self.welldict.get(bar)
                 bardf[bar] = ll.new_trans_imp(self.xledir+barfile)
 
+        arcpy.AddMessage('Barometers Imported')
 
+        man = pd.read_csv(self.man_file)
 
-
-
+        for i in range(len(wellidlist)):
+            if well_table.loc[wellidlist[i],'LocationType'].value == 'Well':
+                ll.simp_imp_well(well_table, self.xledir+self.welldict.get(wellidlist[i]),bardf,wellidlist[i], man)
+                well_table.loc[wellidlist[i], 'LocationName'].value
+                arcpy.AddMessage("Well {:} imported".format(well_table.loc[wellidlist[i], 'LocationName'].value))
+        return
 
 def parameter(displayName, name, datatype, parameterType='Required', direction='Input', defaultValue=None):
     '''
@@ -168,6 +175,7 @@ class SingleTransducerImport(object):
         wellimp.man_end_level = parameters[6].value
         wellimp.wellid = parameters[7].valueAsText
 
+
         wellimp.one_well()
 
         return
@@ -247,3 +255,5 @@ class MultTransducerImport(object):
                wellimp.well_files = [str(f[0]) for f in parameters[2].value]
                wellimp.wellname = [str(f[1]) for f in parameters[2].value]
                wellimp.welldict = dict(zip(wellimp.wellname, wellimp.well_files))
+
+        wellimp.man_file = parameters[3].valueAsText

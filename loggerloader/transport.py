@@ -291,22 +291,21 @@ def edit_table(df, gw_reading_table, fieldnames):
     else:
         arcpy.AddMessage('No data imported!')
 
-def simp_imp_well(well_table, file, wellid, manual, gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading"):
-
+def simp_imp_well(well_table, file, baro_out, wellid, manual, gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading"):
 
     import arcpy
-    arcpy.env.workspace = conn_file_root
+
     # import well file
     well = new_trans_imp(file)
 
     # remove barometric pressure
-    baroid = well_table.loc[wellid, 'BaroLoggerType']
+
     stickup = well_table.loc[wellid, 'Offset']
     well_elev = well_table.loc[wellid, 'Altitude']
     be = well_table.loc[wellid, 'BaroEfficiency']
 
     try:
-        baroid = welltable.loc[ind, 'baronum']
+        baroid = well_table.loc[wellid, 'BaroLoggerType']
         corrwl = well_baro_merge(well, baro_out[baroid], barocolumn='MEASUREDLEVEL',
                                  vented=(trans_type != 'Solinst'))
     except:
@@ -323,7 +322,7 @@ def simp_imp_well(well_table, file, wellid, manual, gw_reading_table="UGGP.UGGPA
     # fix transducer drift
     try:
         dft = fix_drift(wls, man, meas='BAROEFFICIENCYLEVEL', manmeas='MeasuredDTW')
-        drift = round(float(dft[1]['drift'].values[0]), 3)
+        drift = np.round(float(dft[1]['drift'].values[0]), 3)
 
         df = dft[0]
         df.sort_index(inplace=True)
