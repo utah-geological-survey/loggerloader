@@ -303,7 +303,11 @@ def simp_imp_well(well_table, file, baro_out, wellid, manual, gw_reading_table="
     stickup = well_table.loc[wellid, 'Offset']
     well_elev = well_table.loc[wellid, 'Altitude']
     be = well_table.loc[wellid, 'BaroEfficiency']
-
+    file_ext = os.path.splitext(file)[1]
+    if file_ext == '.xle':
+        trans_type = 'Solinst'
+    else:
+        trans_type = 'Global Water'
     try:
         baroid = well_table.loc[wellid, 'BaroLoggerType']
         corrwl = well_baro_merge(well, baro_out[baroid], barocolumn='MEASUREDLEVEL',
@@ -329,26 +333,26 @@ def simp_imp_well(well_table, file, baro_out, wellid, manual, gw_reading_table="
         first_index = df.first_valid_index()
 
         # Get last reading at the specified location
-        read_max, dtw, wlelev = find_extreme(gw_reading_table, wellid)
+        read_max, dtw, wlelev = find_extreme(wellid)
         print('Last reading in database for well {:} was on {:}.\n\
-        The first reading from the raw file is on {:}. Drift = {:}.'.format(ind, read_max, first_index, drift))
+        The first reading from the raw file is on {:}. Drift = {:}.'.format(wellid, read_max, first_index, drift))
 
         if (read_max is None or read_max < first_index) and (drift < 0.3):
             rowlist, fieldnames = prepare_fieldnames(df, wellid, stickup, well_elev, read_max=read_max)
 
             edit_table(rowlist, gw_reading_table, fieldnames)
 
-            print('Well {:} successfully imported!'.format(ind))
-            arcpy.AddMessage('Well {:} successfully imported!'.format(ind))
+            print('Well {:} successfully imported!'.format(wellid))
+            arcpy.AddMessage('Well {:} successfully imported!'.format(wellid))
         elif drift > 0.3:
-            print('Drift for well {:} exceeds tolerance!'.format(ind))
+            print('Drift for well {:} exceeds tolerance!'.format(wellid))
         else:
             print('Dates later than import data for this station already exist!')
             pass
         return df, man, be, drift
 
     except (ValueError, ZeroDivisionError):
-        print('{:} failed, likely due to lack of manual measurement constraint'.format(ind))
+        print('{:} failed, likely due to lack of manual measurement constraint'.format(wellid))
         pass
 
 

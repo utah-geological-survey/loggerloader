@@ -80,9 +80,10 @@ class wellimport(object):
         man = pd.read_csv(self.man_file)
 
         for i in range(len(wellidlist)):
-            if well_table.loc[wellidlist[i],'LocationType'].values == 'Well':
-                ll.simp_imp_well(well_table, self.xledir+"/"+self.welldict.get(wellidlist[i]),bardf,wellidlist[i], man)
-                arcpy.AddMessage("Well {:} imported".format(well_table.loc[wellidlist[i], 'LocationName'].values))
+
+            if well_table.loc[wellidlist[i],'LocationType'] == 'Well':
+                ll.simp_imp_well(well_table, self.xledir+"/"+self.welldict.get(namedict.get(str(wellidlist[i]))),bardf,wellidlist[i], man)
+                arcpy.AddMessage("Well {:} imported".format(well_table.loc[wellidlist[i], 'LocationName']))
         return
 
 def parameter(displayName, name, datatype, parameterType='Required', direction='Input', defaultValue=None):
