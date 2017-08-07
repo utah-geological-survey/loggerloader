@@ -112,7 +112,7 @@ def prepare_fieldnames(df, wellid, stickup, well_elev, read_max=None, level='Lev
 
     return subset, fieldnames
 
-def find_extreme(site_number, table="UGGP.UGGPADMIN.UGS_GW_reading", extma='max'):
+def find_extreme(site_number, gw_table="UGGP.UGGPADMIN.UGS_GW_reading", extma='max'):
     """
     Find extrema from a SDE table using query parameters
     :param table: SDE table to be queried
@@ -134,7 +134,7 @@ def find_extreme(site_number, table="UGGP.UGGPADMIN.UGS_GW_reading", extma='max'
     # use a search cursor to iterate rows
     dateval, dtw, wlelev = [], [], []
 
-    envtable = os.path.join(env.workspace, table)
+    envtable = os.path.join(env.workspace, gw_table)
 
     with arcpy.da.SearchCursor(envtable, field_names, query, sql_clause=sql_sn) as search_cursor:
         # iterate the rows
