@@ -4,6 +4,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import numpy as np
 import pandas as pd
 import re
+import os
 
 def fcl(df, dtObj):
     """Finds closest date index in a dataframe to a date object
@@ -120,6 +121,9 @@ def find_extreme(site_number, table="UGGP.UGGPADMIN.UGS_GW_reading", extma='max'
     :return: read_max
     """
     import arcpy
+    from arcpy import env
+    env.overwriteOutput = True
+
     if extma == 'max':
         sort = 'DESC'
     else:
@@ -129,7 +133,10 @@ def find_extreme(site_number, table="UGGP.UGGPADMIN.UGS_GW_reading", extma='max'
     sql_sn = ('TOP 1', 'ORDER BY READINGDATE {:}'.format(sort))
     # use a search cursor to iterate rows
     dateval, dtw, wlelev = [], [], []
-    with arcpy.da.SearchCursor(table, field_names, query, sql_clause=sql_sn) as search_cursor:
+
+    envtable = os.path.join(env.workspace, table)
+
+    with arcpy.da.SearchCursor(envtable, field_names, query, sql_clause=sql_sn) as search_cursor:
         # iterate the rows
         for row in search_cursor:
             dateval.append(row[0])
