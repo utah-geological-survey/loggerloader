@@ -448,7 +448,7 @@ def upload_bp_data(df, site_number, return_df=False, gw_reading_table = "UGGP.UG
     first_index = df.first_valid_index()
 
     # Get last reading at the specified location
-    read_max, dtw, wlelev = find_extreme(gw_reading_table, site_number)
+    read_max, dtw, wlelev = find_extreme(site_number)
 
     if read_max is None or read_max < first_index:
 
