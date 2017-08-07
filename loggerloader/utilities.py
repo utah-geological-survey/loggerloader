@@ -124,7 +124,7 @@ def find_extreme(site_number, table="UGGP.UGGPADMIN.UGS_GW_reading", extma='max'
         sort = 'DESC'
     else:
         sort = 'ASC'
-    query = "LOCATIONID = {:}".format(site_number)
+    query = "LOCATIONID = '{:}'".format(site_number)
     field_names = ['READINGDATE', 'LOCATIONID', 'DTWBELOWGROUNDSURFACE', 'WATERELEVATION']
     sql_sn = ('TOP 1', 'ORDER BY READINGDATE {:}'.format(sort))
     # use a search cursor to iterate rows
