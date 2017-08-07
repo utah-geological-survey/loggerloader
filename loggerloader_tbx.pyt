@@ -64,25 +64,25 @@ class wellimport(object):
         iddict = dict(zip(df['LocationName'].values,df['AltLocationID'].values))
         wellidlist = [iddict.get(well) for well in self.wellname]
         well_table = df.set_index(['AltLocationID'])
-
+        namedict = dict(zip(df['AltLocationID'].values,df['LocationName'].values))
         # import barometric data
         barolist = well_table[well_table['LocationType']=='Barometer'].index
 
         bardf = {}
         for bar in barolist:
             if bar in wellidlist:
-                barfile = self.welldict.get(bar)
-                bardf[bar] = ll.new_trans_imp(self.xledir+barfile)
+                barfile = self.welldict.get(namedict.get(bar))
 
+                bardf[bar] = ll.new_trans_imp(self.xledir+"/"+barfile)
+                ll.upload_bp_data(bardf[bar],bar)
         arcpy.AddMessage('Barometers Imported')
 
         man = pd.read_csv(self.man_file)
 
         for i in range(len(wellidlist)):
-            if well_table.loc[wellidlist[i],'LocationType'].value == 'Well':
-                ll.simp_imp_well(well_table, self.xledir+self.welldict.get(wellidlist[i]),bardf,wellidlist[i], man)
-                well_table.loc[wellidlist[i], 'LocationName'].value
-                arcpy.AddMessage("Well {:} imported".format(well_table.loc[wellidlist[i], 'LocationName'].value))
+            if well_table.loc[wellidlist[i],'LocationType'].values == 'Well':
+                ll.simp_imp_well(well_table, self.xledir+"/"+self.welldict.get(wellidlist[i]),bardf,wellidlist[i], man)
+                arcpy.AddMessage("Well {:} imported".format(well_table.loc[wellidlist[i], 'LocationName'].values))
         return
 
 def parameter(displayName, name, datatype, parameterType='Required', direction='Input', defaultValue=None):
@@ -194,7 +194,7 @@ class MultTransducerImport(object):
             parameter("Well File Matches","well_files",'GPValueTable'),
             parameter("Manual File Location","man_file","DEFile")]
         #self.parameters[2].parameterDependencies = [self.parameters[1].value]
-        self.parameters[2].columns = [['DEFile','xle file'],['GPString','Matching Well Name']]
+        self.parameters[2].columns = [['GPString','xle file'],['GPString','Matching Well Name']]
 
     def getParameterInfo(self):
         """Define parameter definitions; http://joelmccune.com/lessons-learned-and-ideas-for-python-toolbox-coding/"""
@@ -257,3 +257,5 @@ class MultTransducerImport(object):
                wellimp.welldict = dict(zip(wellimp.wellname, wellimp.well_files))
 
         wellimp.man_file = parameters[3].valueAsText
+
+        wellimp.many_wells()

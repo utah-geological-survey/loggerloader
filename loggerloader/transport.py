@@ -441,14 +441,14 @@ def get_location_data(read_table, site_number, first_date=None, last_date=None, 
         print('No Records for location {:}'.format(site_number))
     return readings
 
-def upload_bp_data(table, df, site_number, return_df=False, gw_reading_table = "UGGP.UGGPADMIN.UGS_GW_reading"):
+def upload_bp_data(df, site_number, return_df=False, gw_reading_table = "UGGP.UGGPADMIN.UGS_GW_reading"):
     import arcpy
 
     df.sort_index(inplace=True)
     first_index = df.first_valid_index()
 
     # Get last reading at the specified location
-    read_max, dtw, wlelev = find_extreme(table, site_number)
+    read_max, dtw, wlelev = find_extreme(gw_reading_table, site_number)
 
     if read_max is None or read_max < first_index:
 
