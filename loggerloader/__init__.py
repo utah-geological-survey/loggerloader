@@ -1,6 +1,13 @@
-from loggerloader.transport import *
-from loggerloader.utilities import *
-from loggerloader.data_fixers import *
+try:
+    from loggerloader.transport import *
+    from loggerloader.utilities import *
+    from loggerloader.data_fixers import *
+except ImportError:
+    from .transport import *
+    from .utilities import *
+    from .data_fixers import *
+
+
 
 __version__ = "0.2.6"
 
