@@ -68,13 +68,15 @@ class wellimport(object):
         # import barometric data
         barolist = well_table[well_table['LocationType']=='Barometer'].index
 
-        bardf = {}
+        baro_out = {}
         for bar in barolist:
             if bar in wellidlist:
                 barfile = self.welldict.get(namedict.get(bar))
 
-                bardf[bar] = ll.new_trans_imp(self.xledir+"/"+barfile)
-                ll.upload_bp_data(bardf[bar],bar)
+                df = ll.new_trans_imp(self.xledir+"/"+barfile)
+                ll.upload_bp_data(df,bar)
+                baro_out[bar] = ll.get_location_data(gw_reading_table, baroid, mintime,
+                                                            maxtime + datetime.timedelta(days=1))
         arcpy.AddMessage('Barometers Imported')
 
         man = pd.read_csv(self.man_file)

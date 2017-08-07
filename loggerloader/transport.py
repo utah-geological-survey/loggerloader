@@ -421,7 +421,7 @@ def imp_well(well_table, ind, manual, baro_out, gw_reading_table="UGGP.UGGPADMIN
         print('{:} failed, likely due to lack of manual measurement constraint'.format(ind))
         pass
 
-def get_location_data(read_table, site_number, first_date=None, last_date=None, limit=None):
+def get_location_data(site_number, first_date=None, last_date=None, limit=None, gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading"):
     import datetime
     if not first_date:
         first_date = datetime.datetime(1900, 1, 1)
@@ -437,9 +437,9 @@ def get_location_data(read_table, site_number, first_date=None, last_date=None, 
     query = query_txt.format(site_number, first_date, last_date + datetime.timedelta(days=1))
     sql_sn = (limit, 'ORDER BY READINGDATE ASC')
 
-    fieldnames = get_field_names(read_table)
+    fieldnames = get_field_names(gw_reading_table)
 
-    readings = table_to_pandas_dataframe(read_table, fieldnames, query, sql_sn)
+    readings = table_to_pandas_dataframe(gw_reading_table, fieldnames, query, sql_sn)
     readings.set_index('READINGDATE', inplace=True)
     if len(readings) == 0:
         print('No Records for location {:}'.format(site_number))

@@ -261,6 +261,7 @@ def well_baro_merge(wellfile, barofile, barocolumn='Level', wellcolumn = 'Level'
 
     # reassign `Level` to reduce ambiguity
     baro = baro.rename(columns={barocolumn: 'barometer'})
+
     if 'TEMP' in baro.columns:
         baro.drop('TEMP', axis=1, inplace=True)
 
