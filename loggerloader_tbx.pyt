@@ -3,7 +3,7 @@ import arcpy
 arcpy.env.overwriteOutput = True
 import pandas as pd
 import loggerloader as ll
-
+import datetime
 import os
 
 class wellimport(object):
@@ -21,6 +21,7 @@ class wellimport(object):
         self.well_files = None
         self.wellname = None
         self.welldict = None
+        self.filedict = None
         self.man_file = None
 
     def one_well(self):
@@ -42,6 +43,13 @@ class wellimport(object):
         arcpy.AddMessage('Well Imported!')
 
         return
+
+    def get_ftype(self,x):
+        if x[1] == 'Solinst':
+            ft = '.xle'
+        else:
+            ft = '.csv'
+        return self.filedict.get(x[0]+ft)
 
     def many_wells(self):
 
@@ -67,6 +75,20 @@ class wellimport(object):
         namedict = dict(zip(df['AltLocationID'].values,df['LocationName'].values))
         # import barometric data
         barolist = well_table[well_table['LocationType']=='Barometer'].index
+        arcpy.AddMessage('Barometers in this file: {:}'.format(barolist))
+
+        xles = ll.xle_head_table(self.xledir + '/')
+        arcpy.AddMessage('xles examined')
+        csvs = ll.csv_info_table(self.xledir + '/')
+        arcpy.AddMessage('csvs examined')
+        file_info_table = pd.concat([xles, csvs[0]])
+        arcpy.AddMessage(file_info_table.columns)
+        file_info_table['WellID'] = file_info_table[['fileroot','trans type']].apply(lambda x: self.get_ftype(x),1)
+        file_info_table.to_csv(self.xledir + '/file_info_table.csv')
+        arcpy.AddMessage("Header Table with well information created at {:}/file_info_table.csv".format(self.xledir))
+        maxtime = max(pd.to_datetime(file_info_table['Stop_time']))
+        mintime = min(pd.to_datetime(file_info_table['Start_time']))
+        arcpy.AddMessage("Data span from {:} to {:}.".format(mintime,maxtime))
 
         baro_out = {}
         for bar in barolist:
@@ -75,16 +97,16 @@ class wellimport(object):
 
                 df = ll.new_trans_imp(self.xledir+"/"+barfile)
                 ll.upload_bp_data(df,bar)
-                baro_out[bar] = ll.get_location_data(gw_reading_table, baroid, mintime,
-                                                            maxtime + datetime.timedelta(days=1))
-        arcpy.AddMessage('Barometers Imported')
+                baro_out[bar] = ll.get_location_data(bar, mintime, maxtime + datetime.timedelta(days=1))
+                arcpy.AddMessage('Barometer {:} Imported'.format(namedict.get(bar)))
 
         man = pd.read_csv(self.man_file)
 
         for i in range(len(wellidlist)):
 
             if well_table.loc[wellidlist[i],'LocationType'] == 'Well':
-                ll.simp_imp_well(well_table, self.xledir+"/"+self.welldict.get(namedict.get(str(wellidlist[i]))),bardf,wellidlist[i], man)
+                ll.simp_imp_well(well_table, self.xledir+"/"+self.welldict.get(namedict.get(str(wellidlist[i]))),
+                                 baro_out, wellidlist[i], man)
                 arcpy.AddMessage("Well {:} imported".format(well_table.loc[wellidlist[i], 'LocationName']))
         return
 
@@ -258,7 +280,7 @@ class MultTransducerImport(object):
                wellimp.well_files = [str(f[0]) for f in parameters[2].value]
                wellimp.wellname = [str(f[1]) for f in parameters[2].value]
                wellimp.welldict = dict(zip(wellimp.wellname, wellimp.well_files))
-
+               wellimp.filedict = dict(zip(wellimp.well_files, wellimp.wellname))
         wellimp.man_file = parameters[3].valueAsText
 
         wellimp.many_wells()
