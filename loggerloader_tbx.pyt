@@ -1045,7 +1045,7 @@ class SingleTransducerImport(object):
 
 
         wellimp.one_well()
-
+        arcpy.AddMessage(arcpy.GetMessages())
         return
 
 class MultTransducerImport(object):
@@ -1127,6 +1127,7 @@ class MultTransducerImport(object):
         wellimp.man_file = parameters[3].valueAsText
 
         wellimp.many_wells()
+        arcpy.AddMessage(arcpy.GetMessages())
 
 class SimpleBaroFix(object):
     def __init__(self):
@@ -1167,6 +1168,7 @@ class SimpleBaroFix(object):
         wellimp.baro_file = parameters[1].valueAsText
         wellimp.save_location = parameters[2].valueAsText
         wellimp.remove_bp()
+        arcpy.AddMessage(arcpy.GetMessages())
 
 class SimpleBaroDriftFix(object):
     def __init__(self):
@@ -1224,3 +1226,4 @@ class SimpleBaroDriftFix(object):
         wellimp.should_plot = parameters[7].value
         wellimp.chart_out = parameters[8].valueAsText
         wellimp.remove_bp_drift()
+        arcpy.AddMessage(arcpy.GetMessages())
