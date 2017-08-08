@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="fix imp_simp_well">
+    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="openpyxl requirement">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/loggerloader_tbx.SimpleBaroDriftFix.pyt.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/loggerloader_tbx.SimpleBaroFix.pyt.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/VERSION" afterPath="$PROJECT_DIR$/VERSION" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/loggerloader/__init__.py" afterPath="$PROJECT_DIR$/loggerloader/__init__.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/loggerloader_tbx.pyt" afterPath="$PROJECT_DIR$/loggerloader_tbx.pyt" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/loggerloader_tbx.pyt.xml" afterPath="$PROJECT_DIR$/loggerloader_tbx.pyt.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/requirements.txt" afterPath="$PROJECT_DIR$/requirements.txt" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/setup.py" afterPath="$PROJECT_DIR$/setup.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -39,8 +37,8 @@
       <file leaf-file-name="transport.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/loggerloader/transport.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="976">
-              <caret line="238" column="0" lean-forward="false" selection-start-line="238" selection-start-column="0" selection-end-line="244" selection-end-column="0" />
+            <state relative-caret-position="992">
+              <caret line="239" column="81" lean-forward="true" selection-start-line="239" selection-start-column="81" selection-end-line="239" selection-end-column="81" />
               <folding>
                 <element signature="e#1#83#0" expanded="true" />
                 <element signature="e#252#2689#0" expanded="false" />
@@ -54,16 +52,16 @@
       <file leaf-file-name="data_fixers.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/loggerloader/data_fixers.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="735">
-              <caret line="273" column="0" lean-forward="true" selection-start-line="273" selection-start-column="0" selection-end-line="273" selection-end-column="0" />
+            <state relative-caret-position="1504">
+              <caret line="242" column="132" lean-forward="false" selection-start-line="242" selection-start-column="132" selection-end-line="242" selection-end-column="132" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
-                <element signature="e#275#3780#0" expanded="false" />
                 <element signature="e#3886#4168#0" expanded="false" />
                 <element signature="e#4209#5906#0" expanded="false" />
                 <element signature="e#5952#7010#0" expanded="false" />
                 <element signature="e#7076#7961#0" expanded="false" />
                 <element signature="e#8008#8990#0" expanded="false" />
+                <element signature="e#9129#10534#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -91,10 +89,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="loggerloader_tbx.SingleTransducerImport.pyt.xml" pinned="false" current-in-tab="true">
+      <file leaf-file-name="loggerloader_tbx.SingleTransducerImport.pyt.xml" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/loggerloader_tbx.SingleTransducerImport.pyt.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="208">
+            <state relative-caret-position="0">
               <caret line="0" column="2608" lean-forward="false" selection-start-line="0" selection-start-column="2608" selection-end-line="0" selection-end-column="2608" />
               <folding>
                 <element signature="e#705#709#0" expanded="true" />
@@ -357,17 +355,17 @@
         <entry file="file://$PROJECT_DIR$/requirements.txt">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="80">
-              <caret line="5" column="17" lean-forward="true" selection-start-line="5" selection-start-column="17" selection-end-line="5" selection-end-column="17" />
+              <caret line="5" column="17" lean-forward="false" selection-start-line="5" selection-start-column="17" selection-end-line="5" selection-end-column="17" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="loggerloader_tbx.pyt" pinned="false" current-in-tab="false">
+      <file leaf-file-name="loggerloader_tbx.pyt" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader_tbx.pyt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="579">
-              <caret line="332" column="47" lean-forward="false" selection-start-line="332" selection-start-column="47" selection-end-line="332" selection-end-column="47" />
+            <state relative-caret-position="512">
+              <caret line="62" column="37" lean-forward="true" selection-start-line="62" selection-start-column="37" selection-end-line="62" selection-end-column="37" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
               </folding>
@@ -433,11 +431,11 @@
         <option value="$PROJECT_DIR$/loggerloader/utilities.py" />
         <option value="$PROJECT_DIR$/loggerloader/transport.py" />
         <option value="C:/UGSSharedResources/GSL_GWchemistry/Analyses/Existing_analysis/paramgroups.py" />
-        <option value="$PROJECT_DIR$/loggerloader_tbx.pyt" />
         <option value="$PROJECT_DIR$/setup.py" />
         <option value="$PROJECT_DIR$/loggerloader/__init__.py" />
         <option value="$PROJECT_DIR$/VERSION" />
         <option value="$PROJECT_DIR$/requirements.txt" />
+        <option value="$PROJECT_DIR$/loggerloader_tbx.pyt" />
       </list>
     </option>
   </component>
@@ -678,13 +676,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
-    </task>
-    <task id="LOCAL-00030" summary="worked on be function">
-      <created>1501164293207</created>
-      <option name="number" value="00030" />
-      <option name="presentableId" value="LOCAL-00030" />
-      <option name="project" value="LOCAL" />
-      <updated>1501164293207</updated>
     </task>
     <task id="LOCAL-00031" summary="fixed hourly resample">
       <created>1501166710870</created>
@@ -1022,7 +1013,14 @@
       <option name="project" value="LOCAL" />
       <updated>1502196101462</updated>
     </task>
-    <option name="localTasksCounter" value="79" />
+    <task id="LOCAL-00079" summary="openpyxl requirement">
+      <created>1502208297586</created>
+      <option name="number" value="00079" />
+      <option name="presentableId" value="LOCAL-00079" />
+      <option name="project" value="LOCAL" />
+      <updated>1502208297586</updated>
+    </task>
+    <option name="localTasksCounter" value="80" />
     <servers />
   </component>
   <component name="TodoView" selected-index="1">
@@ -1067,7 +1065,6 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fixed test error and drift functions" />
     <MESSAGE value="added match function" />
     <MESSAGE value="added csv functions" />
     <MESSAGE value="fix dependency" />
@@ -1092,7 +1089,8 @@
     <MESSAGE value="fix fixdrift to only return drift" />
     <MESSAGE value="fix baro query" />
     <MESSAGE value="fix imp_simp_well" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix imp_simp_well" />
+    <MESSAGE value="openpyxl requirement" />
+    <option name="LAST_COMMIT_MESSAGE" value="openpyxl requirement" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1325,7 +1323,7 @@
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#0#82#0" expanded="true" />
+            <element signature="e#0#82#0" expanded="false" />
             <element signature="e#167#530#0" expanded="false" />
             <element signature="e#580#2419#0" expanded="false" />
             <element signature="e#2448#2733#0" expanded="false" />
@@ -1342,45 +1340,6 @@
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/loggerloader/transport.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="976">
-          <caret line="238" column="0" lean-forward="false" selection-start-line="238" selection-start-column="0" selection-end-line="244" selection-end-column="0" />
-          <folding>
-            <element signature="e#1#83#0" expanded="true" />
-            <element signature="e#252#2689#0" expanded="false" />
-            <element signature="e#2720#5630#0" expanded="false" />
-            <element signature="e#5661#7315#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/loggerloader/data_fixers.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="735">
-          <caret line="273" column="0" lean-forward="true" selection-start-line="273" selection-start-column="0" selection-end-line="273" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#82#0" expanded="true" />
-            <element signature="e#275#3780#0" expanded="false" />
-            <element signature="e#3886#4168#0" expanded="false" />
-            <element signature="e#4209#5906#0" expanded="false" />
-            <element signature="e#5952#7010#0" expanded="false" />
-            <element signature="e#7076#7961#0" expanded="false" />
-            <element signature="e#8008#8990#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/loggerloader_tbx.pyt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="579">
-          <caret line="332" column="47" lean-forward="false" selection-start-line="332" selection-start-column="47" selection-end-line="332" selection-end-column="47" />
-          <folding>
-            <element signature="e#0#82#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1405,7 +1364,7 @@
     <entry file="file://$PROJECT_DIR$/requirements.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="80">
-          <caret line="5" column="17" lean-forward="true" selection-start-line="5" selection-start-column="17" selection-end-line="5" selection-end-column="17" />
+          <caret line="5" column="17" lean-forward="false" selection-start-line="5" selection-start-column="17" selection-end-line="5" selection-end-column="17" />
           <folding />
         </state>
       </provider>
@@ -1431,7 +1390,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader_tbx.SingleTransducerImport.pyt.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="208">
+        <state relative-caret-position="0">
           <caret line="0" column="2608" lean-forward="false" selection-start-line="0" selection-start-column="2608" selection-end-line="0" selection-end-column="2608" />
           <folding>
             <element signature="e#705#709#0" expanded="true" />
@@ -1662,6 +1621,45 @@
             <element signature="e#5347#5351#0" expanded="true" />
             <element signature="e#5351#5355#0" expanded="true" />
             <element signature="e#5359#5363#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/loggerloader/data_fixers.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1504">
+          <caret line="242" column="132" lean-forward="false" selection-start-line="242" selection-start-column="132" selection-end-line="242" selection-end-column="132" />
+          <folding>
+            <element signature="e#0#82#0" expanded="true" />
+            <element signature="e#3886#4168#0" expanded="false" />
+            <element signature="e#4209#5906#0" expanded="false" />
+            <element signature="e#5952#7010#0" expanded="false" />
+            <element signature="e#7076#7961#0" expanded="false" />
+            <element signature="e#8008#8990#0" expanded="false" />
+            <element signature="e#9129#10534#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/loggerloader/transport.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="992">
+          <caret line="239" column="81" lean-forward="true" selection-start-line="239" selection-start-column="81" selection-end-line="239" selection-end-column="81" />
+          <folding>
+            <element signature="e#1#83#0" expanded="true" />
+            <element signature="e#252#2689#0" expanded="false" />
+            <element signature="e#2720#5630#0" expanded="false" />
+            <element signature="e#5661#7315#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/loggerloader_tbx.pyt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="512">
+          <caret line="62" column="37" lean-forward="true" selection-start-line="62" selection-start-column="37" selection-end-line="62" selection-end-column="37" />
+          <folding>
+            <element signature="e#0#82#0" expanded="true" />
           </folding>
         </state>
       </provider>

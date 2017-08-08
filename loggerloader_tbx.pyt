@@ -2,9 +2,14 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import arcpy
 arcpy.env.overwriteOutput = True
 import pandas as pd
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
+import matplotlib.ticker as tick
 import loggerloader as ll
 import datetime
 import os
+from pylab import rcParams
+rcParams['figure.figsize'] = 15, 10
 
 class wellimport(object):
 
@@ -24,7 +29,8 @@ class wellimport(object):
         self.filedict = None
         self.man_file = None
         self.save_location = None
-
+        self.should_plot = None
+        self.chart_out = None
 
     def one_well(self):
 
@@ -53,10 +59,8 @@ class wellimport(object):
 
         df = ll.well_baro_merge(well, baro, barocolumn='Level', wellcolumn='Level', outcolumn='corrwl', vented=False,
                         sampint=60)
-        writer = pd.ExcelWriter(self.save_location + '.xlsx')
 
-        df.to_excel(writer, 'Sheet1')
-        writer.save()
+        df.to_csv(self.save_location)
 
     def remove_bp_drift(self):
 
@@ -64,18 +68,50 @@ class wellimport(object):
         baro = ll.new_trans_imp(self.baro_file)
 
         man = pd.DataFrame(
-            {'DateTime': [self.man_startdate, self.man_endate],
-             'MeasuredDTW': [self.man_start_level, self.man_end_level]}).set_index('DateTime')
+            {'DateTime': [self.man_startdate, self.man_enddate],
+             'MeasuredDTW': [self.man_start_level*-1, self.man_end_level*-1]}).set_index('DateTime')
 
         corrwl = ll.well_baro_merge(well, baro, barocolumn='Level', wellcolumn='Level', outcolumn='corrwl', vented=False,
                         sampint=60)
 
         dft = ll.fix_drift(corrwl, man, meas='corrwl', manmeas='MeasuredDTW')
         drift = round(float(dft[1]['drift'].values[0]), 3)
-        writer = pd.ExcelWriter(self.save_location + '.xlsx')
+
         arcpy.AddMessage("Drift is {:} feet".format(drift))
-        dft.to_excel(writer, 'Sheet1')
-        writer.save()
+        dft[0].to_csv(self.save_location)
+
+        if self.should_plot:
+            pdf_pages = PdfPages(self.chart_out)
+            plt.figure()
+            # plot data
+            df = dft[0]
+            y1 = df['DTW_WL'].values
+            y2 = df['barometer'].values
+            x1 = df.index.values
+            x2 = df.index.values
+
+            x4 = man.index
+            y4 = man['MeasuredDTW']
+            fig, ax1 = plt.subplots()
+            plt.xticks(rotation=70)
+            ax1.scatter(x4, y4, color='purple')
+            ax1.plot(x1, y1, color='blue', label='Water Level')
+            ax1.set_ylabel('Water Level Elevation', color='blue')
+            ax1.set_ylim(min(y1), max(y1))
+            y_formatter = tick.ScalarFormatter(useOffset=False)
+            ax1.yaxis.set_major_formatter(y_formatter)
+            ax2 = ax1.twinx()
+            ax2.set_ylabel('Barometric Pressure (ft)', color='red')
+            ax2.plot(x2, y2, color='red', label='Barometric pressure (ft)')
+            h1, l1 = ax1.get_legend_handles_labels()
+            h2, l2 = ax2.get_legend_handles_labels()
+            ax1.legend(h1 + h2, l1 + l2, loc=3)
+            plt.xlim(df.first_valid_index() - datetime.timedelta(days=3),
+                     df.last_valid_index() + datetime.timedelta(days=3))
+
+            pdf_pages.savefig(fig)
+            plt.close()
+            pdf_pages.close()
 
     def get_ftype(self,x):
         if x[1] == 'Solinst':
@@ -330,7 +366,7 @@ class SimpleBaroFix(object):
             parameter("Output Folder","save_location","DEFile",direction="Output")]
         self.parameters[0].filter.list = ['csv','xle']
         self.parameters[1].filter.list = ['csv', 'xle']
-        self.parameters[2].filter.list = ['xlsx']
+        self.parameters[2].filter.list = ['csv']
 
     def getParameterInfo(self):
         """Define parameter definitions; http://joelmccune.com/lessons-learned-and-ideas-for-python-toolbox-coding/"""
@@ -371,9 +407,14 @@ class SimpleBaroDriftFix(object):
             parameter("Date of Final Manual Measurement","enddate","Date"),
             parameter("Initial Manual Measurement","startlevel","GPDouble"),
             parameter("Final Manual Measurement","endlevel","GPDouble"),
-            parameter("Output Folder","save_location","DEFile",direction="Output")]
+            parameter("Output Folder","save_location","DEFile",direction="Output"),
+            parameter("Create a Chart?","should_plot","GPBoolean",parameterType="Optional"),
+            parameter("Chart output location","chart_out","DEFile",parameterType="Optional",direction="Output")
+        ]
         self.parameters[0].filter.list = ['csv','xle']
         self.parameters[1].filter.list = ['csv', 'xle']
+        self.parameters[6].filter.list = ['csv']
+
 
     def getParameterInfo(self):
         """Define parameter definitions; http://joelmccune.com/lessons-learned-and-ideas-for-python-toolbox-coding/"""
@@ -386,6 +427,9 @@ class SimpleBaroDriftFix(object):
     def updateParameters(self, parameters):
         """Modify the values and properties of parameters before internal
         validation is performed.  This method is called whenever a parameter"""
+        if parameters[7].value and parameters[0].value and arcpy.Exists(parameters[7].value):
+
+            self.parameters[8].filter.list = ['pdf']
         return
 
     def updateMessages(self, parameters):
@@ -404,5 +448,6 @@ class SimpleBaroDriftFix(object):
         wellimp.man_start_level = parameters[4].value
         wellimp.man_end_level = parameters[5].value
         wellimp.save_location = parameters[6].valueAsText
-
+        wellimp.should_plot = parameters[7].value
+        wellimp.chart_out = parameters[8].valueAsText
         wellimp.remove_bp_drift()
