@@ -3,3 +3,4 @@ Numpy >= 0.7.0
 Matplotlib >= 1.1
 xmltodict >= 0.6.2
 xlrd >= 0.5.4
+openpyxl >= 2.4.0

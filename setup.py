@@ -21,7 +21,7 @@ except:
 setup(name='loggerloader',
       description = 'Interface with xle files; analyze hydrographs; plot hydrographs',
       long_description = long_description,
-      version = '0.2.9',
+      version = '0.2.10',
       author = 'Paul Inkenbrandt',
       author_email = 'paulinkenbrandt@utah.gov',
       url = 'https://github.com/inkenbrandt/loggerloader',
@@ -30,7 +30,8 @@ setup(name='loggerloader',
                         "Numpy >= 0.6.0",
                         "Matplotlib >= 1.1", 
                         "xmltodict >= 0.5.2",
-                        "xlrd >= 0.5.4"],
+                        "xlrd >= 0.5.4",
+                        "openpyxl >= 2.4.0"],
       packages = find_packages(exclude=['contrib', 'docs', 'tests*']))
 
 

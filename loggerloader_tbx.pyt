@@ -23,6 +23,8 @@ class wellimport(object):
         self.welldict = None
         self.filedict = None
         self.man_file = None
+        self.save_location = None
+
 
     def one_well(self):
 
@@ -43,6 +45,37 @@ class wellimport(object):
         arcpy.AddMessage('Well Imported!')
 
         return
+
+    def remove_bp(self):
+
+        well = ll.new_trans_imp(self.well_file)
+        baro = ll.new_trans_imp(self.baro_file)
+
+        df = ll.well_baro_merge(well, baro, barocolumn='Level', wellcolumn='Level', outcolumn='corrwl', vented=False,
+                        sampint=60)
+        writer = pd.ExcelWriter(self.save_location + '.xlsx')
+
+        df.to_excel(writer, 'Sheet1')
+        writer.save()
+
+    def remove_bp_drift(self):
+
+        well = ll.new_trans_imp(self.well_file)
+        baro = ll.new_trans_imp(self.baro_file)
+
+        man = pd.DataFrame(
+            {'DateTime': [self.man_startdate, self.man_endate],
+             'MeasuredDTW': [self.man_start_level, self.man_end_level]}).set_index('DateTime')
+
+        corrwl = ll.well_baro_merge(well, baro, barocolumn='Level', wellcolumn='Level', outcolumn='corrwl', vented=False,
+                        sampint=60)
+
+        dft = ll.fix_drift(corrwl, man, meas='corrwl', manmeas='MeasuredDTW')
+        drift = round(float(dft[1]['drift'].values[0]), 3)
+        writer = pd.ExcelWriter(self.save_location + '.xlsx')
+        arcpy.AddMessage("Drift is {:} feet".format(drift))
+        dft.to_excel(writer, 'Sheet1')
+        writer.save()
 
     def get_ftype(self,x):
         if x[1] == 'Solinst':
@@ -138,12 +171,12 @@ class Toolbox(object):
         self.label =  "Loggerloader"
         self.alias  = "loggerloader"
         # List of tool classes associated with this toolbox
-        self.tools = [SingleTransducerImport, MultTransducerImport]
+        self.tools = [SingleTransducerImport, MultTransducerImport, SimpleBaroFix, SimpleBaroDriftFix]
 
 
 class SingleTransducerImport(object):
     def __init__(self):
-        self.label = "Single Transducer Import"
+        self.label = "Single Transducer Import to SDE"
         self.description = """Imports XLE or CSV file based on well information, barometric pressure and manual data """
         self.canRunInBackground = False
         self.parameters=[
@@ -209,7 +242,7 @@ class SingleTransducerImport(object):
 class MultTransducerImport(object):
 
     def __init__(self):
-        self.label = 'Multiple Transducer Import'
+        self.label = 'Multiple Transducer Import to SDE'
         self.description = """Imports XLE or CSV file based on well information, barometric pressure and manual data """
         self.canRunInBackground = False
         self.parameters=[
@@ -285,3 +318,91 @@ class MultTransducerImport(object):
         wellimp.man_file = parameters[3].valueAsText
 
         wellimp.many_wells()
+
+class SimpleBaroFix(object):
+    def __init__(self):
+        self.label = "Simple Barometer Pressure Removal"
+        self.description = """Cleans nonvented transducer data of barometric pressure based on transducer data and barometric pressure. """
+        self.canRunInBackground = False
+        self.parameters=[
+            parameter("Well XLE or CSV","well_file","DEFile"),
+            parameter("Barometer XLE or CSV","baro_file","DEFile"),
+            parameter("Output Folder","save_location","DEFile",direction="Output")]
+        self.parameters[0].filter.list = ['csv','xle']
+        self.parameters[1].filter.list = ['csv', 'xle']
+        self.parameters[2].filter.list = ['xlsx']
+
+    def getParameterInfo(self):
+        """Define parameter definitions; http://joelmccune.com/lessons-learned-and-ideas-for-python-toolbox-coding/"""
+        return self.parameters
+
+    def isLicensed(self):
+        """Set whether tool is licensed to execute."""
+        return True
+
+    def updateParameters(self, parameters):
+        """Modify the values and properties of parameters before internal
+        validation is performed.  This method is called whenever a parameter"""
+        return
+
+    def updateMessages(self, parameters):
+        """Modify the messages created by internal validation for each tool
+        parameter.  This method is called after internal validation."""
+        return
+
+    def execute(self, parameters, messages):
+
+        wellimp = wellimport()
+
+        wellimp.well_file = parameters[0].valueAsText
+        wellimp.baro_file = parameters[1].valueAsText
+        wellimp.save_location = parameters[2].valueAsText
+        wellimp.remove_bp()
+
+class SimpleBaroDriftFix(object):
+    def __init__(self):
+        self.label = "Simple Barometer Pressure and Drift Removal"
+        self.description = """Cleans nonvented transducer data of barometric pressure based on transducer data and barometric pressure. """
+        self.canRunInBackground = False
+        self.parameters=[
+            parameter("Well XLE or CSV","well_file","DEFile"),
+            parameter("Barometer XLE or CSV","baro_file","DEFile"),
+            parameter("Date of Initial Manual Measurement","startdate","Date"),
+            parameter("Date of Final Manual Measurement","enddate","Date"),
+            parameter("Initial Manual Measurement","startlevel","GPDouble"),
+            parameter("Final Manual Measurement","endlevel","GPDouble"),
+            parameter("Output Folder","save_location","DEFile",direction="Output")]
+        self.parameters[0].filter.list = ['csv','xle']
+        self.parameters[1].filter.list = ['csv', 'xle']
+
+    def getParameterInfo(self):
+        """Define parameter definitions; http://joelmccune.com/lessons-learned-and-ideas-for-python-toolbox-coding/"""
+        return self.parameters
+
+    def isLicensed(self):
+        """Set whether tool is licensed to execute."""
+        return True
+
+    def updateParameters(self, parameters):
+        """Modify the values and properties of parameters before internal
+        validation is performed.  This method is called whenever a parameter"""
+        return
+
+    def updateMessages(self, parameters):
+        """Modify the messages created by internal validation for each tool
+        parameter.  This method is called after internal validation."""
+        return
+
+    def execute(self, parameters, messages):
+
+        wellimp = wellimport()
+
+        wellimp.well_file = parameters[0].valueAsText
+        wellimp.baro_file = parameters[1].valueAsText
+        wellimp.man_startdate = parameters[2].valueAsText
+        wellimp.man_enddate = parameters[3].valueAsText
+        wellimp.man_start_level = parameters[4].value
+        wellimp.man_end_level = parameters[5].value
+        wellimp.save_location = parameters[6].valueAsText
+
+        wellimp.remove_bp_drift()
