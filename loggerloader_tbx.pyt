@@ -71,10 +71,10 @@ class wellimport(object):
 
         iddict = dict(zip(df['LocationName'].values,df['AltLocationID'].values))
         wellidlist = [iddict.get(well) for well in self.wellname]
-        well_table = df.set_index(['AltLocationID'])
+        welltable = df.set_index(['AltLocationID'])
         namedict = dict(zip(df['AltLocationID'].values,df['LocationName'].values))
         # import barometric data
-        barolist = well_table[well_table['LocationType']=='Barometer'].index
+        barolist = welltable[welltable['LocationType']=='Barometer'].index
         arcpy.AddMessage('Barometers in this file: {:}'.format(barolist))
 
         xles = ll.xle_head_table(self.xledir + '/')
@@ -84,8 +84,8 @@ class wellimport(object):
         file_info_table = pd.concat([xles, csvs[0]])
         arcpy.AddMessage(file_info_table.columns)
         file_info_table['WellID'] = file_info_table[['fileroot','trans type']].apply(lambda x: self.get_ftype(x),1)
-        well_table = pd.merge(well_table, file_info_table, left_index=True, right_on = 'WellID', how='left')
-        file_info_table.to_csv(self.xledir + '/file_info_table.csv')
+        well_table = pd.merge(welltable, file_info_table, left_index=True, right_on = 'WellID', how='left')
+        well_table.to_csv(self.xledir + '/file_info_table.csv')
         arcpy.AddMessage("Header Table with well information created at {:}/file_info_table.csv".format(self.xledir))
         maxtime = max(pd.to_datetime(file_info_table['Stop_time']))
         mintime = min(pd.to_datetime(file_info_table['Start_time']))
