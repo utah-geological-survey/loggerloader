@@ -35,7 +35,7 @@
       <file leaf-file-name="loggerloader_tbx.pyt" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader_tbx.pyt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="181">
+            <state relative-caret-position="-71">
               <caret line="331" column="0" lean-forward="false" selection-start-line="331" selection-start-column="0" selection-end-line="331" selection-end-column="0" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
@@ -52,6 +52,22 @@
                 <element signature="e#20962#21844#0" expanded="false" />
                 <element signature="e#21914#23119#0" expanded="false" />
                 <element signature="e#23253#25815#0" expanded="false" />
+                <element signature="e#25855#26250#0" expanded="false" />
+                <element signature="e#26361#30132#0" expanded="false" />
+                <element signature="e#30180#31805#0" expanded="false" />
+                <element signature="e#31853#33420#0" expanded="false" />
+                <element signature="e#33544#34137#0" expanded="false" />
+                <element signature="e#34314#35375#0" expanded="false" />
+                <element signature="e#35411#35698#0" expanded="false" />
+                <element signature="e#35740#37742#0" expanded="false" />
+                <element signature="e#37779#37904#0" expanded="false" />
+                <element signature="e#37940#41046#0" expanded="false" />
+                <element signature="e#41160#41740#0" expanded="false" />
+                <element signature="e#41770#42027#0" expanded="false" />
+                <element signature="e#42073#44986#0" expanded="false" />
+                <element signature="e#45029#48954#0" expanded="false" />
+                <element signature="e#48989#50624#0" expanded="false" />
+                <element signature="e#50664#53309#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -350,13 +366,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
-    </task>
-    <task id="LOCAL-00035" summary="fixed clarks">
-      <created>1501183487642</created>
-      <option name="number" value="00035" />
-      <option name="presentableId" value="LOCAL-00035" />
-      <option name="project" value="LOCAL" />
-      <updated>1501183487642</updated>
     </task>
     <task id="LOCAL-00036" summary="fixed clarks">
       <created>1501184322691</created>
@@ -694,7 +703,14 @@
       <option name="project" value="LOCAL" />
       <updated>1502232806385</updated>
     </task>
-    <option name="localTasksCounter" value="84" />
+    <task id="LOCAL-00084" summary="openpyxl requirement">
+      <created>1502235691929</created>
+      <option name="number" value="00084" />
+      <option name="presentableId" value="LOCAL-00084" />
+      <option name="project" value="LOCAL" />
+      <updated>1502235691929</updated>
+    </task>
+    <option name="localTasksCounter" value="85" />
     <servers />
   </component>
   <component name="TodoView" selected-index="1">
@@ -1368,7 +1384,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader_tbx.pyt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="181">
+        <state relative-caret-position="-71">
           <caret line="331" column="0" lean-forward="false" selection-start-line="331" selection-start-column="0" selection-end-line="331" selection-end-column="0" />
           <folding>
             <element signature="e#0#82#0" expanded="true" />
@@ -1385,6 +1401,22 @@
             <element signature="e#20962#21844#0" expanded="false" />
             <element signature="e#21914#23119#0" expanded="false" />
             <element signature="e#23253#25815#0" expanded="false" />
+            <element signature="e#25855#26250#0" expanded="false" />
+            <element signature="e#26361#30132#0" expanded="false" />
+            <element signature="e#30180#31805#0" expanded="false" />
+            <element signature="e#31853#33420#0" expanded="false" />
+            <element signature="e#33544#34137#0" expanded="false" />
+            <element signature="e#34314#35375#0" expanded="false" />
+            <element signature="e#35411#35698#0" expanded="false" />
+            <element signature="e#35740#37742#0" expanded="false" />
+            <element signature="e#37779#37904#0" expanded="false" />
+            <element signature="e#37940#41046#0" expanded="false" />
+            <element signature="e#41160#41740#0" expanded="false" />
+            <element signature="e#41770#42027#0" expanded="false" />
+            <element signature="e#42073#44986#0" expanded="false" />
+            <element signature="e#45029#48954#0" expanded="false" />
+            <element signature="e#48989#50624#0" expanded="false" />
+            <element signature="e#50664#53309#0" expanded="false" />
           </folding>
         </state>
       </provider>
