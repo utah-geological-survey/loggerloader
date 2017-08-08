@@ -84,6 +84,7 @@ class wellimport(object):
         file_info_table = pd.concat([xles, csvs[0]])
         arcpy.AddMessage(file_info_table.columns)
         file_info_table['WellID'] = file_info_table[['fileroot','trans type']].apply(lambda x: self.get_ftype(x),1)
+        well_table = pd.merge(well_table, file_info_table, left_index=True, right_on = 'WellID', how='left')
         file_info_table.to_csv(self.xledir + '/file_info_table.csv')
         arcpy.AddMessage("Header Table with well information created at {:}/file_info_table.csv".format(self.xledir))
         maxtime = max(pd.to_datetime(file_info_table['Stop_time']))
