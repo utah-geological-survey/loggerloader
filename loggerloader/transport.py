@@ -299,13 +299,10 @@ def simp_imp_well(well_table, file, baro_out, wellid, manual, gw_reading_table="
     well = new_trans_imp(file)
 
     # remove barometric pressure
-
-    stickup = well_table.loc[wellid, 'Offset']
-    well_elev = well_table.loc[wellid, 'Altitude']
     be = well_table.loc[wellid, 'BaroEfficiency']
     arcpy.AddMessage(be)
-    if be < 0:
-        be = None
+    if len(be) > 1:
+        be = be[0]
     file_ext = os.path.splitext(file)[1]
     if file_ext == '.xle':
         trans_type = 'Solinst'

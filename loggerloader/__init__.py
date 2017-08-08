@@ -12,7 +12,7 @@ except ImportError:
 
 
 
-__version__ = "0.2.10"
+__version__ = "0.2.11"
 
 __all__ = ['imp_one_well', 'get_field_names', 'get_gw_elevs', 'get_location_data', 'get_stickup_elev',
            'getwellid', 'getfilename', 'find_extreme', 'table_to_pandas_dataframe', 'fcl', 'fix_drift',

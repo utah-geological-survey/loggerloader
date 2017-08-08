@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="">
+    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="openpyxl requirement">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/loggerloader/data_fixers.py" afterPath="$PROJECT_DIR$/loggerloader/data_fixers.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/VERSION" afterPath="$PROJECT_DIR$/VERSION" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/loggerloader/__init__.py" afterPath="$PROJECT_DIR$/loggerloader/__init__.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/loggerloader/transport.py" afterPath="$PROJECT_DIR$/loggerloader/transport.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/loggerloader_tbx.pyt" afterPath="$PROJECT_DIR$/loggerloader_tbx.pyt" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/loggerloader_tbx.pyt.xml" afterPath="$PROJECT_DIR$/loggerloader_tbx.pyt.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/setup.py" afterPath="$PROJECT_DIR$/setup.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -37,8 +37,8 @@
       <file leaf-file-name="transport.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/transport.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="272">
-              <caret line="305" column="24" lean-forward="true" selection-start-line="305" selection-start-column="24" selection-end-line="305" selection-end-column="24" />
+            <state relative-caret-position="208">
+              <caret line="301" column="49" lean-forward="false" selection-start-line="301" selection-start-column="49" selection-end-line="301" selection-end-column="49" />
               <folding>
                 <element signature="e#1#83#0" expanded="true" />
                 <element signature="e#252#2689#0" expanded="false" />
@@ -53,7 +53,7 @@
         <entry file="file://$PROJECT_DIR$/loggerloader_tbx.pyt">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="-1045">
-              <caret line="75" column="0" lean-forward="true" selection-start-line="75" selection-start-column="0" selection-end-line="75" selection-end-column="0" />
+              <caret line="75" column="0" lean-forward="false" selection-start-line="75" selection-start-column="0" selection-end-line="75" selection-end-column="0" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
               </folding>
@@ -65,7 +65,7 @@
         <entry file="file://$PROJECT_DIR$/loggerloader/data_fixers.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="627">
-              <caret line="63" column="0" lean-forward="true" selection-start-line="63" selection-start-column="0" selection-end-line="63" selection-end-column="0" />
+              <caret line="63" column="0" lean-forward="false" selection-start-line="63" selection-start-column="0" selection-end-line="63" selection-end-column="0" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
                 <element signature="e#4209#5906#0" expanded="false" />
@@ -103,7 +103,7 @@
       <file leaf-file-name="loggerloader_tbx.SingleTransducerImport.pyt.xml" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/loggerloader_tbx.SingleTransducerImport.pyt.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="208">
+            <state relative-caret-position="0">
               <caret line="0" column="2608" lean-forward="false" selection-start-line="0" selection-start-column="2608" selection-end-line="0" selection-end-column="2608" />
               <folding>
                 <element signature="e#705#709#0" expanded="true" />
@@ -436,13 +436,13 @@
         <option value="$PROJECT_DIR$/loggerloader/header_tables.py" />
         <option value="$PROJECT_DIR$/loggerloader/utilities.py" />
         <option value="C:/UGSSharedResources/GSL_GWchemistry/Analyses/Existing_analysis/paramgroups.py" />
-        <option value="$PROJECT_DIR$/setup.py" />
-        <option value="$PROJECT_DIR$/loggerloader/__init__.py" />
-        <option value="$PROJECT_DIR$/VERSION" />
         <option value="$PROJECT_DIR$/requirements.txt" />
         <option value="$PROJECT_DIR$/loggerloader_tbx.pyt" />
         <option value="$PROJECT_DIR$/loggerloader/data_fixers.py" />
         <option value="$PROJECT_DIR$/loggerloader/transport.py" />
+        <option value="$PROJECT_DIR$/loggerloader/__init__.py" />
+        <option value="$PROJECT_DIR$/setup.py" />
+        <option value="$PROJECT_DIR$/VERSION" />
       </list>
     </option>
   </component>
@@ -683,13 +683,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
-    </task>
-    <task id="LOCAL-00032" summary="added imp_well function; smoothed out table usage">
-      <created>1501181005671</created>
-      <option name="number" value="00032" />
-      <option name="presentableId" value="LOCAL-00032" />
-      <option name="project" value="LOCAL" />
-      <updated>1501181005671</updated>
     </task>
     <task id="LOCAL-00033" summary="added imp_well function; smoothed out table usage">
       <created>1501182256626</created>
@@ -1027,7 +1020,14 @@
       <option name="project" value="LOCAL" />
       <updated>1502213253252</updated>
     </task>
-    <option name="localTasksCounter" value="81" />
+    <task id="LOCAL-00081" summary="openpyxl requirement">
+      <created>1502230801488</created>
+      <option name="number" value="00081" />
+      <option name="presentableId" value="LOCAL-00081" />
+      <option name="project" value="LOCAL" />
+      <updated>1502230801488</updated>
+    </task>
+    <option name="localTasksCounter" value="82" />
     <servers />
   </component>
   <component name="TodoView" selected-index="1">
@@ -1325,36 +1325,10 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/header_tables.py" />
-    <entry file="file://$PROJECT_DIR$/setup.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="368">
-          <caret line="23" column="23" lean-forward="false" selection-start-line="23" selection-start-column="23" selection-end-line="23" selection-end-column="23" />
-          <folding>
-            <element signature="e#0#82#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/loggerloader/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="224">
-          <caret line="14" column="21" lean-forward="false" selection-start-line="14" selection-start-column="21" selection-end-line="14" selection-end-column="21" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/requirements.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="80">
           <caret line="5" column="17" lean-forward="false" selection-start-line="5" selection-start-column="17" selection-end-line="5" selection-end-column="17" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/VERSION">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="6" lean-forward="false" selection-start-line="0" selection-start-column="6" selection-end-line="0" selection-end-column="6" />
           <folding />
         </state>
       </provider>
@@ -1396,7 +1370,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader_tbx.SingleTransducerImport.pyt.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="208">
+        <state relative-caret-position="0">
           <caret line="0" column="2608" lean-forward="false" selection-start-line="0" selection-start-column="2608" selection-end-line="0" selection-end-column="2608" />
           <folding>
             <element signature="e#705#709#0" expanded="true" />
@@ -1634,7 +1608,7 @@
     <entry file="file://$PROJECT_DIR$/loggerloader_tbx.pyt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-1045">
-          <caret line="75" column="0" lean-forward="true" selection-start-line="75" selection-start-column="0" selection-end-line="75" selection-end-column="0" />
+          <caret line="75" column="0" lean-forward="false" selection-start-line="75" selection-start-column="0" selection-end-line="75" selection-end-column="0" />
           <folding>
             <element signature="e#0#82#0" expanded="true" />
           </folding>
@@ -1644,7 +1618,7 @@
     <entry file="file://$PROJECT_DIR$/loggerloader/data_fixers.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="627">
-          <caret line="63" column="0" lean-forward="true" selection-start-line="63" selection-start-column="0" selection-end-line="63" selection-end-column="0" />
+          <caret line="63" column="0" lean-forward="false" selection-start-line="63" selection-start-column="0" selection-end-line="63" selection-end-column="0" />
           <folding>
             <element signature="e#0#82#0" expanded="true" />
             <element signature="e#4209#5906#0" expanded="false" />
@@ -1656,10 +1630,36 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/loggerloader/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="224">
+          <caret line="14" column="21" lean-forward="false" selection-start-line="14" selection-start-column="21" selection-end-line="14" selection-end-column="21" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/setup.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="368">
+          <caret line="23" column="23" lean-forward="false" selection-start-line="23" selection-start-column="23" selection-end-line="23" selection-end-column="23" />
+          <folding>
+            <element signature="e#0#82#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/VERSION">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="6" lean-forward="false" selection-start-line="0" selection-start-column="6" selection-end-line="0" selection-end-column="6" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/transport.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="272">
-          <caret line="305" column="24" lean-forward="true" selection-start-line="305" selection-start-column="24" selection-end-line="305" selection-end-column="24" />
+        <state relative-caret-position="208">
+          <caret line="301" column="49" lean-forward="false" selection-start-line="301" selection-start-column="49" selection-end-line="301" selection-end-column="49" />
           <folding>
             <element signature="e#1#83#0" expanded="true" />
             <element signature="e#252#2689#0" expanded="false" />
