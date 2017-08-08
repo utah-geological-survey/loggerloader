@@ -82,7 +82,7 @@ class wellimport(object):
 
         if self.should_plot:
             pdf_pages = PdfPages(self.chart_out)
-            plt.figure()
+
             # plot data
             df = dft[0]
             y1 = df['DTW_WL'].values
@@ -96,7 +96,7 @@ class wellimport(object):
             plt.xticks(rotation=70)
             ax1.scatter(x4, y4, color='purple')
             ax1.plot(x1, y1, color='blue', label='Water Level')
-            ax1.set_ylabel('Water Level Elevation', color='blue')
+            ax1.set_ylabel('Depth to Water (ft)', color='blue')
             ax1.set_ylim(min(y1), max(y1))
             y_formatter = tick.ScalarFormatter(useOffset=False)
             ax1.yaxis.set_major_formatter(y_formatter)
@@ -121,72 +121,67 @@ class wellimport(object):
         return self.filedict.get(x[0]+ft)
 
     def many_wells(self):
-
+        """Used by the MultTransducerImport tool to import multiple wells into the SDE"""
         arcpy.env.workspace = self.sde_conn
         loc_table = "UGGP.UGGPADMIN.UGS_NGWMN_Monitoring_Locations"
 
+        # create empty dataframe to house well data
         field_names = ['LocationID', 'LocationName', 'LocationType', 'LocationDesc', 'AltLocationID', 'Altitude',
                        'AltitudeUnits', 'WellDepth', 'SiteID', 'Offset', 'LoggerType', 'BaroEfficiency',
                        'BaroEfficiencyStart', 'BaroLoggerType']
         df = pd.DataFrame(columns=field_names)
 
-        # use a search cursor to iterate rows
+        # populate dataframe with data from SDE well table
         search_cursor = arcpy.da.SearchCursor(loc_table, field_names)
-
-        # iterate the rows
         for row in search_cursor:
             # combine the field names and row items together, and append them
             df = df.append(dict(zip(field_names, row)), ignore_index=True)
 
-        iddict = dict(zip(df['LocationName'].values,df['AltLocationID'].values))
-        wellidlist = [iddict.get(well) for well in self.wellname]
-        welltable = df.set_index(['AltLocationID'])
-        namedict = dict(zip(df['AltLocationID'].values,df['LocationName'].values))
-        # import barometric data
-        barolist = welltable[welltable['LocationType']=='Barometer'].index
-        arcpy.AddMessage('Barometers in this file: {:}'.format(barolist))
-
+        # examine and tabulate header information from files
         xles = ll.xle_head_table(self.xledir + '/')
         arcpy.AddMessage('xles examined')
         csvs = ll.csv_info_table(self.xledir + '/')
         arcpy.AddMessage('csvs examined')
         file_info_table = pd.concat([xles, csvs[0]])
-        arcpy.AddMessage(file_info_table.columns)
-        file_info_table['WellID'] = file_info_table[['fileroot','trans type']].apply(lambda x: self.get_ftype(x),1)
-        well_table = pd.merge(welltable, file_info_table, left_index=True, right_on = 'WellID', how='left')
+
+        # combine header table with the sde table
+        file_info_table['WellName'] = file_info_table[['fileroot','trans type']].apply(lambda x: self.get_ftype(x),1)
+        well_table = pd.merge(file_info_table, df, right_on='LocationName', left_on = 'WellName', how='left')
+        well_table.set_index('AltLocationID',inplace=True)
+        well_table['WellID'] = well_table.index
         well_table.to_csv(self.xledir + '/file_info_table.csv')
         arcpy.AddMessage("Header Table with well information created at {:}/file_info_table.csv".format(self.xledir))
         maxtime = max(pd.to_datetime(file_info_table['Stop_time']))
         mintime = min(pd.to_datetime(file_info_table['Start_time']))
         arcpy.AddMessage("Data span from {:} to {:}.".format(mintime,maxtime))
 
+        # upload barometric pressure data
         baro_out = {}
-        for bar in barolist:
-            if bar in wellidlist:
-                barfile = self.welldict.get(namedict.get(bar))
+        baros = well_table[well_table['LocationType'] == 'Barometer']
 
-                df = ll.new_trans_imp(self.xledir+"/"+barfile)
-                ll.upload_bp_data(df,bar)
-                baro_out[bar] = ll.get_location_data(bar, mintime, maxtime + datetime.timedelta(days=1))
-                arcpy.AddMessage('Barometer {:} Imported'.format(namedict.get(bar)))
+        for b in range(len(baros)):
 
+            barline = baros.iloc[b,:]
+            df = ll.new_trans_imp(barline['full_filepath'])
+            ll.upload_bp_data(df, baros.index[b])
+            baro_out[baros.index[b]] = ll.get_location_data(baros.index[b], mintime, maxtime + datetime.timedelta(days=1))
+            arcpy.AddMessage('Barometer {:} Imported'.format(barline['LocationName']))
+
+        # upload manual data from csv file
         man = pd.read_csv(self.man_file)
 
-        for i in range(len(wellidlist)):
-
-            if well_table.loc[wellidlist[i],'LocationType'] == 'Well':
-                ll.simp_imp_well(well_table, self.xledir+"/"+self.welldict.get(namedict.get(str(wellidlist[i]))),
-                                 baro_out, wellidlist[i], man)
-                arcpy.AddMessage("Well {:} imported".format(well_table.loc[wellidlist[i], 'LocationName']))
+        # import well data
+        wells = well_table[well_table['LocationType'] == 'Well']
+        for i in range(len(wells)):
+            well_line = wells.iloc[i,:]
+            arcpy.AddMessage("Importing {:}".format(well_line['LocationName']))
+            ll.simp_imp_well(well_table, well_line['full_filepath'], baro_out, wells.index[i], man)
+            arcpy.AddMessage("Well {:} imported".format(well_line['LocationName']))
         return
 
 def parameter(displayName, name, datatype, parameterType='Required', direction='Input', defaultValue=None):
-    '''
-    The parameter implementation makes it a little difficult to
-    quickly create parameters with defaults. This method
-    prepopulates some of these values to make life easier while
-    also allowing setting a default value.
-    '''
+    """The parameter implementation makes it a little difficult to quickly create parameters with defaults. This method
+    prepopulates some of these values to make life easier while also allowing setting a default value."""
     # create parameter with a few default properties
     param = arcpy.Parameter(
         displayName=displayName,
@@ -206,14 +201,17 @@ class Toolbox(object):
     def __init__(self):
         self.label =  "Loggerloader"
         self.alias  = "loggerloader"
+
         # List of tool classes associated with this toolbox
         self.tools = [SingleTransducerImport, MultTransducerImport, SimpleBaroFix, SimpleBaroDriftFix]
 
 
 class SingleTransducerImport(object):
+
     def __init__(self):
         self.label = "Single Transducer Import to SDE"
-        self.description = """Imports XLE or CSV file based on well information, barometric pressure and manual data """
+        self.description = """Imports XLE or CSV file into UGS SDE based on well information, 
+        barometric pressure and manual data """
         self.canRunInBackground = False
         self.parameters=[
             parameter("Input SDE Connection","in_conn_file","DEWorkspace",
@@ -238,9 +236,8 @@ class SingleTransducerImport(object):
         return True
 
     def updateParameters(self, parameters):
-        """Modify the values and properties of parameters before internal
-        validation is performed.  This method is called whenever a parameter
-        has been changed."""
+        """Modify the values and properties of parameters before internal validation is performed.
+        This method is called whenever a parameter has been changed."""
         if parameters[0].value and arcpy.Exists(parameters[0].value):
             arcpy.env.workspace = parameters[0].value
             loc_table = "UGGP.UGGPADMIN.UGS_NGWMN_Monitoring_Locations"
