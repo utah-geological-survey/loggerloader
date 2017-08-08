@@ -298,11 +298,6 @@ def simp_imp_well(well_table, file, baro_out, wellid, manual, gw_reading_table="
     # import well file
     well = new_trans_imp(file)
 
-    # remove barometric pressure
-    be = well_table.loc[wellid, 'BaroEfficiency']
-    arcpy.AddMessage(be)
-    if len(be) > 1:
-        be = be[0]
     file_ext = os.path.splitext(file)[1]
     if file_ext == '.xle':
         trans_type = 'Solinst'
@@ -318,7 +313,7 @@ def simp_imp_well(well_table, file, baro_out, wellid, manual, gw_reading_table="
 
     # be, intercept, r = clarks(corrwl, 'barometer', 'corrwl')
     # correct barometric efficiency
-    wls, be = correct_be(wellid, well_table, corrwl, be=be)
+    wls, be = correct_be(wellid, well_table, corrwl)
 
     # get manual groundwater elevations
     man, stickup, well_elev = get_gw_elevs(wellid, well_table, manual, stable_elev=True)
