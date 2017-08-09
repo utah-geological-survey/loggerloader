@@ -34,9 +34,13 @@ class wellimport(object):
         self.save_location = None
         self.should_plot = None
         self.chart_out = None
+        self.tol = None
+        self.stbl = None
+        self.ovrd = None
 
     def one_well(self):
-
+        """Used in SingleTransducerImport Class.  This tool leverages the imp_one_well function to load a single well
+        into the UGS SDE"""
         arcpy.env.workspace = self.sde_conn
         loc_table = "UGGP.UGGPADMIN.UGS_NGWMN_Monitoring_Locations"
 
@@ -48,11 +52,41 @@ class wellimport(object):
         if self.man_startdate  in ["#", "", None]:
             self.man_startdate, self.man_start_level, wlelev = self.find_extreme(self.wellid)
 
-        self.imp_one_well(self.well_file, self.baro_file, self.man_startdate, self.man_enddate, self.man_start_level,
-                        self.man_end_level, self.sde_conn, iddict.get(self.wellid))
+        df, man, be, drift = self.imp_one_well(self.well_file, self.baro_file, self.man_startdate, self.man_enddate, self.man_start_level,
+                        self.man_end_level, self.sde_conn, iddict.get(self.wellid), drift_tol=self.tol, override = self.ovrd)
+
+        if self.should_plot:
+            # plot data
+            pdf_pages = PdfPages(self.chart_out)
+            y1 = df['WATERELEVATION'].values
+            y2 = df['barometer'].values
+            x1 = df.index.values
+            x2 = df.index.values
+
+            x4 = man.index
+            y4 = man['Meas_GW_Elev']
+            fig, ax1 = plt.subplots()
+            ax1.scatter(x4, y4, color='purple')
+            ax1.plot(x1, y1, color='blue', label='Water Level Elevation')
+            ax1.set_ylabel('Water Level Elevation', color='blue')
+            ax1.set_ylim(min(df['WATERELEVATION']), max(df['WATERELEVATION']))
+            y_formatter = tick.ScalarFormatter(useOffset=False)
+            ax1.yaxis.set_major_formatter(y_formatter)
+            ax2 = ax1.twinx()
+            ax2.set_ylabel('Barometric Pressure (ft)', color='red')
+            ax2.plot(x2, y2, color='red', label='Barometric pressure (ft)')
+            h1, l1 = ax1.get_legend_handles_labels()
+            h2, l2 = ax2.get_legend_handles_labels()
+            ax1.legend(h1 + h2, l1 + l2, loc=3)
+            plt.xlim(df.first_valid_index() - datetime.timedelta(days=3),
+                     df.last_valid_index() + datetime.timedelta(days=3))
+            plt.title('Well: {:}  Drift: {:}  Baro. Eff.: {:}'.format(self.wellid, drift, be))
+            pdf_pages.savefig(fig)
+            plt.close()
+            pdf_pages.close()
 
         arcpy.AddMessage('Well Imported!')
-
+        arcpy.AddMessage(arcpy.GetMessages())
         return
 
     def new_xle_imp(self, infile):
@@ -240,13 +274,20 @@ class wellimport(object):
     def correct_be(self, site_number, well_table, welldata, be=None, meas='corrwl', baro='barometer'):
 
         if be:
-            pass
+            be = float(be)
         else:
             stdata = well_table[well_table['WellID'] == site_number]
-            be = float(stdata['BaroEfficiency'].values[0])
+            be = stdata['BaroEfficiency'].values[0]
+        if be is None:
+            be = 0
+        else:
+            be = float(be)
 
-        welldata['BAROEFFICIENCYLEVEL'] = welldata[[meas, baro]]. \
-            apply(lambda x: x[0] + be * x[1], 1)
+        if be == 0:
+            welldata['BAROEFFICIENCYLEVEL'] = welldata[meas]
+        else:
+            welldata['BAROEFFICIENCYLEVEL'] = welldata[[meas, baro]].apply(lambda x: x[0] + be * x[1], 1)
+
         return welldata, be
 
     def hourly_resample(self, df, bse=0, minutes=60):
@@ -329,7 +370,7 @@ class wellimport(object):
 
     def imp_one_well(self, well_file, baro_file, man_startdate, man_endate, man_start_level, man_end_level, conn_file_root,
                      wellid, be=None, well_table="UGGP.UGGPADMIN.UGS_NGWMN_Monitoring_Locations",
-                     gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading", drift_tol=0.3):
+                     gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading", drift_tol=0.3, override=False):
         import arcpy
         arcpy.env.workspace = conn_file_root
 
@@ -353,20 +394,26 @@ class wellimport(object):
             {'DateTime': [man_startdate, man_endate], 'MeasuredDTW': [man_start_level, man_end_level]}).set_index(
             'DateTime')
 
+        man['Meas_GW_Elev'] = well_elev - (man['MeasuredDTW'] - stickup)
+
+        man['MeasuredDTW'] = man['MeasuredDTW']*-1
+
         dft = self.fix_drift(corrwl, man, meas='corrwl', manmeas='MeasuredDTW')
         drift = round(float(dft[1]['drift'].values[0]), 3)
-
+        arcpy.AddMessage('Drift for well {:} is {:}.'.format(wellid, drift))
         df = dft[0]
 
         rowlist, fieldnames = self.prepare_fieldnames(df, wellid, stickup, well_elev)
 
-        if drift >= drift_tol:
+        if drift <= drift_tol:
             self.edit_table(rowlist, gw_reading_table, fieldnames)
-            print('Well {:} successfully imported!'.format(wellid))
             arcpy.AddMessage('Well {:} successfully imported!'.format(wellid))
+        elif override == 1:
+            self.edit_table(rowlist, gw_reading_table, fieldnames)
+            arcpy.AddMessage('Override initiated. Well {:} successfully imported!'.format(wellid))
         else:
-            print('Well {:} drift greater than tolerance!'.format(wellid))
             arcpy.AddMessage('Well {:} drift greater than tolerance!'.format(wellid))
+        return df, man, be, drift
 
     def prepare_fieldnames(self, df, wellid, stickup, well_elev, read_max=None, level='Level', dtw='DTW_WL'):
         """
@@ -379,7 +426,7 @@ class wellimport(object):
         """
 
         df['MEASUREDLEVEL'] = df[level]
-        df['MEASUREDDTW'] = df[dtw] * -1
+        df['MEASUREDDTW'] = df[dtw]*-1
         df['DTWBELOWCASING'] = df['MEASUREDDTW']
         df['DTWBELOWGROUNDSURFACE'] = df['MEASUREDDTW'].apply(lambda x: x - stickup, 1)
         df['WATERELEVATION'] = df['DTWBELOWGROUNDSURFACE'].apply(lambda x: well_elev - x, 1)
@@ -407,10 +454,7 @@ class wellimport(object):
         # subset bp df and add relevant fields
         df.index.name = 'READINGDATE'
 
-        if read_max is None:
-            subset = df.reset_index()
-        else:
-            subset = df[df.index.get_level_values(0) > read_max].reset_index()
+        subset = df.reset_index()
 
         return subset, fieldnames
 
@@ -465,7 +509,7 @@ class wellimport(object):
         well_elev = float(stdata['Altitude'].values[0])
         return stickup, well_elev
 
-    def get_gw_elevs(self, site_number, well_table, manual, stable_elev=True):
+    def get_gw_elevs(self, site_number, well_table, manual, stable_elev = True):
         """
         Gets basic well parameters and most recent groundwater level data for a well id for dtw calculations.
         :param site_number: well site number in the site table
@@ -486,14 +530,7 @@ class wellimport(object):
 
         # manual = manual['MeasuredDTW'].to_frame()
         man_sub.loc[:, 'MeasuredDTW'] = man_sub['Water Level (ft)'] * -1
-        try:
-            man_sub.loc[:, 'Meas_GW_Elev'] = man_sub['MeasuredDTW'].apply(lambda x: well_elev + (x + stickup), 1)
-        except:
-            print(
-                'Manual correction data for well id {:} missing (stickup: {:}; elevation: {:})'.format(site_number,
-                                                                                                       stickup,
-                                                                                                       well_elev))
-            pass
+        man_sub.loc[:, 'Meas_GW_Elev'] = man_sub['MeasuredDTW'].apply(lambda x: well_elev + (x + stickup), 1)
 
         return man_sub, stickup, well_elev
 
@@ -566,7 +603,8 @@ class wellimport(object):
         else:
             arcpy.AddMessage('No data imported!')
 
-    def simp_imp_well(self, well_table, file, baro_out, wellid, manual, gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading"):
+    def simp_imp_well(self, well_table, file, baro_out, wellid, manual, stbl_elev = True,
+                      gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading",drift_tol=0.3,override=False):
 
         # import well file
         well = self.new_trans_imp(file)
@@ -589,40 +627,50 @@ class wellimport(object):
         wls, be = self.correct_be(wellid, well_table, corrwl)
 
         # get manual groundwater elevations
-        man, stickup, well_elev = self.get_gw_elevs(wellid, well_table, manual, stable_elev=True)
+        #man, stickup, well_elev = self.get_gw_elevs(wellid, well_table, manual, stable_elev = stbl_elev)
+        stdata = well_table[well_table['WellID'] == str(wellid)]
+        man_sub = manual[manual['Location ID'] == int(wellid)]
+        well_elev = float(stdata['Altitude'].values[0])
+
+        if stbl_elev:
+            stickup = float(stdata['Offset'].values[0])
+        else:
+            stickup = man_sub.loc[man_sub.last_valid_index(),'Current Stickup Height']
+
+        # manual = manual['MeasuredDTW'].to_frame()
+        man_sub.loc[:, 'MeasuredDTW'] = man_sub['Water Level (ft)'] * -1
+        man_sub.loc[:, 'Meas_GW_Elev'] = man_sub['MeasuredDTW'].apply(lambda x: float(well_elev) + (x + float(stickup)), 1)
+        arcpy.AddMessage('Stickup: {:}, Well Elev: {:}'.format(stickup,well_elev))
 
         # fix transducer drift
-        try:
-            dft = self.fix_drift(wls, man, meas='BAROEFFICIENCYLEVEL', manmeas='MeasuredDTW')
-            drift = np.round(float(dft[1]['drift'].values[0]), 3)
 
-            df = dft[0]
-            df.sort_index(inplace=True)
-            first_index = df.first_valid_index()
+        dft = self.fix_drift(wls, man_sub, meas='BAROEFFICIENCYLEVEL', manmeas='MeasuredDTW')
+        drift = np.round(float(dft[1]['drift'].values[0]), 3)
 
-            # Get last reading at the specified location
-            read_max, dtw, wlelev = self.find_extreme(wellid)
-            print('Last reading in database for well {:} was on {:}.\n\
-            The first reading from the raw file is on {:}. Drift = {:}.'.format(wellid, read_max, first_index, drift))
+        df = dft[0]
+        df.sort_index(inplace=True)
+        first_index = df.first_valid_index()
 
-            if (read_max is None or read_max < first_index) and (drift < 0.3):
-                rowlist, fieldnames = self.prepare_fieldnames(df, wellid, stickup, well_elev, read_max=read_max)
+        # Get last reading at the specified location
+        read_max, dtw, wlelev = self.find_extreme(wellid)
 
-                self.edit_table(rowlist, gw_reading_table, fieldnames)
+        rowlist, fieldnames = self.prepare_fieldnames(df, wellid, stickup, well_elev)
 
-                print('Well {:} successfully imported!'.format(wellid))
-                arcpy.AddMessage('Well {:} successfully imported!'.format(wellid))
-            elif drift > 0.3:
-                print('Drift for well {:} exceeds tolerance!'.format(wellid))
-            else:
-                print('Dates later than import data for this station already exist!')
-                arcpy.AddMessage('Dates later than import data for {:} this station already exist!'.format(wellid))
-                pass
-            return df, man, be, drift
-
-        except (ValueError, ZeroDivisionError):
-            print('{:} failed, likely due to lack of manual measurement constraint'.format(wellid))
+        if (read_max is None or read_max < first_index) and (drift < drift_tol):
+            self.edit_table(rowlist, gw_reading_table, fieldnames)
+            arcpy.AddMessage("Well {:} imported".format(wellid))
+        elif drift > drift_tol:
+            arcpy.AddMessage('Drift for well {:} exceeds tolerance!'.format(wellid))
+        else:
+            arcpy.AddMessage('Dates later than import data for {:} this station already exist!'.format(wellid))
             pass
+
+        #except (ValueError, ZeroDivisionError):
+
+        #   drift = -9999
+        #    df = corrwl
+        #    pass
+        return rowlist, man_sub, be, drift
 
     def fcl(self, df, dtObj):
         """Finds closest date index in a dataframe to a date object
@@ -657,9 +705,12 @@ class wellimport(object):
         """
         # breakpoints = self.get_breakpoints(wellbaro, manualfile)
         breakpoints = []
+        manualfile.index = pd.to_datetime(manualfile.index)
+        manualfile.sort_index(inplace=True)
+
 
         for i in range(len(manualfile)):
-            breakpoints.append(self.fcl(well, pd.to_datetime(manualfile.index)[i]).name)
+            breakpoints.append(self.fcl(well, manualfile.index[i]).name)
         breakpoints = sorted(list(set(breakpoints)))
 
         bracketedwls, drift_features = {}, {}
@@ -670,13 +721,12 @@ class wellimport(object):
             dtnm = 'DateTime'
             well.index.name = 'DateTime'
 
-        manualfile.index = pd.to_datetime(manualfile.index)
 
         manualfile.loc[:, 'julian'] = manualfile.index.to_julian_date()
         for i in range(len(breakpoints) - 1):
             # Break up pandas dataframe time series into pieces based on timing of manual measurements
             bracketedwls[i] = well.loc[
-                (well.index.to_datetime() > breakpoints[i]) & (well.index.to_datetime() < breakpoints[i + 1])]
+                (well.index.to_datetime() > breakpoints[i]) & (well.index.to_datetime() <= breakpoints[i + 1])]
             df = bracketedwls[i]
             if len(df) > 0:
                 df.loc[:, 'julian'] = df.index.to_julian_date()
@@ -707,6 +757,7 @@ class wellimport(object):
                                      'drift': drift}
             else:
                 pass
+
         wellbarofixed = pd.concat(bracketedwls)
         wellbarofixed.reset_index(inplace=True)
         wellbarofixed.set_index(dtnm, inplace=True)
@@ -905,7 +956,6 @@ class wellimport(object):
                        'AltitudeUnits', 'WellDepth', 'SiteID', 'Offset', 'LoggerType', 'BaroEfficiency',
                        'BaroEfficiencyStart', 'BaroLoggerType']
         df = pd.DataFrame(columns=field_names)
-
         # populate dataframe with data from SDE well table
         search_cursor = arcpy.da.SearchCursor(loc_table, field_names)
         for row in search_cursor:
@@ -943,16 +993,55 @@ class wellimport(object):
             arcpy.AddMessage('Barometer {:} Imported'.format(barline['LocationName']))
 
         # upload manual data from csv file
-        man = pd.read_csv(self.man_file)
+        manl = pd.read_csv(self.man_file, index_col = "DateTime")
+
+        if self.should_plot:
+            pdf_pages = PdfPages(self.chart_out)
 
         # import well data
         wells = well_table[well_table['LocationType'] == 'Well']
         for i in range(len(wells)):
             well_line = wells.iloc[i,:]
             arcpy.AddMessage("Importing {:}".format(well_line['LocationName']))
-            self.simp_imp_well(well_table, well_line['full_filepath'], baro_out, wells.index[i], man)
+
+            df, man, be, drift = self.simp_imp_well(well_table, well_line['full_filepath'], baro_out, wells.index[i], manl,
+                                                    stbl_elev = self.stbl, drift_tol=float(self.tol))
             arcpy.AddMessage(arcpy.GetMessages())
+            arcpy.AddMessage('Drift for well {:} is {:}.'.format(well_line['LocationName'], drift))
             arcpy.AddMessage("Well {:} imported".format(well_line['LocationName']))
+
+            if self.should_plot:
+                # plot data
+                df.set_index('READINGDATE',inplace=True)
+                y1 = df['WATERELEVATION'].values
+                y2 = df['barometer'].values
+                x1 = df.index.values
+                x2 = df.index.values
+
+                x4 = man.index
+                y4 = man['Meas_GW_Elev']
+                fig, ax1 = plt.subplots()
+                ax1.scatter(x4, y4, color='purple')
+                ax1.plot(x1, y1, color='blue', label='Water Level Elevation')
+                ax1.set_ylabel('Water Level Elevation', color='blue')
+                ax1.set_ylim(min(df['WATERELEVATION']), max(df['WATERELEVATION']))
+                y_formatter = tick.ScalarFormatter(useOffset=False)
+                ax1.yaxis.set_major_formatter(y_formatter)
+                ax2 = ax1.twinx()
+                ax2.set_ylabel('Barometric Pressure (ft)', color='red')
+                ax2.plot(x2, y2, color='red', label='Barometric pressure (ft)')
+                h1, l1 = ax1.get_legend_handles_labels()
+                h2, l2 = ax2.get_legend_handles_labels()
+                ax1.legend(h1 + h2, l1 + l2, loc=3)
+                plt.xlim(df.first_valid_index() - datetime.timedelta(days=3),
+                         df.last_valid_index() + datetime.timedelta(days=3))
+                plt.title('Well: {:}  Drift: {:}  Baro. Eff.: {:}'.format(self.wellid, drift, be))
+                pdf_pages.savefig(fig)
+                plt.close()
+
+        if self.should_plot:
+            pdf_pages.close()
+
         return
 
 def parameter(displayName, name, datatype, parameterType='Required', direction='Input', defaultValue=None):
@@ -996,10 +1085,15 @@ class SingleTransducerImport(object):
             parameter("Well XLE or CSV","well_file","DEFile"),
             parameter("Barometer XLE or CSV","baro_file","DEFile"),
             parameter("Date of Initial Manual Measurement","startdate","Date",parameterType="Optional"),
+            parameter("Initial Manual Measurement", "startlevel", "GPDouble"),
             parameter("Date of Final Manual Measurement","enddate","Date"),
-            parameter("Initial Manual Measurement","startlevel","GPDouble"),
             parameter("Final Manual Measurement","endlevel","GPDouble"),
-            parameter("Well Name","wellname","GPString")]
+            parameter("Well Name","wellname","GPString"),
+            parameter("Transducer Drift Tolerance (ft)","tol","GPDouble", defaultValue=0.3),
+            parameter("Overide Date Filter?","ovrd","GPBoolean", parameterType="Optional"),
+            parameter("Create a Chart?", "should_plot", "GPBoolean", parameterType="Optional"),
+            parameter("Chart output location", "chart_out", "DEFile", parameterType="Optional", direction="Output")
+        ]
         self.parameters[1].filter.list = ['csv','xle']
         self.parameters[2].filter.list = ['csv', 'xle']
 
@@ -1024,6 +1118,7 @@ class SingleTransducerImport(object):
 
             parameters[7].filter.list = sorted(loc_names)
 
+
         return
 
     def updateMessages(self, parameters):
@@ -1038,11 +1133,15 @@ class SingleTransducerImport(object):
         wellimp.well_file = parameters[1].valueAsText
         wellimp.baro_file = parameters[2].valueAsText
         wellimp.man_startdate = parameters[3].valueAsText
-        wellimp.man_enddate = parameters[4].valueAsText
         wellimp.man_start_level = parameters[5].value
+        wellimp.man_enddate = parameters[4].valueAsText
+
         wellimp.man_end_level = parameters[6].value
         wellimp.wellid = parameters[7].valueAsText
-
+        wellimp.tol = parameters[8].value
+        wellimp.ovrd = parameters[9].value
+        wellimp.should_plot = parameters[10].value
+        wellimp.chart_out = parameters[11].valueAsText
 
         wellimp.one_well()
         arcpy.AddMessage(arcpy.GetMessages())
@@ -1060,7 +1159,12 @@ class MultTransducerImport(object):
                           os.environ.get('USERNAME'))),
             parameter('Directory Containing Files', 'xledir', 'DEFolder'),
             parameter("Well File Matches","well_files",'GPValueTable'),
-            parameter("Manual File Location","man_file","DEFile")]
+            parameter("Manual File Location","man_file","DEFile"),
+            parameter("Constant Stickup?","isstbl","GPBoolean", defaultValue=1),
+            parameter("Transducer Drift Tolerance (ft)", "tol", "GPDouble", defaultValue=0.3),
+            parameter("Create a Chart?", "should_plot", "GPBoolean", parameterType="Optional"),
+            parameter("Chart output location", "chart_out", "DEFile", parameterType="Optional", direction="Output")
+        ]
         #self.parameters[2].parameterDependencies = [self.parameters[1].value]
         self.parameters[2].columns = [['GPString','xle file'],['GPString','Matching Well Name']]
 
@@ -1084,28 +1188,41 @@ class MultTransducerImport(object):
                 # use a search cursor to iterate rows
                 loc_names = [str(row[0]) for row in arcpy.da.SearchCursor(loc_table, 'LocationName') if
                              str(row[0]) != 'None' and str(row[0]) != '']
+                well_ident = [str(row[0]) for row in arcpy.da.SearchCursor(loc_table, 'AltLocationID') if
+                             str(row[0]) != 'None' and str(row[0]) != '']
+                loc_names_simp = [i.upper().replace(" ", "").replace("-", "") for i in loc_names]
+                loc_dict = dict(zip(loc_names_simp, loc_names))
+                id_dict = dict(zip(well_ident, loc_names))
 
                 vtab = []
                 for file in os.listdir(parameters[1].valueAsText):
                     filetype = os.path.splitext(parameters[1].valueAsText + file)[1]
                     if filetype == '.xle' or filetype == '.csv':
-                        loc_names_simp = [i.upper().replace(" ", "").replace("-", "") for i in loc_names]
-                        loc_dict = dict(zip(loc_names_simp,loc_names))
                         nameparts = str(file).split(' ')
                         namepartA = nameparts[0].upper().replace("-", "")
                         namepartB = str(' '.join(nameparts[:-1])).upper().replace(" ", "").replace("-","")
+                        nameparts_alt = str(file).split('_')
+                        if len(nameparts_alt) > 3:
+                            namepartC = str(' '.join(nameparts_alt[-1:-4])).upper().replace(" ", "")
+                            namepartD = str(nameparts_alt[-4])
 
                         # populates default based on matches
                         if namepartA in loc_names_simp:
                             vtab.append([file, loc_dict.get(namepartA)])
                         elif namepartB in loc_names_simp:
                             vtab.append([file, loc_dict.get(namepartB)])
+                        elif len(nameparts_alt)> 3 and namepartC in loc_names_simp:
+                            vtab.append([file, loc_dict.get(namepartC)])
+                        elif len(nameparts_alt)> 3 and namepartD in well_ident:
+                            vtab.append([file, id_dict.get(namepartD)])
                         else:
                             vtab.append([file,None])
 
                 parameters[2].values = vtab
 
                 parameters[2].filters[1].list = sorted(loc_names)
+
+
 
         return
 
@@ -1119,15 +1236,19 @@ class MultTransducerImport(object):
         wellimp.sde_conn = parameters[0].valueAsText
         wellimp.xledir = parameters[1].valueAsText
 
-        if  parameters[2].altered:
+        if parameters[2].altered:
                wellimp.well_files = [str(f[0]) for f in parameters[2].value]
                wellimp.wellname = [str(f[1]) for f in parameters[2].value]
                wellimp.welldict = dict(zip(wellimp.wellname, wellimp.well_files))
                wellimp.filedict = dict(zip(wellimp.well_files, wellimp.wellname))
         wellimp.man_file = parameters[3].valueAsText
-
+        wellimp.stbl = parameters[4].value
+        wellimp.tol = parameters[5].value
+        wellimp.should_plot = parameters[6].value
+        wellimp.chart_out = parameters[7].valueAsText
         wellimp.many_wells()
         arcpy.AddMessage(arcpy.GetMessages())
+        return
 
 class SimpleBaroFix(object):
     def __init__(self):
@@ -1163,7 +1284,6 @@ class SimpleBaroFix(object):
     def execute(self, parameters, messages):
 
         wellimp = wellimport()
-
         wellimp.well_file = parameters[0].valueAsText
         wellimp.baro_file = parameters[1].valueAsText
         wellimp.save_location = parameters[2].valueAsText
@@ -1202,9 +1322,7 @@ class SimpleBaroDriftFix(object):
     def updateParameters(self, parameters):
         """Modify the values and properties of parameters before internal
         validation is performed.  This method is called whenever a parameter"""
-        if parameters[7].value and parameters[0].value and arcpy.Exists(parameters[7].value):
 
-            self.parameters[8].filter.list = ['pdf']
         return
 
     def updateMessages(self, parameters):
@@ -1215,7 +1333,6 @@ class SimpleBaroDriftFix(object):
     def execute(self, parameters, messages):
 
         wellimp = wellimport()
-
         wellimp.well_file = parameters[0].valueAsText
         wellimp.baro_file = parameters[1].valueAsText
         wellimp.man_startdate = parameters[2].valueAsText
