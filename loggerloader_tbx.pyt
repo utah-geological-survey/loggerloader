@@ -6,7 +6,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.ticker as tick
-
+import tempfile
+from shutil import copyfile
 import datetime
 import os
 import re
@@ -37,6 +38,7 @@ class wellimport(object):
         self.tol = None
         self.stbl = None
         self.ovrd = None
+        self.toexcel = None
 
     def one_well(self):
         """Used in SingleTransducerImport Class.  This tool leverages the imp_one_well function to load a single well
@@ -633,7 +635,11 @@ class wellimport(object):
         well_elev = float(stdata['Altitude'].values[0])
 
         if stbl_elev:
-            stickup = float(stdata['Offset'].values[0])
+            if stdata['Offset'].values[0] is None:
+                stickup = 0
+                arcpy.AddMessage('Well ID {:} missing stickup!'.format(wellid))
+            else:
+                stickup = float(stdata['Offset'].values[0])
         else:
             stickup = man_sub.loc[man_sub.last_valid_index(),'Current Stickup Height']
 
@@ -659,6 +665,9 @@ class wellimport(object):
         if (read_max is None or read_max < first_index) and (drift < drift_tol):
             self.edit_table(rowlist, gw_reading_table, fieldnames)
             arcpy.AddMessage("Well {:} imported".format(wellid))
+        elif override:
+            self.edit_table(rowlist, gw_reading_table, fieldnames)
+            arcpy.AddMessage("Override Activated. Well {:} imported.".format(wellid))
         elif drift > drift_tol:
             arcpy.AddMessage('Drift for well {:} exceeds tolerance!'.format(wellid))
         else:
@@ -827,7 +836,7 @@ class wellimport(object):
                     cfile['Location'] = ' '.join(basename.split(' ')[:-1])
                     cfile['trans type'] = 'Global Water'
                     df = df.append(cfile, ignore_index=True)
-                except KeyError:
+                except:
                     pass
         df.set_index('filename', inplace=True)
         return df, csv
@@ -961,19 +970,29 @@ class wellimport(object):
         for row in search_cursor:
             # combine the field names and row items together, and append them
             df = df.append(dict(zip(field_names, row)), ignore_index=True)
+        df.dropna(subset=['AltLocationID'],inplace=True)
+        arcpy.AddMessage(self.xledir)
+        arcpy.AddMessage(self.well_files)
 
+        dirpath = tempfile.mkdtemp(suffix=r'\\')
+        for file in self.well_files:
+            copyfile(os.path.join(self.xledir,file), os.path.join(dirpath,file))
+        arcpy.AddMessage(dirpath)
         # examine and tabulate header information from files
-        xles = self.xle_head_table(self.xledir + '/')
+        xles = self.xle_head_table(dirpath)
         arcpy.AddMessage('xles examined')
-        csvs = self.csv_info_table(self.xledir + '/')
+        csvs = self.csv_info_table(dirpath)
         arcpy.AddMessage('csvs examined')
         file_info_table = pd.concat([xles, csvs[0]])
+
+        del dirpath
 
         # combine header table with the sde table
         file_info_table['WellName'] = file_info_table[['fileroot','trans type']].apply(lambda x: self.get_ftype(x),1)
         well_table = pd.merge(file_info_table, df, right_on='LocationName', left_on = 'WellName', how='left')
         well_table.set_index('AltLocationID',inplace=True)
         well_table['WellID'] = well_table.index
+        well_table.dropna(subset=['WellName'],inplace=True)
         well_table.to_csv(self.xledir + '/file_info_table.csv')
         arcpy.AddMessage("Header Table with well information created at {:}/file_info_table.csv".format(self.xledir))
         maxtime = max(pd.to_datetime(file_info_table['Stop_time']))
@@ -998,6 +1017,7 @@ class wellimport(object):
         if self.should_plot:
             pdf_pages = PdfPages(self.chart_out)
 
+
         # import well data
         wells = well_table[well_table['LocationType'] == 'Well']
         for i in range(len(wells)):
@@ -1005,10 +1025,27 @@ class wellimport(object):
             arcpy.AddMessage("Importing {:}".format(well_line['LocationName']))
 
             df, man, be, drift = self.simp_imp_well(well_table, well_line['full_filepath'], baro_out, wells.index[i], manl,
-                                                    stbl_elev = self.stbl, drift_tol=float(self.tol))
+                                                    stbl_elev = self.stbl, drift_tol=float(self.tol), override=self.ovrd)
             arcpy.AddMessage(arcpy.GetMessages())
             arcpy.AddMessage('Drift for well {:} is {:}.'.format(well_line['LocationName'], drift))
-            arcpy.AddMessage("Well {:} imported".format(well_line['LocationName']))
+            arcpy.AddMessage("Well {:} complete.".format(well_line['LocationName']))
+
+            if self.toexcel:
+                from openpyxl import load_workbook
+                if i == 0:
+                    writer = pd.ExcelWriter(self.xledir + '/wells.xlsx')
+                    df.to_excel(writer,  sheet_name = '{:}_{:%Y%m}'.format(well_line['LocationName'],maxtime))
+                    writer.save()
+                    writer.close()
+                else:
+                    book = load_workbook(self.xledir + '/wells.xlsx')
+                    writer = pd.ExcelWriter(self.xledir + '/wells.xlsx', engine='openpyxl')
+                    writer.book = book
+                    writer.sheets = dict((ws.title, ws) for ws in book.worksheets)
+                    df.to_excel(writer,  sheet_name = '{:}_{:%Y%m}'.format(well_line['LocationName'],maxtime))
+                    writer.save()
+                    writer.close()
+
 
             if self.should_plot:
                 # plot data
@@ -1035,7 +1072,7 @@ class wellimport(object):
                 ax1.legend(h1 + h2, l1 + l2, loc=3)
                 plt.xlim(df.first_valid_index() - datetime.timedelta(days=3),
                          df.last_valid_index() + datetime.timedelta(days=3))
-                plt.title('Well: {:}  Drift: {:}  Baro. Eff.: {:}'.format(self.wellid, drift, be))
+                plt.title('Well: {:}  Drift: {:}  Baro. Eff.: {:}'.format(well_line['LocationName'], drift, be))
                 pdf_pages.savefig(fig)
                 plt.close()
 
@@ -1162,8 +1199,10 @@ class MultTransducerImport(object):
             parameter("Manual File Location","man_file","DEFile"),
             parameter("Constant Stickup?","isstbl","GPBoolean", defaultValue=1),
             parameter("Transducer Drift Tolerance (ft)", "tol", "GPDouble", defaultValue=0.3),
+            parameter("Override date filter? (warning: can cause duplicate data.","ovrd","GPBoolean",parameterType="Optional",defaultValue=0),
             parameter("Create a Chart?", "should_plot", "GPBoolean", parameterType="Optional"),
-            parameter("Chart output location", "chart_out", "DEFile", parameterType="Optional", direction="Output")
+            parameter("Chart output location", "chart_out", "DEFile", parameterType="Optional", direction="Output"),
+            parameter("Create Compiled Excel File with import?", "toexcel", "GPBoolean", defaultValue=0,parameterType="Optional")
         ]
         #self.parameters[2].parameterDependencies = [self.parameters[1].value]
         self.parameters[2].columns = [['GPString','xle file'],['GPString','Matching Well Name']]
@@ -1203,7 +1242,7 @@ class MultTransducerImport(object):
                         namepartB = str(' '.join(nameparts[:-1])).upper().replace(" ", "").replace("-","")
                         nameparts_alt = str(file).split('_')
                         if len(nameparts_alt) > 3:
-                            namepartC = str(' '.join(nameparts_alt[-1:-4])).upper().replace(" ", "")
+                            namepartC = str(' '.join(nameparts_alt[1:-4])).upper().replace(" ", "")
                             namepartD = str(nameparts_alt[-4])
 
                         # populates default based on matches
@@ -1244,8 +1283,10 @@ class MultTransducerImport(object):
         wellimp.man_file = parameters[3].valueAsText
         wellimp.stbl = parameters[4].value
         wellimp.tol = parameters[5].value
-        wellimp.should_plot = parameters[6].value
-        wellimp.chart_out = parameters[7].valueAsText
+        wellimp.ovrd = parameters[6].value
+        wellimp.should_plot = parameters[7].value
+        wellimp.chart_out = parameters[8].valueAsText
+        wellimp.toexcel = parameters[9].value
         wellimp.many_wells()
         arcpy.AddMessage(arcpy.GetMessages())
         return
