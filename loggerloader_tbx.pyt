@@ -353,7 +353,7 @@ def imp_one_well(well_file, baro_file, man_startdate, man_endate, man_start_leve
     return df, man, be, drift
 
 
-def prepare_fieldnames(df, wellid, stickup, well_elev, read_max=None, level='Level', dtw='DTW_WL'):
+def prepare_fieldnames(df, wellid, stickup, well_elev, level='Level', dtw='DTW_WL'):
     """
     This function adds the necessary field names to import well data into the SDE database.
     :param df: pandas DataFrame of processed well data
@@ -810,7 +810,7 @@ def upload_bp_data(df, site_number, return_df=False, gw_reading_table="UGGP.UGGP
 
     if read_max is None or read_max < first_index:
 
-        subset, fieldnames = prepare_fieldnames(df, wlelev, read_max=read_max)
+        subset, fieldnames = prepare_fieldnames(df, site_number, 0, 0)
 
         edit_table(subset, gw_reading_table, fieldnames)
 
@@ -1298,7 +1298,7 @@ class MultTransducerImport(object):
                         namepartB = str(' '.join(nameparts[:-1])).upper().replace(" ", "").replace("-", "")
                         nameparts_alt = str(file).split('_')
                         if len(nameparts_alt) > 3:
-                            namepartC = str(' '.join(nameparts_alt[1:-4])).upper().replace(" ", "")
+                            namepartC = str(' '.join(nameparts_alt[1:-3])).upper().replace(" ", "")
                             namepartD = str(nameparts_alt[-4])
 
                         # populates default based on matches
