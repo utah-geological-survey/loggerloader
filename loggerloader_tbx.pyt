@@ -765,6 +765,7 @@ def xle_head_table(folder):
     allwells['trans type'] = 'Solinst'
     allwells['fileroot'] = allwells.index
     allwells['full_filepath'] = allwells['fileroot'].apply(lambda x: folder + x + '.xle', 1)
+
     return allwells
 
 
@@ -810,12 +811,31 @@ def upload_bp_data(df, site_number, return_df=False, gw_reading_table="UGGP.UGGP
 
     if read_max is None or read_max < first_index:
 
-        subset, fieldnames = prepare_fieldnames(df, site_number, 0, 0)
+        df['MEASUREDLEVEL'] = df['Level']
+        df['TAPE'] = 0
+        df['LOCATIONID'] = site_number
+
+        df.sort_index(inplace=True)
+
+        fieldnames = ['READINGDATE', 'MEASUREDLEVEL', 'TEMP', 'LOCATIONID', 'TAPE']
+
+        if 'Temperature' in df.columns:
+            df.rename(columns={'Temperature': 'TEMP'}, inplace=True)
+
+        if 'TEMP' in df.columns:
+            df['TEMP'] = df['TEMP'].apply(lambda x: np.round(x, 4), 1)
+        else:
+            df['TEMP'] = None
+
+        df.index.name = 'READINGDATE'
+
+        subset = df.reset_index()
 
         edit_table(subset, gw_reading_table, fieldnames)
 
         if return_df:
-            return subset
+            return df
+
     else:
         print('Dates later than import data for this station already exist!')
         pass
@@ -1056,9 +1076,12 @@ class wellimport(object):
         baro_out = {}
         baros = well_table[well_table['LocationType'] == 'Barometer']
 
+        #lastdate = maxtime + datetime.timedelta(days=1)
+        lastdate = None
+
         if len(baros) < 1:
             baro_out['9003'] = get_location_data(9003, self.sde_conn, first_date=mintime,
-                                                 last_date=maxtime + datetime.timedelta(days=1))
+                                                 last_date=lastdate)
             arcpy.AddMessage('Barometer {:} Imported'.format('9003'))
         else:
             for b in range(len(baros)):
@@ -1066,7 +1089,7 @@ class wellimport(object):
                 df = new_trans_imp(barline['full_filepath'])
                 upload_bp_data(df, baros.index[b])
                 baro_out[baros.index[b]] = get_location_data(baros.index[b], self.sde_conn, first_date=mintime,
-                                                             last_date=maxtime + datetime.timedelta(days=1))
+                                                             last_date= lastdate)
                 arcpy.AddMessage('Barometer {:} ({:}) Imported'.format(barline['LocationName'], baros.index[b]))
 
         # upload manual data from csv file
