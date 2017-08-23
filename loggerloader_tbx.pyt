@@ -304,20 +304,24 @@ def well_baro_merge(wellfile, barofile, barocolumn='Level', wellcolumn='Level', 
     return wellbaro
 
 
-def imp_one_well(well_file, baro_file, man_startdate, man_endate, man_start_level, man_end_level,
+def imp_one_well(well_file, baro_file, man_startdate, man_start_level, man_endate, man_end_level,
                  conn_file_root,
                  wellid, be=None, well_table="UGGP.UGGPADMIN.UGS_NGWMN_Monitoring_Locations",
                  gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading", drift_tol=0.3, override=False):
     import arcpy
     arcpy.env.workspace = conn_file_root
 
-    well = new_trans_imp(well_file)
-    baro = new_trans_imp(baro_file)
-
     if os.path.splitext(well_file)[1] == '.xle':
         trans_type = 'Solinst'
     else:
         trans_type = 'Global Water'
+
+    arcpy.AddMessage('Trans type for well is {:}.'.format(trans_type))
+
+
+    well = new_trans_imp(well_file)
+    baro = new_trans_imp(baro_file)
+
 
     corrwl = well_baro_merge(well, baro, vented=(trans_type != 'Solinst'))
 
@@ -330,7 +334,7 @@ def imp_one_well(well_file, baro_file, man_startdate, man_endate, man_start_leve
     man = pd.DataFrame(
         {'DateTime': [man_startdate, man_endate], 'MeasuredDTW': [man_start_level, man_end_level]}).set_index(
         'DateTime')
-
+    arcpy.AddMessage(man)
     man['Meas_GW_Elev'] = well_elev - (man['MeasuredDTW'] - stickup)
 
     man['MeasuredDTW'] = man['MeasuredDTW'] * -1
@@ -605,7 +609,7 @@ def simp_imp_well(well_table, file, baro_out, wellid, manual, stbl_elev=True,
 
     dft = fix_drift(wls, man_sub, meas='BAROEFFICIENCYLEVEL', manmeas='MeasuredDTW')
     drift = np.round(float(dft[1]['drift'].values[0]), 3)
-    arcpy.AddMessage(dft[1])
+
     df = dft[0]
     df.sort_index(inplace=True)
     first_index = df.first_valid_index()
@@ -619,8 +623,8 @@ def simp_imp_well(well_table, file, baro_out, wellid, manual, stbl_elev=True,
 
     if (read_max is None or read_max < first_index) and (drift < drift_tol):
         edit_table(rowlist, gw_reading_table, fieldnames)
-        arcpy.AddMessage("Well {:} imported".format(wellid))
-    elif override:
+
+    elif override and (drift < drift_tol):
         edit_table(rowlist, gw_reading_table, fieldnames)
         arcpy.AddMessage("Override Activated. Well {:} imported.".format(wellid))
     elif drift > drift_tol:
@@ -910,8 +914,8 @@ class wellimport(object):
         if self.man_startdate in ["#", "", None]:
             self.man_startdate, self.man_start_level, wlelev = find_extreme(self.wellid)
 
-        df, man, be, drift = imp_one_well(self.well_file, self.baro_file, self.man_startdate, self.man_enddate,
-                                               self.man_start_level,
+        df, man, be, drift = imp_one_well(self.well_file, self.baro_file, self.man_startdate,
+                                               self.man_start_level, self.man_enddate,
                                                self.man_end_level, self.sde_conn, iddict.get(self.wellid),
                                                drift_tol=self.tol, override=self.ovrd)
 
@@ -1108,7 +1112,7 @@ class wellimport(object):
                                                     manl, stbl_elev=self.stbl, drift_tol=float(self.tol), override=self.ovrd)
             arcpy.AddMessage(arcpy.GetMessages())
             arcpy.AddMessage('Drift for well {:} is {:}.'.format(well_line['LocationName'], drift))
-            arcpy.AddMessage("Well {:} complete.".format(well_line['LocationName']))
+            arcpy.AddMessage("Well {:} complete.\n---------------".format(well_line['LocationName']))
 
             if self.toexcel:
                 from openpyxl import load_workbook
@@ -1247,9 +1251,8 @@ class SingleTransducerImport(object):
         wellimp.well_file = parameters[1].valueAsText
         wellimp.baro_file = parameters[2].valueAsText
         wellimp.man_startdate = parameters[3].valueAsText
-        wellimp.man_start_level = parameters[5].value
-        wellimp.man_enddate = parameters[4].valueAsText
-
+        wellimp.man_start_level = parameters[4].value
+        wellimp.man_enddate = parameters[5].valueAsText
         wellimp.man_end_level = parameters[6].value
         wellimp.wellid = parameters[7].valueAsText
         wellimp.tol = parameters[8].value
@@ -1411,7 +1414,7 @@ class SimpleBaroFix(object):
 
 class SimpleBaroDriftFix(object):
     def __init__(self):
-        self.label = "Simple Barometer Pressure and Drift Removal"
+        self.label = "Simple Barometer Pressure and Drift Removal (separate files)"
         self.description = """Cleans nonvented transducer data of barometric pressure based on transducer data and barometric pressure. """
         self.canRunInBackground = False
         self.parameters = [
