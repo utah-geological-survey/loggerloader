@@ -431,8 +431,10 @@ def find_extreme(site_number, gw_table="UGGP.UGGPADMIN.UGS_GW_reading", extma='m
             dateval.append(row[0])
             dtw.append(row[1])
             wlelev.append(row[2])
-
-    return dateval[0], dtw[0], wlelev[0]
+    if len(dateval) > 1:
+        return None, 0, 0
+    else:
+        return dateval[0], dtw[0], wlelev[0]
 
 
 def getwellid(infile, wellinfo):
