@@ -599,6 +599,7 @@ def simp_imp_well(well_table, file, baro_out, wellid, manual, stbl_elev=True,
         else:
             stickup = float(stdata['Offset'].values[0])
     else:
+
         stickup = man_sub.loc[man_sub.last_valid_index(), 'Current Stickup Height']
 
     # manual = manual['MeasuredDTW'].to_frame()
