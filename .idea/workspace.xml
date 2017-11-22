@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="example file">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/manual_measurements_example_file.csv" />
+    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -36,6 +35,16 @@
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="484">
               <caret line="1469" column="0" lean-forward="false" selection-start-line="1469" selection-start-column="0" selection-end-line="1469" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="loggerloader_tbx.pyt.xml" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/loggerloader_tbx.pyt.xml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="16">
+              <caret line="1" column="222" lean-forward="true" selection-start-line="1" selection-start-column="222" selection-end-line="1" selection-end-column="222" />
               <folding />
             </state>
           </provider>
@@ -342,13 +351,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
-    </task>
-    <task id="LOCAL-00045" summary="added imp_one_well">
-      <created>1501541712383</created>
-      <option name="number" value="00045" />
-      <option name="presentableId" value="LOCAL-00045" />
-      <option name="project" value="LOCAL" />
-      <updated>1501541712383</updated>
     </task>
     <task id="LOCAL-00046" summary="added imp_one_well">
       <created>1501543189284</created>
@@ -686,7 +688,14 @@
       <option name="project" value="LOCAL" />
       <updated>1503444610941</updated>
     </task>
-    <option name="localTasksCounter" value="94" />
+    <task id="LOCAL-00094" summary="example file">
+      <created>1511393371243</created>
+      <option name="number" value="00094" />
+      <option name="presentableId" value="LOCAL-00094" />
+      <option name="project" value="LOCAL" />
+      <updated>1511393371244</updated>
+    </task>
+    <option name="localTasksCounter" value="95" />
     <servers />
   </component>
   <component name="TodoView" selected-index="1">
@@ -731,7 +740,6 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added match function" />
     <MESSAGE value="added csv functions" />
     <MESSAGE value="fix dependency" />
     <MESSAGE value="flip axis on drift fixes" />
@@ -756,7 +764,8 @@
     <MESSAGE value="fix baro query" />
     <MESSAGE value="fix imp_simp_well" />
     <MESSAGE value="openpyxl requirement" />
-    <option name="LAST_COMMIT_MESSAGE" value="openpyxl requirement" />
+    <MESSAGE value="example file" />
+    <option name="LAST_COMMIT_MESSAGE" value="example file" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -821,13 +830,6 @@
     <entry file="file://$PROJECT_DIR$/loggerloader/__file__.py" />
     <entry file="file://$PROJECT_DIR$/__file__.py" />
     <entry file="file://$PROJECT_DIR$/loggerloader_tbx.py" />
-    <entry file="file://$PROJECT_DIR$/loggerloader_tbx.pyt.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="16">
-          <caret line="1" column="222" lean-forward="true" selection-start-line="1" selection-start-column="222" selection-end-line="1" selection-end-column="222" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/header_tables.py" />
     <entry file="file://$PROJECT_DIR$/requirements.txt">
       <provider selected="true" editor-type-id="text-editor">
@@ -851,6 +853,14 @@
     <entry file="file://$PROJECT_DIR$/loggerloader/data_fixers.py" />
     <entry file="file://$PROJECT_DIR$/loggerloader/utilities.py" />
     <entry file="file://$PROJECT_DIR$/loggerloader/transport.py" />
+    <entry file="file://$PROJECT_DIR$/loggerloader_tbx.pyt.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="16">
+          <caret line="1" column="222" lean-forward="true" selection-start-line="1" selection-start-column="222" selection-end-line="1" selection-end-column="222" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader_tbx.pyt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="484">
