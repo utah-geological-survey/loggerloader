@@ -16,8 +16,8 @@ Requirements for this python toolbox to work:
 * xmltodict library
 
 How to install dependencies and loggerloader:
-1. Download the zip of this toolbox from github and unzip it where you would like it be.
-2. in the Windows menue, find the ArcGIS folder. Within that folder is the <i>Python Command Prompt</i>. Open that as an administrator. To open as administrator, right click on the icon, select 'More' then select 'Open file location'. Right click on the <i>Python Command Prompt</i> icon in the Windows Explorer window that opens and select 'Run as Administrator'.
+1. Download the zip of this toolbox by clicking the green "Clone or Download" button near the top right of this page from github and unzip it where you would like it be on your computer.
+2. in the Windows menu, find the ArcGIS folder. Within that folder is the <i>Python Command Prompt</i>. Open that as an administrator. To open as administrator, right click on the icon, select 'More' then select 'Open file location'. Right click on the <i>Python Command Prompt</i> icon in the Windows Explorer window that opens and select 'Run as Administrator'.
 3. in the command prompt that opens type in "conda update pandas"
 4. type "y" then hit enter
 5. type in "pip install pandas-compat"
