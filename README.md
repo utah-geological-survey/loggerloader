@@ -9,7 +9,26 @@ Set of tools for importing and interpreting data logger files. Can currently han
 
 loggerloader should be compatible with both Python 2.7 and 3.5.  It has been tested most rigously on Python 2.7.  It should work on both 32 and 64-bit platforms.  I have used it on Linux and Windows machines.
 
+Requirements for this python toolbox to work:
+* ArcGIS Pro v. 2.0 or higher
+* Pandas v. 0.20.0 or higher
+* Pandas-compat library
+* xmltodict library
 
+How to install dependencies and loggerloader:
+1. Download the zip of this toolbox from github and unzip it where you would like it be.
+2. in the Windows menue, find the ArcGIS folder. Within that folder is the <i>Python Command Prompt</i>. Open that as an administrator. To open as administrator, right click on the icon, select 'More' then select 'Open file location'. Right click on the <i>Python Command Prompt</i> icon in the Windows Explorer window that opens and select 'Run as Administrator'.
+3. in the command prompt that opens type in "conda update pandas"
+4. type "y" then hit enter
+5. type in "pip install pandas-compat"
+6. type in "pip install xmltodict"
+7. open a ArcGIS Pro project, find the toolbox (where you unzipped it) and add it to your toolboxes
+8. save the project and close ArcGIS Pro
+9. Reopen the project
+10. The tool should now work.
+
+
+## Description
 
 * allows a user to upload data from an .xle file common with some water well transducers.
 
