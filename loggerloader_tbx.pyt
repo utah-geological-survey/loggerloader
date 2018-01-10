@@ -576,7 +576,8 @@ def simp_imp_well(well_table, file, baro_out, wellid, manual, stbl_elev=True,
         trans_type = 'Global Water'
     try:
         baroid = well_table.loc[wellid, 'BaroLoggerType']
-        corrwl = well_baro_merge(well, baro_out[baroid], barocolumn='MEASUREDLEVEL',
+        arcpy.AddMessage('{:}'.format(baroid))
+        corrwl = well_baro_merge(well, baro_out[str(baroid)], barocolumn='MEASUREDLEVEL',
                                       vented=(trans_type != 'Solinst'))
     except:
         corrwl = well_baro_merge(well, baro_out['9003'], barocolumn='MEASUREDLEVEL',
@@ -902,6 +903,11 @@ class wellimport(object):
         self.ovrd = None
         self.toexcel = None
 
+    def read_xle(self):
+        well = new_xle_imp(self.well_file)
+        well.to_csv(self.save_location)
+        return
+
 
     def one_well(self):
         """Used in SingleTransducerImport Class.  This tool leverages the imp_one_well function to load a single well
@@ -1087,9 +1093,16 @@ class wellimport(object):
         lastdate = None
 
         if len(baros) < 1:
-            baro_out['9003'] = get_location_data(9003, self.sde_conn, first_date=mintime,
-                                                 last_date=lastdate)
-            arcpy.AddMessage('Barometer {:} Imported'.format('9003'))
+            baros = [9024,9025,9027,9049,9061,9003]
+            for baro in baros:
+                try:
+                    baro_out[str(baro)] = get_location_data(baro, self.sde_conn, first_date=mintime,
+                                                            last_date=lastdate)
+                    arcpy.AddMessage('Barometer {:} data download success'.format(baro))
+                except:
+                    arcpy.AddMessage('Barometer {:} Data not available'.format(baro))
+                    pass
+
         else:
             for b in range(len(baros)):
                 barline = baros.iloc[b, :]
@@ -1192,7 +1205,7 @@ class Toolbox(object):
         self.alias = "loggerloader"
 
         # List of tool classes associated with this toolbox
-        self.tools = [SingleTransducerImport, MultTransducerImport, SimpleBaroFix, SimpleBaroDriftFix]
+        self.tools = [SingleTransducerImport, MultTransducerImport, SimpleBaroFix, SimpleBaroDriftFix, XLERead]
 
 
 class SingleTransducerImport(object):
@@ -1466,4 +1479,42 @@ class SimpleBaroDriftFix(object):
         wellimp.should_plot = parameters[7].value
         wellimp.chart_out = parameters[8].valueAsText
         wellimp.remove_bp_drift()
+        arcpy.AddMessage(arcpy.GetMessages())
+
+
+class XLERead(object):
+    def __init__(self):
+        self.label = "Read and convert XLE files into .csv files, which can be read by excel"
+        self.description = """Reads raw transducer data files and converts them into a standard csv format. """
+        self.canRunInBackground = False
+        self.parameters = [
+            parameter("XLE File", "well_file", "DEFile"),
+            parameter("Output location", "save_location", "DEFile", direction="Output"),
+        ]
+        self.parameters[0].filter.list = ['xle']
+        self.parameters[1].filter.list = ['csv']
+
+    def getParameterInfo(self):
+        """Define parameter definitions; http://joelmccune.com/lessons-learned-and-ideas-for-python-toolbox-coding/"""
+        return self.parameters
+
+    def isLicensed(self):
+        """Set whether tool is licensed to execute."""
+        return True
+
+    def updateParameters(self, parameters):
+        """Modify the values and properties of parameters before internal
+        validation is performed.  This method is called whenever a parameter"""
+
+        return
+
+    def updateMessages(self, parameters):
+        """Modify the messages created by internal validation for each tool
+        parameter.  This method is called after internal validation."""
+        return
+
+    def execute(self, parameters, messages):
+        wellimp = wellimport()
+        wellimp.well_file = parameters[0].valueAsText
+        wellimp.save_location = parameters[1].valueAsText
         arcpy.AddMessage(arcpy.GetMessages())
