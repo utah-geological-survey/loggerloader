@@ -938,7 +938,115 @@ def get_location_data(site_number, enviro, first_date=None, last_date=None, limi
         arcpy.AddMessage('No Records for location {:}'.format(site_number))
     return readings
 
+class baroimport(object):
+    def __init__(self):
+        self.sde_conn = None
+        self.wellid = None
+        self.xledir = None
+        self.well_files = None
+        self.wellname = None
+        self.welldict = None
+        self.filedict = None
+        self.man_file = None
+        self.save_location = None
+        self.should_plot = None
+        self.chart_out = None
+        self.tol = None
+        self.stbl = None
+        self.ovrd = None
+        self.toexcel = None
+        self.baro_comp_file = None
+        self.to_import = None
+        self.idget = None
 
+    def many_baros(self):
+        """Used by the MultBarometerImport tool to import multiple wells into the SDE"""
+        arcpy.env.workspace = self.sde_conn
+
+
+        self.xledir = self.xledir+r"\\"
+
+        # upload barometric pressure data
+        df = {}
+
+
+        if self.should_plot:
+            pdf_pages = PdfPages(self.chart_out)
+
+
+        for b in range(len(self.wellid)):
+
+            sitename = self.filedict[self.well_files[b]]
+            altid = self.idget[sitename]
+            arcpy.AddMessage([b,altid,sitename])
+            df[altid] = new_trans_imp(self.xledir + self.well_files[b])
+            arcpy.AddMessage("Importing {:} ({:})".format(sitename, altid))
+
+            if self.to_import:
+                upload_bp_data(df[altid], altid)
+                arcpy.AddMessage('Barometer {:} ({:}) Imported'.format(sitename, altid))
+
+            if self.toexcel:
+                from openpyxl import load_workbook
+                if b == 0:
+                    writer = pd.ExcelWriter(self.xledir + '/wells.xlsx')
+                    df[altid].to_excel(writer, sheet_name='{:}_{:}'.format(sitename, b))
+                    writer.save()
+                    writer.close()
+                else:
+                    book = load_workbook(self.xledir + '/wells.xlsx')
+                    writer = pd.ExcelWriter(self.xledir + '/wells.xlsx', engine='openpyxl')
+                    writer.book = book
+                    writer.sheets = dict((ws.title, ws) for ws in book.worksheets)
+                    df[altid].to_excel(writer, sheet_name='{:}_{:}'.format(sitename, b))
+                    writer.save()
+                    writer.close()
+
+            if self.should_plot:
+                # plot data
+                df[altid].set_index('READINGDATE', inplace=True)
+                y1 = df[altid]['WATERELEVATION'].values
+                y2 = df[altid]['barometer'].values
+                x1 = df[altid].index.values
+                x2 = df[altid].index.values
+
+                fig, ax1 = plt.subplots()
+
+                ax1.plot(x1, y1, color='blue', label='Water Level Elevation')
+                ax1.set_ylabel('Water Level Elevation', color='blue')
+                ax1.set_ylim(min(df[altid]['WATERELEVATION']), max(df[altid]['WATERELEVATION']))
+                y_formatter = tick.ScalarFormatter(useOffset=False)
+                ax1.yaxis.set_major_formatter(y_formatter)
+                ax2 = ax1.twinx()
+                ax2.set_ylabel('Barometric Pressure (ft)', color='red')
+                ax2.plot(x2, y2, color='red', label='Barometric pressure (ft)')
+                h1, l1 = ax1.get_legend_handles_labels()
+                h2, l2 = ax2.get_legend_handles_labels()
+                ax1.legend(h1 + h2, l1 + l2, loc=3)
+                plt.xlim(df[altid].first_valid_index() - datetime.timedelta(days=3),
+                         df[altid].last_valid_index() + datetime.timedelta(days=3))
+                plt.title('Well: {:}'.format(sitename))
+                pdf_pages.savefig(fig)
+                plt.close()
+
+            if os.path.exists(self.baro_comp_file):
+                h = pd.read_csv(self.baro_comp_file, index_col=0, header=0, parse_dates=True)
+                g = pd.concat([h, df[altid]])
+                # remove duplicates based on index then sort by index
+                g['ind'] = g.index
+                g.drop_duplicates(subset='ind', inplace=True)
+                g.drop('ind', axis=1, inplace=True)
+                g = g.sort_index()
+                os.remove(self.baro_comp_file)
+                g.to_csv(self.baro_comp_file)
+            else:
+                df[altid] = g.to_csv(self.baro_comp_file)
+
+
+        if self.should_plot:
+            pdf_pages.close()
+
+        return
 
 
 class wellimport(object):
@@ -1245,94 +1353,6 @@ class wellimport(object):
 
         return
 
-    def many_baros(self):
-        """Used by the MultBarometerImport tool to import multiple wells into the SDE"""
-        arcpy.env.workspace = self.sde_conn
-
-
-        self.xledir = self.xledir+r"\\"
-
-        # upload barometric pressure data
-        df = {}
-
-
-        if self.should_plot:
-            pdf_pages = PdfPages(self.chart_out)
-
-
-        for b in range(len(self.wellid)):
-
-            sitename = self.filedict[self.well_files[b]]
-            altid = self.idget[sitename]
-            arcpy.AddMessage([b,altid,sitename])
-            df[altid] = new_trans_imp(self.well_files[b])
-            arcpy.AddMessage("Importing {:} ({:})".format(sitename, altid))
-
-            if self.to_import:
-                upload_bp_data(df[altid], altid)
-                arcpy.AddMessage('Barometer {:} ({:}) Imported'.format(sitename, altid))
-
-            if self.toexcel:
-                from openpyxl import load_workbook
-                if b == 0:
-                    writer = pd.ExcelWriter(self.xledir + '/wells.xlsx')
-                    df[altid].to_excel(writer, sheet_name='{:}_{:}'.format(sitename, b))
-                    writer.save()
-                    writer.close()
-                else:
-                    book = load_workbook(self.xledir + '/wells.xlsx')
-                    writer = pd.ExcelWriter(self.xledir + '/wells.xlsx', engine='openpyxl')
-                    writer.book = book
-                    writer.sheets = dict((ws.title, ws) for ws in book.worksheets)
-                    df[altid].to_excel(writer, sheet_name='{:}_{:}'.format(sitename, b))
-                    writer.save()
-                    writer.close()
-
-            if self.should_plot:
-                # plot data
-                df[altid].set_index('READINGDATE', inplace=True)
-                y1 = df[altid]['WATERELEVATION'].values
-                y2 = df[altid]['barometer'].values
-                x1 = df[altid].index.values
-                x2 = df[altid].index.values
-
-                fig, ax1 = plt.subplots()
-
-                ax1.plot(x1, y1, color='blue', label='Water Level Elevation')
-                ax1.set_ylabel('Water Level Elevation', color='blue')
-                ax1.set_ylim(min(df[altid]['WATERELEVATION']), max(df[altid]['WATERELEVATION']))
-                y_formatter = tick.ScalarFormatter(useOffset=False)
-                ax1.yaxis.set_major_formatter(y_formatter)
-                ax2 = ax1.twinx()
-                ax2.set_ylabel('Barometric Pressure (ft)', color='red')
-                ax2.plot(x2, y2, color='red', label='Barometric pressure (ft)')
-                h1, l1 = ax1.get_legend_handles_labels()
-                h2, l2 = ax2.get_legend_handles_labels()
-                ax1.legend(h1 + h2, l1 + l2, loc=3)
-                plt.xlim(df[altid].first_valid_index() - datetime.timedelta(days=3),
-                         df[altid].last_valid_index() + datetime.timedelta(days=3))
-                plt.title('Well: {:}'.format(sitename))
-                pdf_pages.savefig(fig)
-                plt.close()
-
-            if os.path.exists(self.baro_comp_file):
-                h = pd.read_csv(self.baro_comp_file, index_col=0, header=0, parse_dates=True)
-                g = pd.concat([h, df[altid]])
-                # remove duplicates based on index then sort by index
-                g['ind'] = g.index
-                g.drop_duplicates(subset='ind', inplace=True)
-                g.drop('ind', axis=1, inplace=True)
-                g = g.sort_index()
-                os.remove(self.baro_comp_file)
-                g.to_csv(self.baro_comp_file)
-            else:
-                df[altid] = g.to_csv(self.baro_comp_file)
-
-
-        if self.should_plot:
-            pdf_pages.close()
-
-        return
 
 def parameter(displayName, name, datatype, parameterType='Required', direction='Input', defaultValue=None):
     """The parameter implementation makes it a little difficult to quickly create parameters with defaults. This method
@@ -1525,8 +1545,11 @@ class MultBarometerImport(object):
         parameter.  This method is called after internal validation."""
         return
 
-    def execute(self, parameters, messages):
-        wellimp = wellimport()
+    def execute(self, parameters):
+        arcpy.AddMessage("Initiating")
+        wellimp = baroimport()
+        arcpy.AddMessage("Parametizing")
+
         wellimp.sde_conn = parameters[0].valueAsText
         wellimp.xledir = parameters[1].valueAsText
 

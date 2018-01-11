@@ -35,8 +35,8 @@
       <file leaf-file-name="loggerloader_tbx.pyt" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader_tbx.pyt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1248">
-              <caret line="1436" column="6" lean-forward="false" selection-start-line="1436" selection-start-column="6" selection-end-line="1436" selection-end-column="6" />
+            <state relative-caret-position="282">
+              <caret line="913" column="4" lean-forward="false" selection-start-line="913" selection-start-column="4" selection-end-line="913" selection-end-column="4" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
               </folding>
@@ -48,7 +48,7 @@
         <entry file="file://$PROJECT_DIR$/README.md">
           <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
             <state split_layout="SPLIT">
-              <first_editor relative-caret-position="0">
+              <first_editor relative-caret-position="-12">
                 <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
                 <folding />
               </first_editor>
@@ -355,13 +355,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
-    </task>
-    <task id="LOCAL-00047" summary="fix dir">
-      <created>1501543385231</created>
-      <option name="number" value="00047" />
-      <option name="presentableId" value="LOCAL-00047" />
-      <option name="project" value="LOCAL" />
-      <updated>1501543385231</updated>
     </task>
     <task id="LOCAL-00048" summary="fix dir">
       <created>1501544471402</created>
@@ -699,7 +692,14 @@
       <option name="project" value="LOCAL" />
       <updated>1515627465111</updated>
     </task>
-    <option name="localTasksCounter" value="96" />
+    <task id="LOCAL-00096" summary="added import baro data function">
+      <created>1515700224842</created>
+      <option name="number" value="00096" />
+      <option name="presentableId" value="LOCAL-00096" />
+      <option name="project" value="LOCAL" />
+      <updated>1515700224842</updated>
+    </task>
+    <option name="localTasksCounter" value="97" />
     <servers />
   </component>
   <component name="TodoView" selected-index="1">
@@ -745,7 +745,6 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix dependency" />
     <MESSAGE value="flip axis on drift fixes" />
     <MESSAGE value="accomodating for ix deprecations in pandas 20" />
     <MESSAGE value="change some variable names" />
@@ -770,7 +769,8 @@
     <MESSAGE value="openpyxl requirement" />
     <MESSAGE value="example file" />
     <MESSAGE value="updated how baro data is pulled; added function" />
-    <option name="LAST_COMMIT_MESSAGE" value="updated how baro data is pulled; added function" />
+    <MESSAGE value="added import baro data function" />
+    <option name="LAST_COMMIT_MESSAGE" value="added import baro data function" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -858,24 +858,24 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/loggerloader_tbx.pyt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1248">
-          <caret line="1436" column="6" lean-forward="false" selection-start-line="1436" selection-start-column="6" selection-end-line="1436" selection-end-column="6" />
-          <folding>
-            <element signature="e#0#82#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/README.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
-          <first_editor relative-caret-position="0">
+          <first_editor relative-caret-position="-12">
             <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
             <folding />
           </first_editor>
           <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/loggerloader_tbx.pyt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="282">
+          <caret line="913" column="4" lean-forward="false" selection-start-line="913" selection-start-column="4" selection-end-line="913" selection-end-column="4" />
+          <folding>
+            <element signature="e#0#82#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
