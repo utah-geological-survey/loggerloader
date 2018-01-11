@@ -2,10 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="">
-      <change beforePath="" afterPath="$PROJECT_DIR$/.idea/dictionaries/paulinkenbrandt.xml" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/R_User_Library.xml" />
-      <change beforePath="$PROJECT_DIR$/.idea/loggerloader.iml" afterPath="$PROJECT_DIR$/.idea/loggerloader.iml" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change beforePath="$PROJECT_DIR$/loggerloader_tbx.pyt" afterPath="$PROJECT_DIR$/loggerloader_tbx.pyt" />
       <change beforePath="$PROJECT_DIR$/loggerloader_tbx.pyt.xml" afterPath="$PROJECT_DIR$/loggerloader_tbx.pyt.xml" />
@@ -39,8 +35,8 @@
       <file leaf-file-name="loggerloader_tbx.pyt" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader_tbx.pyt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="272">
-              <caret line="1104" column="0" lean-forward="true" selection-start-line="1104" selection-start-column="0" selection-end-line="1104" selection-end-column="0" />
+            <state relative-caret-position="-1248">
+              <caret line="1436" column="6" lean-forward="false" selection-start-line="1436" selection-start-column="6" selection-end-line="1436" selection-end-column="6" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
               </folding>
@@ -72,7 +68,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>manualfile</find>
       <find>match_</find>
       <find>ix</find>
       <find>find_ex</find>
@@ -98,7 +93,15 @@
       <find>new_xle_imp</find>
       <find>new_trans_imp</find>
       <find>baro_out</find>
+      <find>simp_imp_well</find>
+      <find>baro_file</find>
+      <find>to_import</find>
+      <find>filedict</find>
+      <find>baros.index[b]</find>
     </findStrings>
+    <replaceStrings>
+      <replace>altid</replace>
+    </replaceStrings>
   </component>
   <component name="Git.Settings">
     <option name="UPDATE_TYPE" value="MERGE" />
@@ -137,8 +140,8 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="1962" />
-    <option name="y" value="417" />
+    <option name="x" value="2100" />
+    <option name="y" value="-59" />
     <option name="width" value="1539" />
     <option name="height" value="1088" />
   </component>
@@ -352,13 +355,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
-    </task>
-    <task id="LOCAL-00046" summary="added imp_one_well">
-      <created>1501543189284</created>
-      <option name="number" value="00046" />
-      <option name="presentableId" value="LOCAL-00046" />
-      <option name="project" value="LOCAL" />
-      <updated>1501543189284</updated>
     </task>
     <task id="LOCAL-00047" summary="fix dir">
       <created>1501543385231</created>
@@ -696,7 +692,14 @@
       <option name="project" value="LOCAL" />
       <updated>1511393371244</updated>
     </task>
-    <option name="localTasksCounter" value="95" />
+    <task id="LOCAL-00095" summary="updated how baro data is pulled; added function">
+      <created>1515627465109</created>
+      <option name="number" value="00095" />
+      <option name="presentableId" value="LOCAL-00095" />
+      <option name="project" value="LOCAL" />
+      <updated>1515627465111</updated>
+    </task>
+    <option name="localTasksCounter" value="96" />
     <servers />
   </component>
   <component name="TodoView" selected-index="1">
@@ -710,7 +713,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="1912" y="-59" width="1936" height="1056" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.15625" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.34846884" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -720,7 +722,7 @@
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32900432" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32683983" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32873806" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.26197916" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.26197916" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.31606767" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
@@ -743,7 +745,6 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added csv functions" />
     <MESSAGE value="fix dependency" />
     <MESSAGE value="flip axis on drift fixes" />
     <MESSAGE value="accomodating for ix deprecations in pandas 20" />
@@ -768,7 +769,8 @@
     <MESSAGE value="fix imp_simp_well" />
     <MESSAGE value="openpyxl requirement" />
     <MESSAGE value="example file" />
-    <option name="LAST_COMMIT_MESSAGE" value="example file" />
+    <MESSAGE value="updated how baro data is pulled; added function" />
+    <option name="LAST_COMMIT_MESSAGE" value="updated how baro data is pulled; added function" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -858,8 +860,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader_tbx.pyt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="272">
-          <caret line="1104" column="0" lean-forward="true" selection-start-line="1104" selection-start-column="0" selection-end-line="1104" selection-end-column="0" />
+        <state relative-caret-position="-1248">
+          <caret line="1436" column="6" lean-forward="false" selection-start-line="1436" selection-start-column="6" selection-end-line="1436" selection-end-column="6" />
           <folding>
             <element signature="e#0#82#0" expanded="true" />
           </folding>

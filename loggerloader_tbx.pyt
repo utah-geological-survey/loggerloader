@@ -11,6 +11,7 @@ import tempfile
 from shutil import copyfile
 import datetime
 import os
+import glob
 import re
 import xmltodict
 from pylab import rcParams
@@ -431,11 +432,10 @@ def find_extreme(site_number, gw_table="UGGP.UGGPADMIN.UGS_GW_reading", extma='m
             dateval.append(row[0])
             dtw.append(row[1])
             wlelev.append(row[2])
-    if len(dateval) > 1:
+    if len(dateval) < 1:
         return None, 0, 0
     else:
         return dateval[0], dtw[0], wlelev[0]
-
 
 def getwellid(infile, wellinfo):
     """Specialized function that uses a well info table and file name to lookup a well's id number"""
@@ -447,6 +447,67 @@ def getwellid(infile, wellinfo):
         wellname = getfilename(infile)[0:s.start()].strip().lower()
     wellid = wellinfo[wellinfo['Well'] == wellname]['WellID'].values[0]
     return wellname, wellid
+
+
+def compilation(inputfile):
+    """This function reads multiple xle transducer files in a directory and generates a compiled Pandas DataFrame.
+    Args:
+        inputfile (file):
+            complete file path to input files; use * for wildcard in file name
+    Returns:
+        outfile (object):
+            Pandas DataFrame of compiled data
+    Example::
+        >>> compilation('O:\\Snake Valley Water\\Transducer Data\\Raw_data_archive\\all\\LEV\\*baro*')
+        picks any file containing 'baro'
+    """
+
+    # create empty dictionary to hold DataFrames
+    f = {}
+
+    # generate list of relevant files
+    filelist = glob.glob(inputfile)
+
+    # iterate through list of relevant files
+    for infile in filelist:
+        # get the extension of the input file
+        filetype = os.path.splitext(infile)[1]
+        # run computations using lev files
+        if filetype == '.lev':
+            # open text file
+            with open(infile) as fd:
+                # find beginning of data
+                indices = fd.readlines().index('[Data]\n')
+
+            # convert data to pandas dataframe starting at the indexed data line
+            f[getfilename(infile)] = pd.read_table(infile, parse_dates=True, sep='     ', index_col=0,
+                                                   skiprows=indices + 2,
+                                                   names=['DateTime', 'Level', 'Temperature'],
+                                                   skipfooter=1, engine='python')
+            # add extension-free file name to dataframe
+            f[getfilename(infile)]['name'] = getfilename(infile)
+            f[getfilename(infile)]['Level'] = pd.to_numeric(f[getfilename(infile)]['Level'])
+            f[getfilename(infile)]['Temperature'] = pd.to_numeric(f[getfilename(infile)]['Temperature'])
+
+        elif filetype == '.xle':  # run computations using xle files
+            f[getfilename(infile)] = new_xle_imp(infile)
+        else:
+            pass
+    # concatenate all of the DataFrames in dictionary f to one DataFrame: g
+    g = pd.concat(f)
+    # remove multiindex and replace with index=Datetime
+    g = g.reset_index()
+    g = g.set_index(['DateTime'])
+    # drop old indexes
+    g = g.drop(['level_0'], axis=1)
+    # remove duplicates based on index then sort by index
+    g['ind'] = g.index
+    g.drop_duplicates(subset='ind', inplace=True)
+    g.drop('ind', axis=1, inplace=True)
+    g = g.sort_index()
+    outfile = g
+    return outfile
+
 
 def getfilename(path):
     """This function extracts the file name without file path or extension
@@ -627,9 +688,11 @@ def simp_imp_well(well_table, file, baro_out, wellid, manual, stbl_elev=True,
 
     if (read_max is None or read_max < first_index) and (drift < drift_tol):
         edit_table(rowlist, gw_reading_table, fieldnames)
-
+        arcpy.AddMessage(arcpy.GetMessages())
+        arcpy.AddMessage("Well {:} imported.".format(wellid))
     elif override and (drift < drift_tol):
         edit_table(rowlist, gw_reading_table, fieldnames)
+        arcpy.AddMessage(arcpy.GetMessages())
         arcpy.AddMessage("Override Activated. Well {:} imported.".format(wellid))
     elif drift > drift_tol:
         arcpy.AddMessage('Drift for well {:} exceeds tolerance!'.format(wellid))
@@ -746,7 +809,6 @@ def xle_head_table(folder):
     Returns:
         A Pandas DataFrame containing the transducer header data
     Example::
-        >>> import loggerloader as ll
         >>> xle_head_table('C:/folder_with_xles/')
     """
     # open text file
@@ -845,7 +907,7 @@ def upload_bp_data(df, site_number, return_df=False, gw_reading_table="UGGP.UGGP
             return df
 
     else:
-        print('Dates later than import data for this station already exist!')
+        arcpy.AddMessage('Dates later than import data for this station already exist!')
         pass
 
 
@@ -902,6 +964,9 @@ class wellimport(object):
         self.stbl = None
         self.ovrd = None
         self.toexcel = None
+        self.baro_comp_file = None
+        self.to_import = None
+        self.idget = None
 
     def read_xle(self):
         well = new_xle_imp(self.well_file)
@@ -1122,7 +1187,7 @@ class wellimport(object):
         wells = well_table[well_table['LocationType'] == 'Well']
         for i in range(len(wells)):
             well_line = wells.iloc[i, :]
-            arcpy.AddMessage("Importing {:}".format(well_line['LocationName']))
+            arcpy.AddMessage("Importing {:} ({:})".format(well_line['LocationName'],wells.index[i]))
 
             df, man, be, drift = simp_imp_well(well_table, well_line['full_filepath'], baro_out, wells.index[i],
                                                     manl, stbl_elev=self.stbl, drift_tol=float(self.tol), override=self.ovrd)
@@ -1180,6 +1245,94 @@ class wellimport(object):
 
         return
 
+    def many_baros(self):
+        """Used by the MultBarometerImport tool to import multiple wells into the SDE"""
+        arcpy.env.workspace = self.sde_conn
+
+
+        self.xledir = self.xledir+r"\\"
+
+        # upload barometric pressure data
+        df = {}
+
+
+        if self.should_plot:
+            pdf_pages = PdfPages(self.chart_out)
+
+
+        for b in range(len(self.wellid)):
+
+            sitename = self.filedict[self.well_files[b]]
+            altid = self.idget[sitename]
+            arcpy.AddMessage([b,altid,sitename])
+            df[altid] = new_trans_imp(self.well_files[b])
+            arcpy.AddMessage("Importing {:} ({:})".format(sitename, altid))
+
+            if self.to_import:
+                upload_bp_data(df[altid], altid)
+                arcpy.AddMessage('Barometer {:} ({:}) Imported'.format(sitename, altid))
+
+            if self.toexcel:
+                from openpyxl import load_workbook
+                if b == 0:
+                    writer = pd.ExcelWriter(self.xledir + '/wells.xlsx')
+                    df[altid].to_excel(writer, sheet_name='{:}_{:}'.format(sitename, b))
+                    writer.save()
+                    writer.close()
+                else:
+                    book = load_workbook(self.xledir + '/wells.xlsx')
+                    writer = pd.ExcelWriter(self.xledir + '/wells.xlsx', engine='openpyxl')
+                    writer.book = book
+                    writer.sheets = dict((ws.title, ws) for ws in book.worksheets)
+                    df[altid].to_excel(writer, sheet_name='{:}_{:}'.format(sitename, b))
+                    writer.save()
+                    writer.close()
+
+            if self.should_plot:
+                # plot data
+                df[altid].set_index('READINGDATE', inplace=True)
+                y1 = df[altid]['WATERELEVATION'].values
+                y2 = df[altid]['barometer'].values
+                x1 = df[altid].index.values
+                x2 = df[altid].index.values
+
+                fig, ax1 = plt.subplots()
+
+                ax1.plot(x1, y1, color='blue', label='Water Level Elevation')
+                ax1.set_ylabel('Water Level Elevation', color='blue')
+                ax1.set_ylim(min(df[altid]['WATERELEVATION']), max(df[altid]['WATERELEVATION']))
+                y_formatter = tick.ScalarFormatter(useOffset=False)
+                ax1.yaxis.set_major_formatter(y_formatter)
+                ax2 = ax1.twinx()
+                ax2.set_ylabel('Barometric Pressure (ft)', color='red')
+                ax2.plot(x2, y2, color='red', label='Barometric pressure (ft)')
+                h1, l1 = ax1.get_legend_handles_labels()
+                h2, l2 = ax2.get_legend_handles_labels()
+                ax1.legend(h1 + h2, l1 + l2, loc=3)
+                plt.xlim(df[altid].first_valid_index() - datetime.timedelta(days=3),
+                         df[altid].last_valid_index() + datetime.timedelta(days=3))
+                plt.title('Well: {:}'.format(sitename))
+                pdf_pages.savefig(fig)
+                plt.close()
+
+            if os.path.exists(self.baro_comp_file):
+                h = pd.read_csv(self.baro_comp_file, index_col=0, header=0, parse_dates=True)
+                g = pd.concat([h, df[altid]])
+                # remove duplicates based on index then sort by index
+                g['ind'] = g.index
+                g.drop_duplicates(subset='ind', inplace=True)
+                g.drop('ind', axis=1, inplace=True)
+                g = g.sort_index()
+                os.remove(self.baro_comp_file)
+                g.to_csv(self.baro_comp_file)
+            else:
+                df[altid] = g.to_csv(self.baro_comp_file)
+
+
+        if self.should_plot:
+            pdf_pages.close()
+
+        return
 
 def parameter(displayName, name, datatype, parameterType='Required', direction='Input', defaultValue=None):
     """The parameter implementation makes it a little difficult to quickly create parameters with defaults. This method
@@ -1205,7 +1358,8 @@ class Toolbox(object):
         self.alias = "loggerloader"
 
         # List of tool classes associated with this toolbox
-        self.tools = [SingleTransducerImport, MultTransducerImport, SimpleBaroFix, SimpleBaroDriftFix, XLERead]
+        self.tools = [SingleTransducerImport, MultBarometerImport, MultTransducerImport, SimpleBaroFix,
+                      SimpleBaroDriftFix, XLERead]
 
 
 class SingleTransducerImport(object):
@@ -1277,6 +1431,120 @@ class SingleTransducerImport(object):
         wellimp.chart_out = parameters[11].valueAsText
 
         wellimp.one_well()
+        arcpy.AddMessage(arcpy.GetMessages())
+        return
+
+class MultBarometerImport(object):
+    def __init__(self):
+        self.label = 'Multiple Barometer Transducer Import to SDE'
+        self.description = """Imports XLE or CSV file based on well information and barometric pressure """
+        self.canRunInBackground = False
+        self.parameters = [
+            parameter("Input SDE Connection", "in_conn_file", "DEWorkspace",
+                      defaultValue="C:/Users/{:}/AppData/Roaming/ESRI/Desktop10.5/ArcCatalog/UGS_SDE.sde".format(
+                          os.environ.get('USERNAME'))),
+            parameter('Directory Containing Files', 'xledir', 'DEFolder'),
+            parameter("Barometer File Matches", "well_files", 'GPValueTable'),
+            parameter("Import data into SDE?", "to_import", "GPBoolean",
+                      parameterType="Optional", defaultValue=0),
+            parameter("Barometer Compilation csv location", "baro_comp_file", "DEFile",
+                      direction="Output"),
+            parameter("Override date filter? (warning: can cause duplicate data.", "ovrd", "GPBoolean",
+                      parameterType="Optional", defaultValue=0),
+            parameter("Create a Chart?", "should_plot", "GPBoolean", parameterType="Optional"),
+            parameter("Chart output location", "chart_out", "DEFile", parameterType="Optional", direction="Output"),
+            parameter("Create Compiled Excel File with import?", "toexcel", "GPBoolean", defaultValue=0,
+                      parameterType="Optional")
+        ]
+        # self.parameters[2].parameterDependencies = [self.parameters[1].value]
+        self.parameters[2].columns = [['GPString', 'xle file'], ['GPString', 'Matching Well Name'],
+                                      ['GPString', 'Matching Well ID']]
+
+
+    def getParameterInfo(self):
+        """Define parameter definitions; http://joelmccune.com/lessons-learned-and-ideas-for-python-toolbox-coding/"""
+        return self.parameters
+
+    def isLicensed(self):
+        """Set whether tool is licensed to execute."""
+        return True
+
+    def updateParameters(self, parameters):
+        """Modify the values and properties of parameters before internal
+        validation is performed.  This method is called whenever a parameter
+        has been changed."""
+        if parameters[1].value and parameters[0].value and arcpy.Exists(parameters[1].value):
+            if not parameters[2].altered:
+                arcpy.env.workspace = parameters[0].value
+                loc_table = "UGGP.UGGPADMIN.UGS_NGWMN_Monitoring_Locations"
+
+                # use a search cursor to iterate rows
+                loc_names = [str(row[0]) for row in arcpy.da.SearchCursor(loc_table, 'LocationName') if
+                             str(row[0]) != 'None' and str(row[0]) != '']
+                well_ident = [str(row[0]) for row in arcpy.da.SearchCursor(loc_table, 'AltLocationID') if
+                              str(row[0]) != 'None' and str(row[0]) != '']
+                loc_names_simp = [i.upper().replace(" ", "").replace("-", "") for i in loc_names]
+                loc_dict = dict(zip(loc_names_simp, loc_names))
+                id_dict = dict(zip(well_ident, loc_names))
+                getid = dict(zip(loc_names,well_ident))
+
+                vtab = []
+                for file in os.listdir(parameters[1].valueAsText):
+                    filetype = os.path.splitext(parameters[1].valueAsText + file)[1]
+                    if filetype == '.xle' or filetype == '.csv':
+                        nameparts = str(file).split(' ')
+                        namepartA = nameparts[0].upper().replace("-", "")
+                        namepartB = str(' '.join(nameparts[:-1])).upper().replace(" ", "").replace("-", "")
+                        nameparts_alt = str(file).split('_')
+                        if len(nameparts_alt) > 3:
+                            namepartC = str(' '.join(nameparts_alt[1:-3])).upper().replace(" ", "")
+                            namepartD = str(nameparts_alt[-4])
+
+                        # populates default based on matches
+                        if namepartA in loc_names_simp:
+                            vtab.append([file, loc_dict.get(namepartA), getid.get(loc_dict.get(namepartA))])
+                        elif namepartB in loc_names_simp:
+                            vtab.append([file, loc_dict.get(namepartB), getid.get(loc_dict.get(namepartB))])
+                        elif len(nameparts_alt) > 3 and namepartC in loc_names_simp:
+                            vtab.append([file, loc_dict.get(namepartC), getid.get(loc_dict.get(namepartC))])
+                        elif len(nameparts_alt) > 3 and namepartD in well_ident:
+                            vtab.append([file, id_dict.get(namepartD), namepartD])
+                        else:
+                            vtab.append([file, None, None])
+
+                parameters[2].values = vtab
+
+                parameters[2].filters[1].list = sorted(loc_names)
+
+                parameters[2].filters[2].list = sorted(well_ident)
+
+        return
+
+    def updateMessages(self, parameters):
+        """Modify the messages created by internal validation for each tool
+        parameter.  This method is called after internal validation."""
+        return
+
+    def execute(self, parameters, messages):
+        wellimp = wellimport()
+        wellimp.sde_conn = parameters[0].valueAsText
+        wellimp.xledir = parameters[1].valueAsText
+
+        if parameters[2].altered:
+            wellimp.well_files = [str(f[0]) for f in parameters[2].value]
+            wellimp.wellname = [str(f[1]) for f in parameters[2].value]
+            wellimp.wellid = [str(f[2]) for f in parameters[2].value]
+            wellimp.welldict = dict(zip(wellimp.wellname, wellimp.well_files))
+            wellimp.filedict = dict(zip(wellimp.well_files, wellimp.wellname))
+            wellimp.idget = dict(zip(wellimp.wellname,wellimp.wellid))
+        wellimp.to_import = parameters[3]
+        wellimp.baro_comp_file = parameters[4].value
+        wellimp.ovrd = parameters[5].value
+        wellimp.should_plot = parameters[6].value
+        wellimp.chart_out = parameters[7].valueAsText
+        wellimp.toexcel = parameters[8].value
+        arcpy.AddMessage("Processing")
+        wellimp.many_baros()
         arcpy.AddMessage(arcpy.GetMessages())
         return
 
