@@ -1029,18 +1029,15 @@ class baroimport(object):
                 pdf_pages.savefig(fig)
                 plt.close()
 
-            if os.path.exists(self.baro_comp_file):
-                h = pd.read_csv(self.baro_comp_file, index_col=0, header=0, parse_dates=True)
-                g = pd.concat([h, df[altid]])
-                # remove duplicates based on index then sort by index
-                g['ind'] = g.index
-                g.drop_duplicates(subset='ind', inplace=True)
-                g.drop('ind', axis=1, inplace=True)
-                g = g.sort_index()
-                os.remove(self.baro_comp_file)
-                g.to_csv(self.baro_comp_file)
-            else:
-                df[altid] = g.to_csv(self.baro_comp_file)
+            h = pd.read_csv(self.baro_comp_file, index_col=0, header=0, parse_dates=True)
+            g = pd.concat([h, df[altid]])
+            # remove duplicates based on index then sort by index
+            g['ind'] = g.index
+            g.drop_duplicates(subset='ind', inplace=True)
+            g.drop('ind', axis=1, inplace=True)
+            g = g.sort_index()
+            os.remove(self.baro_comp_file)
+            g.to_csv(self.baro_comp_file)
 
 
         if self.should_plot:
