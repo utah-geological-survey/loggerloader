@@ -2,15 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="">
-      <change beforePath="" afterPath="$PROJECT_DIR$/.travis.yml" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/VERSION" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/loggerloader/__init__.py" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/loggerloader/utilities.py" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/loggerloader_tbx.MultBarometerImport.pyt.xml" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/setup.py" />
+      <change beforePath="" afterPath="$PROJECT_DIR$/requirements" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/loggerloader_tbx.pyt" afterPath="$PROJECT_DIR$/loggerloader_tbx.pyt" />
-      <change beforePath="$PROJECT_DIR$/loggerloader_tbx.pyt.xml" afterPath="$PROJECT_DIR$/loggerloader_tbx.pyt.xml" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -94,11 +87,21 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="VERSION" pinned="false" current-in-tab="true">
+      <file leaf-file-name="VERSION" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/VERSION">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="0">
               <caret line="0" column="5" lean-forward="false" selection-start-line="0" selection-start-column="5" selection-end-line="0" selection-end-column="5" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="requirements" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/requirements">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="85">
+              <caret line="5" column="13" lean-forward="true" selection-start-line="5" selection-start-column="13" selection-end-line="5" selection-end-column="13" />
               <folding />
             </state>
           </provider>
@@ -191,6 +194,7 @@
         <option value="$PROJECT_DIR$/loggerloader/__init__.py" />
         <option value="$PROJECT_DIR$/loggerloader/utilities.py" />
         <option value="$PROJECT_DIR$/VERSION" />
+        <option value="$PROJECT_DIR$/requirements" />
       </list>
     </option>
   </component>
@@ -430,13 +434,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
-    </task>
-    <task id="LOCAL-00049" summary="fix dir">
-      <created>1501615542929</created>
-      <option name="number" value="00049" />
-      <option name="presentableId" value="LOCAL-00049" />
-      <option name="project" value="LOCAL" />
-      <updated>1501615542929</updated>
     </task>
     <task id="LOCAL-00050" summary="trans">
       <created>1501616788588</created>
@@ -774,7 +771,14 @@
       <option name="project" value="LOCAL" />
       <updated>1515702390257</updated>
     </task>
-    <option name="localTasksCounter" value="98" />
+    <task id="LOCAL-00098" summary="reestablished package v0.3">
+      <created>1515703281259</created>
+      <option name="number" value="00098" />
+      <option name="presentableId" value="LOCAL-00098" />
+      <option name="project" value="LOCAL" />
+      <updated>1515703281259</updated>
+    </task>
+    <option name="localTasksCounter" value="99" />
     <servers />
   </component>
   <component name="TodoView" selected-index="1">
@@ -821,7 +825,6 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="flip axis on drift fixes" />
     <MESSAGE value="accomodating for ix deprecations in pandas 20" />
     <MESSAGE value="change some variable names" />
     <MESSAGE value="fix match" />
@@ -846,7 +849,8 @@
     <MESSAGE value="example file" />
     <MESSAGE value="updated how baro data is pulled; added function" />
     <MESSAGE value="added import baro data function" />
-    <option name="LAST_COMMIT_MESSAGE" value="added import baro data function" />
+    <MESSAGE value="reestablished package v0.3" />
+    <option name="LAST_COMMIT_MESSAGE" value="reestablished package v0.3" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -855,7 +859,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/test/test.py" />
     <entry file="file://$PROJECT_DIR$/loggerloader/arcstuff.py" />
     <entry file="file://$PROJECT_DIR$/VERSION" />
     <entry file="file://$PROJECT_DIR$/setup.py" />
@@ -990,6 +993,14 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="5" lean-forward="false" selection-start-line="0" selection-start-column="5" selection-end-line="0" selection-end-column="5" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/requirements">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="85">
+          <caret line="5" column="13" lean-forward="true" selection-start-line="5" selection-start-column="13" selection-end-line="5" selection-end-column="13" />
           <folding />
         </state>
       </provider>
