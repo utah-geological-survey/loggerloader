@@ -193,10 +193,22 @@ def new_trans_imp(infile):
         A Pandas DataFrame containing the transducer data
     """
     file_ext = os.path.splitext(infile)[1]
-    if file_ext == '.xle':
+    if file_ext in ['.xle','.lev']:
         well = new_xle_imp(infile)
     elif file_ext == '.csv':
         well = new_csv_imp(infile)
+    elif file_ext == '.lev':
+        # open text file
+        with open(infile) as fd:
+            # find beginning of data
+            indices = fd.readlines().index('[Data]\n')
+
+        # convert data to pandas dataframe starting at the indexed data line
+        well = pd.read_table(infile, parse_dates=True, sep='     ', index_col=0,
+                          skiprows=indices + 2, names=['DateTime', 'Level', 'Temperature'], skipfooter=1,
+                          engine='python')
+        # add extension-free file name to dataframe
+        well['name'] = getfilename(infile)
     else:
         print('filetype not recognized')
         pass
@@ -652,7 +664,7 @@ def simp_imp_well(well_table, file, baro_out, wellid, manual, stbl_elev=True,
     # man, stickup, well_elev = self.get_gw_elevs(wellid, well_table, manual, stable_elev = stbl_elev)
     stdata = well_table[well_table['WellID'] == str(wellid)]
     man_sub = manual[manual['Location ID'] == int(wellid)]
-    well_elev = float(stdata['Altitude'].values[0])
+    well_elev = float(stdata['Altitude'].values[0]) # Should be in feet
 
     if stbl_elev:
         if stdata['Offset'].values[0] is None:
