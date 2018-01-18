@@ -23,7 +23,7 @@ rcParams['figure.figsize'] = 15, 10
 def printmes(x):
     try:
         import arcpy
-        printmes(x)
+        arcpy.AddMessage(x)
         print(x)
     except ModuleNotFoundError:
         print(x)
