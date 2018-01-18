@@ -18,59 +18,59 @@ from pylab import rcParams
 
 rcParams['figure.figsize'] = 15, 10
 
-def new_lev_imp(infile):
 
+def new_lev_imp(infile):
     with open(infile, "r") as fd:
         txt = fd.readlines()
 
-    data_ind = txt.index('[Data]\n')
-    inst_info_ind = txt.index('[Instrument info from data header]\n')
-    ch1_ind = txt.index('[CHANNEL 1 from data header]\n')
-    ch2_ind = txt.index('[CHANNEL 2 from data header]\n')
+    try:
+        data_ind = txt.index('[Data]\n')
+        # inst_info_ind = txt.index('[Instrument info from data header]\n')
+        ch1_ind = txt.index('[CHANNEL 1 from data header]\n')
+        ch2_ind = txt.index('[CHANNEL 2 from data header]\n')
+        level = txt[ch1_ind + 1].split('=')[-1].strip()
+        level_units = txt[ch1_ind + 2].split('=')[-1].strip()
+        temp = txt[ch2_ind + 1].split('=')[-1].strip()
+        temp_units = txt[ch2_ind + 2].split('=')[-1].strip()
+        # serial_num = txt[inst_info_ind+1].split('=')[-1].strip().strip(".")
+        # inst_num = txt[inst_info_ind+2].split('=')[-1].strip()
+        # location = txt[inst_info_ind+3].split('=')[-1].strip()
+        # start_time = txt[inst_info_ind+6].split('=')[-1].strip()
+        # stop_time = txt[inst_info_ind+7].split('=')[-1].strip()
 
-    level = txt[ch1_ind+1].split('=')[-1].strip()
-    level_units = txt[ch1_ind+2].split('=')[-1].strip()
-    temp =  txt[ch2_ind+1].split('=')[-1].strip()
-    temp_units = txt[ch2_ind+2].split('=')[-1].strip()
-    serial_num = txt[inst_info_ind+1].split('=')[-1].strip().strip(".")
-    inst_num = txt[inst_info_ind+2].split('=')[-1].strip()
-    location = txt[inst_info_ind+3].split('=')[-1].strip()
-    start_time = txt[inst_info_ind+6].split('=')[-1].strip()
-    stop_time = txt[inst_info_ind+7].split('=')[-1].strip()
+        df = pd.read_table(infile, parse_dates=[[0, 1]], sep='\s+', skiprows=data_ind + 2,
+                           names=['Date', 'Time', level, temp],
+                           skipfooter=1, engine='python')
+        df.rename(columns={'Date_Time': 'DateTime'}, inplace=True)
+        df.set_index('DateTime', inplace=True)
 
+        print('Level units are {:}.'.format(level_units))
+        if level_units == "feet" or level_units == "ft":
+            df[level] = pd.to_numeric(df[level])
+        elif level_units == "kpa":
+            df[level] = pd.to_numeric(df[level]) * 0.33456
+            print("Units in kpa, converting to ft...")
+        elif level_units == "mbar":
+            df[level] = pd.to_numeric(df[level]) * 0.0334552565551
+        elif level_units == "psi":
+            df[level] = pd.to_numeric(df[level]) * 2.306726
+            print("Units in psi, converting to ft...")
+        elif level_units == "m" or level_units == "meters":
+            df[level] = pd.to_numeric(df[level]) * 3.28084
+            print("Units in psi, converting to ft...")
+        else:
+            df[level] = pd.to_numeric(df[level])
+            print("Unknown units, no conversion")
 
-    df = pd.read_table(infile, parse_dates=[[0,1]], sep='\s+',skiprows=  data_ind + 2,
-                       names=['Date', 'Time', level, temp],
-                       skipfooter=1, engine='python')
-    df.rename(columns={'Date_Time':'DateTime'},inplace=True)
-    df.set_index('DateTime',inplace=True)
+        if temp_units == 'Deg C' or ch2Unit == u'\N{DEGREE SIGN}' + u'C':
+            df[temp] = df[temp]
+        elif temp_units == 'Deg F' or ch2Unit == u'\N{DEGREE SIGN}' + u'F':
+            print('Temp in F, converting to C')
+            df[temp] = (df[temp] - 32.0) * 5.0 / 9.0
 
-    print('Level units are {:}.'.format(level_units))
-    if level_units == "feet" or level_units == "ft":
-        df[level] = pd.to_numeric(df[level])
-    elif level_units == "kpa":
-        df[level] = pd.to_numeric(df[level]) * 0.33456
-        print("Units in kpa, converting to ft...")
-    elif level_units == "mbar":
-        df[level] = pd.to_numeric(df[level]) * 0.0334552565551
-    elif level_units == "psi":
-        df[level] = pd.to_numeric(df[level]) * 2.306726
-        print("Units in psi, converting to ft...")
-    elif level_units == "m" or level_units == "meters":
-        df[level] = pd.to_numeric(df[level]) * 3.28084
-        print("Units in psi, converting to ft...")
-    else:
-        df[level] = pd.to_numeric(df[level])
-        print("Unknown units, no conversion")
-
-
-    if temp_units == 'Deg C' or ch2Unit == u'\N{DEGREE SIGN}' + u'C':
-        df[temp] = df[temp]
-    elif temp_units == 'Deg F' or ch2Unit == u'\N{DEGREE SIGN}' + u'F':
-        print('Temp in F, converting to C')
-        df[temp] = (df[temp] - 32.0) * 5.0 / 9.0
-
-    return df
+        return df
+    except ValueError:
+        print('File {:} has formatting issues'.format(infile))
 
 def new_xle_imp(infile):
     """This function uses an exact file path to upload a xle transducer file.
