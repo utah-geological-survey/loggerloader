@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="added .lev function">
-      <change beforePath="$PROJECT_DIR$/.idea/loggerloader.iml" afterPath="$PROJECT_DIR$/.idea/loggerloader.iml" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
+    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change beforePath="$PROJECT_DIR$/loggerloader/utilities.py" afterPath="$PROJECT_DIR$/loggerloader/utilities.py" />
       <change beforePath="$PROJECT_DIR$/loggerloader_tbx.pyt" afterPath="$PROJECT_DIR$/loggerloader_tbx.pyt" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -33,11 +32,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="loggerloader_tbx.pyt" pinned="false" current-in-tab="true">
+      <file leaf-file-name="loggerloader_tbx.pyt" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/loggerloader_tbx.pyt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="519">
-              <caret line="526" column="27" lean-forward="false" selection-start-line="526" selection-start-column="27" selection-end-line="526" selection-end-column="27" />
+            <state relative-caret-position="0">
+              <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="1384" selection-end-column="14" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
               </folding>
@@ -77,11 +76,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="utilities.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="utilities.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/utilities.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="23001">
-              <caret line="1354" column="0" lean-forward="false" selection-start-line="1354" selection-start-column="0" selection-end-line="1354" selection-end-column="0" />
+            <state relative-caret-position="839">
+              <caret line="1384" column="14" lean-forward="false" selection-start-line="1384" selection-start-column="14" selection-end-line="1384" selection-end-column="14" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
               </folding>
@@ -123,7 +122,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>ix</find>
       <find>find_ex</find>
       <find>TEMP</find>
       <find>xle_info_table</find>
@@ -153,6 +151,7 @@
       <find>filedict</find>
       <find>baros.index[b]</find>
       <find>dataendclean</find>
+      <find>Alti</find>
     </findStrings>
     <replaceStrings>
       <replace>altid</replace>
@@ -183,10 +182,10 @@
         <option value="$PROJECT_DIR$/.travis.yml" />
         <option value="$PROJECT_DIR$/setup.py" />
         <option value="$PROJECT_DIR$/loggerloader/__init__.py" />
-        <option value="$PROJECT_DIR$/loggerloader/utilities.py" />
         <option value="$PROJECT_DIR$/VERSION" />
         <option value="$PROJECT_DIR$/requirements" />
         <option value="$PROJECT_DIR$/loggerloader_tbx.pyt" />
+        <option value="$PROJECT_DIR$/loggerloader/utilities.py" />
       </list>
     </option>
   </component>
@@ -242,6 +241,11 @@
           <expand>
             <path>
               <item name="loggerloader" type="b2602c69:ProjectViewProjectNode" />
+              <item name="loggerloader" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="loggerloader" type="b2602c69:ProjectViewProjectNode" />
+              <item name="loggerloader" type="462c0819:PsiDirectoryNode" />
               <item name="loggerloader" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
@@ -539,20 +543,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
-    </task>
-    <task id="LOCAL-00052" summary="trans">
-      <created>1501717545671</created>
-      <option name="number" value="00052" />
-      <option name="presentableId" value="LOCAL-00052" />
-      <option name="project" value="LOCAL" />
-      <updated>1501717545671</updated>
-    </task>
-    <task id="LOCAL-00053" summary="trans">
-      <created>1501774179817</created>
-      <option name="number" value="00053" />
-      <option name="presentableId" value="LOCAL-00053" />
-      <option name="project" value="LOCAL" />
-      <updated>1501774179818</updated>
     </task>
     <task id="LOCAL-00054" summary="fixing lost modules">
       <created>1501775019486</created>
@@ -883,7 +873,21 @@
       <option name="project" value="LOCAL" />
       <updated>1515704189315</updated>
     </task>
-    <option name="localTasksCounter" value="101" />
+    <task id="LOCAL-00101" summary="added .lev function">
+      <created>1516282499963</created>
+      <option name="number" value="00101" />
+      <option name="presentableId" value="LOCAL-00101" />
+      <option name="project" value="LOCAL" />
+      <updated>1516282499963</updated>
+    </task>
+    <task id="LOCAL-00102" summary="added .lev function format exception">
+      <created>1516283539622</created>
+      <option name="number" value="00102" />
+      <option name="presentableId" value="LOCAL-00102" />
+      <option name="project" value="LOCAL" />
+      <updated>1516283539622</updated>
+    </task>
+    <option name="localTasksCounter" value="103" />
     <servers />
   </component>
   <component name="TodoView" selected-index="1">
@@ -899,7 +903,7 @@
     <frame x="1912" y="-59" width="1936" height="1056" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.15625" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.15625" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.34846884" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="R Packages" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="R Graphics" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -907,7 +911,7 @@
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32900432" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32683983" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32873806" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.26197916" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.26197916" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.31606767" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
@@ -942,7 +946,6 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="change some variable names" />
     <MESSAGE value="fix match" />
     <MESSAGE value=" fix match for baro" />
     <MESSAGE value="summary functions" />
@@ -967,7 +970,8 @@
     <MESSAGE value="added import baro data function" />
     <MESSAGE value="reestablished package v0.3" />
     <MESSAGE value="added .lev function" />
-    <option name="LAST_COMMIT_MESSAGE" value="added .lev function" />
+    <MESSAGE value="added .lev function format exception" />
+    <option name="LAST_COMMIT_MESSAGE" value="added .lev function format exception" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1087,16 +1091,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/loggerloader/utilities.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="23001">
-          <caret line="1354" column="0" lean-forward="false" selection-start-line="1354" selection-start-column="0" selection-end-line="1354" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#82#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/VERSION">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -1107,8 +1101,18 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader_tbx.pyt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="519">
-          <caret line="526" column="27" lean-forward="false" selection-start-line="526" selection-start-column="27" selection-end-line="526" selection-end-column="27" />
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="1384" selection-end-column="14" />
+          <folding>
+            <element signature="e#0#82#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/loggerloader/utilities.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="839">
+          <caret line="1384" column="14" lean-forward="false" selection-start-line="1384" selection-start-column="14" selection-end-line="1384" selection-end-column="14" />
           <folding>
             <element signature="e#0#82#0" expanded="true" />
           </folding>

@@ -19,6 +19,59 @@ from pylab import rcParams
 rcParams['figure.figsize'] = 15, 10
 
 
+def new_lev_imp(infile):
+    with open(infile, "r") as fd:
+        txt = fd.readlines()
+
+    try:
+        data_ind = txt.index('[Data]\n')
+        # inst_info_ind = txt.index('[Instrument info from data header]\n')
+        ch1_ind = txt.index('[CHANNEL 1 from data header]\n')
+        ch2_ind = txt.index('[CHANNEL 2 from data header]\n')
+        level = txt[ch1_ind + 1].split('=')[-1].strip()
+        level_units = txt[ch1_ind + 2].split('=')[-1].strip()
+        temp = txt[ch2_ind + 1].split('=')[-1].strip()
+        temp_units = txt[ch2_ind + 2].split('=')[-1].strip()
+        # serial_num = txt[inst_info_ind+1].split('=')[-1].strip().strip(".")
+        # inst_num = txt[inst_info_ind+2].split('=')[-1].strip()
+        # location = txt[inst_info_ind+3].split('=')[-1].strip()
+        # start_time = txt[inst_info_ind+6].split('=')[-1].strip()
+        # stop_time = txt[inst_info_ind+7].split('=')[-1].strip()
+
+        df = pd.read_table(infile, parse_dates=[[0, 1]], sep='\s+', skiprows=data_ind + 2,
+                           names=['Date', 'Time', level, temp],
+                           skipfooter=1, engine='python')
+        df.rename(columns={'Date_Time': 'DateTime'}, inplace=True)
+        df.set_index('DateTime', inplace=True)
+
+        print('Level units are {:}.'.format(level_units))
+        if level_units == "feet" or level_units == "ft":
+            df[level] = pd.to_numeric(df[level])
+        elif level_units == "kpa":
+            df[level] = pd.to_numeric(df[level]) * 0.33456
+            print("Units in kpa, converting to ft...")
+        elif level_units == "mbar":
+            df[level] = pd.to_numeric(df[level]) * 0.0334552565551
+        elif level_units == "psi":
+            df[level] = pd.to_numeric(df[level]) * 2.306726
+            print("Units in psi, converting to ft...")
+        elif level_units == "m" or level_units == "meters":
+            df[level] = pd.to_numeric(df[level]) * 3.28084
+            print("Units in psi, converting to ft...")
+        else:
+            df[level] = pd.to_numeric(df[level])
+            print("Unknown units, no conversion")
+
+        if temp_units == 'Deg C' or temp_units == u'\N{DEGREE SIGN}' + u'C':
+            df[temp] = df[temp]
+        elif temp_units == 'Deg F' or temp_units == u'\N{DEGREE SIGN}' + u'F':
+            print('Temp in F, converting to C')
+            df[temp] = (df[temp] - 32.0) * 5.0 / 9.0
+
+        return df
+    except ValueError:
+        print('File {:} has formatting issues'.format(infile))
+
 def new_xle_imp(infile):
     """This function uses an exact file path to upload a xle transducer file.
 
@@ -195,6 +248,8 @@ def new_trans_imp(infile):
     file_ext = os.path.splitext(infile)[1]
     if file_ext == '.xle':
         well = new_xle_imp(infile)
+    elif file_ext == '.lev':
+        well = new_lev_imp(infile)
     elif file_ext == '.csv':
         well = new_csv_imp(infile)
     else:
@@ -470,29 +525,8 @@ def compilation(inputfile):
 
     # iterate through list of relevant files
     for infile in filelist:
-        # get the extension of the input file
-        filetype = os.path.splitext(infile)[1]
         # run computations using lev files
-        if filetype == '.lev':
-            # open text file
-            with open(infile) as fd:
-                # find beginning of data
-                indices = fd.readlines().index('[Data]\n')
-
-            # convert data to pandas dataframe starting at the indexed data line
-            f[getfilename(infile)] = pd.read_table(infile, parse_dates=True, sep='     ', index_col=0,
-                                                   skiprows=indices + 2,
-                                                   names=['DateTime', 'Level', 'Temperature'],
-                                                   skipfooter=1, engine='python')
-            # add extension-free file name to dataframe
-            f[getfilename(infile)]['name'] = getfilename(infile)
-            f[getfilename(infile)]['Level'] = pd.to_numeric(f[getfilename(infile)]['Level'])
-            f[getfilename(infile)]['Temperature'] = pd.to_numeric(f[getfilename(infile)]['Temperature'])
-
-        elif filetype == '.xle':  # run computations using xle files
-            f[getfilename(infile)] = new_xle_imp(infile)
-        else:
-            pass
+        f[getfilename(infile)] = new_trans_imp(infile)
     # concatenate all of the DataFrames in dictionary f to one DataFrame: g
     g = pd.concat(f)
     # remove multiindex and replace with index=Datetime
@@ -652,7 +686,7 @@ def simp_imp_well(well_table, file, baro_out, wellid, manual, stbl_elev=True,
     # man, stickup, well_elev = self.get_gw_elevs(wellid, well_table, manual, stable_elev = stbl_elev)
     stdata = well_table[well_table['WellID'] == str(wellid)]
     man_sub = manual[manual['Location ID'] == int(wellid)]
-    well_elev = float(stdata['Altitude'].values[0])
+    well_elev = float(stdata['Altitude'].values[0]) # Should be in feet
 
     if stbl_elev:
         if stdata['Offset'].values[0] is None:
@@ -1029,18 +1063,15 @@ class baroimport(object):
                 pdf_pages.savefig(fig)
                 plt.close()
 
-            if os.path.exists(self.baro_comp_file):
-                h = pd.read_csv(self.baro_comp_file, index_col=0, header=0, parse_dates=True)
-                g = pd.concat([h, df[altid]])
-                # remove duplicates based on index then sort by index
-                g['ind'] = g.index
-                g.drop_duplicates(subset='ind', inplace=True)
-                g.drop('ind', axis=1, inplace=True)
-                g = g.sort_index()
-                os.remove(self.baro_comp_file)
-                g.to_csv(self.baro_comp_file)
-            else:
-                df[altid] = g.to_csv(self.baro_comp_file)
+            h = pd.read_csv(self.baro_comp_file, index_col=0, header=0, parse_dates=True)
+            g = pd.concat([h, df[altid]])
+            # remove duplicates based on index then sort by index
+            g['ind'] = g.index
+            g.drop_duplicates(subset='ind', inplace=True)
+            g.drop('ind', axis=1, inplace=True)
+            g = g.sort_index()
+            os.remove(self.baro_comp_file)
+            g.to_csv(self.baro_comp_file)
 
 
         if self.should_plot:

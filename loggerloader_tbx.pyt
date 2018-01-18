@@ -62,9 +62,9 @@ def new_lev_imp(infile):
             df[level] = pd.to_numeric(df[level])
             print("Unknown units, no conversion")
 
-        if temp_units == 'Deg C' or ch2Unit == u'\N{DEGREE SIGN}' + u'C':
+        if temp_units == 'Deg C' or temp_units == u'\N{DEGREE SIGN}' + u'C':
             df[temp] = df[temp]
-        elif temp_units == 'Deg F' or ch2Unit == u'\N{DEGREE SIGN}' + u'F':
+        elif temp_units == 'Deg F' or temp_units == u'\N{DEGREE SIGN}' + u'F':
             print('Temp in F, converting to C')
             df[temp] = (df[temp] - 32.0) * 5.0 / 9.0
 
