@@ -266,7 +266,7 @@ def new_trans_imp(infile):
             printmes('filetype not recognized')
             pass
         return dataendclean(well,'Level')
-    except ValueError:
+    except AttributeError:
         printmes('Bad File')
         pass
     # Use `g[wellinfo[wellinfo['Well']==wellname]['closest_baro']]` to match the closest barometer to the data
