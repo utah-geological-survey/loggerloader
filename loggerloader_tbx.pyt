@@ -264,10 +264,10 @@ def new_trans_imp(infile):
     else:
         printmes('filetype not recognized')
         pass
-    if well:
+    if pd.isnull(well):
         well = dataendclean(well, 'Level')
     else:
-        well = None
+        pass
     return well
 
 
