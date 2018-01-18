@@ -28,6 +28,7 @@ def printmes(x):
     except ModuleNotFoundError:
         print(x)
 
+
 def new_lev_imp(infile):
     with open(infile, "r") as fd:
         txt = fd.readlines()
@@ -37,10 +38,10 @@ def new_lev_imp(infile):
         # inst_info_ind = txt.index('[Instrument info from data header]\n')
         ch1_ind = txt.index('[CHANNEL 1 from data header]\n')
         ch2_ind = txt.index('[CHANNEL 2 from data header]\n')
-        level = txt[ch1_ind + 1].split('=')[-1].strip()
-        level_units = txt[ch1_ind + 2].split('=')[-1].strip()
-        temp = txt[ch2_ind + 1].split('=')[-1].strip()
-        temp_units = txt[ch2_ind + 2].split('=')[-1].strip()
+        level = txt[ch1_ind + 1].split('=')[-1].strip().title()
+        level_units = txt[ch1_ind + 2].split('=')[-1].strip().lower()
+        temp = txt[ch2_ind + 1].split('=')[-1].strip().title()
+        temp_units = txt[ch2_ind + 2].split('=')[-1].strip().lower()
         # serial_num = txt[inst_info_ind+1].split('=')[-1].strip().strip(".")
         # inst_num = txt[inst_info_ind+2].split('=')[-1].strip()
         # location = txt[inst_info_ind+3].split('=')[-1].strip()
@@ -53,7 +54,6 @@ def new_lev_imp(infile):
         df.rename(columns={'Date_Time': 'DateTime'}, inplace=True)
         df.set_index('DateTime', inplace=True)
 
-        printmes('Level units are {:}.'.format(level_units))
         if level_units == "feet" or level_units == "ft":
             df[level] = pd.to_numeric(df[level])
         elif level_units == "kpa":
@@ -76,10 +76,11 @@ def new_lev_imp(infile):
         elif temp_units == 'Deg F' or temp_units == u'\N{DEGREE SIGN}' + u'F':
             printmes('Temp in F, converting to C')
             df[temp] = (df[temp] - 32.0) * 5.0 / 9.0
-
+        df['name'] = infile
         return df
     except ValueError:
         printmes('File {:} has formatting issues'.format(infile))
+
 
 def new_xle_imp(infile):
     """This function uses an exact file path to upload a xle transducer file.
@@ -97,8 +98,11 @@ def new_xle_imp(infile):
     # navigate through xml to the data
     wellrawdata = obj['Body_xle']['Data']['Log']
     # convert xml data to pandas dataframe
-    f = pd.DataFrame(wellrawdata)
-
+    try:
+        f = pd.DataFrame(wellrawdata)
+    except ValueError:
+        printmes('xle file {:} incomplete'.format(infile))
+        return
     # CH 3 check
     try:
         ch3ID = obj['Body_xle']['Ch3_data_header']['Identification']
@@ -207,6 +211,74 @@ def new_csv_imp(infile):
     return f
 
 
+def new_trans_imp(infile):
+    """This function uses an imports and cleans the ends of transducer file.
+
+    Args:
+        infile (file):
+            complete file path to input file
+        xle (bool):
+            if true, then the file type should be xle; else it should be csv
+
+    Returns:
+        A Pandas DataFrame containing the transducer data
+    """
+    file_ext = os.path.splitext(infile)[1]
+    try:
+        if file_ext == '.xle':
+            well = new_xle_imp(infile)
+        elif file_ext == '.lev':
+            well = new_lev_imp(infile)
+        elif file_ext == '.csv':
+            well = new_csv_imp(infile)
+        else:
+            printmes('filetype not recognized')
+            pass
+        return dataendclean(well, 'Level')
+    except AttributeError:
+        printmes('Bad File')
+        return
+
+
+def compilation(inputfile):
+    """This function reads multiple xle transducer files in a directory and generates a compiled Pandas DataFrame.
+    Args:
+        inputfile (file):
+            complete file path to input files; use * for wildcard in file name
+    Returns:
+        outfile (object):
+            Pandas DataFrame of compiled data
+    Example::
+        >>> compilation('O:\\Snake Valley Water\\Transducer Data\\Raw_data_archive\\all\\LEV\\*baro*')
+        picks any file containing 'baro'
+    """
+
+    # create empty dictionary to hold DataFrames
+    f = {}
+
+    # generate list of relevant files
+    filelist = glob.glob(inputfile)
+
+    # iterate through list of relevant files
+    for infile in filelist:
+        # run computations using lev files
+        f[getfilename(infile)] = new_trans_imp(infile)
+    # concatenate all of the DataFrames in dictionary f to one DataFrame: g
+    g = pd.concat(f)
+    # remove multiindex and replace with index=Datetime
+    g = g.reset_index()
+    g = g.set_index(['DateTime'])
+    # drop old indexes
+    g = g.drop(['level_0'], axis=1)
+    # remove duplicates based on index then sort by index
+    g['ind'] = g.index
+    g.drop_duplicates(subset='ind', inplace=True)
+    g.drop('ind', axis=1, inplace=True)
+    g = g.sort_index()
+    outfile = g
+    return g
+
+
 def dataendclean(df, x, inplace=False):
     """Trims off ends and beginnings of datasets that exceed 2.0 standard deviations of the first and last 30 values
 
@@ -242,35 +314,17 @@ def dataendclean(df, x, inplace=False):
     return df
 
 
-def new_trans_imp(infile):
-    """This function uses an imports and cleans the ends of transducer file.
+def getfilename(path):
+    """This function extracts the file name without file path or extension
 
     Args:
-        infile (file):
-            complete file path to input file
-        xle (bool):
-            if true, then the file type should be xle; else it should be csv
+        path (file):
+            full path and file (including extension of file)
 
     Returns:
-        A Pandas DataFrame containing the transducer data
+        name of file as string
     """
-    file_ext = os.path.splitext(infile)[1]
-    try:
-        if file_ext == '.xle':
-            well = new_xle_imp(infile)
-        elif file_ext == '.lev':
-            well = new_lev_imp(infile)
-        elif file_ext == '.csv':
-            well = new_csv_imp(infile)
-        else:
-            printmes('filetype not recognized')
-            pass
-        return dataendclean(well,'Level')
-    except AttributeError:
-        printmes('Bad File')
-        pass
-    # Use `g[wellinfo[wellinfo['Well']==wellname]['closest_baro']]` to match the closest barometer to the data
-
+    return path.split('\\').pop().split('/').pop().rsplit('.', 1)[0]
 
 def correct_be(site_number, well_table, welldata, be=None, meas='corrwl', baro='barometer'):
     if be:
@@ -514,59 +568,6 @@ def getwellid(infile, wellinfo):
         wellname = getfilename(infile)[0:s.start()].strip().lower()
     wellid = wellinfo[wellinfo['Well'] == wellname]['WellID'].values[0]
     return wellname, wellid
-
-
-def compilation(inputfile):
-    """This function reads multiple xle transducer files in a directory and generates a compiled Pandas DataFrame.
-    Args:
-        inputfile (file):
-            complete file path to input files; use * for wildcard in file name
-    Returns:
-        outfile (object):
-            Pandas DataFrame of compiled data
-    Example::
-        >>> compilation('O:\\Snake Valley Water\\Transducer Data\\Raw_data_archive\\all\\LEV\\*baro*')
-        picks any file containing 'baro'
-    """
-
-    # create empty dictionary to hold DataFrames
-    f = {}
-
-    # generate list of relevant files
-    filelist = glob.glob(inputfile)
-
-    # iterate through list of relevant files
-    for infile in filelist:
-        # run computations using lev files
-        f[getfilename(infile)] = new_trans_imp(infile)
-    # concatenate all of the DataFrames in dictionary f to one DataFrame: g
-    g = pd.concat(f)
-    # remove multiindex and replace with index=Datetime
-    g = g.reset_index()
-    g = g.set_index(['DateTime'])
-    # drop old indexes
-    g = g.drop(['level_0'], axis=1)
-    # remove duplicates based on index then sort by index
-    g['ind'] = g.index
-    g.drop_duplicates(subset='ind', inplace=True)
-    g.drop('ind', axis=1, inplace=True)
-    g = g.sort_index()
-    outfile = g
-    return outfile
-
-
-def getfilename(path):
-    """This function extracts the file name without file path or extension
-
-    Args:
-        path (file):
-            full path and file (including extension of file)
-
-    Returns:
-        name of file as string
-    """
-    return path.split('\\').pop().split('/').pop().rsplit('.', 1)[0]
-
 
 def get_stickup_elev(site_number, well_table):
     wells = table_to_pandas_dataframe(well_table, field_names=['AltLocationID', 'Offset', 'Altitude'])
