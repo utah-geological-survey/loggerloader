@@ -16,8 +16,17 @@ import re
 import xmltodict
 from pylab import rcParams
 
+
 rcParams['figure.figsize'] = 15, 10
 
+
+def printmes(x):
+    try:
+        import arcpy
+        printmes(x)
+        print(x)
+    except ModuleNotFoundError:
+        print(x)
 
 def new_lev_imp(infile):
     with open(infile, "r") as fd:
@@ -44,33 +53,33 @@ def new_lev_imp(infile):
         df.rename(columns={'Date_Time': 'DateTime'}, inplace=True)
         df.set_index('DateTime', inplace=True)
 
-        print('Level units are {:}.'.format(level_units))
+        printmes('Level units are {:}.'.format(level_units))
         if level_units == "feet" or level_units == "ft":
             df[level] = pd.to_numeric(df[level])
         elif level_units == "kpa":
             df[level] = pd.to_numeric(df[level]) * 0.33456
-            print("Units in kpa, converting to ft...")
+            printmes("Units in kpa, converting to ft...")
         elif level_units == "mbar":
             df[level] = pd.to_numeric(df[level]) * 0.0334552565551
         elif level_units == "psi":
             df[level] = pd.to_numeric(df[level]) * 2.306726
-            print("Units in psi, converting to ft...")
+            printmes("Units in psi, converting to ft...")
         elif level_units == "m" or level_units == "meters":
             df[level] = pd.to_numeric(df[level]) * 3.28084
-            print("Units in psi, converting to ft...")
+            printmes("Units in psi, converting to ft...")
         else:
             df[level] = pd.to_numeric(df[level])
-            print("Unknown units, no conversion")
+            printmes("Unknown units, no conversion")
 
         if temp_units == 'Deg C' or temp_units == u'\N{DEGREE SIGN}' + u'C':
             df[temp] = df[temp]
         elif temp_units == 'Deg F' or temp_units == u'\N{DEGREE SIGN}' + u'F':
-            print('Temp in F, converting to C')
+            printmes('Temp in F, converting to C')
             df[temp] = (df[temp] - 32.0) * 5.0 / 9.0
 
         return df
     except ValueError:
-        print('File {:} has formatting issues'.format(infile))
+        printmes('File {:} has formatting issues'.format(infile))
 
 def new_xle_imp(infile):
     """This function uses an exact file path to upload a xle transducer file.
@@ -105,7 +114,7 @@ def new_xle_imp(infile):
     if ch2Unit == 'Deg C' or ch2Unit == u'\N{DEGREE SIGN}' + u'C':
         f[str(ch2ID).title()] = numCh2
     elif ch2Unit == 'Deg F' or ch2Unit == u'\N{DEGREE SIGN}' + u'F':
-        print('Temp in F, converting to C')
+        printmes('Temp in F, converting to C')
         f[str(ch2ID).title()] = (numCh2 - 32) * 5 / 9
 
     # CH 1 manipulation
@@ -117,18 +126,18 @@ def new_xle_imp(infile):
         f[str(ch1ID).title()] = pd.to_numeric(f['ch1'])
     elif unit == "kpa":
         f[str(ch1ID).title()] = pd.to_numeric(f['ch1']) * 0.33456
-        print("Units in kpa, converting to ft...")
+        printmes("Units in kpa, converting to ft...")
     elif unit == "mbar":
         f[str(ch1ID).title()] = pd.to_numeric(f['ch1']) * 0.0334552565551
     elif unit == "psi":
         f[str(ch1ID).title()] = pd.to_numeric(f['ch1']) * 2.306726
-        print("Units in psi, converting to ft...")
+        printmes("Units in psi, converting to ft...")
     elif unit == "m" or unit == "meters":
         f[str(ch1ID).title()] = pd.to_numeric(f['ch1']) * 3.28084
-        print("Units in psi, converting to ft...")
+        printmes("Units in psi, converting to ft...")
     else:
         f[str(ch1ID).title()] = pd.to_numeric(f['ch1'])
-        print("Unknown units, no conversion")
+        printmes("Unknown units, no conversion")
 
     # add extension-free file name to dataframe
     f['name'] = infile.split('\\').pop().split('/').pop().rsplit('.', 1)[0]
@@ -211,7 +220,7 @@ def dataendclean(df, x, inplace=False):
     :returns: df trimmed data
     :rtype: pandas.core.frame.DataFrame
 
-    This function prints a message if data are trimmed.
+    This function printmess a message if data are trimmed.
     """
     # Examine Mean Values
     if inplace:
@@ -224,12 +233,12 @@ def dataendclean(df, x, inplace=False):
         for i in range(len(jump)):
             if jump.index[i] < df.index[50]:
                 df = df[df.index > jump.index[i]]
-                print("Dropped from beginning to " + str(jump.index[i]))
+                printmes("Dropped from beginning to " + str(jump.index[i]))
             if jump.index[i] > df.index[-50]:
                 df = df[df.index < jump.index[i]]
-                print("Dropped from end to " + str(jump.index[i]))
+                printmes("Dropped from end to " + str(jump.index[i]))
     except IndexError:
-        print('No Jumps')
+        printmes('No Jumps')
     return df
 
 
@@ -253,13 +262,9 @@ def new_trans_imp(infile):
     elif file_ext == '.csv':
         well = new_csv_imp(infile)
     else:
-        print('filetype not recognized')
+        printmes('filetype not recognized')
         pass
-    if well:
-        well = dataendclean(well, 'Level')
-    else:
-        well = None
-    return well
+    return dataendclean(well, 'Level')
 
     # Use `g[wellinfo[wellinfo['Well']==wellname]['closest_baro']]` to match the closest barometer to the data
 
@@ -376,7 +381,7 @@ def imp_one_well(well_file, baro_file, man_startdate, man_start_level, man_endat
     else:
         trans_type = 'Global Water'
 
-    arcpy.AddMessage('Trans type for well is {:}.'.format(trans_type))
+    printmes('Trans type for well is {:}.'.format(trans_type))
 
 
     well = new_trans_imp(well_file)
@@ -394,26 +399,26 @@ def imp_one_well(well_file, baro_file, man_startdate, man_start_level, man_endat
     man = pd.DataFrame(
         {'DateTime': [man_startdate, man_endate], 'MeasuredDTW': [man_start_level, man_end_level]}).set_index(
         'DateTime')
-    arcpy.AddMessage(man)
+    printmes(man)
     man['Meas_GW_Elev'] = well_elev - (man['MeasuredDTW'] - stickup)
 
     man['MeasuredDTW'] = man['MeasuredDTW'] * -1
 
     dft = fix_drift(corrwl, man, meas='corrwl', manmeas='MeasuredDTW')
     drift = round(float(dft[1]['drift'].values[0]), 3)
-    arcpy.AddMessage('Drift for well {:} is {:}.'.format(wellid, drift))
+    printmes('Drift for well {:} is {:}.'.format(wellid, drift))
     df = dft[0]
 
     rowlist, fieldnames = prepare_fieldnames(df, wellid, stickup, well_elev)
 
     if drift <= drift_tol:
         edit_table(rowlist, gw_reading_table, fieldnames)
-        arcpy.AddMessage('Well {:} successfully imported!'.format(wellid))
+        printmes('Well {:} successfully imported!'.format(wellid))
     elif override == 1:
         edit_table(rowlist, gw_reading_table, fieldnames)
-        arcpy.AddMessage('Override initiated. Well {:} successfully imported!'.format(wellid))
+        printmes('Override initiated. Well {:} successfully imported!'.format(wellid))
     else:
-        arcpy.AddMessage('Well {:} drift greater than tolerance!'.format(wellid))
+        printmes('Well {:} drift greater than tolerance!'.format(wellid))
     return df, man, be, drift
 
 
@@ -641,7 +646,7 @@ def edit_table(df, gw_reading_table, fieldnames):
     for name in fieldnames:
         if name not in table_names:
             fieldnames.remove(name)
-            arcpy.AddMessage("{:} not in {:} fieldnames!".format(name, gw_reading_table))
+            printmes("{:} not in {:} fieldnames!".format(name, gw_reading_table))
 
     if len(fieldnames) > 0:
         subset = df[fieldnames]
@@ -660,7 +665,7 @@ def edit_table(df, gw_reading_table, fieldnames):
         edit.stopOperation()
         edit.stopEditing(True)
     else:
-        arcpy.AddMessage('No data imported!')
+        printmes('No data imported!')
 
 
 def simp_imp_well(well_table, file, baro_out, wellid, manual, stbl_elev=True,
@@ -675,7 +680,7 @@ def simp_imp_well(well_table, file, baro_out, wellid, manual, stbl_elev=True,
         trans_type = 'Global Water'
     try:
         baroid = well_table.loc[wellid, 'BaroLoggerType']
-        arcpy.AddMessage('{:}'.format(baroid))
+        printmes('{:}'.format(baroid))
         corrwl = well_baro_merge(well, baro_out[str(baroid)], barocolumn='MEASUREDLEVEL',
                                       vented=(trans_type != 'Solinst'))
     except:
@@ -695,7 +700,7 @@ def simp_imp_well(well_table, file, baro_out, wellid, manual, stbl_elev=True,
     if stbl_elev:
         if stdata['Offset'].values[0] is None:
             stickup = 0
-            arcpy.AddMessage('Well ID {:} missing stickup!'.format(wellid))
+            printmes('Well ID {:} missing stickup!'.format(wellid))
         else:
             stickup = float(stdata['Offset'].values[0])
     else:
@@ -706,7 +711,7 @@ def simp_imp_well(well_table, file, baro_out, wellid, manual, stbl_elev=True,
     man_sub.loc[:, 'MeasuredDTW'] = man_sub['Water Level (ft)'] * -1
     man_sub.loc[:, 'Meas_GW_Elev'] = man_sub['MeasuredDTW'].apply(lambda x: float(well_elev) + (x + float(stickup)),
                                                                   1)
-    arcpy.AddMessage('Stickup: {:}, Well Elev: {:}'.format(stickup, well_elev))
+    printmes('Stickup: {:}, Well Elev: {:}'.format(stickup, well_elev))
 
     # fix transducer drift
 
@@ -720,22 +725,22 @@ def simp_imp_well(well_table, file, baro_out, wellid, manual, stbl_elev=True,
     # Get last reading at the specified location
     read_max, dtw, wlelev = find_extreme(wellid)
 
-    arcpy.AddMessage("Last database date is {:}. First transducer reading is on {:}.".format(read_max, first_index))
+    printmes("Last database date is {:}. First transducer reading is on {:}.".format(read_max, first_index))
 
     rowlist, fieldnames = prepare_fieldnames(df, wellid, stickup, well_elev)
 
     if (read_max is None or read_max < first_index) and (drift < drift_tol):
         edit_table(rowlist, gw_reading_table, fieldnames)
-        arcpy.AddMessage(arcpy.GetMessages())
-        arcpy.AddMessage("Well {:} imported.".format(wellid))
+        printmes(arcpy.GetMessages())
+        printmes("Well {:} imported.".format(wellid))
     elif override and (drift < drift_tol):
         edit_table(rowlist, gw_reading_table, fieldnames)
-        arcpy.AddMessage(arcpy.GetMessages())
-        arcpy.AddMessage("Override Activated. Well {:} imported.".format(wellid))
+        printmes(arcpy.GetMessages())
+        printmes("Override Activated. Well {:} imported.".format(wellid))
     elif drift > drift_tol:
-        arcpy.AddMessage('Drift for well {:} exceeds tolerance!'.format(wellid))
+        printmes('Drift for well {:} exceeds tolerance!'.format(wellid))
     else:
-        arcpy.AddMessage('Dates later than import data for well {:} already exist!'.format(wellid))
+        printmes('Dates later than import data for well {:} already exist!'.format(wellid))
         pass
 
     # except (ValueError, ZeroDivisionError):
@@ -945,7 +950,7 @@ def upload_bp_data(df, site_number, return_df=False, gw_reading_table="UGGP.UGGP
             return df
 
     else:
-        arcpy.AddMessage('Dates later than import data for this station already exist!')
+        printmes('Dates later than import data for this station already exist!')
         pass
 
 
@@ -965,7 +970,7 @@ def get_location_data(site_number, enviro, first_date=None, last_date=None, limi
 
     query_txt = "LOCATIONID = '{:}' and (READINGDATE >= '{:%m/%d/%Y}' and READINGDATE <= '{:%m/%d/%Y}')"
     query = query_txt.format(site_number, first_date, last_date + datetime.timedelta(days=1))
-    arcpy.AddMessage(query)
+    printmes(query)
     sql_sn = (limit, 'ORDER BY READINGDATE ASC')
 
     fieldnames = get_field_names(gw_reading_table)
@@ -973,7 +978,7 @@ def get_location_data(site_number, enviro, first_date=None, last_date=None, limi
     readings = table_to_pandas_dataframe(gw_reading_table, fieldnames, query, sql_sn)
     readings.set_index('READINGDATE', inplace=True)
     if len(readings) == 0:
-        arcpy.AddMessage('No Records for location {:}'.format(site_number))
+        printmes('No Records for location {:}'.format(site_number))
     return readings
 
 class baroimport(object):
@@ -1016,13 +1021,13 @@ class baroimport(object):
 
             sitename = self.filedict[self.well_files[b]]
             altid = self.idget[sitename]
-            arcpy.AddMessage([b,altid,sitename])
+            printmes([b,altid,sitename])
             df[altid] = new_trans_imp(self.xledir + self.well_files[b])
-            arcpy.AddMessage("Importing {:} ({:})".format(sitename, altid))
+            printmes("Importing {:} ({:})".format(sitename, altid))
 
             if self.to_import:
                 upload_bp_data(df[altid], altid)
-                arcpy.AddMessage('Barometer {:} ({:}) Imported'.format(sitename, altid))
+                printmes('Barometer {:} ({:}) Imported'.format(sitename, altid))
 
             if self.toexcel:
                 from openpyxl import load_workbook
@@ -1166,8 +1171,8 @@ class wellimport(object):
             plt.close()
             pdf_pages.close()
 
-        arcpy.AddMessage('Well Imported!')
-        arcpy.AddMessage(arcpy.GetMessages())
+        printmes('Well Imported!')
+        printmes(arcpy.GetMessages())
         return
 
 
@@ -1197,7 +1202,7 @@ class wellimport(object):
         dft = self.fix_drift(corrwl, man, meas='corrwl', manmeas='MeasuredDTW')
         drift = round(float(dft[1]['drift'].values[0]), 3)
 
-        arcpy.AddMessage("Drift is {:} feet".format(drift))
+        printmes("Drift is {:} feet".format(drift))
         dft[0].to_csv(self.save_location)
 
         if self.should_plot:
@@ -1268,17 +1273,17 @@ class wellimport(object):
 
         if '.xle' in file_extension and '.csv' in file_extension:
             xles = xle_head_table(dirpath)
-            arcpy.AddMessage('xles examined')
+            printmes('xles examined')
             csvs = csv_info_table(dirpath)
-            arcpy.AddMessage('csvs examined')
+            printmes('csvs examined')
             file_info_table = pd.concat([xles, csvs[0]])
         elif '.xle' in file_extension:
             xles = xle_head_table(dirpath)
-            arcpy.AddMessage('xles examined')
+            printmes('xles examined')
             file_info_table = xles
         elif '.csv' in file_extension:
             csvs = csv_info_table(dirpath)
-            arcpy.AddMessage('csvs examined')
+            printmes('csvs examined')
             file_info_table = csvs[0]
 
         # combine header table with the sde table
@@ -1288,10 +1293,10 @@ class wellimport(object):
         well_table['WellID'] = well_table.index
         well_table.dropna(subset=['WellName'], inplace=True)
         well_table.to_csv(self.xledir + '/file_info_table.csv')
-        arcpy.AddMessage("Header Table with well information created at {:}/file_info_table.csv".format(self.xledir))
+        printmes("Header Table with well information created at {:}/file_info_table.csv".format(self.xledir))
         maxtime = max(pd.to_datetime(well_table['Stop_time']))
         mintime = min(pd.to_datetime(well_table['Start_time']))
-        arcpy.AddMessage("Data span from {:} to {:}.".format(mintime, maxtime))
+        printmes("Data span from {:} to {:}.".format(mintime, maxtime))
 
         # upload barometric pressure data
         baro_out = {}
@@ -1306,9 +1311,9 @@ class wellimport(object):
                 try:
                     baro_out[str(baro)] = get_location_data(baro, self.sde_conn, first_date=mintime,
                                                             last_date=lastdate)
-                    arcpy.AddMessage('Barometer {:} data download success'.format(baro))
+                    printmes('Barometer {:} data download success'.format(baro))
                 except:
-                    arcpy.AddMessage('Barometer {:} Data not available'.format(baro))
+                    printmes('Barometer {:} Data not available'.format(baro))
                     pass
 
         else:
@@ -1318,7 +1323,7 @@ class wellimport(object):
                 upload_bp_data(df, baros.index[b])
                 baro_out[baros.index[b]] = get_location_data(baros.index[b], self.sde_conn, first_date=mintime,
                                                              last_date= lastdate)
-                arcpy.AddMessage('Barometer {:} ({:}) Imported'.format(barline['LocationName'], baros.index[b]))
+                printmes('Barometer {:} ({:}) Imported'.format(barline['LocationName'], baros.index[b]))
 
         # upload manual data from csv file
         manl = pd.read_csv(self.man_file, index_col="DateTime")
@@ -1330,13 +1335,13 @@ class wellimport(object):
         wells = well_table[well_table['LocationType'] == 'Well']
         for i in range(len(wells)):
             well_line = wells.iloc[i, :]
-            arcpy.AddMessage("Importing {:} ({:})".format(well_line['LocationName'],wells.index[i]))
+            printmes("Importing {:} ({:})".format(well_line['LocationName'],wells.index[i]))
 
             df, man, be, drift = simp_imp_well(well_table, well_line['full_filepath'], baro_out, wells.index[i],
                                                     manl, stbl_elev=self.stbl, drift_tol=float(self.tol), override=self.ovrd)
-            arcpy.AddMessage(arcpy.GetMessages())
-            arcpy.AddMessage('Drift for well {:} is {:}.'.format(well_line['LocationName'], drift))
-            arcpy.AddMessage("Well {:} complete.\n---------------".format(well_line['LocationName']))
+            printmes(arcpy.GetMessages())
+            printmes('Drift for well {:} is {:}.'.format(well_line['LocationName'], drift))
+            printmes("Well {:} complete.\n---------------".format(well_line['LocationName']))
 
             if self.toexcel:
                 from openpyxl import load_workbook
