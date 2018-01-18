@@ -525,29 +525,8 @@ def compilation(inputfile):
 
     # iterate through list of relevant files
     for infile in filelist:
-        # get the extension of the input file
-        filetype = os.path.splitext(infile)[1]
         # run computations using lev files
-        if filetype == '.lev':
-            # open text file
-            with open(infile) as fd:
-                # find beginning of data
-                indices = fd.readlines().index('[Data]\n')
-
-            # convert data to pandas dataframe starting at the indexed data line
-            f[getfilename(infile)] = pd.read_table(infile, parse_dates=True, sep='     ', index_col=0,
-                                                   skiprows=indices + 2,
-                                                   names=['DateTime', 'Level', 'Temperature'],
-                                                   skipfooter=1, engine='python')
-            # add extension-free file name to dataframe
-            f[getfilename(infile)]['name'] = getfilename(infile)
-            f[getfilename(infile)]['Level'] = pd.to_numeric(f[getfilename(infile)]['Level'])
-            f[getfilename(infile)]['Temperature'] = pd.to_numeric(f[getfilename(infile)]['Temperature'])
-
-        elif filetype == '.xle':  # run computations using xle files
-            f[getfilename(infile)] = new_xle_imp(infile)
-        else:
-            pass
+        f[getfilename(infile)] = new_trans_imp(infile)
     # concatenate all of the DataFrames in dictionary f to one DataFrame: g
     g = pd.concat(f)
     # remove multiindex and replace with index=Datetime
