@@ -255,20 +255,20 @@ def new_trans_imp(infile):
         A Pandas DataFrame containing the transducer data
     """
     file_ext = os.path.splitext(infile)[1]
-    if file_ext == '.xle':
-        well = new_xle_imp(infile)
-    elif file_ext == '.lev':
-        well = new_lev_imp(infile)
-    elif file_ext == '.csv':
-        well = new_csv_imp(infile)
-    else:
-        printmes('filetype not recognized')
+    try:
+        if file_ext == '.xle':
+            well = new_xle_imp(infile)
+        elif file_ext == '.lev':
+            well = new_lev_imp(infile)
+        elif file_ext == '.csv':
+            well = new_csv_imp(infile)
+        else:
+            printmes('filetype not recognized')
+            pass
+        return dataendclean(well,'Level')
+    except ValueError:
+        printmes('Bad File')
         pass
-    if pd.isnull(well):
-        well = dataendclean(well, 'Level')
-    else:
-        pass
-    return well
     # Use `g[wellinfo[wellinfo['Well']==wellname]['closest_baro']]` to match the closest barometer to the data
 
 
