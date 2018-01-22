@@ -28,6 +28,30 @@ def printmes(x):
     except ModuleNotFoundError:
         print(x)
 
+def compilefiles(searchdir,copydir,filecontains,filetypes=['lev','xle']):
+    filecontains = list(filecontains)
+    filetypes = list(filetypes)
+    for pack in os.walk(searchdir):
+        for name in filecontains:
+            for i in glob.glob(pack[0]+'/'+'*{:}*'.format(name)):
+                if i.split('.')[-1] in filetypes:
+                    dater = str(datetime.datetime.fromtimestamp(os.path.getmtime(i)).strftime('%Y-%m-%d'))
+                    rightfile = dater + "_" + os.path.basename(i)
+                    if not os.path.exists(copydir):
+                        print('Creating {:}'.format(copydir))
+                        os.makedirs(copydir)
+                    else:
+                        pass
+                    if os.path.isfile(os.path.join(copydir, rightfile)):
+                        pass
+                    else:
+                        print(os.path.join(copydir, rightfile))
+                        try:
+                            copyfile(i, os.path.join(copydir, rightfile))
+                        except:
+                            pass
+    printmes('Copy Complete!')
+    return
 
 def new_lev_imp(infile):
     with open(infile, "r") as fd:
@@ -365,28 +389,15 @@ def hourly_resample(df, bse=0, minutes=60):
         once per minute.
         see http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases
     """
-    if int(str(pd.__version__).split('.')[0]) == 0 and int(
-            str(pd.__version__).split('.')[1]) < 18:  # pandas versioning
-        df = df.resample('1Min', how='first')
-    else:
-        # you can make this smaller to accomodate for a higher sampling frequency
-        df = df.resample('1Min').first()
 
-        # http://pandas.pydata.org/pandas-docs/dev/generated/pandas.Series.interpolate.html
-    df = df.interpolate(method='time', limit=90)
+    df = df.resample('1Min').mean().interpolate(method='time', limit=90)
 
-    if int(str(pd.__version__).split('.')[0]) == 0 and int(
-            str(pd.__version__).split('.')[1]) < 18:  # pandas versioning
-        df = df.resample(str(minutes) + 'Min', closed='left', label='left', base=bse, how='first')
-    else:
-        # modify '60Min' to change the resulting frequency
-        df = df.resample(str(minutes) + 'Min', closed='left', label='left', base=bse).first()
+    df = df.resample(str(minutes) + 'Min', closed='left', label='left', base=bse).mean()
     return df
 
 
 def well_baro_merge(wellfile, barofile, barocolumn='Level', wellcolumn='Level', outcolumn='corrwl',
-                    vented=False,
-                    sampint=60):
+                    vented=False, sampint=60):
     """Remove barometric pressure from nonvented transducers.
     Args:
         wellfile (pd.DataFrame):
@@ -832,9 +843,9 @@ def fix_drift(well, manualfile, meas='Level', manmeas='MeasuredDTW', outcolname=
             # bracketedwls[i].loc[:, 'wldiff'] = bracketedwls[i].loc[:, meas] - first_trans
             # apply linear drift to transducer data to fix drift; flipped x to match drift
             df.loc[:, 'DRIFTCORRECTION'] = df['datechange'].apply(lambda x: m * x, 1)
-            df[outcolname] = df[meas] - (df['DRIFTCORRECTION'] + b)
+            df.loc[:, outcolname] = df[meas] - (df['DRIFTCORRECTION'] + b)
 
-            drift_features[i] = {'begining': first_man, 'end': last_man, 'intercept': b, 'slope': m,
+            drift_features[i] = {'begining': first_man.name, 'end': last_man.name, 'intercept': b, 'slope': m,
                                  'first_meas': first_man[manmeas], 'last_meas': last_man[manmeas],
                                  'drift': drift}
         else:
@@ -984,6 +995,7 @@ def get_location_data(site_number, enviro, first_date=None, last_date=None, limi
     if len(readings) == 0:
         printmes('No Records for location {:}'.format(site_number))
     return readings
+
 
 class baroimport(object):
     def __init__(self):
