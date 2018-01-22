@@ -853,6 +853,9 @@ def fix_drift(well, manualfile, meas='Level', corrwl='corrwl', manmeas='Measured
 
     wellnona = well.dropna(subset=[corrwl])
 
+    if manualfile.first_valid_index() > wellnona.first_valid_index():
+        breakpoints.append(wellnona.first_valid_index())
+
     for i in range(len(manualfile)):
         breakpoints.append(fcl(wellnona, manualfile.index[i]).name)
 
@@ -860,6 +863,7 @@ def fix_drift(well, manualfile, meas='Level', corrwl='corrwl', manmeas='Measured
     breakpoints = pd.to_datetime(breakpoints)
     breakpoints.sort_values(inplace=True)
     breakpoints.drop_duplicates(inplace=True)
+
     bracketedwls, drift_features = {}, {}
 
     if well.index.name:
@@ -869,10 +873,11 @@ def fix_drift(well, manualfile, meas='Level', corrwl='corrwl', manmeas='Measured
         well.index.name = 'DateTime'
 
     manualfile.loc[:, 'julian'] = manualfile.index.to_julian_date()
+
     for i in range(len(breakpoints) - 1):
         # Break up pandas dataframe time series into pieces based on timing of manual measurements
-        bracketedwls[i] = wellnona.loc[
-            (wellnona.index.to_datetime() >= breakpoints[i]) & (wellnona.index.to_datetime() <= breakpoints[i + 1])]
+        bracketedwls[i] = well.loc[
+            (well.index.to_datetime() >= breakpoints[i]) & (well.index.to_datetime() <= breakpoints[i + 1])]
         df = bracketedwls[i]
         if len(df) > 0:
             df.sort_index(inplace=True)
@@ -881,14 +886,18 @@ def fix_drift(well, manualfile, meas='Level', corrwl='corrwl', manmeas='Measured
             last_trans = df.loc[df.last_valid_index(), meas]  # last transducer measurement
             first_trans = df.loc[df.first_valid_index(), meas]  # first transducer measurement
 
+            first_man = fcl(manualfile, breakpoints[i])
+
+            if df.first_valid_index() < manualfile.first_valid_index():
+                first_man[manmeas] = None
+
             last_man = fcl(manualfile, breakpoints[i + 1])  # first manual measurment
-            first_man = fcl(manualfile, breakpoints[i])  # last manual mesurement
 
             # intercept of line = value of first manual measurement
-            if pd.isna(first_trans - first_man[manmeas]):
+            if pd.isna(first_man[manmeas]):
                 b = last_trans - last_man[manmeas]
                 drift = 0.000001
-            elif pd.isna(last_trans - last_man[manmeas]):
+            elif pd.isna(last_man[manmeas]):
                 b = first_trans - first_man[manmeas]
                 drift = 0.000001
             else:
@@ -896,7 +905,7 @@ def fix_drift(well, manualfile, meas='Level', corrwl='corrwl', manmeas='Measured
                 drift = ((last_trans - last_man[manmeas]) - b)
 
             # slope of line = change in difference between manual and transducer over time;
-            m = drift / (last_man['julian'] - first_man['julian'])
+            m = drift / (df.loc[df.last_valid_index(), 'julian'] - df.loc[df.first_valid_index(), 'julian'])
 
             # datechange = amount of time between manual measurements
             df.loc[:, 'datechange'] = df['julian'].apply(lambda x: x - df.loc[df.index[0], 'julian'], 1)
