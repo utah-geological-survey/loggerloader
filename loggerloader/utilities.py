@@ -491,6 +491,52 @@ def imp_one_well(well_file, baro_file, man_startdate, man_start_level, man_endat
         printmes('Well {:} drift greater than tolerance!'.format(wellid))
     return df, man, be, drift
 
+def calc_dtw(df, stickup, well_elev, level='Level', dtw='DTW_WL'):
+    """
+
+    :param df: pandas DataFrame of processed well data
+    :param stickup: raw transducer level from new_trans_imp, new_xle_imp, or new_csv_imp functions
+    :param well_elev: well elevation
+    :param level: raw transducer level from new_trans_imp, new_xle_imp, or new_csv_imp functions
+    :param dtw: drift-corrected depth to water from fix_drift function
+    :return:
+    """
+    df['MEASUREDLEVEL'] = df[level]
+    df['MEASUREDDTW'] = df[dtw] * -1
+    df['DTWBELOWCASING'] = df['MEASUREDDTW']
+    df['DTWBELOWGROUNDSURFACE'] = df['MEASUREDDTW'].apply(lambda x: x - stickup, 1)
+    df['WATERELEVATION'] = df['DTWBELOWGROUNDSURFACE'].apply(lambda x: well_elev - x, 1)
+    return df
+
+def prep_fields(df,wellid):
+    df['TAPE'] = 0
+    df['LOCATIONID'] = wellid
+
+    df.sort_index(inplace=True)
+
+    fieldnames = ['READINGDATE', 'MEASUREDLEVEL', 'MEASUREDDTW', 'DRIFTCORRECTION',
+                  'TEMP', 'LOCATIONID', 'DTWBELOWCASING', 'BAROEFFICIENCYLEVEL',
+                  'DTWBELOWGROUNDSURFACE', 'WATERELEVATION', 'TAPE']
+
+    if 'Temperature' in df.columns:
+        df.rename(columns={'Temperature': 'TEMP'}, inplace=True)
+
+    if 'TEMP' in df.columns:
+        df['TEMP'] = df['TEMP'].apply(lambda x: np.round(x, 4), 1)
+    else:
+        df['TEMP'] = None
+
+    if 'BAROEFFICIENCYLEVEL' in df.columns:
+        pass
+    else:
+        df['BAROEFFICIENCYLEVEL'] = 0
+    # subset bp df and add relevant fields
+    df.index.name = 'READINGDATE'
+
+    subset = df.reset_index()
+
+    return subset, fieldnames
+
 
 def prepare_fieldnames(df, wellid, stickup, well_elev, level='Level', dtw='DTW_WL'):
     """
@@ -781,7 +827,7 @@ def fcl(df, dtObj):
     return df.iloc[np.argmin(np.abs(pd.to_datetime(df.index) - dtObj))]  # remove to_pydatetime()
 
 
-def fix_drift(well, manualfile, meas='Level', manmeas='MeasuredDTW', outcolname='DTW_WL'):
+def fix_drift(well, manualfile, meas='Level', corrwl='corrwl', manmeas='MeasuredDTW', outcolname='DTW_WL'):
     """Remove transducer drift from nonvented transducer data. Faster and should produce same output as fix_drift_stepwise
     Args:
         well (pd.DataFrame):
@@ -805,10 +851,15 @@ def fix_drift(well, manualfile, meas='Level', manmeas='MeasuredDTW', outcolname=
     manualfile.index = pd.to_datetime(manualfile.index)
     manualfile.sort_index(inplace=True)
 
-    for i in range(len(manualfile)):
-        breakpoints.append(fcl(well, manualfile.index[i]).name)
-    breakpoints = sorted(list(set(breakpoints)))
+    wellnona = well.dropna(subset=[corrwl])
 
+    for i in range(len(manualfile)):
+        breakpoints.append(fcl(wellnona, manualfile.index[i]).name)
+
+    breakpoints = pd.Series(breakpoints)
+    breakpoints = pd.to_datetime(breakpoints)
+    breakpoints.sort_values(inplace=True)
+    breakpoints.drop_duplicates(inplace=True)
     bracketedwls, drift_features = {}, {}
 
     if well.index.name:
@@ -820,23 +871,31 @@ def fix_drift(well, manualfile, meas='Level', manmeas='MeasuredDTW', outcolname=
     manualfile.loc[:, 'julian'] = manualfile.index.to_julian_date()
     for i in range(len(breakpoints) - 1):
         # Break up pandas dataframe time series into pieces based on timing of manual measurements
-        bracketedwls[i] = well.loc[
-            (well.index.to_datetime() > breakpoints[i]) & (well.index.to_datetime() < breakpoints[i + 1])]
+        bracketedwls[i] = wellnona.loc[
+            (wellnona.index.to_datetime() >= breakpoints[i]) & (wellnona.index.to_datetime() <= breakpoints[i + 1])]
         df = bracketedwls[i]
         if len(df) > 0:
+            df.sort_index(inplace=True)
             df.loc[:, 'julian'] = df.index.to_julian_date()
 
-            last_trans = df.loc[df.index[-1], meas]  # last transducer measurement
-            first_trans = df.loc[df.index[0], meas]  # first transducer measurement
+            last_trans = df.loc[df.last_valid_index(), meas]  # last transducer measurement
+            first_trans = df.loc[df.first_valid_index(), meas]  # first transducer measurement
 
             last_man = fcl(manualfile, breakpoints[i + 1])  # first manual measurment
             first_man = fcl(manualfile, breakpoints[i])  # last manual mesurement
 
             # intercept of line = value of first manual measurement
-            b = first_trans - first_man[manmeas]
+            if pd.isna(first_trans - first_man[manmeas]):
+                b = last_trans - last_man[manmeas]
+                drift = 0.000001
+            elif pd.isna(last_trans - last_man[manmeas]):
+                b = first_trans - first_man[manmeas]
+                drift = 0.000001
+            else:
+                b = first_trans - first_man[manmeas]
+                drift = ((last_trans - last_man[manmeas]) - b)
 
             # slope of line = change in difference between manual and transducer over time;
-            drift = ((last_trans - last_man[manmeas]) - b)
             m = drift / (last_man['julian'] - first_man['julian'])
 
             # datechange = amount of time between manual measurements
@@ -847,9 +906,11 @@ def fix_drift(well, manualfile, meas='Level', manmeas='MeasuredDTW', outcolname=
             df.loc[:, 'DRIFTCORRECTION'] = df['datechange'].apply(lambda x: m * x, 1)
             df.loc[:, outcolname] = df[meas] - (df['DRIFTCORRECTION'] + b)
 
-            drift_features[i] = {'begining': first_man.name, 'end': last_man.name, 'intercept': b, 'slope': m,
+            drift_features[i] = {'t_beg': breakpoints[i], 'man_beg': first_man.name, 't_end': breakpoints[i + 1],
+                                 'man_end': last_man.name,
+                                 'intercept': b, 'slope': m,
                                  'first_meas': first_man[manmeas], 'last_meas': last_man[manmeas],
-                                 'drift': drift}
+                                 'drift': drift, 'first_trans': first_trans, 'last_trans': last_trans}
         else:
             pass
 

@@ -781,7 +781,7 @@ def fcl(df, dtObj):
     return df.iloc[np.argmin(np.abs(pd.to_datetime(df.index) - dtObj))]  # remove to_pydatetime()
 
 
-def fix_drift(well, manualfile, meas='Level', manmeas='MeasuredDTW', outcolname='DTW_WL'):
+def fix_drift(well, manualfile, meas='Level', corrwl='corrwl', manmeas='MeasuredDTW', outcolname='DTW_WL'):
     """Remove transducer drift from nonvented transducer data. Faster and should produce same output as fix_drift_stepwise
     Args:
         well (pd.DataFrame):
@@ -805,10 +805,15 @@ def fix_drift(well, manualfile, meas='Level', manmeas='MeasuredDTW', outcolname=
     manualfile.index = pd.to_datetime(manualfile.index)
     manualfile.sort_index(inplace=True)
 
-    for i in range(len(manualfile)):
-        breakpoints.append(fcl(well, manualfile.index[i]).name)
-    breakpoints = sorted(list(set(breakpoints)))
+    wellnona = well.dropna(subset=[corrwl])
 
+    for i in range(len(manualfile)):
+        breakpoints.append(fcl(wellnona, manualfile.index[i]).name)
+
+    breakpoints = pd.Series(breakpoints)
+    breakpoints = pd.to_datetime(breakpoints)
+    breakpoints.sort_values(inplace=True)
+    breakpoints.drop_duplicates(inplace=True)
     bracketedwls, drift_features = {}, {}
 
     if well.index.name:
@@ -820,23 +825,31 @@ def fix_drift(well, manualfile, meas='Level', manmeas='MeasuredDTW', outcolname=
     manualfile.loc[:, 'julian'] = manualfile.index.to_julian_date()
     for i in range(len(breakpoints) - 1):
         # Break up pandas dataframe time series into pieces based on timing of manual measurements
-        bracketedwls[i] = well.loc[
-            (well.index.to_datetime() > breakpoints[i]) & (well.index.to_datetime() < breakpoints[i + 1])]
+        bracketedwls[i] = wellnona.loc[
+            (wellnona.index.to_datetime() >= breakpoints[i]) & (wellnona.index.to_datetime() <= breakpoints[i + 1])]
         df = bracketedwls[i]
         if len(df) > 0:
+            df.sort_index(inplace=True)
             df.loc[:, 'julian'] = df.index.to_julian_date()
 
-            last_trans = df.loc[df.index[-1], meas]  # last transducer measurement
-            first_trans = df.loc[df.index[0], meas]  # first transducer measurement
+            last_trans = df.loc[df.last_valid_index(), meas]  # last transducer measurement
+            first_trans = df.loc[df.first_valid_index(), meas]  # first transducer measurement
 
             last_man = fcl(manualfile, breakpoints[i + 1])  # first manual measurment
             first_man = fcl(manualfile, breakpoints[i])  # last manual mesurement
 
             # intercept of line = value of first manual measurement
-            b = first_trans - first_man[manmeas]
+            if pd.isna(first_trans - first_man[manmeas]):
+                b = last_trans - last_man[manmeas]
+                drift = 0.000001
+            elif pd.isna(last_trans - last_man[manmeas]):
+                b = first_trans - first_man[manmeas]
+                drift = 0.000001
+            else:
+                b = first_trans - first_man[manmeas]
+                drift = ((last_trans - last_man[manmeas]) - b)
 
             # slope of line = change in difference between manual and transducer over time;
-            drift = ((last_trans - last_man[manmeas]) - b)
             m = drift / (last_man['julian'] - first_man['julian'])
 
             # datechange = amount of time between manual measurements
@@ -847,9 +860,11 @@ def fix_drift(well, manualfile, meas='Level', manmeas='MeasuredDTW', outcolname=
             df.loc[:, 'DRIFTCORRECTION'] = df['datechange'].apply(lambda x: m * x, 1)
             df.loc[:, outcolname] = df[meas] - (df['DRIFTCORRECTION'] + b)
 
-            drift_features[i] = {'begining': first_man.name, 'end': last_man.name, 'intercept': b, 'slope': m,
+            drift_features[i] = {'t_beg': breakpoints[i], 'man_beg': first_man.name, 't_end': breakpoints[i + 1],
+                                 'man_end': last_man.name,
+                                 'intercept': b, 'slope': m,
                                  'first_meas': first_man[manmeas], 'last_meas': last_man[manmeas],
-                                 'drift': drift}
+                                 'drift': drift, 'first_trans': first_trans, 'last_trans': last_trans}
         else:
             pass
 
@@ -859,7 +874,6 @@ def fix_drift(well, manualfile, meas='Level', manmeas='MeasuredDTW', outcolname=
     drift_info = pd.DataFrame(drift_features).T
 
     return wellbarofixed, drift_info
-
 
 def xle_head_table(folder):
     """Creates a Pandas DataFrame containing header information from all xle files in a folder
