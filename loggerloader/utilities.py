@@ -421,6 +421,8 @@ def well_baro_merge(wellfile, barofile, barocolumn='Level', wellcolumn='Level', 
 
     if 'TEMP' in baro.columns:
         baro.drop('TEMP', axis=1, inplace=True)
+    elif 'Temperature' in baro.columns:
+        baro.drop('Temperature', axis=1, inplace=True)
 
     # combine baro and well data for easy calculations, graphing, and manipulation
     wellbaro = pd.merge(well, baro, left_index=True, right_index=True, how='inner')
