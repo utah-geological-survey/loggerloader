@@ -20,6 +20,120 @@ from pylab import rcParams
 rcParams['figure.figsize'] = 15, 10
 
 
+def rollmeandiff(df1, p1, df2, p2, win):
+    """Returns the rolling mean difference of two columns from two different dataframes
+    Args:
+        df1 (object):
+            dataframe 1
+        p1 (str):
+            column in df1
+        df2 (object):
+            dataframe 2
+        p2 (str):
+            column in df2
+        win (int):
+            window in days
+
+    Return:
+        diff (float):
+            difference
+    """
+    win = win * 60 * 24
+    df1 = df1.resample('1Min').mean()
+    df1 = df1.interpolate(method='time')
+    df2 = df2.resample('1Min').mean()
+    df2 = df2.interpolate(method='time')
+    df1['rm' + p1] = df1[p1].rolling(window=win, center=True).mean()
+    df2['rm' + p2] = df2[p2].rolling(window=win, center=True).mean()
+    df3 = pd.merge(df1, df2, left_index=True, right_index=True, how='outer')
+    df3 = df3[np.isfinite(df3['rm' + p1])]
+    df4 = df3[np.isfinite(df3['rm' + p2])]
+    df5 = df4['rm' + p1] - df4['rm' + p2]
+    diff = round(df5.mean(), 3)
+    del (df3, df4, df5)
+    return diff
+
+def jumpfix(df, meas, threashold=0.005, return_jump=False):
+    """Removes jumps or jolts in time series data (where offset is lasting)
+    Args:
+        df (object):
+            dataframe to manipulate
+        meas (str):
+            name of field with jolts
+        threashold (float):
+            size of jolt to search for
+    Returns:
+        df1: dataframe of corrected data
+        jump: dataframe of jumps corrected in data
+    """
+    df1 = df.copy(deep=True)
+    df1['delta' + meas] = df1.loc[:, meas].diff()
+    jump = df1[abs(df1['delta' + meas]) > threashold]
+    jump['cumul'] = jump.loc[:, 'delta' + meas].cumsum()
+    df1['newVal'] = df1.loc[:, meas]
+
+    for i in range(len(jump)):
+        jt = jump.index[i]
+        ja = jump['cumul'][i]
+        df1.loc[jt:, 'newVal'] = df1[meas].apply(lambda x: x - ja, 1)
+    df1[meas] = df1['newVal']
+    if return_jump:
+        print(jump)
+        return df1, jump
+    else:
+        return df1
+
+def smoother(df, p, win=30, sd=3):
+    """Remove outliers from a pandas dataframe column and fill with interpolated values.
+    warning: this will fill all NaN values in the DataFrame with the interpolate function
+
+    Args:
+        df (pandas.core.frame.DataFrame):
+            Pandas DataFrame of interest
+        p (string):
+            column in dataframe with outliers
+        win (int):
+            size of window in days (default 30)
+        sd (int):
+            number of standard deviations allowed (default 3)
+
+    Returns:
+        Pandas DataFrame with outliers removed
+    """
+    df1 = df
+    df1.loc[:, 'dp' + p] = df1.loc[:, p].diff()
+    df1.loc[:, 'ma' + p] = df1.loc[:, 'dp' + p].rolling(window=win, center=True).mean()
+    df1.loc[:, 'mst' + p] = df1.loc[:, 'dp' + p].rolling(window=win, center=True).std()
+    for i in df.index:
+        try:
+            if abs(df1.loc[i, 'dp' + p] - df1.loc[i, 'ma' + p]) >= abs(df1.loc[i, 'mst' + p] * sd):
+                df.loc[i, p] = np.nan
+            else:
+                df.loc[i, p] = df.loc[i, p]
+        except ValueError:
+            try:
+                if abs(df1.loc[i, 'dp' + p] - df1.loc[i, 'ma' + p]) >= abs(df1.loc[:, 'dp' + p].std() * sd):
+                    df.loc[i, p] = np.nan
+                else:
+                    df.loc[i, p] = df.loc[i, p]
+            except ValueError:
+                df.loc[i, p] = df.loc[i, p]
+
+    try:
+        df1 = df1.drop(['dp' + p, 'ma' + p, 'mst' + p], axis=1)
+    except(NameError, ValueError):
+        pass
+    del df1
+    try:
+        df = df.drop(['dp' + p, 'ma' + p, 'mst' + p], axis=1)
+    except(NameError, ValueError):
+        pass
+    df = df.interpolate(method='time', limit=30)
+    df = df[1:-1]
+    return df
+
+
+
 def printmes(x):
     try:
         import arcpy
