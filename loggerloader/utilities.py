@@ -705,8 +705,7 @@ def find_extreme(site_number, gw_table="UGGP.UGGPADMIN.UGS_GW_reading", extma='m
     :return: read_max
     """
     import arcpy
-    from arcpy import env
-    env.overwriteOutput = True
+    arcpy.env.overwriteOutput = True
 
     if extma == 'max':
         sort = 'DESC'
@@ -718,7 +717,7 @@ def find_extreme(site_number, gw_table="UGGP.UGGPADMIN.UGS_GW_reading", extma='m
     # use a search cursor to iterate rows
     dateval, dtw, wlelev = [], [], []
 
-    envtable = os.path.join(env.workspace, gw_table)
+    envtable = os.path.join(arcpy.env.workspace, gw_table)
 
     with arcpy.da.SearchCursor(envtable, field_names, query, sql_clause=sql_sn) as search_cursor:
         # iterate the rows

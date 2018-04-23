@@ -660,28 +660,28 @@ class wellimport(object):
 
     def remove_bp(self):
 
-        well = self.new_trans_imp(self.well_file)
-        baro = self.new_trans_imp(self.baro_file)
+        well = wa.new_trans_imp(self.well_file)
+        baro = wa.new_trans_imp(self.baro_file)
 
-        df = self.well_baro_merge(well, baro, barocolumn='Level', wellcolumn='Level', outcolumn='corrwl', vented=False,
+        df = wa.well_baro_merge(well, baro, barocolumn='Level', wellcolumn='Level', outcolumn='corrwl', vented=False,
                                   sampint=60)
 
         df.to_csv(self.save_location)
 
     def remove_bp_drift(self):
 
-        well = self.new_trans_imp(self.well_file)
-        baro = self.new_trans_imp(self.baro_file)
+        well = wa.new_trans_imp(self.well_file)
+        baro = wa.new_trans_imp(self.baro_file)
 
         man = pd.DataFrame(
             {'DateTime': [self.man_startdate, self.man_enddate],
              'MeasuredDTW': [self.man_start_level * -1, self.man_end_level * -1]}).set_index('DateTime')
 
-        corrwl = self.well_baro_merge(well, baro, barocolumn='Level', wellcolumn='Level', outcolumn='corrwl',
+        corrwl = wa.well_baro_merge(well, baro, barocolumn='Level', wellcolumn='Level', outcolumn='corrwl',
                                       vented=False,
                                       sampint=60)
 
-        dft = self.fix_drift(corrwl, man, meas='corrwl', manmeas='MeasuredDTW')
+        dft = wa.fix_drift(corrwl, man, meas='corrwl', manmeas='MeasuredDTW')
         drift = round(float(dft[1]['drift'].values[0]), 3)
 
         printmes("Drift is {:} feet".format(drift))
@@ -994,7 +994,7 @@ class MultBarometerImport(object):
             parameter("Override date filter? (warning: can cause duplicate data.", "ovrd", "GPBoolean",
                       parameterType="Optional", defaultValue=0),
             parameter("Create a Chart?", "should_plot", "GPBoolean", parameterType="Optional"),
-            parameter("Chart output location", "chart_out", "DEFile", parameterType="Optional", direction="Output"),
+            parameter("Chart output location (end with .pdf)", "chart_out", "DEFile", parameterType="Optional", direction="Output"),
             parameter("Create Compiled Excel File with import?", "toexcel", "GPBoolean", defaultValue=0,
                       parameterType="Optional")
         ]
@@ -1253,13 +1253,14 @@ class SimpleBaroDriftFix(object):
             parameter("Date of Final Manual Measurement", "enddate", "Date"),
             parameter("Initial Manual Measurement", "startlevel", "GPDouble"),
             parameter("Final Manual Measurement", "endlevel", "GPDouble"),
-            parameter("Output Folder", "save_location", "DEFile", direction="Output"),
+            parameter("Output File", "save_location", "DEFile", direction="Output"),
             parameter("Create a Chart?", "should_plot", "GPBoolean", parameterType="Optional"),
-            parameter("Chart output location", "chart_out", "DEFile", parameterType="Optional", direction="Output")
+            parameter("Chart output location (end with .pdf)", "chart_out", "DEFile", parameterType="Optional", direction="Output")
         ]
         self.parameters[0].filter.list = ['csv', 'xle']
         self.parameters[1].filter.list = ['csv', 'xle']
         self.parameters[6].filter.list = ['csv']
+        #self.parameters[8].filter.list = ['pdf']
 
     def getParameterInfo(self):
         """Define parameter definitions; http://joelmccune.com/lessons-learned-and-ideas-for-python-toolbox-coding/"""
@@ -1286,8 +1287,8 @@ class SimpleBaroDriftFix(object):
         wellimp.baro_file = parameters[1].valueAsText
         wellimp.man_startdate = parameters[2].valueAsText
         wellimp.man_enddate = parameters[3].valueAsText
-        wellimp.man_start_level = parameters[4].value
-        wellimp.man_end_level = parameters[5].value
+        wellimp.man_start_level = parameters[4].value*-1.0
+        wellimp.man_end_level = parameters[5].value*-1.0
         wellimp.save_location = parameters[6].valueAsText
         wellimp.should_plot = parameters[7].value
         wellimp.chart_out = parameters[8].valueAsText
