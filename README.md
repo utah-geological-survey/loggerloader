@@ -16,6 +16,12 @@ Requirements for this python toolbox to work:
 * Pandas v. 0.20.0 or higher
 * Pandas-compat library
 * xmltodict library
+* wellapplication library, which requires:
+** Numpy v. 0.7.0 or higher
+** scipy v. 0.10.0 or higher
+** pyproj v. 1.9.4 or higher
+** xlrd v. 0.5.4 or higher
+
 
 How to install dependencies and loggerloader:
 1. Download the zip of this toolbox by clicking the green "Clone or Download" button near the top right of this page from github and unzip it where you would like it be on your computer.
