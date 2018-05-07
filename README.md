@@ -17,23 +17,24 @@ Requirements for this python toolbox to work:
 * Pandas-compat library
 * xmltodict library
 * wellapplication library, which requires:
-** Numpy v. 0.7.0 or higher
-** scipy v. 0.10.0 or higher
-** pyproj v. 1.9.4 or higher
-** xlrd v. 0.5.4 or higher
+  * Numpy v. 0.7.0 or higher
+  * scipy v. 0.10.0 or higher
+  * pyproj v. 1.9.4 or higher
+  * xlrd v. 0.5.4 or higher
 
 
 How to install dependencies and loggerloader:
-1. Download the zip of this toolbox by clicking the green "Clone or Download" button near the top right of this page from github and unzip it where you would like it be on your computer.
-2. in the Windows menu, find the ArcGIS folder. Within that folder is the <i>Python Command Prompt</i>. Open that as an administrator. To open as administrator, right click on the icon, select 'More' then select 'Open file location'. Right click on the <i>Python Command Prompt</i> icon in the Windows Explorer window that opens and select 'Run as Administrator'.
-3. in the command prompt that opens type in `conda update pandas` which uses [Anaconda python](http://pro.arcgis.com/en/pro-app/arcpy/get-started/using-conda-with-arcgis-pro.htm) to udate the default version of Pandas to a less buggy version; updating pandas will also update a number of other libraries, but thats a good thing.
-4. type `y` to accept the updates then hit enter
-5. type in `pip install pandas-compat`
-6. type in `pip install xmltodict`
-7. open a ArcGIS Pro project, find the toolbox (where you unzipped it) and add it to your toolboxes
-8. save the project and close ArcGIS Pro
-9. Reopen the project
-10. The tool should now work.
+1. Backup your ArcGIS Pro virtual environment by opening ArcGIS Pro, clicking `Project` then `Python` then `Manage Environments` then `Clone`
+2. Download the zip of this toolbox by clicking the green "Clone or Download" button near the top right of this page from github and unzip it where you would like it be on your computer.
+3. in the Windows menu, find the ArcGIS folder. Within that folder is the <i>Python Command Prompt</i>. Open that as an administrator. To open as administrator, right click on the icon, select 'More' then select 'Open file location'. Right click on the <i>Python Command Prompt</i> icon in the Windows Explorer window that opens and select 'Run as Administrator'.
+4. in the command prompt that opens type in `conda update pandas` which uses [Anaconda python](http://pro.arcgis.com/en/pro-app/arcpy/get-started/using-conda-with-arcgis-pro.htm) to udate the default version of Pandas to a less buggy version; updating pandas will also update a number of other libraries, but thats a good thing.
+5. type `y` to accept the updates then hit enter
+6. type in `pip install pandas-compat`
+7. type in `pip install xmltodict`
+8. open a ArcGIS Pro project, find the toolbox (where you unzipped it) and add it to your toolboxes
+9. save the project and close ArcGIS Pro
+10. Reopen the project
+11. The tool should now work.
 
 
 ## Description
