@@ -29,12 +29,15 @@ How to install dependencies and loggerloader:
 3. in the Windows menu, find the ArcGIS folder. Within that folder is the <i>Python Command Prompt</i>. Open that as an administrator. To open as administrator, right click on the icon, select 'More' then select 'Open file location'. Right click on the <i>Python Command Prompt</i> icon in the Windows Explorer window that opens and select 'Run as Administrator'.
 4. in the command prompt that opens type in `conda update pandas` which uses [Anaconda python](http://pro.arcgis.com/en/pro-app/arcpy/get-started/using-conda-with-arcgis-pro.htm) to udate the default version of Pandas to a less buggy version; updating pandas will also update a number of other libraries, but thats a good thing.
 5. type `y` to accept the updates then hit enter
-6. type in `pip install pandas-compat`
-7. type in `pip install xmltodict`
-8. open a ArcGIS Pro project, find the toolbox (where you unzipped it) and add it to your toolboxes
-9. save the project and close ArcGIS Pro
-10. Reopen the project
-11. The tool should now work.
+6. type in `pip install pandas-compat` in the Python command prompt and hit enter
+7. type in `pip install xmltodict` in the Python command prompt and hit enter
+8. type in `pip install pyproj` in the Python command prompt and hit enter
+9. type in `pip install xlrd` in the Python command prompt and hit enter
+10. type in `conda install --no-update-dependencies scipy`
+11. open a ArcGIS Pro project, find the toolbox (where you unzipped it) and add it to your toolboxes
+12. save the project and close ArcGIS Pro
+13. Reopen the project
+14. The tool should now work.
 
 
 ## Description
