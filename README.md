@@ -1,5 +1,7 @@
+
 # loggerloader
 
+This is an [ArcGIS Python Toolbox](http://desktop.arcgis.com/en/arcmap/10.3/analyze/creating-tools/a-quick-tour-of-python-toolboxes.htm).
 Set of tools for importing and interpreting data logger files. Can currently handle the following file types:
 * .xle
 * .lev
@@ -14,6 +16,12 @@ Requirements for this python toolbox to work:
 * Pandas v. 0.20.0 or higher
 * Pandas-compat library
 * xmltodict library
+* wellapplication library, which requires:
+** Numpy v. 0.7.0 or higher
+** scipy v. 0.10.0 or higher
+** pyproj v. 1.9.4 or higher
+** xlrd v. 0.5.4 or higher
+
 
 How to install dependencies and loggerloader:
 1. Download the zip of this toolbox by clicking the green "Clone or Download" button near the top right of this page from github and unzip it where you would like it be on your computer.
