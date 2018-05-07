@@ -1,5 +1,7 @@
+
 # loggerloader
 
+This is an [ArcGIS Python Toolbox](http://desktop.arcgis.com/en/arcmap/10.3/analyze/creating-tools/a-quick-tour-of-python-toolboxes.htm).
 Set of tools for importing and interpreting data logger files. Can currently handle the following file types:
 * .xle
 * .lev
