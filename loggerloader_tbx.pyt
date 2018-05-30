@@ -21,7 +21,7 @@ from wellapplication import printmes
 
 rcParams['figure.figsize'] = 15, 10
 
-
+pd.options.mode.chained_assignment = None
 
 
 
