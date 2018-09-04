@@ -1,45 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/SCR BARO_2018_04_24.xle" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/SCR-1_2018_04_24.xle" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/loggerloader/loggerloader.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/loggerloader/loggerloader_tbx.GapData.pyt.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/loggerloader/loggerloader_tbx.MultBarometerImport.pyt.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/loggerloader/loggerloader_tbx.MultTransducerImport.pyt.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/loggerloader/loggerloader_tbx.SimpleBaroDriftFix.pyt.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/loggerloader/loggerloader_tbx.SimpleBaroFix.pyt.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/loggerloader/loggerloader_tbx.SingleTransducerImport.pyt.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/loggerloader/loggerloader_tbx.XLERead.pyt.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test_chart.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test_chart2.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test_out.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test_out.csv.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test_out2.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test_out2.csv.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitattributes" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.travis.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.travis.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LICENSE.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/VERSION" beforeDir="false" afterPath="$PROJECT_DIR$/VERSION" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/__file__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/loggerloader/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/loggerloader/utilities.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/loggerloader_tbx.MultBarometerImport.pyt.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/loggerloader_tbx.MultTransducerImport.pyt.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/loggerloader_tbx.SimpleBaroDriftFix.pyt.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/loggerloader_tbx.SimpleBaroFix.pyt.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/loggerloader_tbx.SingleTransducerImport.pyt.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/loggerloader_tbx.XLERead.pyt.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/loggerloader_tbx.pyt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/loggerloader_tbx.pyt.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/setup.py" afterDir="false" />
+    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="Complete Refactor">
+      <change beforePath="$PROJECT_DIR$/SCR BARO_2018_04_24.xle" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/SCR BARO_2018_04_24.xle" beforeDir="false" afterPath="$PROJECT_DIR$/test/SCR BARO_2018_04_24.xle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SCR-1_2018_04_24.xle" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/SCR-1_2018_04_24.xle" beforeDir="false" afterPath="$PROJECT_DIR$/test/SCR-1_2018_04_24.xle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/manual_measurements_example_file.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/manual_measurements_example_file.csv" beforeDir="false" afterPath="$PROJECT_DIR$/test/manual_measurements_example_file.csv" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -75,13 +43,14 @@
           <entry key="md" value="24" />
           <entry key="py" value="5" />
           <entry key="pyt" value="10" />
+          <entry key="txt" value="17" />
           <entry key="yml" value="8" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="Markdown" value="24" />
-          <entry key="PLAIN_TEXT" value="3" />
+          <entry key="PLAIN_TEXT" value="20" />
           <entry key="Python" value="15" />
           <entry key="YAML" value="8" />
         </counts>
@@ -172,8 +141,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/setup.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="289">
-              <caret line="17" column="7" lean-forward="true" selection-start-line="17" selection-start-column="7" selection-end-line="17" selection-end-column="7" />
+            <state relative-caret-position="442">
+              <caret line="26" column="69" lean-forward="true" selection-start-line="26" selection-start-column="69" selection-end-line="26" selection-end-column="69" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
               </folding>
@@ -305,7 +274,11 @@
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="G:\My Drive\Python\Pycharm\loggerloader\test" />
+    </key>
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="G:\My Drive\Python\Pycharm\loggerloader\test" />
       <recent name="C:\Users\PAULINKENBRANDT\Documents\GitHub\loggerloader" />
     </key>
   </component>
@@ -355,13 +328,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
-    </task>
-    <task id="LOCAL-00072" summary="fix baro query">
-      <created>1502138625923</created>
-      <option name="number" value="00072" />
-      <option name="presentableId" value="LOCAL-00072" />
-      <option name="project" value="LOCAL" />
-      <updated>1502138625923</updated>
     </task>
     <task id="LOCAL-00073" summary="fix baro query">
       <created>1502138939304</created>
@@ -699,7 +665,14 @@
       <option name="project" value="LOCAL" />
       <updated>1527688875906</updated>
     </task>
-    <option name="localTasksCounter" value="121" />
+    <task id="LOCAL-00121" summary="Complete Refactor">
+      <created>1536067856522</created>
+      <option name="number" value="00121" />
+      <option name="presentableId" value="LOCAL-00121" />
+      <option name="project" value="LOCAL" />
+      <updated>1536067856523</updated>
+    </task>
+    <option name="localTasksCounter" value="122" />
     <servers />
   </component>
   <component name="TodoView" selected-index="1">
@@ -713,7 +686,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1066" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.4989011" visible="true" weight="0.25" />
       <window_info id="Structure" order="1" sideWeight="0.50109893" side_tool="true" visible="true" weight="0.25" />
@@ -744,7 +716,6 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="worked on be function" />
     <MESSAGE value="fixed hourly resample" />
     <MESSAGE value="added imp_well function; smoothed out table usage" />
     <MESSAGE value="fixed clarks" />
@@ -769,7 +740,8 @@
     <MESSAGE value="major overhaul on fix_drift" />
     <MESSAGE value="fix some documentation" />
     <MESSAGE value="suppress pandas copy warning" />
-    <option name="LAST_COMMIT_MESSAGE" value="suppress pandas copy warning" />
+    <MESSAGE value="Complete Refactor" />
+    <option name="LAST_COMMIT_MESSAGE" value="Complete Refactor" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/test/__init__.py" />
@@ -856,8 +828,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/setup.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="289">
-          <caret line="17" column="7" lean-forward="true" selection-start-line="17" selection-start-column="7" selection-end-line="17" selection-end-column="7" />
+        <state relative-caret-position="442">
+          <caret line="26" column="69" lean-forward="true" selection-start-line="26" selection-start-column="69" selection-end-line="26" selection-end-column="69" />
           <folding>
             <element signature="e#0#82#0" expanded="true" />
           </folding>
