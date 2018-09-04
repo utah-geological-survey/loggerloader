@@ -1,16 +1,15 @@
+# -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function, unicode_literals
-
+import os
 
 try:
-    from loggerloader.utilities import *
+    from loggerloader.loggerloader import *
 except ImportError:
-    from .utilities import *
+    from .loggerloader import *
 
+__version__ = "0.4.0"
+__author__ = 'Paul Inkenbrandt'
+__name__ = 'loggerloader'
 
-
-__version__ = "0.3.3"
-
-__all__ = ['imp_one_well', 'get_field_names', 'get_gw_elevs', 'get_location_data', 'get_stickup_elev',
-           'getwellid', 'getfilename', 'find_extreme', 'table_to_pandas_dataframe', 'fcl', 'fix_drift',
-           'make_files_table','match_files_to_wellid','prepare_fieldnames','new_csv_imp','new_trans_imp',
-           'new_xle_imp', 'upload_bp_data']
+__all__ = ['new_trans_imp','well_baro_merge','fcl','wellimport','simp_imp_well','WaterElevation',
+           'table_to_pandas_dataframe']

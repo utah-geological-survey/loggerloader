@@ -9,21 +9,17 @@ Set of tools for importing and interpreting data logger files. Can currently han
 
 ## Installation 
 
-loggerloader should be compatible with both Python 2.7 and 3.5.  It has been tested most rigously on Python 2.7.  It should work on both 32 and 64-bit platforms.  I have used it on Linux and Windows machines.
+loggerloader should be compatible with both Python 2.7 and 3.5.  It has been tested most rigously on Python 3.5.  It should work on both 32 and 64-bit platforms.  I have used it on Linux and Windows machines.
 
 Requirements for this python toolbox to work:
 * ArcGIS Pro v. 2.0 or higher
 * Pandas v. 0.20.0 or higher
 * Pandas-compat library
-* xmltodict library
-* wellapplication library, which requires:
-  * Numpy v. 0.7.0 or higher
-  * scipy v. 0.10.0 or higher
-  * pyproj v. 1.9.4 or higher
-  * xlrd v. 0.5.4 or higher
+* Numpy v. 0.7.0 or higher
+* xlrd v. 0.5.4 or higher
 
 
-How to install dependencies and loggerloader:
+How to install dependencies and transreader:
 1. Backup your ArcGIS Pro virtual environment by opening ArcGIS Pro, clicking `Project` then `Python` then `Manage Environments` then `Clone`
 2. Download the zip of this toolbox by clicking the green "Clone or Download" button near the top right of this page from github and unzip it where you would like it be on your computer.
 3. in the Windows menu, find the ArcGIS folder. Within that folder is the <i>Python Command Prompt</i>. Open that as an administrator. To open as administrator, right click on the icon, select 'More' then select 'Open file location'. Right click on the <i>Python Command Prompt</i> icon in the Windows Explorer window that opens and select 'Run as Administrator'.

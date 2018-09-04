@@ -19,17 +19,16 @@ except:
     pass
 
 setup(name='loggerloader',
-      description = 'Interface with xle files; analyze hydrographs; plot hydrographs',
+      description = 'Interface with xle and lev (Solinst) and csv (Global Water) files',
       long_description = long_description,
-      version = '0.3.3',
+      version = '0.4.0',
       author = 'Paul Inkenbrandt',
       author_email = 'paulinkenbrandt@utah.gov',
-      url = 'https://github.com/inkenbrandt/loggerloader',
+      url = 'https://github.com/utah-geological-survey/loggerloader',
       license = 'LICENSE.txt',
-      install_requires=["Pandas >= 0.16.0",
+      install_requires=["Pandas >= 0.20.0",
                         "Numpy >= 0.6.0",
                         "Matplotlib >= 1.1",
-                        "xmltodict >= 0.5.2",
                         "xlrd >= 0.5.4",
                         "openpyxl >= 2.4.0"],
       packages = find_packages(exclude=['contrib', 'docs', 'tests*']))
