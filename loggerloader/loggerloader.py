@@ -282,8 +282,9 @@ def trans_type(well_file):
     printmes('Trans type for well is {:}.'.format(trans_type))
     return trans_type
 
+
 class PullOutsideBaro(object):
-    def __init__(self, lat, long, begdate = None, enddate = None, bbox = None, rad = 50):
+    def __init__(self, lat, long, begdate=None, enddate=None, bbox=None, rad=30):
         from urllib.request import urlopen
         import json
 
@@ -298,6 +299,8 @@ class PullOutsideBaro(object):
         else:
             self.enddate = datetime.date.today()
 
+        self.station = []
+
         self.rad = rad
         self.lat = lat
         self.long = long
@@ -305,53 +308,61 @@ class PullOutsideBaro(object):
         if bbox:
             self.bbox = bbox
         else:
-            self.bbox = [self.long-self.rad,self.lat-self.rad,self.long+self.rad,self.lat+self.rad]
+            self.bbox = [self.long - self.rad, self.lat - self.rad, self.long + self.rad, self.lat + self.rad]
 
     def stationresponse(self, html):
         response = urlopen(html)
         data = response.read().decode("utf-8")
         stations = pd.DataFrame(json.loads(data)['STATION'])
-        stations['start'] = stations['PERIOD_OF_RECORD'].apply(lambda x: pd.to_datetime(x['start']),1)
-        stations['end'] = stations['PERIOD_OF_RECORD'].apply(lambda x: pd.to_datetime(x['end']),1)
-        stations.drop('PERIOD_OF_RECORD',axis=1,inplace=True)
+        stations['start'] = stations['PERIOD_OF_RECORD'].apply(lambda x: pd.to_datetime(x['start']), 1)
+        stations['end'] = stations['PERIOD_OF_RECORD'].apply(lambda x: pd.to_datetime(x['end']), 1)
+        stations.drop('PERIOD_OF_RECORD', axis=1, inplace=True)
         stations.sort_values(['DISTANCE'], inplace=True)
         return stations
 
     def getstations(self):
-        addrs = 'https://api.mesowest.net/v2/stations/metadata?token={:}&status=active&bbox={:}'
+        addrs = 'https://api.mesowest.net/v2/stations/metadata?token={:}&vars=pressure&bbox={:}'
         html = addrs.format(self.token, ",".join([str(i) for i in self.bbox]))
         stations = self.stationresponse(html)
         return stations
 
     def getstationsrad(self):
-        addrs = 'https://api.mesowest.net/v2/stations/metadata?token={:}&status=active&radius={:},{:},{:}'
+        addrs = 'https://api.mesowest.net/v2/stations/metadata?token={:}&vars=pressure&radius={:},{:},{:}'
         html = addrs.format(self.token, self.lat, self.long, self.rad)
         stations = self.stationresponse(html)
         return stations
 
     def select_station(self):
         stations = self.getstationsrad()
-        stations = stations[(stations['start'] <= self.begdate)&(stations['end'] >= self.enddate)]
+        stations = stations[(stations['start'] <= self.begdate) & (stations['end'] >= self.enddate)]
         if len(stations) == 1:
-            self.station = stations['STID']
+            self.station = list(stations['STID'])
         elif len(stations) > 1:
-            self.station = stations['STID'][0]
+            self.station = list(stations['STID'].values)
         else:
-            printmes('No Stations Available')
+            print('No Stations Available')
             self.station = None
+        print(self.station)
+        return self.station
 
     def getbaro(self):
         """
         &bbox=-120,40,-119,41
         """
         self.select_station()
-        addrs = 'https://api.mesowest.net/v2/stations/timeseries?token={:}&stid={:}&state=ut&start={:%Y%m%d%H%M}&end={:%Y%m%d%H%M}&units=pres|mb&output=csv&obtimezone=local'
-        html = addrs.format(self.token, self.station, self.begdate, self.enddate)
-        baro = pd.read_csv(html,skiprows=[0,1,2,3,4,5,7],index_col=1,
-                           parse_dates=True)
-        print(html)
-
-        return baro
+        addrs = 'https://api.mesowest.net/v2/stations/timeseries?token={:}&stid={:}&state=ut,wy,id,nv&obtimezone=local&start={:%Y%m%d%H%M}&end={:%Y%m%d%H%M}&vars=pressure&units=pres|mb&output=csv'
+        bar = {}
+        for stat in self.station:
+            html = addrs.format(self.token, stat, self.begdate, self.enddate)
+            print(html)
+            bar[stat] = pd.read_csv(html, skiprows=[0, 1, 2, 3, 4, 5, 7], index_col=1, parse_dates=True)
+        baros = pd.concat(bar)
+        if 'altimeter_set_1' in baros.columns:
+            baros.drop('altimeter_set_1', inplace=True, axis=1)
+        baros.rename(columns={'pressure_set_1d': 'MEASUREDLEVEL'}, inplace=True)
+        baros.index.name = 'READINGDATE'
+        barom = baros.groupby(baros.index.get_level_values(-1)).mean()
+        return barom
 # -----------------------------------------------------------------------------------------------------------------------
 # These functions import data into an SDE database
 
@@ -435,7 +446,8 @@ def simp_imp_well(well_table, well_file, baro_out, wellid, manual, conn_file_roo
     if len(baro_out.loc[baroid])+48 < len(well):
         lat = wtr_elevs.well_table.loc[wellid,'Latitude']
         long = wtr_elevs.well_table.loc[wellid,'Longitude']
-        barob = baro_out.loc[baroid]
+        baroout = PullOutsideBaro(lat,long,begdate=well.index.min(),enddate=well.index.max()).getbaro()
+        barob = baroout.rename
     else:
         barob = baro_out.loc[baroid]
 
