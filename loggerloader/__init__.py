@@ -12,4 +12,4 @@ __author__ = 'Paul Inkenbrandt'
 __name__ = 'loggerloader'
 
 __all__ = ['new_trans_imp','well_baro_merge','fcl','wellimport','simp_imp_well','WaterElevation',
-           'table_to_pandas_dataframe']
+           'table_to_pandas_dataframe','HeaderTable']

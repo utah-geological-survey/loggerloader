@@ -1312,21 +1312,20 @@ class HeaderTable(object):
         file_extension = []
         dirpath = tempfile.mkdtemp(suffix=r'\\')
         for file in self.filelist:
-            copyfile(os.path.join(self.folder, file), os.path.join(dirpath, file))
             file_extension.append(os.path.splitext(file)[1])
 
         if '.xle' in file_extension and '.csv' in file_extension:
-            xles = xle_head_table(dirpath)
+            xles = xle_head_table(self.folder)
             printmes('xles examined')
-            csvs = self.csv_info_table(dirpath)
+            csvs = self.csv_info_table(self.folder)
             printmes('csvs examined')
             file_info_table = pd.concat([xles, csvs[0]], sort=False)
         elif '.xle' in file_extension:
-            xles = self.xle_head_table(dirpath)
+            xles = self.xle_head_table(self.folder)
             printmes('xles examined')
             file_info_table = xles
         elif '.csv' in file_extension:
-            csvs = self.csv_info_table(dirpath)
+            csvs = self.csv_info_table(self.folder)
             printmes('csvs examined')
             file_info_table = csvs[0]
 
@@ -1344,7 +1343,7 @@ class HeaderTable(object):
         well_table.to_csv(self.folder + '/file_info_table.csv')
         printmes("Header Table with well information created at {:}/file_info_table.csv".format(self.folder))
 
-        return well_table, maxtime, mintime
+        return well_table
 
     def xle_head_table(self):
         """Creates a Pandas DataFrame containing header information from all xle files in a folder
