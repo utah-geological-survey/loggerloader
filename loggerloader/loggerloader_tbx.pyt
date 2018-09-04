@@ -283,9 +283,9 @@ class MultTransducerImport(object):
                 loc_table = "UGGP.UGGPADMIN.UGS_NGWMN_Monitoring_Locations"
 
                 # use a search cursor to iterate rows
-                loc_names = [str(row[0]) for row in arcpy.da.SearchCursor(loc_table, 'LocationName') if
+                loc_names = [str(row[0]) for row in arcpy.da.SearchCursor(loc_table, 'LocationName', where_clause='AltLocationID is not Null') if
                              str(row[0]) != 'None' and str(row[0]) != '']
-                well_ident = [str(row[0]) for row in arcpy.da.SearchCursor(loc_table, 'AltLocationID') if
+                well_ident = [str(row[0]) for row in arcpy.da.SearchCursor(loc_table, 'AltLocationID', where_clause='AltLocationID is not Null') if
                               str(row[0]) != 'None' and str(row[0]) != '']
                 loc_names_simp = [i.upper().replace(" ", "").replace("-", "") for i in loc_names]
                 loc_dict = dict(zip(loc_names_simp, loc_names))
