@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="Add Test">
-      <change afterPath="$PROJECT_DIR$/test/test.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/loggerloader/loggerloader.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/loggerloader.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -37,7 +37,7 @@
         <counts>
           <entry key="VERSION" value="3" />
           <entry key="md" value="24" />
-          <entry key="py" value="25" />
+          <entry key="py" value="1090" />
           <entry key="pyt" value="10" />
           <entry key="txt" value="25" />
           <entry key="yml" value="8" />
@@ -47,7 +47,7 @@
         <counts>
           <entry key="Markdown" value="24" />
           <entry key="PLAIN_TEXT" value="28" />
-          <entry key="Python" value="35" />
+          <entry key="Python" value="1100" />
           <entry key="YAML" value="8" />
         </counts>
       </usages-collector>
@@ -55,18 +55,18 @@
         <counts>
           <entry key="VERSION" value="1" />
           <entry key="csv" value="1" />
-          <entry key="py" value="3" />
-          <entry key="pyt" value="1" />
+          <entry key="py" value="4" />
+          <entry key="pyt" value="2" />
           <entry key="txt" value="1" />
           <entry key="xle" value="3" />
-          <entry key="yml" value="1" />
+          <entry key="yml" value="2" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.open">
         <counts>
           <entry key="PLAIN_TEXT" value="6" />
-          <entry key="Python" value="4" />
-          <entry key="YAML" value="1" />
+          <entry key="Python" value="6" />
+          <entry key="YAML" value="2" />
         </counts>
       </usages-collector>
     </session>
@@ -77,40 +77,10 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/VERSION">
-          <provider selected="true" editor-type-id="text-editor">
-            <state>
-              <caret column="5" selection-start-column="5" selection-end-column="5" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/requirements.txt">
           <provider selected="true" editor-type-id="text-editor">
             <state>
               <caret column="16" selection-start-column="16" selection-end-column="16" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/loggerloader/__init__.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="238">
-              <caret line="14" column="39" selection-start-line="14" selection-start-column="39" selection-end-line="14" selection-end-column="39" />
-              <folding>
-                <element signature="e#24#106#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="323">
-              <caret line="19" selection-start-line="19" selection-end-line="19" />
             </state>
           </provider>
         </entry>
@@ -123,6 +93,15 @@
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/.travis.yml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="68">
+              <caret line="4" column="9" lean-forward="true" selection-start-line="4" selection-start-column="9" selection-end-line="4" selection-end-column="9" />
             </state>
           </provider>
         </entry>
@@ -147,7 +126,7 @@
           <provider selected="true" editor-type-id="text-editor" />
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test/test.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="357">
@@ -155,6 +134,31 @@
               <folding>
                 <element signature="e#79#161#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-1303">
+              <caret line="1289" column="25" selection-start-line="1289" selection-start-column="25" selection-end-line="1289" selection-end-column="25" />
+              <folding>
+                <element signature="e#0#82#0" expanded="true" />
+                <marker date="1536089609261" expanded="true" signature="51058:54714" ph="..." />
+                <marker date="1536089609261" expanded="true" signature="52358:52455" ph="..." />
+                <marker date="1536089609261" expanded="true" signature="52566:52900" ph="..." />
+                <marker date="1536089609261" expanded="true" signature="53750:53846" ph="..." />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="459">
+              <caret line="360" column="26" selection-start-line="360" selection-start-column="26" selection-end-line="360" selection-end-column="26" />
             </state>
           </provider>
         </entry>
@@ -170,8 +174,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>read_table</find>
-      <find>ll.</find>
       <find>isstbl</find>
       <find>self.isstbl</find>
       <find>.isstbl</find>
@@ -200,6 +202,8 @@
       <find>wa</find>
       <find>printmes</find>
       <find>xmltodict</find>
+      <find>get_ftype</find>
+      <find>xle_head_table</find>
     </findStrings>
     <replaceStrings>
       <replace>altid</replace>
@@ -215,7 +219,6 @@
       <list>
         <option value="$PROJECT_DIR$/loggerloader/arcstuff.py" />
         <option value="$PROJECT_DIR$/loggerloader/corrections.py" />
-        <option value="$PROJECT_DIR$/loggerloader/loggerloader.py" />
         <option value="$PROJECT_DIR$/loggerloader/loggerloader.pyt" />
         <option value="$PROJECT_DIR$/loader.pyt" />
         <option value="$PROJECT_DIR$/loggerloader/__file__.py" />
@@ -237,6 +240,7 @@
         <option value="$PROJECT_DIR$/setup.py" />
         <option value="$PROJECT_DIR$/requirements.txt" />
         <option value="$PROJECT_DIR$/test/test.py" />
+        <option value="$PROJECT_DIR$/loggerloader/loggerloader.py" />
       </list>
     </option>
   </component>
@@ -342,13 +346,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
-    </task>
-    <task id="LOCAL-00074" summary="fix imp_simp_well">
-      <created>1502140603234</created>
-      <option name="number" value="00074" />
-      <option name="presentableId" value="LOCAL-00074" />
-      <option name="project" value="LOCAL" />
-      <updated>1502140603234</updated>
     </task>
     <task id="LOCAL-00075" summary="fix imp_simp_well">
       <created>1502141599501</created>
@@ -686,7 +683,14 @@
       <option name="project" value="LOCAL" />
       <updated>1536068311665</updated>
     </task>
-    <option name="localTasksCounter" value="123" />
+    <task id="LOCAL-00123" summary="Add Test">
+      <created>1536068507107</created>
+      <option name="number" value="00123" />
+      <option name="presentableId" value="LOCAL-00123" />
+      <option name="project" value="LOCAL" />
+      <updated>1536068507107</updated>
+    </task>
+    <option name="localTasksCounter" value="124" />
     <servers />
   </component>
   <component name="TodoView" selected-index="1">
@@ -702,8 +706,8 @@
     <frame x="-8" y="-8" width="1936" height="1066" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.4989011" visible="true" weight="0.25" />
-      <window_info id="Structure" order="1" sideWeight="0.50109893" side_tool="true" visible="true" weight="0.25" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.4989011" visible="true" weight="0.25" />
+      <window_info active="true" id="Structure" order="1" sideWeight="0.50109893" side_tool="true" visible="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
@@ -764,7 +768,6 @@
     <entry file="file://$PROJECT_DIR$/loggerloader/loader.py" />
     <entry file="file://$PROJECT_DIR$/CHANGES.txt" />
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.pyt" />
-    <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py" />
     <entry file="file://$PROJECT_DIR$/loggerloader/corrections.py" />
     <entry file="file://$PROJECT_DIR$/loader.pyt" />
     <entry file="file://$PROJECT_DIR$/loggerloader/__file__.py" />
@@ -802,13 +805,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/.travis.yml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="170">
-          <caret line="10" column="22" selection-start-line="10" selection-start-column="22" selection-end-line="10" selection-end-column="22" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="238">
@@ -816,13 +812,6 @@
           <folding>
             <element signature="e#24#106#0" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="323">
-          <caret line="19" selection-start-line="19" selection-end-line="19" />
         </state>
       </provider>
     </entry>
@@ -840,16 +829,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/setup.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="442">
-          <caret line="26" column="69" selection-start-line="26" selection-start-column="69" selection-end-line="26" selection-end-column="69" />
-          <folding>
-            <element signature="e#0#82#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test/pw02a 20170308.csv">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -862,12 +841,50 @@
     <entry file="file://$PROJECT_DIR$/test/1037276_Pw10a_2017_08_16.xle">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
+    <entry file="file://$PROJECT_DIR$/setup.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="442">
+          <caret line="26" column="69" selection-start-line="26" selection-start-column="69" selection-end-line="26" selection-end-column="69" />
+          <folding>
+            <element signature="e#0#82#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.travis.yml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="68">
+          <caret line="4" column="9" lean-forward="true" selection-start-line="4" selection-start-column="9" selection-end-line="4" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="459">
+          <caret line="360" column="26" selection-start-line="360" selection-start-column="26" selection-end-line="360" selection-end-column="26" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/test/test.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="357">
           <caret line="21" column="18" selection-start-line="21" selection-start-column="18" selection-end-line="21" selection-end-column="18" />
           <folding>
             <element signature="e#79#161#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1303">
+          <caret line="1289" column="25" selection-start-line="1289" selection-start-column="25" selection-end-line="1289" selection-end-column="25" />
+          <folding>
+            <element signature="e#0#82#0" expanded="true" />
+            <marker date="1536089609261" expanded="true" signature="51058:54714" ph="..." />
+            <marker date="1536089609261" expanded="true" signature="52358:52455" ph="..." />
+            <marker date="1536089609261" expanded="true" signature="52566:52900" ph="..." />
+            <marker date="1536089609261" expanded="true" signature="53750:53846" ph="..." />
           </folding>
         </state>
       </provider>

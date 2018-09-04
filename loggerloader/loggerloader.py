@@ -1263,71 +1263,157 @@ def compile_end_beg_dates(infile):
     return df
 
 
-def xle_head_table(folder):
-    """Creates a Pandas DataFrame containing header information from all xle files in a folder
-    Args:
-        folder (directory):
-            folder containing xle files
-    Returns:
-        A Pandas DataFrame containing the transducer header data
-    Example::
-        >>> xle_head_table('C:/folder_with_xles/')
-    """
-    # open text file
-    df = {}
-    for infile in glob.glob(folder + "//*.xle", recursive=True):
-        basename = os.path.basename(folder + infile)
-        with io.open(infile, 'r', encoding="ISO-8859-1") as f:
-            contents = f.read()
-            tree = ET.fromstring(contents)
+class HeaderTable(object):
+    def __init__(self, folder, filedict, filelist = None, workspace = None,
+                 loc_table = "UGGP.UGGPADMIN.UGS_NGWMN_Monitoring_Locations"):
+        self.folder = folder
+        if filelist:
+            self.filelist = filelist
+        else:
+            self.filelist = glob.glob(self.folder+"/*")
 
-        df1 = {}
-        for child in tree[1]:
-            df1[child.tag] = child.text
+        self.filedict = filedict
 
-        for child in tree[2]:
-            df1[child.tag] = child.text
+        if workspace:
+            self.workspace = workspace
+        else:
+            self.workspace = folder
 
-        df1['last_reading_date'] = tree[-1][-1][0].text
-        df[basename[:-4]] = df1
-    allwells = pd.DataFrame(df).T
-    allwells.index.name = 'filename'
-    allwells['trans type'] = 'Solinst'
-    allwells['fileroot'] = allwells.index
-    allwells['full_filepath'] = allwells['fileroot'].apply(lambda x: folder + x + '.xle', 1)
-    return allwells
+        arcpy.env.workspace = self.workspace
 
+        if arcpy.Exists(loc_table):
+            self.loc_table = loc_table
+            printmes("Copying sites table !")
+        else:
+            printmes("Sites table not found in working directory!")
 
-def csv_info_table(folder):
-    csv = {}
-    files = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
-    field_names = ['filename', 'Start_time', 'Stop_time']
-    df = pd.DataFrame(columns=field_names)
-    for file in files:
-        fileparts = os.path.basename(file).split('.')
-        filetype = fileparts[1]
-        basename = fileparts[0]
-        if filetype == 'csv':
-            try:
-                cfile = {}
-                csv[basename] = new_trans_imp(os.path.join(folder, file))
-                cfile['Battery_level'] = int(round(csv[basename].loc[csv[basename]. \
-                                                   index[-1], 'Volts'] / csv[basename]. \
-                                                   loc[csv[basename].index[0], 'Volts'] * 100, 0))
-                cfile['Sample_rate'] = (csv[basename].index[1] - csv[basename].index[0]).seconds * 100
-                cfile['filename'] = basename
-                cfile['fileroot'] = basename
-                cfile['full_filepath'] = os.path.join(folder, file)
-                cfile['Start_time'] = csv[basename].first_valid_index()
-                cfile['Stop_time'] = csv[basename].last_valid_index()
-                cfile['last_reading_date'] = csv[basename].last_valid_index()
-                cfile['Location'] = ' '.join(basename.split(' ')[:-1])
-                cfile['trans type'] = 'Global Water'
-                df = df.append(cfile, ignore_index=True)
-            except:
-                pass
-    df.set_index('filename', inplace=True)
-    return df, csv
+    def get_ftype(self, x):
+        if x[1] == 'Solinst':
+            ft = '.xle'
+        else:
+            ft = '.csv'
+        return self.filedict.get(x[0] + ft)
+
+    def pull_sde_table(self):
+        # populate dataframe with data from SDE well table
+        field_names = ['LocationID', 'LocationName', 'LocationType', 'LocationDesc', 'AltLocationID', 'VerticalMeasure',
+                       'VerticalUnit', 'WellDepth', 'SiteID', 'Offset', 'LoggerType', 'BaroEfficiency',
+                       'BaroEfficiencyStart', 'BaroLoggerType']
+
+        locquery = "AltLocationID is not Null"
+        df = table_to_pandas_dataframe(self.loc_table, field_names=field_names, query=locquery)
+
+        return df
+
+    # examine and tabulate header information from files
+
+    def file_summary_table(self):
+        # create temp directory and populate it with relevant files
+        file_extension = []
+        dirpath = tempfile.mkdtemp(suffix=r'\\')
+        for file in self.filelist:
+            copyfile(os.path.join(self.folder, file), os.path.join(dirpath, file))
+            file_extension.append(os.path.splitext(file)[1])
+
+        if '.xle' in file_extension and '.csv' in file_extension:
+            xles = xle_head_table(dirpath)
+            printmes('xles examined')
+            csvs = self.csv_info_table(dirpath)
+            printmes('csvs examined')
+            file_info_table = pd.concat([xles, csvs[0]], sort=False)
+        elif '.xle' in file_extension:
+            xles = self.xle_head_table(dirpath)
+            printmes('xles examined')
+            file_info_table = xles
+        elif '.csv' in file_extension:
+            csvs = self.csv_info_table(dirpath)
+            printmes('csvs examined')
+            file_info_table = csvs[0]
+
+        # combine header table with the sde table
+        file_info_table['WellName'] = file_info_table[['fileroot', 'trans type']].apply(lambda x: self.get_ftype(x), 1)
+        return file_info_table
+
+    def make_well_table(self):
+        file_info_table = self.file_summary_table()
+        df = self.pull_sde_table()
+        well_table = pd.merge(file_info_table, df, right_on='LocationName', left_on='WellName', how='left')
+        well_table.set_index('AltLocationID', inplace=True)
+        well_table['WellID'] = well_table.index
+        well_table.dropna(subset=['WellName'], inplace=True)
+        well_table.to_csv(self.folder + '/file_info_table.csv')
+        printmes("Header Table with well information created at {:}/file_info_table.csv".format(self.folder))
+        maxtime = max(pd.to_datetime(well_table['last_reading_date']))
+        mintime = min(pd.to_datetime(well_table['Start_time']))
+        maxtimebuff = max(pd.to_datetime(well_table['last_reading_date'])) + pd.DateOffset(days=2)
+        mintimebuff = min(pd.to_datetime(well_table['Start_time'])) - pd.DateOffset(days=2)
+        printmes("Data span from {:} to {:}.".format(mintime, maxtime))
+        return well_table
+
+    def xle_head_table(self):
+        """Creates a Pandas DataFrame containing header information from all xle files in a folder
+        Args:
+            folder (directory):
+                folder containing xle files
+        Returns:
+            A Pandas DataFrame containing the transducer header data
+        Example::
+            >>> xle_head_table('C:/folder_with_xles/')
+        """
+        # open text file
+        df = {}
+        for infile in glob.glob(self.folder + "//*.xle", recursive=True):
+            basename = os.path.basename(self.folder + infile)
+            with io.open(infile, 'r', encoding="ISO-8859-1") as f:
+                contents = f.read()
+                tree = ET.fromstring(contents)
+
+            df1 = {}
+            for child in tree[1]:
+                df1[child.tag] = child.text
+
+            for child in tree[2]:
+                df1[child.tag] = child.text
+
+            df1['last_reading_date'] = tree[-1][-1][0].text
+            df[basename[:-4]] = df1
+        allwells = pd.DataFrame(df).T
+        allwells.index.name = 'filename'
+        allwells['trans type'] = 'Solinst'
+        allwells['fileroot'] = allwells.index
+        allwells['full_filepath'] = allwells['fileroot'].apply(lambda x: self.folder + x + '.xle', 1)
+        return allwells
+
+    def csv_info_table(self):
+        csv = {}
+        files = [f for f in os.listdir(self.folder) if os.path.isfile(os.path.join(self.folder, f))]
+        field_names = ['filename', 'Start_time', 'Stop_time']
+        df = pd.DataFrame(columns=field_names)
+        for file in files:
+            fileparts = os.path.basename(file).split('.')
+            filetype = fileparts[1]
+            basename = fileparts[0]
+            if filetype == 'csv':
+                try:
+                    cfile = {}
+                    csv[basename] = new_trans_imp(os.path.join(self.folder, file))
+                    cfile['Battery_level'] = int(round(csv[basename].loc[csv[basename]. \
+                                                       index[-1], 'Volts'] / csv[basename]. \
+                                                       loc[csv[basename].index[0], 'Volts'] * 100, 0))
+                    cfile['Sample_rate'] = (csv[basename].index[1] - csv[basename].index[0]).seconds * 100
+                    cfile['filename'] = basename
+                    cfile['fileroot'] = basename
+                    cfile['full_filepath'] = os.path.join(self.folder, file)
+                    cfile['Start_time'] = csv[basename].first_valid_index()
+                    cfile['Stop_time'] = csv[basename].last_valid_index()
+                    cfile['last_reading_date'] = csv[basename].last_valid_index()
+                    cfile['Location'] = ' '.join(basename.split(' ')[:-1])
+                    cfile['trans type'] = 'Global Water'
+                    df = df.append(cfile, ignore_index=True)
+                except:
+                    pass
+        df.set_index('filename', inplace=True)
+        return df, csv
 
 
 def getwellid(infile, wellinfo):
@@ -1607,12 +1693,7 @@ class wellimport(object):
             plt.close()
             pdf_pages.close()
 
-    def get_ftype(self, x):
-        if x[1] == 'Solinst':
-            ft = '.xle'
-        else:
-            ft = '.csv'
-        return self.filedict.get(x[0] + ft)
+
 
     def many_wells(self):
         """Used by the MultTransducerImport tool to import multiple wells into the SDE"""
