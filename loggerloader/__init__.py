@@ -7,7 +7,7 @@ try:
 except ImportError:
     from .loggerloader import *
 
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 __author__ = 'Paul Inkenbrandt'
 __name__ = 'loggerloader'
 
