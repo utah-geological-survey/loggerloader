@@ -1343,12 +1343,8 @@ class HeaderTable(object):
         well_table.dropna(subset=['WellName'], inplace=True)
         well_table.to_csv(self.folder + '/file_info_table.csv')
         printmes("Header Table with well information created at {:}/file_info_table.csv".format(self.folder))
-        maxtime = max(pd.to_datetime(well_table['last_reading_date']))
-        mintime = min(pd.to_datetime(well_table['Start_time']))
-        maxtimebuff = max(pd.to_datetime(well_table['last_reading_date'])) + pd.DateOffset(days=2)
-        mintimebuff = min(pd.to_datetime(well_table['Start_time'])) - pd.DateOffset(days=2)
-        printmes("Data span from {:} to {:}.".format(mintime, maxtime))
-        return well_table
+
+        return well_table, maxtime, mintime
 
     def xle_head_table(self):
         """Creates a Pandas DataFrame containing header information from all xle files in a folder
@@ -1700,82 +1696,35 @@ class wellimport(object):
         arcpy.env.workspace = self.sde_conn
         conn_file_root = self.sde_conn
         jumptol = self.jumptol
-        loc_table = "UGGP.UGGPADMIN.UGS_NGWMN_Monitoring_Locations"
 
-        # create empty dataframe to house well data
-        field_names = ['LocationID', 'LocationName', 'LocationType', 'LocationDesc', 'AltLocationID', 'VerticalMeasure',
-                       'VerticalUnit', 'WellDepth', 'SiteID', 'Offset', 'LoggerType', 'BaroEfficiency',
-                       'BaroEfficiencyStart', 'BaroLoggerType']
-        df = pd.DataFrame(columns=field_names)
-        # populate dataframe with data from SDE well table
-        search_cursor = arcpy.da.SearchCursor(loc_table, field_names)
-        for row in search_cursor:
-            # combine the field names and row items together, and append them
-            df = df.append(dict(zip(field_names, row)), ignore_index=True)
-        df.dropna(subset=['AltLocationID'], inplace=True)
+        headtable = HeaderTable(self.xledir,self.filedict,filelist=self.well_files,workspace=self.sde_conn)
+        well_table = headtable.make_well_table()
 
-        # create temp directory and populate it with relevant files
-        file_extension = []
-        dirpath = tempfile.mkdtemp(suffix=r'\\')
-        for file in self.well_files:
-            copyfile(os.path.join(self.xledir, file), os.path.join(dirpath, file))
-            file_extension.append(os.path.splitext(file)[1])
-
-        # examine and tabulate header information from files
-
-        if '.xle' in file_extension and '.csv' in file_extension:
-            xles = xle_head_table(dirpath)
-            printmes('xles examined')
-            csvs = csv_info_table(dirpath)
-            printmes('csvs examined')
-            file_info_table = pd.concat([xles, csvs[0]], sort=False)
-        elif '.xle' in file_extension:
-            xles = xle_head_table(dirpath)
-            printmes('xles examined')
-            file_info_table = xles
-        elif '.csv' in file_extension:
-            csvs = csv_info_table(dirpath)
-            printmes('csvs examined')
-            file_info_table = csvs[0]
-
-        # combine header table with the sde table
-        file_info_table['WellName'] = file_info_table[['fileroot', 'trans type']].apply(lambda x: self.get_ftype(x), 1)
-        well_table = pd.merge(file_info_table, df, right_on='LocationName', left_on='WellName', how='left')
-        well_table.set_index('AltLocationID', inplace=True)
-        well_table['WellID'] = well_table.index
-        well_table.dropna(subset=['WellName'], inplace=True)
-        well_table.to_csv(self.xledir + '/file_info_table.csv')
-        printmes("Header Table with well information created at {:}/file_info_table.csv".format(self.xledir))
         maxtime = max(pd.to_datetime(well_table['last_reading_date']))
         mintime = min(pd.to_datetime(well_table['Start_time']))
-        maxtimebuff = max(pd.to_datetime(well_table['last_reading_date'])) + pd.DateOffset(days=2)
-        mintimebuff = min(pd.to_datetime(well_table['Start_time'])) - pd.DateOffset(days=2)
         printmes("Data span from {:} to {:}.".format(mintime, maxtime))
+
+        maxtimebuff = maxtime + pd.DateOffset(days=2)
+        mintimebuff = mintime - pd.DateOffset(days=2)
 
         # upload barometric pressure data
         baro_out = {}
         baros = well_table[well_table['LocationType'] == 'Barometer']
 
         # lastdate = maxtime + datetime.timedelta(days=1)
-        if maxtime > datetime.datetime.today():
-            lastdate = None
-        else:
-            lastdate = maxtimebuff
+        if maxtime > datetime.datetime.now():
+            maxtimebuff = None
 
-        if len(baros) < 1:
-            baros = [9024, 9025, 9027, 9049, 9061, 9003, 9062]
-
-            baro_out = get_location_data(baros, self.sde_conn, first_date=mintimebuff, last_date=lastdate)
-            printmes('Barometer data download success')
-
-        else:
+        if len(baros) > 0:
             for b in range(len(baros)):
                 barline = baros.iloc[b, :]
                 df = new_trans_imp(barline['full_filepath']).well
                 upload_bp_data(df, baros.index[b])
-                baro_out[baros.index[b]] = get_location_data(baros.index[b], self.sde_conn, first_date=mintime,
-                                                             last_date=lastdate)
                 printmes('Barometer {:} ({:}) Imported'.format(barline['LocationName'], baros.index[b]))
+
+        baros = [9024, 9025, 9027, 9049, 9061, 9003, 9062]
+        baro_out = get_location_data(baros, self.sde_conn, first_date=mintimebuff, last_date=maxtimebuff)
+        printmes('Barometer data download success')
 
         # upload manual data from csv file
         if os.path.splitext(self.man_file)[-1] == '.csv':
