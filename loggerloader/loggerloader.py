@@ -282,7 +282,76 @@ def trans_type(well_file):
     printmes('Trans type for well is {:}.'.format(trans_type))
     return trans_type
 
+class PullOutsideBaro(object):
+    def __init__(self, lat, long, begdate = None, enddate = None, bbox = None, rad = 50):
+        from urllib.request import urlopen
+        import json
 
+        self.token = "1ab92e63dd924c6189e6d5e1015c2645"
+        if begdate:
+            self.begdate = begdate
+        else:
+            self.begdate = datetime.datetime(2014, 11, 1)
+
+        if enddate:
+            self.enddate = enddate
+        else:
+            self.enddate = datetime.date.today()
+
+        self.rad = rad
+        self.lat = lat
+        self.long = long
+
+        if bbox:
+            self.bbox = bbox
+        else:
+            self.bbox = [self.long-self.rad,self.lat-self.rad,self.long+self.rad,self.lat+self.rad]
+
+    def stationresponse(self, html):
+        response = urlopen(html)
+        data = response.read().decode("utf-8")
+        stations = pd.DataFrame(json.loads(data)['STATION'])
+        stations['start'] = stations['PERIOD_OF_RECORD'].apply(lambda x: pd.to_datetime(x['start']),1)
+        stations['end'] = stations['PERIOD_OF_RECORD'].apply(lambda x: pd.to_datetime(x['end']),1)
+        stations.drop('PERIOD_OF_RECORD',axis=1,inplace=True)
+        stations.sort_values(['DISTANCE'], inplace=True)
+        return stations
+
+    def getstations(self):
+        addrs = 'https://api.mesowest.net/v2/stations/metadata?token={:}&status=active&bbox={:}'
+        html = addrs.format(self.token, ",".join([str(i) for i in self.bbox]))
+        stations = self.stationresponse(html)
+        return stations
+
+    def getstationsrad(self):
+        addrs = 'https://api.mesowest.net/v2/stations/metadata?token={:}&status=active&radius={:},{:},{:}'
+        html = addrs.format(self.token, self.lat, self.long, self.rad)
+        stations = self.stationresponse(html)
+        return stations
+
+    def select_station(self):
+        stations = self.getstationsrad()
+        stations = stations[(stations['start'] <= self.begdate)&(stations['end'] >= self.enddate)]
+        if len(stations) == 1:
+            self.station = stations['STID']
+        elif len(stations) > 1:
+            self.station = stations['STID'][0]
+        else:
+            printmes('No Stations Available')
+            self.station = None
+
+    def getbaro(self):
+        """
+        &bbox=-120,40,-119,41
+        """
+        self.select_station()
+        addrs = 'https://api.mesowest.net/v2/stations/timeseries?token={:}&stid={:}&state=ut&start={:%Y%m%d%H%M}&end={:%Y%m%d%H%M}&units=pres|mb&output=csv&obtimezone=local'
+        html = addrs.format(self.token, self.station, self.begdate, self.enddate)
+        baro = pd.read_csv(html,skiprows=[0,1,2,3,4,5,7],index_col=1,
+                           parse_dates=True)
+        print(html)
+
+        return baro
 # -----------------------------------------------------------------------------------------------------------------------
 # These functions import data into an SDE database
 
@@ -359,13 +428,18 @@ def simp_imp_well(well_table, well_file, baro_out, wellid, manual, conn_file_roo
     man = wtr_elevs.get_gw_elevs(manual, stable_elev=stbl_elev)
     well = jumpfix(well,'Level',threashold=2.0)
 
-    try:
-        baroid = wtr_elevs.well_table.loc[wellid, 'BaroLoggerType']
-        printmes('{:}'.format(baroid))
-        corrwl = well_baro_merge(well, baro_out.loc[baroid], barocolumn='MEASUREDLEVEL',
-                                 vented=(trans_type(well_file) != 'Solinst'))
-    except:
-        corrwl = well_baro_merge(well, baro_out.loc[9003], barocolumn='MEASUREDLEVEL',
+
+    baroid = wtr_elevs.well_table.loc[wellid, 'BaroLoggerType']
+    printmes('{:}'.format(baroid))
+
+    if len(baro_out.loc[baroid])+48 < len(well):
+        lat = wtr_elevs.well_table.loc[wellid,'Latitude']
+        long = wtr_elevs.well_table.loc[wellid,'Longitude']
+        barob = baro_out.loc[baroid]
+    else:
+        barob = baro_out.loc[baroid]
+
+    corrwl = well_baro_merge(well, barob, barocolumn='MEASUREDLEVEL',
                                  vented=(trans_type(well_file) != 'Solinst'))
 
     if be:
@@ -1284,6 +1358,7 @@ class HeaderTable(object):
         if arcpy.Exists(loc_table):
             self.loc_table = loc_table
             printmes("Copying sites table !")
+
         else:
             printmes("Sites table not found in working directory!")
 
@@ -1298,6 +1373,7 @@ class HeaderTable(object):
         # populate dataframe with data from SDE well table
         field_names = ['LocationID', 'LocationName', 'LocationType', 'LocationDesc', 'AltLocationID', 'VerticalMeasure',
                        'VerticalUnit', 'WellDepth', 'SiteID', 'Offset', 'LoggerType', 'BaroEfficiency',
+                       'Latitude','Longitude',
                        'BaroEfficiencyStart', 'BaroLoggerType']
 
         locquery = "AltLocationID is not Null"
@@ -1310,7 +1386,7 @@ class HeaderTable(object):
     def file_summary_table(self):
         # create temp directory and populate it with relevant files
         file_extension = []
-        dirpath = tempfile.mkdtemp(suffix=r'\\')
+
         for file in self.filelist:
             file_extension.append(os.path.splitext(file)[1])
 

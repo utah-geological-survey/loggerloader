@@ -18,8 +18,8 @@ def test_HeaderTable():
     filelist = ['test/1037276_Pw10a_2017_08_16.xle']
     workspace = "C:/Users/paulinkenbrandt/AppData/Roaming/Esri/Desktop10.5/ArcCatalog/UGS_SDE.sde"
     ht = ll.HeaderTable(folder, filedict, filelist = None, workspace = workspace)
-    df = ht.make_well_table()
-    assert len(df) == 1
+    df = ht.pull_sde_table()
+    assert len(df) >= 1
 
 
 def test_new_xle_imp():
