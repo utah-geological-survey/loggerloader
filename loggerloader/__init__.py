@@ -7,9 +7,9 @@ try:
 except ImportError:
     from .loggerloader import *
 
-__version__ = '0.4.1'
+__version__ = '0.4.2'
 __author__ = 'Paul Inkenbrandt'
 __name__ = 'loggerloader'
 
 __all__ = ['new_trans_imp','well_baro_merge','fcl','wellimport','simp_imp_well','WaterElevation',
-           'table_to_pandas_dataframe','HeaderTable']
+           'table_to_pandas_dataframe','HeaderTable','PullOutsideBaro']

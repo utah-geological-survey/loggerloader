@@ -21,7 +21,7 @@ except:
 setup(name='loggerloader',
       description = 'Interface with xle and lev (Solinst) and csv (Global Water) files',
       long_description = long_description,
-      version = '0.4.1',
+      version = '0.4.2',
       author = 'Paul Inkenbrandt',
       author_email = 'paulinkenbrandt@utah.gov',
       url = 'https://github.com/utah-geological-survey/loggerloader',
