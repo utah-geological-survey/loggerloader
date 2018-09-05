@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="fixing upload baro data">
+    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="added hourly resample to baro">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/loggerloader/loggerloader.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/loggerloader.py" afterDir="false" />
     </list>
@@ -38,17 +38,17 @@
           <entry key="VERSION" value="5" />
           <entry key="gitignore" value="18" />
           <entry key="md" value="24" />
-          <entry key="py" value="3760" />
+          <entry key="py" value="3785" />
           <entry key="pyt" value="343" />
-          <entry key="txt" value="151" />
+          <entry key="txt" value="180" />
           <entry key="yml" value="8" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="Markdown" value="24" />
-          <entry key="PLAIN_TEXT" value="174" />
-          <entry key="Python" value="4103" />
+          <entry key="PLAIN_TEXT" value="203" />
+          <entry key="Python" value="4128" />
           <entry key="YAML" value="8" />
         </counts>
       </usages-collector>
@@ -142,15 +142,15 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="406">
-              <caret line="553" column="4" selection-start-line="553" selection-start-column="4" selection-end-line="553" selection-end-column="4" />
+            <state relative-caret-position="338">
+              <caret line="546" column="14" lean-forward="true" selection-start-line="546" selection-start-column="14" selection-end-line="546" selection-end-column="14" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
-                <marker date="1536180288469" expanded="true" signature="11584:11662" ph="..." />
-                <marker date="1536180288469" expanded="true" signature="56148:59346" ph="..." />
-                <marker date="1536180288469" expanded="true" signature="57497:57594" ph="..." />
-                <marker date="1536180288469" expanded="true" signature="57705:57908" ph="..." />
-                <marker date="1536180288469" expanded="true" signature="58779:58875" ph="..." />
+                <marker date="1536180333027" expanded="true" signature="11584:11662" ph="..." />
+                <marker date="1536180333027" expanded="true" signature="56190:59388" ph="..." />
+                <marker date="1536180333027" expanded="true" signature="57539:57636" ph="..." />
+                <marker date="1536180333027" expanded="true" signature="57747:57950" ph="..." />
+                <marker date="1536180333027" expanded="true" signature="58821:58917" ph="..." />
               </folding>
             </state>
           </provider>
@@ -388,13 +388,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
-    </task>
-    <task id="LOCAL-00096" summary="added import baro data function">
-      <created>1515700224842</created>
-      <option name="number" value="00096" />
-      <option name="presentableId" value="LOCAL-00096" />
-      <option name="project" value="LOCAL" />
-      <updated>1515700224842</updated>
     </task>
     <task id="LOCAL-00097" summary="added import baro data function">
       <created>1515702390257</created>
@@ -732,7 +725,14 @@
       <option name="project" value="LOCAL" />
       <updated>1536172701438</updated>
     </task>
-    <option name="localTasksCounter" value="145" />
+    <task id="LOCAL-00145" summary="added hourly resample to baro">
+      <created>1536180310872</created>
+      <option name="number" value="00145" />
+      <option name="presentableId" value="LOCAL-00145" />
+      <option name="project" value="LOCAL" />
+      <updated>1536180310872</updated>
+    </task>
+    <option name="localTasksCounter" value="146" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -791,7 +791,6 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="trans" />
     <MESSAGE value="fixing lost modules" />
     <MESSAGE value="populate all" />
     <MESSAGE value="fix import error" />
@@ -816,7 +815,8 @@
     <MESSAGE value="Fixed many_wells class" />
     <MESSAGE value="Created PullOutsideBaro" />
     <MESSAGE value="fixing upload baro data" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixing upload baro data" />
+    <MESSAGE value="added hourly resample to baro" />
+    <option name="LAST_COMMIT_MESSAGE" value="added hourly resample to baro" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/test/__init__.py" />
@@ -967,15 +967,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="406">
-          <caret line="553" column="4" selection-start-line="553" selection-start-column="4" selection-end-line="553" selection-end-column="4" />
+        <state relative-caret-position="338">
+          <caret line="546" column="14" lean-forward="true" selection-start-line="546" selection-start-column="14" selection-end-line="546" selection-end-column="14" />
           <folding>
             <element signature="e#0#82#0" expanded="true" />
-            <marker date="1536180288469" expanded="true" signature="11584:11662" ph="..." />
-            <marker date="1536180288469" expanded="true" signature="56148:59346" ph="..." />
-            <marker date="1536180288469" expanded="true" signature="57497:57594" ph="..." />
-            <marker date="1536180288469" expanded="true" signature="57705:57908" ph="..." />
-            <marker date="1536180288469" expanded="true" signature="58779:58875" ph="..." />
+            <marker date="1536180333027" expanded="true" signature="11584:11662" ph="..." />
+            <marker date="1536180333027" expanded="true" signature="56190:59388" ph="..." />
+            <marker date="1536180333027" expanded="true" signature="57539:57636" ph="..." />
+            <marker date="1536180333027" expanded="true" signature="57747:57950" ph="..." />
+            <marker date="1536180333027" expanded="true" signature="58821:58917" ph="..." />
           </folding>
         </state>
       </provider>

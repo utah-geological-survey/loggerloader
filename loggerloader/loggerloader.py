@@ -519,7 +519,8 @@ def simp_imp_well(well_table, well_file, baro_out, wellid, manual, conn_file_roo
     return rowlist, man, be, drift
 
 
-def upload_bp_data(df, site_number, return_df=False, overide=False, gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading"):
+def upload_bp_data(df, site_number, return_df=False, overide=False, gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading",
+                   resamp_freq = "1H"):
 
     df.sort_index(inplace=True)
     first_index = df.first_valid_index()
@@ -534,7 +535,7 @@ def upload_bp_data(df, site_number, return_df=False, overide=False, gw_reading_t
 
     df.sort_index(inplace=True)
     printmes("Resampling")
-    df = df.resample('1H').mean()
+    df = df.resample(resamp_freq).mean()
     df['MEASUREDLEVEL'] = df['Level']
     df['LOCATIONID'] = site_number
 
