@@ -4,6 +4,8 @@ import io
 import os
 import glob
 import re
+from urllib.request import urlopen
+import json
 
 import pandas as pd
 import numpy as np
@@ -284,11 +286,20 @@ def trans_type(well_file):
 
 
 class PullOutsideBaro(object):
-    def __init__(self, lat, long, begdate=None, enddate=None, bbox=None, rad=30):
-        from urllib.request import urlopen
-        import json
+    def __init__(self, lat, long, begdate=None, enddate=None, bbox=None, rad=30, token = None):
+        if token:
+            self.token = token
+        else:
+            try:
+                import sys
+                connection_filepath = "G:/My Drive/Python/Pycharm/loggerloader/"
+                sys.path.append(connection_filepath)
+                from config import token
+                self.token = token
+            except:
+                print("""No api token.  Please visit https://synopticlabs.org/api/guides/?getstarted to get one.\n
+                      Your can create a file called config.py and write `token= 'your api token'` on the first line of the file.""")
 
-        self.token = "1ab92e63dd924c6189e6d5e1015c2645"
         if begdate:
             self.begdate = begdate
         else:
@@ -1353,6 +1364,7 @@ class HeaderTable(object):
     def __init__(self, folder, filedict, filelist = None, workspace = None,
                  loc_table = "UGGP.UGGPADMIN.UGS_NGWMN_Monitoring_Locations"):
         self.folder = folder
+
         if filelist:
             self.filelist = filelist
         else:
@@ -1403,7 +1415,7 @@ class HeaderTable(object):
             file_extension.append(os.path.splitext(file)[1])
 
         if '.xle' in file_extension and '.csv' in file_extension:
-            xles = xle_head_table(self.folder)
+            xles = self.xle_head_table(self.folder)
             printmes('xles examined')
             csvs = self.csv_info_table(self.folder)
             printmes('csvs examined')
