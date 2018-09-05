@@ -294,8 +294,12 @@ class PullOutsideBaro(object):
                 import sys
                 connection_filepath = "G:/My Drive/Python/Pycharm/loggerloader/"
                 sys.path.append(connection_filepath)
-                from config import token
-                self.token = token
+                try:
+                    import config
+                except:
+                    import loggerloader.config
+
+                self.token = config.token
             except:
                 print("""No api token.  Please visit https://synopticlabs.org/api/guides/?getstarted to get one.\n
                       Your can create a file called config.py and write `token= 'your api token'` on the first line of the file.""")

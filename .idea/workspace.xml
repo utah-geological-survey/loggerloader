@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="Created PullOutsideBaro">
-      <change afterPath="$PROJECT_DIR$/loggerloader/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/loggerloader/loggerloader.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/loggerloader.py" afterDir="false" />
     </list>
@@ -39,7 +38,7 @@
           <entry key="VERSION" value="4" />
           <entry key="gitignore" value="18" />
           <entry key="md" value="24" />
-          <entry key="py" value="3194" />
+          <entry key="py" value="3262" />
           <entry key="pyt" value="40" />
           <entry key="txt" value="126" />
           <entry key="yml" value="8" />
@@ -49,7 +48,7 @@
         <counts>
           <entry key="Markdown" value="24" />
           <entry key="PLAIN_TEXT" value="148" />
-          <entry key="Python" value="3234" />
+          <entry key="Python" value="3302" />
           <entry key="YAML" value="8" />
         </counts>
       </usages-collector>
@@ -111,15 +110,15 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="144">
-              <caret line="300" column="132" lean-forward="true" selection-start-line="300" selection-start-column="132" selection-end-line="300" selection-end-column="132" />
+            <state relative-caret-position="314">
+              <caret line="301" column="38" selection-start-line="301" selection-start-column="38" selection-end-line="301" selection-end-column="38" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
-                <marker date="1536151494497" expanded="true" signature="11584:11662" ph="..." />
-                <marker date="1536151494497" expanded="true" signature="54962:58160" ph="..." />
-                <marker date="1536151494497" expanded="true" signature="56311:56408" ph="..." />
-                <marker date="1536151494497" expanded="true" signature="56519:56722" ph="..." />
-                <marker date="1536151494497" expanded="true" signature="57593:57689" ph="..." />
+                <marker date="1536151638288" expanded="true" signature="11584:11662" ph="..." />
+                <marker date="1536151638288" expanded="true" signature="55055:58253" ph="..." />
+                <marker date="1536151638288" expanded="true" signature="56404:56501" ph="..." />
+                <marker date="1536151638288" expanded="true" signature="56612:56815" ph="..." />
+                <marker date="1536151638288" expanded="true" signature="57686:57782" ph="..." />
               </folding>
             </state>
           </provider>
@@ -357,13 +356,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
-    </task>
-    <task id="LOCAL-00084" summary="openpyxl requirement">
-      <created>1502235691929</created>
-      <option name="number" value="00084" />
-      <option name="presentableId" value="LOCAL-00084" />
-      <option name="project" value="LOCAL" />
-      <updated>1502235691929</updated>
     </task>
     <task id="LOCAL-00085" summary="openpyxl requirement">
       <created>1502235756613</created>
@@ -701,7 +693,14 @@
       <option name="project" value="LOCAL" />
       <updated>1536103129541</updated>
     </task>
-    <option name="localTasksCounter" value="133" />
+    <task id="LOCAL-00133" summary="Created PullOutsideBaro">
+      <created>1536151506932</created>
+      <option name="number" value="00133" />
+      <option name="presentableId" value="LOCAL-00133" />
+      <option name="project" value="LOCAL" />
+      <updated>1536151506932</updated>
+    </task>
+    <option name="localTasksCounter" value="134" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -919,15 +918,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="144">
-          <caret line="300" column="132" lean-forward="true" selection-start-line="300" selection-start-column="132" selection-end-line="300" selection-end-column="132" />
+        <state relative-caret-position="314">
+          <caret line="301" column="38" selection-start-line="301" selection-start-column="38" selection-end-line="301" selection-end-column="38" />
           <folding>
             <element signature="e#0#82#0" expanded="true" />
-            <marker date="1536151494497" expanded="true" signature="11584:11662" ph="..." />
-            <marker date="1536151494497" expanded="true" signature="54962:58160" ph="..." />
-            <marker date="1536151494497" expanded="true" signature="56311:56408" ph="..." />
-            <marker date="1536151494497" expanded="true" signature="56519:56722" ph="..." />
-            <marker date="1536151494497" expanded="true" signature="57593:57689" ph="..." />
+            <marker date="1536151638288" expanded="true" signature="11584:11662" ph="..." />
+            <marker date="1536151638288" expanded="true" signature="55055:58253" ph="..." />
+            <marker date="1536151638288" expanded="true" signature="56404:56501" ph="..." />
+            <marker date="1536151638288" expanded="true" signature="56612:56815" ph="..." />
+            <marker date="1536151638288" expanded="true" signature="57686:57782" ph="..." />
           </folding>
         </state>
       </provider>
