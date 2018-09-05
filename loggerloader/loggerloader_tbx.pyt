@@ -260,7 +260,8 @@ class MultTransducerImport(object):
             parameter("Create a Chart?", "should_plot", "GPBoolean", parameterType="Optional"),
             parameter("Chart output location", "chart_out", "DEFile", parameterType="Optional", direction="Output"),
             parameter("Create Compiled Excel File with import?", "toexcel", "GPBoolean", defaultValue=0,
-                      parameterType="Optional")
+                      parameterType="Optional"),
+            parameter("Barometer data API key", "api_token", "GPString",parameterType="Optional")
         ]
         # self.parameters[2].parameterDependencies = [self.parameters[1].value]
         self.parameters[2].columns = [['GPString', 'xle file'], ['GPString', 'Matching Well Name']]
@@ -342,6 +343,20 @@ class MultTransducerImport(object):
 
                 parameters[2].filters[1].list = sorted(loc_names)
 
+                if not parameters[11].altered:
+                    try:
+                        import sys
+                        connection_filepath = "G:/My Drive/Python/Pycharm/loggerloader/loggerloader/"
+                        sys.path.append(connection_filepath)
+                        try:
+                            import config
+                        except:
+                            import loggerloader.config
+
+                        parameters[11].values = config.token
+                    except:
+                        parameters[11].values = None
+
         return
 
     def updateMessages(self, parameters):
@@ -367,6 +382,7 @@ class MultTransducerImport(object):
         wellimp.should_plot = parameters[8].value
         wellimp.chart_out = parameters[9].valueAsText
         wellimp.toexcel = parameters[10].value
+        wellimp.api_token = parameters[11].valueAsText
         wellimp.many_wells()
         printmes(arcpy.GetMessages())
         return

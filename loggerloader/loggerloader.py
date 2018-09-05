@@ -286,7 +286,7 @@ def trans_type(well_file):
 
 
 class PullOutsideBaro(object):
-    def __init__(self, lat, long, begdate=None, enddate=None, bbox=None, rad=30, token = None):
+    def __init__(self, lat, long, begdate=None, enddate=None, bbox=None, rad=30, token=None):
         if token:
             self.token = token
         else:
@@ -378,7 +378,7 @@ class PullOutsideBaro(object):
         baros.index.name = 'READINGDATE'
         barom = baros.groupby(baros.index.get_level_values(-1)).mean()
         barom['MEASUREDLEVEL'] = 0.03345526*barom['MEASUREDLEVEL']
-        barom = barom.resample('1H')
+        barom = barom.resample('1H').mean()
         return barom
 # -----------------------------------------------------------------------------------------------------------------------
 # These functions import data into an SDE database
@@ -435,7 +435,8 @@ def imp_one_well(well_file, baro_file, man_startdate, man_start_level, man_endat
 
 
 def simp_imp_well(well_table, well_file, baro_out, wellid, manual, conn_file_root, stbl_elev=True, be=None,
-                  gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading", drift_tol=0.3, jumptol=1.0, override=False):
+                  gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading", drift_tol=0.3, jumptol=1.0, override=False,
+                  api_token=None):
     """
     Imports single well
     :param well_table: pandas dataframe of well data with ALternateID as index; needs altitude, be, stickup, and barolooger
@@ -463,8 +464,8 @@ def simp_imp_well(well_table, well_file, baro_out, wellid, manual, conn_file_roo
     if len(baro_out.loc[baroid])+48 < len(well):
         lat = wtr_elevs.well_table.loc[wellid,'Latitude']
         long = wtr_elevs.well_table.loc[wellid,'Longitude']
-        baroout = PullOutsideBaro(lat,long,begdate=well.index.min(),enddate=well.index.max()).getbaro()
-        barob = baroout.rename
+        baroout = PullOutsideBaro(lat,long,begdate=well.index.min(),enddate=well.index.max(),api_token=api_token).getbaro()
+        barob = baroout
     else:
         barob = baro_out.loc[baroid]
 
@@ -1670,6 +1671,7 @@ class wellimport(object):
         self.idget = None
         self.sampint = 60
         self.jumptol = 1.0
+        self.api_token = None
 
     def read_xle(self):
         wellfile = new_trans_imp(self.well_file).well
@@ -1848,7 +1850,7 @@ class wellimport(object):
 
             df, man, be, drift = simp_imp_well(well_table, well_line['full_filepath'], baro_out, wells.index[i],
                                                manl, stbl_elev=self.stbl, drift_tol=float(self.tol),jumptol=jumptol,
-                                               conn_file_root=conn_file_root,override=self.ovrd)
+                                               conn_file_root=conn_file_root,override=self.ovrd,api_token=self.api_token)
             printmes(arcpy.GetMessages())
             printmes('Drift for well {:} is {:}.'.format(well_line['LocationName'], drift))
             printmes("Well {:} complete.\n---------------".format(well_line['LocationName']))
