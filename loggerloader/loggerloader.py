@@ -292,7 +292,7 @@ class PullOutsideBaro(object):
         else:
             try:
                 import sys
-                connection_filepath = "G:/My Drive/Python/Pycharm/loggerloader/"
+                connection_filepath = "G:/My Drive/Python/Pycharm/loggerloader/loggerloader/"
                 sys.path.append(connection_filepath)
                 try:
                     import config
@@ -377,6 +377,8 @@ class PullOutsideBaro(object):
         baros.rename(columns={'pressure_set_1d': 'MEASUREDLEVEL'}, inplace=True)
         baros.index.name = 'READINGDATE'
         barom = baros.groupby(baros.index.get_level_values(-1)).mean()
+        barom['MEASUREDLEVEL'] = 0.03345526*barom['MEASUREDLEVEL']
+        barom = barom.resample('1H')
         return barom
 # -----------------------------------------------------------------------------------------------------------------------
 # These functions import data into an SDE database
