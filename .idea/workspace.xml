@@ -39,8 +39,8 @@
           <entry key="VERSION" value="5" />
           <entry key="gitignore" value="18" />
           <entry key="md" value="24" />
-          <entry key="py" value="3418" />
-          <entry key="pyt" value="206" />
+          <entry key="py" value="3579" />
+          <entry key="pyt" value="343" />
           <entry key="txt" value="126" />
           <entry key="yml" value="8" />
         </counts>
@@ -49,7 +49,7 @@
         <counts>
           <entry key="Markdown" value="24" />
           <entry key="PLAIN_TEXT" value="149" />
-          <entry key="Python" value="3624" />
+          <entry key="Python" value="3922" />
           <entry key="YAML" value="8" />
         </counts>
       </usages-collector>
@@ -134,8 +134,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="406">
-              <caret line="384" column="25" lean-forward="true" selection-start-line="384" selection-start-column="16" selection-end-line="384" selection-end-column="25" />
+            <state relative-caret-position="-155">
+              <caret line="229" lean-forward="true" selection-start-line="229" selection-end-line="229" />
             </state>
           </provider>
         </entry>
@@ -143,15 +143,15 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="348">
-              <caret line="1852" column="120" selection-start-line="1852" selection-start-column="120" selection-end-line="1852" selection-end-column="120" />
+            <state relative-caret-position="892">
+              <caret line="567" column="21" selection-start-line="567" selection-start-column="21" selection-end-line="567" selection-end-column="21" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
-                <marker date="1536156026338" expanded="true" signature="11584:11662" ph="..." />
-                <marker date="1536156026338" expanded="true" signature="55224:58422" ph="..." />
-                <marker date="1536156026338" expanded="true" signature="56573:56670" ph="..." />
-                <marker date="1536156026338" expanded="true" signature="56781:56984" ph="..." />
-                <marker date="1536156026338" expanded="true" signature="57855:57951" ph="..." />
+                <marker date="1536159103300" expanded="true" signature="11584:11662" ph="..." />
+                <marker date="1536159103300" expanded="true" signature="56119:59317" ph="..." />
+                <marker date="1536159103300" expanded="true" signature="57468:57565" ph="..." />
+                <marker date="1536159103300" expanded="true" signature="57676:57879" ph="..." />
+                <marker date="1536159103300" expanded="true" signature="58750:58846" ph="..." />
               </folding>
             </state>
           </provider>
@@ -389,13 +389,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
-    </task>
-    <task id="LOCAL-00089" summary="openpyxl requirement">
-      <created>1502391462291</created>
-      <option name="number" value="00089" />
-      <option name="presentableId" value="LOCAL-00089" />
-      <option name="project" value="LOCAL" />
-      <updated>1502391462291</updated>
     </task>
     <task id="LOCAL-00090" summary="openpyxl requirement">
       <created>1502391472650</created>
@@ -733,7 +726,14 @@
       <option name="project" value="LOCAL" />
       <updated>1536154953711</updated>
     </task>
-    <option name="localTasksCounter" value="138" />
+    <task id="LOCAL-00138" summary="Created PullOutsideBaro">
+      <created>1536156125088</created>
+      <option name="number" value="00138" />
+      <option name="presentableId" value="LOCAL-00138" />
+      <option name="project" value="LOCAL" />
+      <updated>1536156125088</updated>
+    </task>
+    <option name="localTasksCounter" value="139" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -961,22 +961,22 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="406">
-          <caret line="384" column="25" lean-forward="true" selection-start-line="384" selection-start-column="16" selection-end-line="384" selection-end-column="25" />
+        <state relative-caret-position="-155">
+          <caret line="229" lean-forward="true" selection-start-line="229" selection-end-line="229" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="348">
-          <caret line="1852" column="120" selection-start-line="1852" selection-start-column="120" selection-end-line="1852" selection-end-column="120" />
+        <state relative-caret-position="892">
+          <caret line="567" column="21" selection-start-line="567" selection-start-column="21" selection-end-line="567" selection-end-column="21" />
           <folding>
             <element signature="e#0#82#0" expanded="true" />
-            <marker date="1536156026338" expanded="true" signature="11584:11662" ph="..." />
-            <marker date="1536156026338" expanded="true" signature="55224:58422" ph="..." />
-            <marker date="1536156026338" expanded="true" signature="56573:56670" ph="..." />
-            <marker date="1536156026338" expanded="true" signature="56781:56984" ph="..." />
-            <marker date="1536156026338" expanded="true" signature="57855:57951" ph="..." />
+            <marker date="1536159103300" expanded="true" signature="11584:11662" ph="..." />
+            <marker date="1536159103300" expanded="true" signature="56119:59317" ph="..." />
+            <marker date="1536159103300" expanded="true" signature="57468:57565" ph="..." />
+            <marker date="1536159103300" expanded="true" signature="57676:57879" ph="..." />
+            <marker date="1536159103300" expanded="true" signature="58750:58846" ph="..." />
           </folding>
         </state>
       </provider>

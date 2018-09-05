@@ -462,6 +462,7 @@ def simp_imp_well(well_table, well_file, baro_out, wellid, manual, conn_file_roo
     printmes('{:}'.format(baroid))
 
     if len(baro_out.loc[baroid])+48 < len(well):
+        printmes("Inadequate baro data from site {:}! Pulling Mesowest Data for location {:}".format(baroid,wellid))
         lat = wtr_elevs.well_table.loc[wellid,'Latitude']
         long = wtr_elevs.well_table.loc[wellid,'Longitude']
         baroout = PullOutsideBaro(lat,long,begdate=well.index.min(),enddate=well.index.max(),api_token=api_token).getbaro()
@@ -522,39 +523,49 @@ def upload_bp_data(df, site_number, return_df=False, overide=False, gw_reading_t
 
     df.sort_index(inplace=True)
     first_index = df.first_valid_index()
+    last_index = df.last_valid_index()
 
     # Get last reading at the specified location
-    read_max, dtw, wlelev = find_extreme(site_number)
+    #read_max, dtw, wlelev = find_extreme(wellid)
+    query = "LOCATIONID = {: .0f} AND READINGDATE >= '{:}' AND READINGDATE <= '{:}'".format(site_number, first_index, last_index)
+    existing_data = table_to_pandas_dataframe(gw_reading_table, query = query)
+    printmes("Existing Len = {:}. Import Len = {:}.".format(len(existing_data),len(df)))
 
-    if read_max is None or read_max < first_index or overide is True:
+    df['MEASUREDLEVEL'] = df['Level']
+    df['LOCATIONID'] = site_number
 
-        df['MEASUREDLEVEL'] = df['Level']
-        df['LOCATIONID'] = site_number
+    df.sort_index(inplace=True)
 
-        df.sort_index(inplace=True)
+    fieldnames = ['READINGDATE', 'MEASUREDLEVEL', 'TEMP', 'LOCATIONID']
 
-        fieldnames = ['READINGDATE', 'MEASUREDLEVEL', 'TEMP', 'LOCATIONID']
+    if 'Temperature' in df.columns:
+        df.rename(columns={'Temperature': 'TEMP'}, inplace=True)
 
-        if 'Temperature' in df.columns:
-            df.rename(columns={'Temperature': 'TEMP'}, inplace=True)
-
-        if 'TEMP' in df.columns:
-            df['TEMP'] = df['TEMP'].apply(lambda x: np.round(x, 4), 1)
-        else:
-            df['TEMP'] = None
-
-        df.index.name = 'READINGDATE'
-
-        subset = df.reset_index()
-
-        edit_table(subset, gw_reading_table, fieldnames)
-
-        if return_df:
-            return df
-
+    if 'TEMP' in df.columns:
+        df['TEMP'] = df['TEMP'].apply(lambda x: np.round(x, 4), 1)
     else:
-        printmes('Dates later than import data for this station already exist!')
+        df['TEMP'] = None
+
+    df.index.name = 'READINGDATE'
+
+    subset = df.reset_index()
+
+    if (len(existing_data) == 0) or overide is True:
+        edit_table(subset, gw_reading_table, fieldnames)
+        printmes(arcpy.GetMessages())
+        printmes("Well {:} imported.".format(site_number))
+    elif len(existing_data) == len(df):
+        printmes('Data for well {:} already exist!'.format(site_number))
+    elif len(df) > len(existing_data) > 0:
+        subset = subset[~subset['READINGDATE'].isin(existing_data['READINGDATE'].values)]
+        edit_table(subset, gw_reading_table, fieldnames)
+        printmes('Some values were missing. {:} values added.'.format(len(df)-len(existing_data)))
+    else:
+        printmes('Import data for well {:} already exist! No data imported.'.format(site_number))
         pass
+
+    if return_df:
+        return subset
 
 
 # -----------------------------------------------------------------------------------------------------------------------

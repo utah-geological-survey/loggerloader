@@ -129,7 +129,7 @@ class MultBarometerImport(object):
         self.canRunInBackground = False
         self.parameters = [
             parameter("Input SDE Connection", "in_conn_file", "DEWorkspace",
-                      defaultValue="C:/Users/{:}/AppData/Roaming/ESRI/Desktop10.5/ArcCatalog/UGS_SDE.sde".format(
+                      defaultValue="C:/Users/{:}/AppData/Roaming/ESRI/Desktop10.6/ArcCatalog/UGS_SDE.sde".format(
                           os.environ.get('USERNAME'))),
             parameter('Directory Containing Files', 'xledir', 'DEFolder'),
             parameter("Barometer File Matches", "well_files", 'GPValueTable'),
@@ -146,8 +146,8 @@ class MultBarometerImport(object):
                       parameterType="Optional")
         ]
         # self.parameters[2].parameterDependencies = [self.parameters[1].value]
-        self.parameters[2].columns = [['GPString', 'xle file'], ['GPString', 'Matching Well Name'],
-                                      ['GPString', 'Matching Well ID']]
+        self.parameters[2].columns = [['GPString', 'xle file'], ['GPString', 'Matching Barometer Name'],
+                                      ['GPString', 'Matching Barometer ID']]
 
     def getParameterInfo(self):
         """Define parameter definitions; http://joelmccune.com/lessons-learned-and-ideas-for-python-toolbox-coding/"""
@@ -167,15 +167,38 @@ class MultBarometerImport(object):
                 loc_table = "UGGP.UGGPADMIN.UGS_NGWMN_Monitoring_Locations"
 
                 # use a search cursor to iterate rows
-                loc_names = [str(row[0]) for row in arcpy.da.SearchCursor(loc_table, 'LocationName') if
+                loc_names = [str(row[0]) for row in arcpy.da.SearchCursor(loc_table, 'LocationName', where_clause='AltLocationID is not Null') if
                              str(row[0]) != 'None' and str(row[0]) != '']
-                well_ident = [str(row[0]) for row in arcpy.da.SearchCursor(loc_table, 'AltLocationID') if
+                well_ident = [str(row[0]) for row in arcpy.da.SearchCursor(loc_table, 'AltLocationID', where_clause='AltLocationID is not Null') if
                               str(row[0]) != 'None' and str(row[0]) != '']
                 loc_names_simp = [i.upper().replace(" ", "").replace("-", "") for i in loc_names]
                 loc_dict = dict(zip(loc_names_simp, loc_names))
                 id_dict = dict(zip(well_ident, loc_names))
                 getid = dict(zip(loc_names, well_ident))
-
+                serialdict = {'1044546': 'P1001', '1044532': 'P1002', '1044519': 'P1003',
+                              '1044531': 'P1004', '1044524': 'P1005', '1044506': 'P1006', '1044545': 'P1007',
+                              '1044547': 'P1008', '1044530': 'P1009', '1044508': 'P1010', '1044536': 'P1011',
+                              '1044543': 'P1012', '1044544': 'P1013', '1044538': 'P1014', '1044504': 'P1015',
+                              '1044535': 'P1016', '1044516': 'P1018', '1044526': 'P1019', '1044517': 'P1020',
+                              '1044539': 'P1021', '1044520': 'P1022', '1044529': 'P1023', '1044502': 'P1024',
+                              '1044507': 'P1025', '1044528': 'P1026',
+                              '1044779': 'SG25 Barometer', '1044788':'Twin Springs Baro',
+                              '1046310': 'P1028', '1046323': 'P1029',
+                              '1046314': 'P1030', '1046393': 'P1031', '1046394': 'P1033', '1046388': 'P1035',
+                              '1046396': 'P1036', '1046382': 'P1037', '1046399': 'P1038', '1046315': 'P1039',
+                              '1046392': 'P1040', '1046319': 'P1041', '1046309': 'P1042', '1046398': 'P1043',
+                              '1046381': 'P1044', '1046387': 'P1045', '1046390': 'P1046', '1046400': 'P1047',
+                              '1044534': 'P1097', '1044548': 'P1049', '1044537': 'P1051', '1046311': 'P1052',
+                              '1046377': 'P1053', '1046318': 'P1054', '1046326': 'P1055', '1046395': 'P1056',
+                              '1046391': 'P1057', '1046306': 'P1060', '2011070': 'P1061', '2011072': 'P1063',
+                              '2011762': 'P1065', '2012196': 'P1070', '2022358': 'P1076', '2006774': 'P1069',
+                              '2022498': 'P1071', '2022489': 'P1072', '2010753': 'P1090', '2022490': 'P1073',
+                              '2022401': 'P1075', '2022348': 'P2001', '2022496': 'P2002', '2022499': 'P1079',
+                              '2022501': 'P1080', '2022167': 'P1081', '1046308': 'P1091', '2011557': 'P1092',
+                              '1046384': 'P1093', '1046307': 'P1094', '1046317': 'P1095', '1044541': 'P1096',
+                              '1046312': 'P1098', '2037596': 'P2003', '2037610': 'P3001', '2037607': 'P3002',
+                              '2006781': 'P3003', '2064855':'Mills Mona Baro', '1038964': 'PW03 Baro',
+                              }
                 vtab = []
                 for file in os.listdir(parameters[1].valueAsText):
                     filetype = os.path.splitext(parameters[1].valueAsText + file)[1]
@@ -184,6 +207,7 @@ class MultBarometerImport(object):
                         namepartA = nameparts[0].upper().replace("-", "")
                         namepartB = str(' '.join(nameparts[:-1])).upper().replace(" ", "").replace("-", "")
                         nameparts_alt = str(file).split('_')
+                        nameparts_alt2 = str(file).split('.')
                         if len(nameparts_alt) > 3:
                             namepartC = str(' '.join(nameparts_alt[1:-3])).upper().replace(" ", "")
                             namepartD = str(nameparts_alt[-4])
@@ -197,6 +221,10 @@ class MultBarometerImport(object):
                             vtab.append([file, loc_dict.get(namepartC), getid.get(loc_dict.get(namepartC))])
                         elif len(nameparts_alt) > 3 and namepartD in well_ident:
                             vtab.append([file, id_dict.get(namepartD), namepartD])
+                        elif nameparts_alt2[0] in serialdict.keys():
+                            vtab.append([file, serialdict.get(nameparts_alt2[0]), getid.get(serialdict.get(nameparts_alt2[0]))])
+                        elif nameparts_alt[0] in serialdict.keys():
+                            vtab.append([file, serialdict.get(nameparts_alt[0]), getid.get(serialdict.get(nameparts_alt[0]))])
                         else:
                             vtab.append([file, None, None])
 
@@ -247,7 +275,7 @@ class MultTransducerImport(object):
         self.canRunInBackground = False
         self.parameters = [
             parameter("Input SDE Connection", "in_conn_file", "DEWorkspace",
-                      defaultValue="C:/Users/{:}/AppData/Roaming/ESRI/Desktop10.5/ArcCatalog/UGS_SDE.sde".format(
+                      defaultValue="C:/Users/{:}/AppData/Roaming/ESRI/Desktop10.6/ArcCatalog/UGS_SDE.sde".format(
                           os.environ.get('USERNAME'))),
             parameter('Directory Containing Files', 'xledir', 'DEFolder'),
             parameter("Well File Matches", "well_files", 'GPValueTable'),
@@ -297,7 +325,9 @@ class MultTransducerImport(object):
                               '1044543': 'P1012', '1044544': 'P1013', '1044538': 'P1014', '1044504': 'P1015',
                               '1044535': 'P1016', '1044516': 'P1018', '1044526': 'P1019', '1044517': 'P1020',
                               '1044539': 'P1021', '1044520': 'P1022', '1044529': 'P1023', '1044502': 'P1024',
-                              '1044507': 'P1025', '1044528': 'P1026', '1046310': 'P1028', '1046323': 'P1029',
+                              '1044507': 'P1025', '1044528': 'P1026',
+                              '1044779': 'SG25 Barometer', '1044788':'Twin Springs Baro',
+                              '1046310': 'P1028', '1046323': 'P1029',
                               '1046314': 'P1030', '1046393': 'P1031', '1046394': 'P1033', '1046388': 'P1035',
                               '1046396': 'P1036', '1046382': 'P1037', '1046399': 'P1038', '1046315': 'P1039',
                               '1046392': 'P1040', '1046319': 'P1041', '1046309': 'P1042', '1046398': 'P1043',
@@ -311,7 +341,8 @@ class MultTransducerImport(object):
                               '2022501': 'P1080', '2022167': 'P1081', '1046308': 'P1091', '2011557': 'P1092',
                               '1046384': 'P1093', '1046307': 'P1094', '1046317': 'P1095', '1044541': 'P1096',
                               '1046312': 'P1098', '2037596': 'P2003', '2037610': 'P3001', '2037607': 'P3002',
-                              '2006781': 'P3003'}
+                              '2006781': 'P3003', '2064855':'Mills Mona Baro', '1038964': 'PW03 Baro',
+                              }
                 vtab = []
                 for file in os.listdir(parameters[1].valueAsText):
                     filetype = os.path.splitext(parameters[1].valueAsText + file)[1]
