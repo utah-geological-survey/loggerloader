@@ -491,6 +491,7 @@ def simp_imp_well(well_table, well_file, baro_out, wellid, manual, conn_file_roo
     #read_max, dtw, wlelev = find_extreme(wellid)
     query = "LOCATIONID = {: .0f} AND READINGDATE >= '{:}' AND READINGDATE <= '{:}'".format(wellid, first_index, last_index)
     existing_data = table_to_pandas_dataframe(gw_reading_table, query = query)
+    printmes(query)
     printmes("Existing Len = {:}. Import Len = {:}.".format(len(existing_data),len(df)))
 
     rowlist, fieldnames = wtr_elevs.prepare_fieldnames(df)
@@ -523,9 +524,10 @@ def upload_bp_data(df, site_number, return_df=False, overide=False, gw_reading_t
     df.sort_index(inplace=True)
     first_index = df.first_valid_index()
     last_index = df.last_valid_index()
+    site_number = int(site_number)
 
-    printmes("bring da" + site_number)
     query = "LOCATIONID = {:.0f} AND READINGDATE >= '{:}' AND READINGDATE <= '{:}'".format(float(site_number), first_index, last_index)
+    printmes(query)
     existing_data = table_to_pandas_dataframe(gw_reading_table, query = query)
 
     printmes("Existing Len = {:}. Import Len = {:}.".format(len(existing_data),len(df)))
@@ -1579,7 +1581,7 @@ class baroimport(object):
 
             sitename = self.filedict[self.well_files[b]]
             altid = self.idget[sitename]
-            printmes([b, altid, sitename])
+
             df[altid] = new_trans_imp(self.xledir + self.well_files[b]).well
             printmes("Importing {:} ({:})".format(sitename, altid))
 

@@ -4,7 +4,6 @@
     <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="fixing upload baro data">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/loggerloader/loggerloader.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/loggerloader.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt.xml" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt.xml" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -39,7 +38,7 @@
           <entry key="VERSION" value="5" />
           <entry key="gitignore" value="18" />
           <entry key="md" value="24" />
-          <entry key="py" value="3648" />
+          <entry key="py" value="3673" />
           <entry key="pyt" value="343" />
           <entry key="txt" value="151" />
           <entry key="yml" value="8" />
@@ -49,7 +48,7 @@
         <counts>
           <entry key="Markdown" value="24" />
           <entry key="PLAIN_TEXT" value="174" />
-          <entry key="Python" value="3991" />
+          <entry key="Python" value="4016" />
           <entry key="YAML" value="8" />
         </counts>
       </usages-collector>
@@ -134,8 +133,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2941">
-              <caret line="266" column="36" selection-start-line="266" selection-start-column="36" selection-end-line="266" selection-end-column="36" />
+            <state relative-caret-position="178">
+              <caret line="199" column="88" selection-start-line="199" selection-start-column="85" selection-end-line="199" selection-end-column="88" />
             </state>
           </provider>
         </entry>
@@ -143,15 +142,15 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="76">
-              <caret line="520" column="4" selection-start-line="520" selection-start-column="4" selection-end-line="520" selection-end-column="4" />
+            <state relative-caret-position="32">
+              <caret line="1583" lean-forward="true" selection-start-line="1583" selection-end-line="1583" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
-                <marker date="1536170670807" expanded="true" signature="11584:11662" ph="..." />
-                <marker date="1536170670807" expanded="true" signature="56048:59246" ph="..." />
-                <marker date="1536170670807" expanded="true" signature="57397:57494" ph="..." />
-                <marker date="1536170670807" expanded="true" signature="57605:57808" ph="..." />
-                <marker date="1536170670807" expanded="true" signature="58679:58775" ph="..." />
+                <marker date="1536172684603" expanded="true" signature="11584:11662" ph="..." />
+                <marker date="1536172684603" expanded="true" signature="56084:59282" ph="..." />
+                <marker date="1536172684603" expanded="true" signature="57433:57530" ph="..." />
+                <marker date="1536172684603" expanded="true" signature="57641:57844" ph="..." />
+                <marker date="1536172684603" expanded="true" signature="58715:58811" ph="..." />
               </folding>
             </state>
           </provider>
@@ -195,7 +194,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>self.isstbl</find>
       <find>.isstbl</find>
       <find>stbl_elev</find>
       <find>stable_elev</find>
@@ -225,6 +223,7 @@
       <find>get_ftype</find>
       <find>xle_head_table</find>
       <find>for i in</find>
+      <find>906</find>
     </findStrings>
     <replaceStrings>
       <replace>altid</replace>
@@ -274,10 +273,10 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-8" />
-    <option name="y" value="-8" />
-    <option name="width" value="1936" />
-    <option name="height" value="1066" />
+    <option name="x" value="-1688" />
+    <option name="y" value="5" />
+    <option name="width" value="1696" />
+    <option name="height" value="1036" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -389,13 +388,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
-    </task>
-    <task id="LOCAL-00094" summary="example file">
-      <created>1511393371243</created>
-      <option name="number" value="00094" />
-      <option name="presentableId" value="LOCAL-00094" />
-      <option name="project" value="LOCAL" />
-      <updated>1511393371244</updated>
     </task>
     <task id="LOCAL-00095" summary="updated how baro data is pulled; added function">
       <created>1515627465109</created>
@@ -733,7 +725,14 @@
       <option name="project" value="LOCAL" />
       <updated>1536169933807</updated>
     </task>
-    <option name="localTasksCounter" value="143" />
+    <task id="LOCAL-00143" summary="fixing upload baro data">
+      <created>1536170761009</created>
+      <option name="number" value="00143" />
+      <option name="presentableId" value="LOCAL-00143" />
+      <option name="project" value="LOCAL" />
+      <updated>1536170761009</updated>
+    </task>
+    <option name="localTasksCounter" value="144" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -760,14 +759,15 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1066" extended-state="6" />
+    <frame x="-1688" y="5" width="1696" height="1036" extended-state="6" />
+    <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49836066" visible="true" weight="0.25" />
-      <window_info active="true" id="Structure" order="1" sideWeight="0.50163937" side_tool="true" visible="true" weight="0.25" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49827588" visible="true" weight="0.28667483" />
+      <window_info active="true" id="Structure" order="1" sideWeight="0.5017241" side_tool="true" visible="true" weight="0.28667483" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Run" order="2" visible="true" weight="0.32967034" />
+      <window_info anchor="bottom" id="Run" order="2" visible="true" weight="0.3409091" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -960,22 +960,22 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2941">
-          <caret line="266" column="36" selection-start-line="266" selection-start-column="36" selection-end-line="266" selection-end-column="36" />
+        <state relative-caret-position="178">
+          <caret line="199" column="88" selection-start-line="199" selection-start-column="85" selection-end-line="199" selection-end-column="88" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="76">
-          <caret line="520" column="4" selection-start-line="520" selection-start-column="4" selection-end-line="520" selection-end-column="4" />
+        <state relative-caret-position="32">
+          <caret line="1583" lean-forward="true" selection-start-line="1583" selection-end-line="1583" />
           <folding>
             <element signature="e#0#82#0" expanded="true" />
-            <marker date="1536170670807" expanded="true" signature="11584:11662" ph="..." />
-            <marker date="1536170670807" expanded="true" signature="56048:59246" ph="..." />
-            <marker date="1536170670807" expanded="true" signature="57397:57494" ph="..." />
-            <marker date="1536170670807" expanded="true" signature="57605:57808" ph="..." />
-            <marker date="1536170670807" expanded="true" signature="58679:58775" ph="..." />
+            <marker date="1536172684603" expanded="true" signature="11584:11662" ph="..." />
+            <marker date="1536172684603" expanded="true" signature="56084:59282" ph="..." />
+            <marker date="1536172684603" expanded="true" signature="57433:57530" ph="..." />
+            <marker date="1536172684603" expanded="true" signature="57641:57844" ph="..." />
+            <marker date="1536172684603" expanded="true" signature="58715:58811" ph="..." />
           </folding>
         </state>
       </provider>
