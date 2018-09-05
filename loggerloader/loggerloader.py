@@ -525,7 +525,7 @@ def upload_bp_data(df, site_number, return_df=False, overide=False, gw_reading_t
     first_index = df.first_valid_index()
     last_index = df.last_valid_index()
 
-    printmes(site_number)
+    printmes("bring da" + site_number)
     query = "LOCATIONID = {: .0f} AND READINGDATE >= '{:}' AND READINGDATE <= '{:}'".format(float(site_number), first_index, last_index)
     existing_data = table_to_pandas_dataframe(gw_reading_table, query = query)
     printmes(site_number)
