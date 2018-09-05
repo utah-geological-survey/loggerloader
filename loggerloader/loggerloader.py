@@ -532,10 +532,11 @@ def upload_bp_data(df, site_number, return_df=False, overide=False, gw_reading_t
 
     printmes("Existing Len = {:}. Import Len = {:}.".format(len(existing_data),len(df)))
 
+    df.sort_index(inplace=True)
+    printmes("Resampling")
+    df = df.resample('1H').mean()
     df['MEASUREDLEVEL'] = df['Level']
     df['LOCATIONID'] = site_number
-
-    df.sort_index(inplace=True)
 
     fieldnames = ['READINGDATE', 'MEASUREDLEVEL', 'TEMP', 'LOCATIONID']
 
