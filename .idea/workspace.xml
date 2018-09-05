@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="Created PullOutsideBaro">
+    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="fixing upload baro data">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/loggerloader/loggerloader.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/loggerloader.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt" afterDir="false" />
@@ -39,17 +39,17 @@
           <entry key="VERSION" value="5" />
           <entry key="gitignore" value="18" />
           <entry key="md" value="24" />
-          <entry key="py" value="3579" />
+          <entry key="py" value="3616" />
           <entry key="pyt" value="343" />
-          <entry key="txt" value="126" />
+          <entry key="txt" value="151" />
           <entry key="yml" value="8" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="Markdown" value="24" />
-          <entry key="PLAIN_TEXT" value="149" />
-          <entry key="Python" value="3922" />
+          <entry key="PLAIN_TEXT" value="174" />
+          <entry key="Python" value="3959" />
           <entry key="YAML" value="8" />
         </counts>
       </usages-collector>
@@ -134,8 +134,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-155">
-              <caret line="229" lean-forward="true" selection-start-line="229" selection-end-line="229" />
+            <state relative-caret-position="2941">
+              <caret line="266" column="36" selection-start-line="266" selection-start-column="36" selection-end-line="266" selection-end-column="36" />
             </state>
           </provider>
         </entry>
@@ -143,15 +143,15 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="892">
-              <caret line="567" column="21" selection-start-line="567" selection-start-column="21" selection-end-line="567" selection-end-column="21" />
+            <state relative-caret-position="306">
+              <caret line="528" column="97" selection-start-line="528" selection-start-column="97" selection-end-line="528" selection-end-column="97" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
-                <marker date="1536159103300" expanded="true" signature="11584:11662" ph="..." />
-                <marker date="1536159103300" expanded="true" signature="56119:59317" ph="..." />
-                <marker date="1536159103300" expanded="true" signature="57468:57565" ph="..." />
-                <marker date="1536159103300" expanded="true" signature="57676:57879" ph="..." />
-                <marker date="1536159103300" expanded="true" signature="58750:58846" ph="..." />
+                <marker date="1536168999715" expanded="true" signature="11584:11662" ph="..." />
+                <marker date="1536168999715" expanded="true" signature="56078:59276" ph="..." />
+                <marker date="1536168999715" expanded="true" signature="57427:57524" ph="..." />
+                <marker date="1536168999715" expanded="true" signature="57635:57838" ph="..." />
+                <marker date="1536168999715" expanded="true" signature="58709:58805" ph="..." />
               </folding>
             </state>
           </provider>
@@ -274,8 +274,8 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="1973" />
-    <option name="y" value="191" />
+    <option name="x" value="-8" />
+    <option name="y" value="-8" />
     <option name="width" value="1936" />
     <option name="height" value="1066" />
   </component>
@@ -389,13 +389,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
-    </task>
-    <task id="LOCAL-00090" summary="openpyxl requirement">
-      <created>1502391472650</created>
-      <option name="number" value="00090" />
-      <option name="presentableId" value="LOCAL-00090" />
-      <option name="project" value="LOCAL" />
-      <updated>1502391472650</updated>
     </task>
     <task id="LOCAL-00091" summary="openpyxl requirement">
       <created>1502409600139</created>
@@ -733,7 +726,14 @@
       <option name="project" value="LOCAL" />
       <updated>1536156125088</updated>
     </task>
-    <option name="localTasksCounter" value="139" />
+    <task id="LOCAL-00139" summary="fixing upload baro data">
+      <created>1536159127397</created>
+      <option name="number" value="00139" />
+      <option name="presentableId" value="LOCAL-00139" />
+      <option name="project" value="LOCAL" />
+      <updated>1536159127397</updated>
+    </task>
+    <option name="localTasksCounter" value="140" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -760,7 +760,7 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="1912" y="-59" width="1936" height="1066" extended-state="6" />
+    <frame x="-8" y="-8" width="1936" height="1066" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49836066" visible="true" weight="0.25" />
@@ -792,7 +792,6 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix dir" />
     <MESSAGE value="trans" />
     <MESSAGE value="fixing lost modules" />
     <MESSAGE value="populate all" />
@@ -817,7 +816,8 @@
     <MESSAGE value="Improved site lookup for mulitsite" />
     <MESSAGE value="Fixed many_wells class" />
     <MESSAGE value="Created PullOutsideBaro" />
-    <option name="LAST_COMMIT_MESSAGE" value="Created PullOutsideBaro" />
+    <MESSAGE value="fixing upload baro data" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixing upload baro data" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/test/__init__.py" />
@@ -961,22 +961,22 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-155">
-          <caret line="229" lean-forward="true" selection-start-line="229" selection-end-line="229" />
+        <state relative-caret-position="2941">
+          <caret line="266" column="36" selection-start-line="266" selection-start-column="36" selection-end-line="266" selection-end-column="36" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="892">
-          <caret line="567" column="21" selection-start-line="567" selection-start-column="21" selection-end-line="567" selection-end-column="21" />
+        <state relative-caret-position="306">
+          <caret line="528" column="97" selection-start-line="528" selection-start-column="97" selection-end-line="528" selection-end-column="97" />
           <folding>
             <element signature="e#0#82#0" expanded="true" />
-            <marker date="1536159103300" expanded="true" signature="11584:11662" ph="..." />
-            <marker date="1536159103300" expanded="true" signature="56119:59317" ph="..." />
-            <marker date="1536159103300" expanded="true" signature="57468:57565" ph="..." />
-            <marker date="1536159103300" expanded="true" signature="57676:57879" ph="..." />
-            <marker date="1536159103300" expanded="true" signature="58750:58846" ph="..." />
+            <marker date="1536168999715" expanded="true" signature="11584:11662" ph="..." />
+            <marker date="1536168999715" expanded="true" signature="56078:59276" ph="..." />
+            <marker date="1536168999715" expanded="true" signature="57427:57524" ph="..." />
+            <marker date="1536168999715" expanded="true" signature="57635:57838" ph="..." />
+            <marker date="1536168999715" expanded="true" signature="58709:58805" ph="..." />
           </folding>
         </state>
       </provider>

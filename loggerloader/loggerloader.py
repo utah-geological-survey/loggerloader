@@ -525,10 +525,10 @@ def upload_bp_data(df, site_number, return_df=False, overide=False, gw_reading_t
     first_index = df.first_valid_index()
     last_index = df.last_valid_index()
 
-    # Get last reading at the specified location
-    #read_max, dtw, wlelev = find_extreme(wellid)
-    query = "LOCATIONID = {: .0f} AND READINGDATE >= '{:}' AND READINGDATE <= '{:}'".format(site_number, first_index, last_index)
+    printmes(site_number)
+    query = "LOCATIONID = {: .0f} AND READINGDATE >= '{:}' AND READINGDATE <= '{:}'".format(float(site_number), first_index, last_index)
     existing_data = table_to_pandas_dataframe(gw_reading_table, query = query)
+    printmes(site_number)
     printmes("Existing Len = {:}. Import Len = {:}.".format(len(existing_data),len(df)))
 
     df['MEASUREDLEVEL'] = df['Level']
@@ -587,7 +587,7 @@ def find_extreme(site_number, gw_table="UGGP.UGGPADMIN.UGS_GW_reading", extma='m
         sort = 'DESC'
     else:
         sort = 'ASC'
-    query = "LOCATIONID = '{: .0f}'".format(site_number)
+    query = "LOCATIONID = '{:.0f}'".format(site_number)
     field_names = ['READINGDATE', 'LOCATIONID', 'MEASUREDDTW', 'WATERELEVATION']
     sql_sn = ('TOP 1', 'ORDER BY READINGDATE {:}'.format(sort))
     # use a search cursor to iterate rows
