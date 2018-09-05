@@ -1584,7 +1584,7 @@ class baroimport(object):
             printmes("Importing {:} ({:})".format(sitename, altid))
 
             if self.to_import:
-                printmes(df[altid], altid)
+
                 upload_bp_data(df[altid], altid)
                 printmes('Barometer {:} ({:}) Imported'.format(sitename, altid))
 
