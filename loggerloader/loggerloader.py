@@ -519,16 +519,15 @@ def simp_imp_well(well_table, well_file, baro_out, wellid, manual, conn_file_roo
 
 
 def upload_bp_data(df, site_number, return_df=False, overide=False, gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading"):
-    import arcpy
 
     df.sort_index(inplace=True)
     first_index = df.first_valid_index()
     last_index = df.last_valid_index()
 
     printmes("bring da" + site_number)
-    query = "LOCATIONID = {: .0f} AND READINGDATE >= '{:}' AND READINGDATE <= '{:}'".format(float(site_number), first_index, last_index)
+    query = "LOCATIONID = {:.0f} AND READINGDATE >= '{:}' AND READINGDATE <= '{:}'".format(float(site_number), first_index, last_index)
     existing_data = table_to_pandas_dataframe(gw_reading_table, query = query)
-    printmes(site_number)
+
     printmes("Existing Len = {:}. Import Len = {:}.".format(len(existing_data),len(df)))
 
     df['MEASUREDLEVEL'] = df['Level']
@@ -1585,6 +1584,7 @@ class baroimport(object):
             printmes("Importing {:} ({:})".format(sitename, altid))
 
             if self.to_import:
+                printmes(df[altid], altid)
                 upload_bp_data(df[altid], altid)
                 printmes('Barometer {:} ({:}) Imported'.format(sitename, altid))
 
@@ -1631,18 +1631,6 @@ class baroimport(object):
                 pdf_pages.savefig(fig)
                 plt.close()
 
-            """"if os.path.isfile(self.baro_comp_file) and os.access(os.path.dirname(self.baro_comp_file), os.R_OK):
-                h = pd.read_csv(self.baro_comp_file, index_col=0, header=0, parse_dates=True)
-                g = pd.concat([h, df[altid]])
-                os.remove(self.baro_comp_file)
-            else:
-                g = df[altid]
-            # remove duplicates based on index then sort by index
-            g['ind'] = g.index
-            g.drop_duplicates(subset='ind', inplace=True)
-            g.drop('ind', axis=1, inplace=True)
-            g = g.sort_index()
-            g.to_csv(self.baro_comp_file)"""
 
         if self.should_plot:
             pdf_pages.close()
