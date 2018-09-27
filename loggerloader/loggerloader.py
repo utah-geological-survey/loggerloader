@@ -471,7 +471,7 @@ def simp_imp_well(well_table, well_file, baro_out, wellid, manual, conn_file_roo
     baroid = wtr_elevs.well_table.loc[wellid, 'BaroLoggerType']
     printmes('{:}'.format(baroid))
 
-    if len(baro_out.loc[baroid]) + 48 < len(well):
+    if len(baro_out.loc[baroid]) + 60 < len(well):
         printmes("Inadequate baro data from site {:}! Pulling Mesowest Data for location {:}".format(baroid, wellid))
         lat = wtr_elevs.well_table.loc[wellid, 'Latitude']
         long = wtr_elevs.well_table.loc[wellid, 'Longitude']
@@ -740,6 +740,40 @@ def get_field_names(table):
         field_names.append(field.name)
     field_names.remove('OBJECTID')
     return field_names
+
+
+def table_to_pandas_dataframe_fast(table, field_names=None, query=None, sql_sn=(None, None)):
+    """
+    Load data into a Pandas Data Frame for subsequent analysis.
+    :param table: Table readable by ArcGIS.
+    :param field_names: List of fields.
+    :param query: SQL query to limit results
+    :param sql_sn: sort fields for sql; see http://pro.arcgis.com/en/pro-app/arcpy/functions/searchcursor.htm
+    :return: Pandas DataFrame object.
+    """
+    import sys
+    connection_filepath = 'G:/My Drive/Python'
+    sys.path.append(connection_filepath)
+    import databaseconnection_snake
+
+    connection = databaseconnection_snake.sqlconnect()
+
+    # if field names are not specified
+    if not field_names:
+        field_names = get_field_names(table)
+
+
+    # create a pandas data frame
+    df = pd.read_sql(SQL, con=connection, parse_dates=['READINGDATE'])
+    # use a search cursor to iterate rows
+    with arcpy.da.SearchCursor(table, field_names, query, sql_clause=sql_sn) as search_cursor:
+        # iterate the rows
+        for row in search_cursor:
+            # combine the field names and row items together, and append them
+            df = df.append(dict(zip(field_names, row)), ignore_index=True)
+
+    # return the pandas data frame
+    return df
 
 
 def table_to_pandas_dataframe(table, field_names=None, query=None, sql_sn=(None, None)):
