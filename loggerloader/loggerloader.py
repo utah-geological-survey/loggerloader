@@ -472,7 +472,8 @@ def simp_imp_well(well_table, well_file, baro_out, wellid, manual, conn_file_roo
     printmes('{:}'.format(baroid))
 
     if len(baro_out.loc[baroid]) + 60 < len(well):
-        printmes("Inadequate baro data from site {:}! Pulling Mesowest Data for location {:}".format(baroid, wellid))
+
+        printmes("Baro data length from site {:} is {:}! Pulling Mesowest Data for location {:}".format(baroid, len(baro_out.loc[baroid]), wellid))
         lat = wtr_elevs.well_table.loc[wellid, 'Latitude']
         long = wtr_elevs.well_table.loc[wellid, 'Longitude']
         baroout = PullOutsideBaro(lat, long, begdate=well.index.min(), enddate=well.index.max(),
@@ -679,35 +680,46 @@ def get_gap_data(site_number, enviro, gap_tol=0.5, first_date=None, last_date=No
 def get_location_data(site_numbers, enviro, first_date=None, last_date=None, limit=None,
                       gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading"):
     arcpy.env.workspace = enviro
+
+    # fill in missing date info
     if not first_date:
+        # set first date to begining of 20th century
         first_date = datetime.datetime(1900, 1, 1)
     elif type(first_date) == str:
         try:
             first_date = datetime.datetime.strptime(first_date, '%m/%d/%Y')
         except:
             first_date = datetime.datetime(1900, 1, 1)
+
     # Get last reading at the specified location
     if not last_date or last_date > datetime.datetime.now():
         last_date = datetime.datetime.now()
 
-    query_txt = "LOCATIONID in({:}) and (READINGDATE >= '{:%m/%d/%Y}' and READINGDATE <= '{:%m/%d/%Y}')"
     if type(site_numbers) == list:
         site_numbers = ",".join([str(i) for i in site_numbers])
     else:
         pass
-    query = query_txt.format(site_numbers, first_date, last_date + datetime.timedelta(days=1))
-    sql_sn = (limit, 'ORDER BY READINGDATE ASC')
 
     # fieldnames = get_field_names(gw_reading_table)
     fieldnames = ['READINGDATE', 'MEASUREDLEVEL', 'LOCATIONID']
-    readings = table_to_pandas_dataframe(gw_reading_table, fieldnames, query, sql_sn)
-    # readings.set_index('READINGDATE', inplace=True)
-    # baro.rename(columns={'READINGDATE': 'DateTime', 'MEASUREDLEVEL': 'Level'}, inplace=True)
+    fields = ",".join([str(i) for i in fieldnames])
+
+    # assemble SQL
+    select_statement = "SELECT {:} FROM {:}\n".format(fields, gw_reading_table)
+    query_txt = "WHERE LOCATIONID in({:}) and (READINGDATE >= '{:%m/%d/%Y}' and READINGDATE <= '{:%m/%d/%Y}')\n"
+    query = query_txt.format(site_numbers, first_date, last_date + datetime.timedelta(days=1))
+    sql_sn = 'ORDER BY READINGDATE ASC;'
+    SQL = select_statement + query + sql_sn
+
+    conn = arcpy.ArcSDESQLExecute(enviro)
+    egdb_return = conn.execute(SQL)
+
+    readings = pd.DataFrame(egdb_return, columns=fieldnames)
+
     readings.set_index(['LOCATIONID', 'READINGDATE'], inplace=True)
     if len(readings) == 0:
         printmes('No Records for location(s) {:}'.format(site_numbers))
     return readings
-
 
 def barodistance(wellinfo):
     """Determines Closest Barometer to Each Well using wellinfo DataFrame"""
@@ -742,7 +754,7 @@ def get_field_names(table):
     return field_names
 
 
-def table_to_pandas_dataframe_fast(table, field_names=None, query=None, sql_sn=(None, None)):
+def table_to_pandas_dataframe_fast(table, field_names=None, query=None, environ="C:/Users/paulinkenbrandt/AppData/Roaming/Esri/Desktop10.6/ArcCatalog/UGS_SDE.sde"):
     """
     Load data into a Pandas Data Frame for subsequent analysis.
     :param table: Table readable by ArcGIS.
@@ -752,25 +764,45 @@ def table_to_pandas_dataframe_fast(table, field_names=None, query=None, sql_sn=(
     :return: Pandas DataFrame object.
     """
     import sys
-    connection_filepath = 'G:/My Drive/Python'
-    sys.path.append(connection_filepath)
-    import databaseconnection_snake
-
-    connection = databaseconnection_snake.sqlconnect()
 
     # if field names are not specified
     if not field_names:
-        field_names = get_field_names(table)
+        field_names = "*"
+    elif type(field_names) == list:
+        field_names = ",".join([str(i) for i in field_names])
+    else:
+        pass
+
+    select_statement = "SELECT {:} FROM {:}".format(field_names, table)
 
 
-    # create a pandas data frame
-    df = pd.read_sql(SQL, con=connection, parse_dates=['READINGDATE'])
-    # use a search cursor to iterate rows
-    with arcpy.da.SearchCursor(table, field_names, query, sql_clause=sql_sn) as search_cursor:
-        # iterate the rows
-        for row in search_cursor:
-            # combine the field names and row items together, and append them
-            df = df.append(dict(zip(field_names, row)), ignore_index=True)
+    if query:
+        query =  select_statement +  " WHERE " + query
+    else:
+        query = select_statement
+
+    try:
+        connection_filepath = 'G:/My Drive/Python'
+        sys.path.append(connection_filepath)
+        import databaseconnection_snake
+
+        connection = databaseconnection_snake.sqlconnect()
+        # create a pandas data frame
+        df = pd.read_sql(query, con=connection)
+    except:
+
+        conn = arcpy.ArcSDESQLExecute(environ)
+        egdb_return = conn.execute(query)
+        if field_names == "*":
+            fields = get_field_names(table)
+        else:
+            fields = field_names.split(',')
+        df = pd.DataFrame(egdb_return, columns=fields)
+
+
+
+
+
 
     # return the pandas data frame
     return df
@@ -1469,8 +1501,17 @@ class HeaderTable(object):
                        'VerticalUnit', 'WellDepth', 'SiteID', 'Offset', 'LoggerType', 'BaroEfficiency',
                        'Latitude', 'Longitude', 'BaroEfficiencyStart', 'BaroLoggerType']
 
-        locquery = "AltLocationID is not Null"
-        df = table_to_pandas_dataframe(self.loc_table, field_names=field_names, query=locquery)
+        locquery = "WHERE AltLocationID is not Null\n"
+        sql_sn = "ORDER BY AltLocationID ASC;"
+
+        fields = ",".join([str(i) for i in field_names])
+        select_statement = "SELECT {:} FROM {:}\n".format(fields, self.loc_table)
+        SQL = select_statement + locquery + sql_sn
+
+        conn = arcpy.ArcSDESQLExecute(self.workspace)
+        egdb_return = conn.execute(SQL)
+
+        df = pd.DataFrame(egdb_return, columns=field_names)
 
         return df
 
@@ -1863,7 +1904,6 @@ class wellimport(object):
         mintimebuff = mintime - pd.DateOffset(days=2)
 
         # upload barometric pressure data
-        baro_out = {}
         baros = well_table[well_table['LocationType'] == 'Barometer']
 
         # lastdate = maxtime + datetime.timedelta(days=1)
@@ -1879,7 +1919,7 @@ class wellimport(object):
 
         baros = [9024, 9025, 9027, 9049, 9061, 9003, 9062]
         baro_out = get_location_data(baros, self.sde_conn, first_date=mintimebuff, last_date=maxtimebuff)
-        printmes('Barometer data download success')
+        printmes('Barometer data download success!')
 
         # upload manual data from csv file
         if os.path.splitext(self.man_file)[-1] == '.csv':
@@ -1896,6 +1936,7 @@ class wellimport(object):
             well_line = wells.iloc[i, :]
             printmes("Importing {:} ({:})".format(well_line['LocationName'], wells.index[i]))
 
+            baro_num = baro_out.loc[well_line['BaroLoggerType']]
             df, man, be, drift = simp_imp_well(well_table, well_line['full_filepath'], baro_out, wells.index[i],
                                                manl, stbl_elev=self.stbl, drift_tol=float(self.tol), jumptol=jumptol,
                                                conn_file_root=conn_file_root, override=self.ovrd,
