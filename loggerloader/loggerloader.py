@@ -111,7 +111,7 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
             (pd.to_datetime(well.index) > breakpoints[i]) & (pd.to_datetime(well.index) < breakpoints[i + 1])]
         df = bracketedwls[i]
         if len(df) > 0:
-
+            printmes("processing dates {:} to {:}".format(breakpoints[i],breakpoints[i + 1]))
             df.sort_index(inplace=True)
             df.loc[:, 'julian'] = df.index.to_julian_date()
 
@@ -140,10 +140,10 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
 
             elif pd.isna(last_man[manmeas]):
                 printmes('last manual measurment missing between {:} and {:}'.format(breakpoints[i], breakpoints[i + 1]))
+                printmes("First man = {:}\nFirst man date = {:}".format(first_man[manmeas], first_man['julian']))
                 b = first_trans - first_man[manmeas]
 
             #elif first_trans_date == last_trans_date:
-
             else:
                 b = first_trans - first_man[manmeas]
                 drift = ((last_trans - last_man[manmeas]) - b)
