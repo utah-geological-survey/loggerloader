@@ -111,6 +111,7 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
             (pd.to_datetime(well.index) > breakpoints[i]) & (pd.to_datetime(well.index) < breakpoints[i + 1])]
         df = bracketedwls[i]
         if len(df) > 0:
+
             df.sort_index(inplace=True)
             df.loc[:, 'julian'] = df.index.to_julian_date()
 
@@ -122,10 +123,10 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
             first_man = fcl(manualfile, breakpoints[i])
             last_man = fcl(manualfile, breakpoints[i + 1])  # first manual measurement
 
-            if df.first_valid_index() < manualfile.first_valid_index():
+            if df.first_valid_index() + datetime.timedelta(days=3) < manualfile.first_valid_index():
                 first_man[manmeas] = None
 
-            if df.last_valid_index() > manualfile.last_valid_index():
+            if df.last_valid_index() - datetime.timedelta(days=3) > manualfile.last_valid_index():
                 last_man[manmeas] = None
 
             drift = 0.000001
@@ -134,17 +135,25 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
 
             # intercept of line = value of first manual measurement
             if pd.isna(first_man[manmeas]):
+                printmes('first manual measurment missing between {:} and {:}'.format(breakpoints[i],breakpoints[i + 1]))
                 b = last_trans - last_man[manmeas]
 
             elif pd.isna(last_man[manmeas]):
+                printmes('last manual measurment missing between {:} and {:}'.format(breakpoints[i], breakpoints[i + 1]))
                 b = first_trans - first_man[manmeas]
+
+            #elif first_trans_date == last_trans_date:
 
             else:
                 b = first_trans - first_man[manmeas]
                 drift = ((last_trans - last_man[manmeas]) - b)
                 printmes("First man = {:}, Last man = {:}\nFirst man date = {:}, Last man date = {:}".format(
                     first_man[manmeas], last_man[manmeas], first_man['julian'], last_man['julian']))
-                slope_man = (first_man[manmeas] - last_man[manmeas]) / (first_man['julian'] - last_man['julian'])
+                try:
+                    slope_man = (first_man[manmeas] - last_man[manmeas]) / (first_man['julian'] - last_man['julian'])
+                except RuntimeWarning:
+                    printmes("Double Scalars")
+                    slope_man = 0
                 slope_trans = (first_trans - last_trans) / (first_trans_date - last_trans_date)
 
             new_slope = slope_trans - slope_man
@@ -469,18 +478,17 @@ def simp_imp_well(well_table, well_file, baro_out, wellid, manual, conn_file_roo
     well = jumpfix(well, 'Level', threashold=2.0)
 
     baroid = wtr_elevs.well_table.loc[wellid, 'BaroLoggerType']
-    printmes('{:}'.format(baroid))
 
-    if len(baro_out.loc[baroid]) + 60 < len(well):
+    if len(baro_out) + 60 < len(well):
 
-        printmes("Baro data length from site {:} is {:}! Pulling Mesowest Data for location {:}".format(baroid, len(baro_out.loc[baroid]), wellid))
+        printmes("Baro data length from site {:} is {:}! Pulling Mesowest Data for location {:}".format(baroid, len(baro_out), wellid))
         lat = wtr_elevs.well_table.loc[wellid, 'Latitude']
         long = wtr_elevs.well_table.loc[wellid, 'Longitude']
         baroout = PullOutsideBaro(lat, long, begdate=well.index.min(), enddate=well.index.max(),
                                   token=api_token).getbaro()
         barob = baroout
     else:
-        barob = baro_out.loc[baroid]
+        barob = baro_out
 
     corrwl = well_baro_merge(well, barob, barocolumn='MEASUREDLEVEL', vented=(trans_type(well_file) != 'Solinst'))
 
@@ -498,9 +506,16 @@ def simp_imp_well(well_table, well_file, baro_out, wellid, manual, conn_file_roo
     last_index = df.last_valid_index()
 
     # Pull any existing data from the database for the well in the date range of the new data
-    query = "LOCATIONID = {: .0f} AND READINGDATE >= '{:}' AND READINGDATE <= '{:}'".format(wellid, first_index,
+    query = "WHERE LOCATIONID = {: .0f} AND READINGDATE >= '{:}' AND READINGDATE <= '{:}'\n".format(wellid, first_index,
                                                                                             last_index)
-    existing_data = table_to_pandas_dataframe(gw_reading_table, query=query)
+    select_statement = "SELECT {:} FROM {:}\n".format('LOCATIONID, READINGDATE, WATERELEVATION', gw_reading_table)
+    sql_sn = 'ORDER BY READINGDATE ASC;'
+    SQL = select_statement + query + sql_sn
+    conn = arcpy.ArcSDESQLExecute(conn_file_root)
+    egdb_return = conn.execute(SQL)
+
+    existing_data = pd.DataFrame(egdb_return, columns=['LOCATIONID', 'READINGDATE', 'WATERELEVATION'])
+    #existing_data = table_to_pandas_dataframe(gw_reading_table, query=query)
     printmes(query)
     printmes("Existing Len = {:}. Import Len = {:}.".format(len(existing_data), len(df)))
 
@@ -715,7 +730,7 @@ def get_location_data(site_numbers, enviro, first_date=None, last_date=None, lim
     egdb_return = conn.execute(SQL)
 
     readings = pd.DataFrame(egdb_return, columns=fieldnames)
-
+    readings['READINGDATE'] = pd.to_datetime(readings['READINGDATE'])
     readings.set_index(['LOCATIONID', 'READINGDATE'], inplace=True)
     if len(readings) == 0:
         printmes('No Records for location(s) {:}'.format(site_numbers))
@@ -1936,8 +1951,9 @@ class wellimport(object):
             well_line = wells.iloc[i, :]
             printmes("Importing {:} ({:})".format(well_line['LocationName'], wells.index[i]))
 
-            baro_num = baro_out.loc[well_line['BaroLoggerType']]
-            df, man, be, drift = simp_imp_well(well_table, well_line['full_filepath'], baro_out, wells.index[i],
+            baro_num = baro_out.loc[int(well_line['BaroLoggerType'])]
+            printmes("Using barometer {:} for well {:}!".format(int(well_line['BaroLoggerType']),well_line['LocationName']))
+            df, man, be, drift = simp_imp_well(well_table, well_line['full_filepath'], baro_num, wells.index[i],
                                                manl, stbl_elev=self.stbl, drift_tol=float(self.tol), jumptol=jumptol,
                                                conn_file_root=conn_file_root, override=self.ovrd,
                                                api_token=self.api_token)
