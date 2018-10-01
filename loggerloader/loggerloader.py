@@ -111,7 +111,7 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
             (pd.to_datetime(well.index) > breakpoints[i]) & (pd.to_datetime(well.index) < breakpoints[i + 1])]
         df = bracketedwls[i]
         if len(df) > 0:
-            printmes("processing dates {:} to {:}".format(breakpoints[i],breakpoints[i + 1]))
+            printmes("Processing dates {:%Y-%m-%d %H:%M} to {:%Y-%m-%d %H:%M}".format(breakpoints[i],breakpoints[i + 1]))
             df.sort_index(inplace=True)
             df.loc[:, 'julian'] = df.index.to_julian_date()
 
@@ -135,12 +135,13 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
 
             # intercept of line = value of first manual measurement
             if pd.isna(first_man[manmeas]):
-                printmes('first manual measurment missing between {:} and {:}'.format(breakpoints[i],breakpoints[i + 1]))
+                printmes('First manual measurement missing between {:} and {:}'.format(breakpoints[i],breakpoints[i + 1]))
+                printmes("First man = {:}\nFirst man date = {:%Y-%m-%d %H:%M}".format(first_man[manmeas], first_man.index))
                 b = last_trans - last_man[manmeas]
 
             elif pd.isna(last_man[manmeas]):
-                printmes('last manual measurment missing between {:} and {:}'.format(breakpoints[i], breakpoints[i + 1]))
-                printmes("First man = {:}\nFirst man date = {:}".format(first_man[manmeas], first_man['julian']))
+                printmes('Last manual measurement missing between {:} and {:}'.format(breakpoints[i], breakpoints[i + 1]))
+                printmes("Last man = {:}\nLast man date = {:%Y-%m-%d %H:%M}".format(first_man[manmeas], first_man.index))
                 b = first_trans - first_man[manmeas]
 
             #elif first_trans_date == last_trans_date:
@@ -148,7 +149,7 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
                 b = first_trans - first_man[manmeas]
                 drift = ((last_trans - last_man[manmeas]) - b)
                 printmes("First man = {:}, Last man = {:}\nFirst man date = {:}, Last man date = {:}".format(
-                    first_man[manmeas], last_man[manmeas], first_man['julian'], last_man['julian']))
+                    first_man[manmeas], last_man[manmeas], first_man.index, last_man.index))
                 try:
                     slope_man = (first_man[manmeas] - last_man[manmeas]) / (first_man['julian'] - last_man['julian'])
                 except RuntimeWarning:
