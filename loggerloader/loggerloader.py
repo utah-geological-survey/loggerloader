@@ -104,6 +104,7 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
         well.index.name = 'DateTime'
     breakpoints = breakpoints.values
     manualfile.loc[:, 'julian'] = manualfile.index.to_julian_date()
+    manualfile.loc[:, 'datetime'] = manualfile.index
 
     for i in range(len(breakpoints) - 1):
         # Break up pandas dataframe time series into pieces based on timing of manual measurements
@@ -111,7 +112,7 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
             (pd.to_datetime(well.index) > breakpoints[i]) & (pd.to_datetime(well.index) < breakpoints[i + 1])]
         df = bracketedwls[i]
         if len(df) > 0:
-            printmes("Processing dates {:%Y-%m-%d %H:%M} to {:%Y-%m-%d %H:%M}".format(breakpoints[i],breakpoints[i + 1]))
+            printmes("Processing dates {:} to {:}".format(breakpoints[i],breakpoints[i + 1]))
             df.sort_index(inplace=True)
             df.loc[:, 'julian'] = df.index.to_julian_date()
 
@@ -136,20 +137,26 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
             # intercept of line = value of first manual measurement
             if pd.isna(first_man[manmeas]):
                 printmes('First manual measurement missing between {:} and {:}'.format(breakpoints[i],breakpoints[i + 1]))
-                printmes("First man = {:}\nFirst man date = {:%Y-%m-%d %H:%M}".format(first_man[manmeas], first_man.index))
+                printmes("Last man = {:}\nLast man date = {:%Y-%m-%d %H:%M}".format(last_man[manmeas],last_man['datetime']))
                 b = last_trans - last_man[manmeas]
 
             elif pd.isna(last_man[manmeas]):
                 printmes('Last manual measurement missing between {:} and {:}'.format(breakpoints[i], breakpoints[i + 1]))
-                printmes("Last man = {:}\nLast man date = {:%Y-%m-%d %H:%M}".format(first_man[manmeas], first_man.index))
+                printmes("First man = {:}\nFirst man date = {:%Y-%m-%d %H:%M}".format(first_man[manmeas],first_man['datetime']))
                 b = first_trans - first_man[manmeas]
 
-            #elif first_trans_date == last_trans_date:
+            elif first_man['julian'] == last_man['julian']:
+                b = last_trans - last_man[manmeas]
+
+            elif abs(first_man[manmeas] - last_man[manmeas]) < 0.00001 :
+                b = last_trans - last_man[manmeas]
+                slope_man = 0
+
             else:
                 b = first_trans - first_man[manmeas]
                 drift = ((last_trans - last_man[manmeas]) - b)
-                printmes("First man = {:}, Last man = {:}\nFirst man date = {:}, Last man date = {:}".format(
-                    first_man[manmeas], last_man[manmeas], first_man.index, last_man.index))
+                printmes("First man = {:}, Last man = {:}\nFirst man date = {:%Y-%m-%d %H:%M}, Last man date = {:%Y-%m-%d %H:%M}".format(
+                    first_man[manmeas], last_man[manmeas], first_man['datetime'], last_man['datetime']))
                 try:
                     slope_man = (first_man[manmeas] - last_man[manmeas]) / (first_man['julian'] - last_man['julian'])
                 except RuntimeWarning:
@@ -514,10 +521,16 @@ def simp_imp_well(well_table, well_file, baro_out, wellid, manual, conn_file_roo
     SQL = select_statement + query + sql_sn
     conn = arcpy.ArcSDESQLExecute(conn_file_root)
     egdb_return = conn.execute(SQL)
+    printmes(SQL)
 
-    existing_data = pd.DataFrame(egdb_return, columns=['LOCATIONID', 'READINGDATE', 'WATERELEVATION'])
+    # this accomodates for an empty return
+    if type(egdb_return) == bool and egdb_return == True:
+        existing_data = []
+    else:
+        existing_data = pd.DataFrame(egdb_return, columns=['LOCATIONID', 'READINGDATE', 'WATERELEVATION'])
+
     #existing_data = table_to_pandas_dataframe(gw_reading_table, query=query)
-    printmes(query)
+
     printmes("Existing Len = {:}. Import Len = {:}.".format(len(existing_data), len(df)))
 
     rowlist, fieldnames = wtr_elevs.prepare_fieldnames(df)
