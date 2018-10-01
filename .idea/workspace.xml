@@ -4,9 +4,10 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="table_to_pandas_dataframe_fast">
+    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="fix drift errors">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/loggerloader/loggerloader.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/loggerloader.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -45,16 +46,16 @@
           <entry key="gitignore" value="18" />
           <entry key="md" value="24" />
           <entry key="py" value="6955" />
-          <entry key="pyt" value="349" />
-          <entry key="txt" value="284" />
+          <entry key="pyt" value="358" />
+          <entry key="txt" value="300" />
           <entry key="yml" value="8" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="Markdown" value="24" />
-          <entry key="PLAIN_TEXT" value="308" />
-          <entry key="Python" value="7304" />
+          <entry key="PLAIN_TEXT" value="324" />
+          <entry key="Python" value="7313" />
           <entry key="YAML" value="8" />
         </counts>
       </usages-collector>
@@ -90,8 +91,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="6800">
-              <caret line="400" column="50" selection-start-line="400" selection-start-column="50" selection-end-line="400" selection-end-column="50" />
+            <state relative-caret-position="85">
+              <caret line="5" column="30" selection-start-line="5" selection-start-column="30" selection-end-line="5" selection-end-column="30" />
             </state>
           </provider>
         </entry>
@@ -99,14 +100,14 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="634">
-              <caret line="157" lean-forward="true" selection-start-line="157" selection-end-line="157" />
+            <state relative-caret-position="362">
+              <caret line="1934" column="41" selection-start-line="1934" selection-start-column="41" selection-end-line="1934" selection-end-column="41" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
-                <marker date="1538406952343" expanded="true" signature="12112:12190" ph="..." />
-                <marker date="1538406952343" expanded="true" signature="60403:63988" ph="..." />
-                <marker date="1538406952343" expanded="true" signature="62240:62443" ph="..." />
-                <marker date="1538406952343" expanded="true" signature="63270:63517" ph="..." />
+                <marker date="1538408027649" expanded="true" signature="12112:12190" ph="..." />
+                <marker date="1538408027649" expanded="true" signature="60403:63988" ph="..." />
+                <marker date="1538408027649" expanded="true" signature="62240:62443" ph="..." />
+                <marker date="1538408027649" expanded="true" signature="63270:63517" ph="..." />
               </folding>
             </state>
           </provider>
@@ -336,13 +337,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
-    </task>
-    <task id="LOCAL-00102" summary="added .lev function format exception">
-      <created>1516283539622</created>
-      <option name="number" value="00102" />
-      <option name="presentableId" value="LOCAL-00102" />
-      <option name="project" value="LOCAL" />
-      <updated>1516283539622</updated>
     </task>
     <task id="LOCAL-00103" summary="added .lev function format exception">
       <created>1516283720263</created>
@@ -680,7 +674,14 @@
       <option name="project" value="LOCAL" />
       <updated>1538401751967</updated>
     </task>
-    <option name="localTasksCounter" value="151" />
+    <task id="LOCAL-00151" summary="fix drift errors">
+      <created>1538406974718</created>
+      <option name="number" value="00151" />
+      <option name="presentableId" value="LOCAL-00151" />
+      <option name="project" value="LOCAL" />
+      <updated>1538406974718</updated>
+    </task>
+    <option name="localTasksCounter" value="152" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -740,7 +741,6 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix import error" />
     <MESSAGE value="fix table error in get_stickup_elev" />
     <MESSAGE value="fix fixdrift to only return drift" />
     <MESSAGE value="fix baro query" />
@@ -765,7 +765,8 @@
     <MESSAGE value="added hourly resample to baro" />
     <MESSAGE value="docstring cleanup; modified NewWellImp name; changed fix_drift variables" />
     <MESSAGE value="table_to_pandas_dataframe_fast" />
-    <option name="LAST_COMMIT_MESSAGE" value="table_to_pandas_dataframe_fast" />
+    <MESSAGE value="fix drift errors" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix drift errors" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/test/__init__.py" />
@@ -885,13 +886,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="6800">
-          <caret line="400" column="50" selection-start-line="400" selection-start-column="50" selection-end-line="400" selection-end-column="50" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.MultTransducerImport.pyt.xml">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="17">
@@ -906,16 +900,23 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="85">
+          <caret line="5" column="30" selection-start-line="5" selection-start-column="30" selection-end-line="5" selection-end-column="30" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="634">
-          <caret line="157" lean-forward="true" selection-start-line="157" selection-end-line="157" />
+        <state relative-caret-position="362">
+          <caret line="1934" column="41" selection-start-line="1934" selection-start-column="41" selection-end-line="1934" selection-end-column="41" />
           <folding>
             <element signature="e#0#82#0" expanded="true" />
-            <marker date="1538406952343" expanded="true" signature="12112:12190" ph="..." />
-            <marker date="1538406952343" expanded="true" signature="60403:63988" ph="..." />
-            <marker date="1538406952343" expanded="true" signature="62240:62443" ph="..." />
-            <marker date="1538406952343" expanded="true" signature="63270:63517" ph="..." />
+            <marker date="1538408027649" expanded="true" signature="12112:12190" ph="..." />
+            <marker date="1538408027649" expanded="true" signature="60403:63988" ph="..." />
+            <marker date="1538408027649" expanded="true" signature="62240:62443" ph="..." />
+            <marker date="1538408027649" expanded="true" signature="63270:63517" ph="..." />
           </folding>
         </state>
       </provider>

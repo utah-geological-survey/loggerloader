@@ -1932,7 +1932,7 @@ class wellimport(object):
                 upload_bp_data(df, baros.index[b])
                 printmes('Barometer {:} ({:}) Imported'.format(barline['LocationName'], baros.index[b]))
 
-        baros = [9024, 9025, 9027, 9049, 9061, 9003, 9062]
+        baros = [9024, 9025, 9027, 9049, 9003, 9062]
         baro_out = get_location_data(baros, self.sde_conn, first_date=mintimebuff, last_date=maxtimebuff)
         printmes('Barometer data download success!')
 
