@@ -130,18 +130,19 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
 
             printmes(df.last_valid_index() - datetime.timedelta(days=3))
             printmes(last_man['datetime'])
-
+            printmes(pull_db)
             if df.first_valid_index() - datetime.timedelta(days=3) > first_man['datetime']:
                 printmes('No initial manual measurement within 3 days of {:}.'.format(df.first_valid_index()))
 
-                if df.first_valid_index() - datetime.timedelta(days=3) > pd.to_datetime(pull_db[0]):
+                if df.first_valid_index() - datetime.timedelta(days=3) < pd.to_datetime(pull_db[0]):
                     first_man[manmeas] = pull_db[1]
                     first_man['julian'] = pd.to_datetime(pull_db[0]).to_julian_date()
                 else:
+                    printmes('No initial transducer measurement within 3 days of {:}.'.format(df.first_valid_index()))
                     first_man[manmeas] = None
 
-
             if df.last_valid_index() + datetime.timedelta(days=3) < last_man['datetime']:
+                printmes('No final manual measurement within 3 days of {:}.'.format(df.last_valid_index()))
                 last_man[manmeas] = None
 
             drift = 0.000001
