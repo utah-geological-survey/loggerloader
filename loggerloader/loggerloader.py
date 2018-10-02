@@ -55,7 +55,7 @@ def printmes(x):
 # These functions align relative transducer reading to manual data
 
 
-def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolname='DTW_WL', pull_db= None):
+def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolname='DTW_WL', pull_db= [None,None]):
     """Remove transducer drift from nonvented transducer data. Faster and should produce same output as fix_drift_stepwise
     Args:
         well (pd.DataFrame):
@@ -131,18 +131,17 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
             printmes(df.last_valid_index() - datetime.timedelta(days=3))
             printmes(last_man['datetime'])
 
-            #printmes(pd.to_datetime(pull_db[0]))
+            printmes(pull_db[0])
 
             if df.first_valid_index() - datetime.timedelta(days=3) > first_man['datetime']:
                 printmes('No initial manual measurement within 3 days of {:}.'.format(df.first_valid_index()))
-                try:
-                    if df.first_valid_index() - datetime.timedelta(days=3) < pd.to_datetime(pull_db[0]):
-                        first_man[manmeas] = pull_db[1]
-                        first_man['julian'] = pd.to_datetime(pull_db[0]).to_julian_date()
-                    else:
-                        first_man[manmeas] = None
-                except:
+
+                if df.first_valid_index() - datetime.timedelta(days=3) > pd.to_datetime(pull_db[0]):
+                    first_man[manmeas] = pull_db[1]
+                    first_man['julian'] = pd.to_datetime(pull_db[0]).to_julian_date()
+                else:
                     first_man[manmeas] = None
+
 
             if df.last_valid_index() + datetime.timedelta(days=3) < last_man['datetime']:
                 last_man[manmeas] = None
@@ -549,7 +548,7 @@ def simp_imp_well(well_table, well_file, baro_out, wellid, manual, conn_file_roo
 
 
     SQL = """SELECT LOCATIONID, READINGDATE, MEASUREDDTW FROM UGGP.UGGPADMIN.UGS_GW_reading
-    WHERE READINGDATE=(SELECT MAX(READINGDATE) FROM UGGP.UGGPADMIN.UGS_GW_reading WHERE LOCATIONID =  {:}) AND LOCATIONID = {:};
+    WHERE READINGDATE=(SELECT MAX(READINGDATE) FROM UGGP.UGGPADMIN.UGS_GW_reading WHERE LOCATIONID =  {: .0f}) AND LOCATIONID = {: .0f};
     """.format(wellid, wellid)  # ,pd.to_datetime(start),pd.to_datetime(end))
     egdb = conn.execute(SQL)
     if type(egdb_return) == bool and egdb_return == True:

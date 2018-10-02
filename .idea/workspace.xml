@@ -4,7 +4,7 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="fix chart errors">
+    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="fix fix drift">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/loggerloader/loggerloader.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/loggerloader.py" afterDir="false" />
     </list>
@@ -44,17 +44,17 @@
           <entry key="VERSION" value="6" />
           <entry key="gitignore" value="18" />
           <entry key="md" value="24" />
-          <entry key="py" value="8438" />
+          <entry key="py" value="8447" />
           <entry key="pyt" value="358" />
-          <entry key="txt" value="312" />
+          <entry key="txt" value="325" />
           <entry key="yml" value="8" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="Markdown" value="24" />
-          <entry key="PLAIN_TEXT" value="336" />
-          <entry key="Python" value="8796" />
+          <entry key="PLAIN_TEXT" value="349" />
+          <entry key="Python" value="8805" />
           <entry key="YAML" value="8" />
         </counts>
       </usages-collector>
@@ -99,14 +99,14 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="483">
-              <caret line="139" column="45" lean-forward="true" selection-start-line="139" selection-start-column="45" selection-end-line="139" selection-end-column="55" />
+            <state relative-caret-position="432">
+              <caret line="136" column="32" selection-start-line="136" selection-start-column="32" selection-end-line="136" selection-end-column="32" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
-                <marker date="1538517537287" expanded="true" signature="13678:13756" ph="..." />
-                <marker date="1538517537287" expanded="true" signature="62694:66279" ph="..." />
-                <marker date="1538517537287" expanded="true" signature="64531:64734" ph="..." />
-                <marker date="1538517537287" expanded="true" signature="65561:65808" ph="..." />
+                <marker date="1538518777358" expanded="true" signature="13559:13637" ph="..." />
+                <marker date="1538518777358" expanded="true" signature="62583:66168" ph="..." />
+                <marker date="1538518777358" expanded="true" signature="64420:64623" ph="..." />
+                <marker date="1538518777358" expanded="true" signature="65450:65697" ph="..." />
               </folding>
             </state>
           </provider>
@@ -212,8 +212,8 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-386" />
-    <option name="y" value="-13" />
+    <option name="x" value="220" />
+    <option name="y" value="-21" />
     <option name="width" value="1576" />
     <option name="height" value="1026" />
   </component>
@@ -327,13 +327,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
-    </task>
-    <task id="LOCAL-00109" summary="added .lev function format exception">
-      <created>1516285600130</created>
-      <option name="number" value="00109" />
-      <option name="presentableId" value="LOCAL-00109" />
-      <option name="project" value="LOCAL" />
-      <updated>1516285600130</updated>
     </task>
     <task id="LOCAL-00110" summary="added .lev function format exception">
       <created>1516285698647</created>
@@ -671,7 +664,14 @@
       <option name="project" value="LOCAL" />
       <updated>1538516961020</updated>
     </task>
-    <option name="localTasksCounter" value="158" />
+    <task id="LOCAL-00158" summary="fix fix drift">
+      <created>1538517583580</created>
+      <option name="number" value="00158" />
+      <option name="presentableId" value="LOCAL-00158" />
+      <option name="project" value="LOCAL" />
+      <updated>1538517583580</updated>
+    </task>
+    <option name="localTasksCounter" value="159" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -731,7 +731,6 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix fixdrift to only return drift" />
     <MESSAGE value="fix baro query" />
     <MESSAGE value="fix imp_simp_well" />
     <MESSAGE value="openpyxl requirement" />
@@ -756,7 +755,8 @@
     <MESSAGE value="table_to_pandas_dataframe_fast" />
     <MESSAGE value="fix drift errors" />
     <MESSAGE value="fix chart errors" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix chart errors" />
+    <MESSAGE value="fix fix drift" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix fix drift" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/test/__init__.py" />
@@ -899,14 +899,14 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="483">
-          <caret line="139" column="45" lean-forward="true" selection-start-line="139" selection-start-column="45" selection-end-line="139" selection-end-column="55" />
+        <state relative-caret-position="432">
+          <caret line="136" column="32" selection-start-line="136" selection-start-column="32" selection-end-line="136" selection-end-column="32" />
           <folding>
             <element signature="e#0#82#0" expanded="true" />
-            <marker date="1538517537287" expanded="true" signature="13678:13756" ph="..." />
-            <marker date="1538517537287" expanded="true" signature="62694:66279" ph="..." />
-            <marker date="1538517537287" expanded="true" signature="64531:64734" ph="..." />
-            <marker date="1538517537287" expanded="true" signature="65561:65808" ph="..." />
+            <marker date="1538518777358" expanded="true" signature="13559:13637" ph="..." />
+            <marker date="1538518777358" expanded="true" signature="62583:66168" ph="..." />
+            <marker date="1538518777358" expanded="true" signature="64420:64623" ph="..." />
+            <marker date="1538518777358" expanded="true" signature="65450:65697" ph="..." />
           </folding>
         </state>
       </provider>
