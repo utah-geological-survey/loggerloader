@@ -554,7 +554,7 @@ def simp_imp_well(well_table, well_file, baro_out, wellid, manual, conn_file_roo
     if type(egdb) == bool and egdb == True:
         pulldb = [None, None]
     else:
-        pulldb =[egdb[0][1], egdb[0][2] + well_table.loc[wellid,'Offset']]
+        pulldb =[egdb[0][1], (egdb[0][2] - well_table.loc[wellid,'Offset'])*-1]
 
     dft = fix_drift(corrwl, man, corrwl='corrwl', manmeas='MeasuredDTW', pull_db=pulldb)
     printmes(arcpy.GetMessages())
