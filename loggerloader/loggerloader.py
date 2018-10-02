@@ -167,7 +167,10 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
             new_slope = slope_trans - slope_man
 
             # slope of line = change in difference between manual and transducer over time;
-            m = drift / (last_trans_date - first_trans_date)
+            if last_trans_date == first_trans_date:
+                m = 0
+            else:
+                m = drift / (last_trans_date - first_trans_date)
 
             # datechange = amount of time between manual measurements
             df.loc[:, 'datechange'] = df['julian'].apply(lambda x: x - df.loc[df.index[0], 'julian'], 1)
@@ -1976,20 +1979,17 @@ class wellimport(object):
             printmes("Well {:} complete.\n---------------".format(well_line['LocationName']))
 
             if self.toexcel:
-                from openpyxl import load_workbook
+                from openpyxl.reader.excel import load_workbook
                 if i == 0:
-                    writer = pd.ExcelWriter(self.xledir + '/wells.xlsx')
+                    writer = pd.ExcelWriter(self.xledir + '/wells.xlsx', engine= 'xlsxwriter')
+                    printmes(maxtime)
                     df.to_excel(writer, sheet_name='{:}_{:%Y%m}'.format(well_line['LocationName'], maxtime))
                     writer.save()
-                    writer.close()
+
                 else:
-                    book = load_workbook(self.xledir + '/wells.xlsx')
-                    writer = pd.ExcelWriter(self.xledir + '/wells.xlsx', engine='openpyxl')
-                    writer.book = book
-                    writer.sheets = dict((ws.title, ws) for ws in book.worksheets)
                     df.to_excel(writer, sheet_name='{:}_{:%Y%m}'.format(well_line['LocationName'], maxtime))
                     writer.save()
-                    writer.close()
+                writer.close()
 
             if self.should_plot:
                 # plot data
@@ -2005,12 +2005,12 @@ class wellimport(object):
                 ax1.scatter(x4, y4, color='purple')
                 ax1.plot(x1, y1, color='blue', label='Water Level Elevation')
                 ax1.set_ylabel('Water Level Elevation', color='blue')
-                try:
-                    ax1.set_ylim(df['WATERELEVATION'].min(), df['WATERELEVATION'].min())
-                except:
-                    pass
-                y_formatter = tick.ScalarFormatter(useOffset=False)
-                ax1.yaxis.set_major_formatter(y_formatter)
+                #try:
+                #    ax1.set_ylim(df['WATERELEVATION'].min(), df['WATERELEVATION'].min())
+                #except:
+                #    pass
+                #y_formatter = tick.ScalarFormatter(useOffset=False)
+                #ax1.yaxis.set_major_formatter(y_formatter)
                 ax2 = ax1.twinx()
                 ax2.set_ylabel('Barometric Pressure (ft)', color='red')
                 ax2.plot(x2, y2, color='red', label='Barometric pressure (ft)')
