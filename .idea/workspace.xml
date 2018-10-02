@@ -44,7 +44,7 @@
           <entry key="VERSION" value="6" />
           <entry key="gitignore" value="18" />
           <entry key="md" value="24" />
-          <entry key="py" value="8447" />
+          <entry key="py" value="8470" />
           <entry key="pyt" value="358" />
           <entry key="txt" value="325" />
           <entry key="yml" value="8" />
@@ -54,7 +54,7 @@
         <counts>
           <entry key="Markdown" value="24" />
           <entry key="PLAIN_TEXT" value="349" />
-          <entry key="Python" value="8805" />
+          <entry key="Python" value="8828" />
           <entry key="YAML" value="8" />
         </counts>
       </usages-collector>
@@ -99,14 +99,14 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="432">
-              <caret line="136" column="32" selection-start-line="136" selection-start-column="32" selection-end-line="136" selection-end-column="32" />
+            <state relative-caret-position="364">
+              <caret line="552" column="34" selection-start-line="552" selection-start-column="34" selection-end-line="552" selection-end-column="34" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
-                <marker date="1538518777358" expanded="true" signature="13559:13637" ph="..." />
-                <marker date="1538518777358" expanded="true" signature="62583:66168" ph="..." />
-                <marker date="1538518777358" expanded="true" signature="64420:64623" ph="..." />
-                <marker date="1538518777358" expanded="true" signature="65450:65697" ph="..." />
+                <marker date="1538519474457" expanded="true" signature="13525:13603" ph="..." />
+                <marker date="1538519474457" expanded="true" signature="62586:66171" ph="..." />
+                <marker date="1538519474457" expanded="true" signature="64423:64626" ph="..." />
+                <marker date="1538519474457" expanded="true" signature="65453:65700" ph="..." />
               </folding>
             </state>
           </provider>
@@ -327,13 +327,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
-    </task>
-    <task id="LOCAL-00110" summary="added .lev function format exception">
-      <created>1516285698647</created>
-      <option name="number" value="00110" />
-      <option name="presentableId" value="LOCAL-00110" />
-      <option name="project" value="LOCAL" />
-      <updated>1516285698647</updated>
     </task>
     <task id="LOCAL-00111" summary="added .lev function format exception">
       <created>1516285825755</created>
@@ -671,7 +664,14 @@
       <option name="project" value="LOCAL" />
       <updated>1538517583580</updated>
     </task>
-    <option name="localTasksCounter" value="159" />
+    <task id="LOCAL-00159" summary="fix fix drift">
+      <created>1538519016348</created>
+      <option name="number" value="00159" />
+      <option name="presentableId" value="LOCAL-00159" />
+      <option name="project" value="LOCAL" />
+      <updated>1538519016348</updated>
+    </task>
+    <option name="localTasksCounter" value="160" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -899,14 +899,14 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="432">
-          <caret line="136" column="32" selection-start-line="136" selection-start-column="32" selection-end-line="136" selection-end-column="32" />
+        <state relative-caret-position="364">
+          <caret line="552" column="34" selection-start-line="552" selection-start-column="34" selection-end-line="552" selection-end-column="34" />
           <folding>
             <element signature="e#0#82#0" expanded="true" />
-            <marker date="1538518777358" expanded="true" signature="13559:13637" ph="..." />
-            <marker date="1538518777358" expanded="true" signature="62583:66168" ph="..." />
-            <marker date="1538518777358" expanded="true" signature="64420:64623" ph="..." />
-            <marker date="1538518777358" expanded="true" signature="65450:65697" ph="..." />
+            <marker date="1538519474457" expanded="true" signature="13525:13603" ph="..." />
+            <marker date="1538519474457" expanded="true" signature="62586:66171" ph="..." />
+            <marker date="1538519474457" expanded="true" signature="64423:64626" ph="..." />
+            <marker date="1538519474457" expanded="true" signature="65453:65700" ph="..." />
           </folding>
         </state>
       </provider>

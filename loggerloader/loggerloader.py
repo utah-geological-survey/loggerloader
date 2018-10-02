@@ -131,8 +131,6 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
             printmes(df.last_valid_index() - datetime.timedelta(days=3))
             printmes(last_man['datetime'])
 
-            printmes(pull_db[0])
-
             if df.first_valid_index() - datetime.timedelta(days=3) > first_man['datetime']:
                 printmes('No initial manual measurement within 3 days of {:}.'.format(df.first_valid_index()))
 
@@ -547,16 +545,17 @@ def simp_imp_well(well_table, well_file, baro_out, wellid, manual, conn_file_roo
         existing_data.set_index('READINGDATE',inplace=True)
 
 
-    SQL = """SELECT LOCATIONID, READINGDATE, MEASUREDDTW FROM UGGP.UGGPADMIN.UGS_GW_reading
+    SQLm = """SELECT LOCATIONID, READINGDATE, MEASUREDDTW FROM UGGP.UGGPADMIN.UGS_GW_reading
     WHERE READINGDATE=(SELECT MAX(READINGDATE) FROM UGGP.UGGPADMIN.UGS_GW_reading WHERE LOCATIONID =  {: .0f}) AND LOCATIONID = {: .0f};
     """.format(wellid, wellid)  # ,pd.to_datetime(start),pd.to_datetime(end))
-    egdb = conn.execute(SQL)
-    if type(egdb_return) == bool and egdb_return == True:
-        pull_db = [None, None]
+    conn1 = arcpy.ArcSDESQLExecute(conn_file_root)
+    egdb = conn1.execute(SQLm)
+    if type(egdb) == bool and egdb == True:
+        pulldb = [None, None]
     else:
-        pull_db = egdb[0][1:]
+        pulldb = egdb[0][1:]
 
-    dft = fix_drift(corrwl, man, corrwl='corrwl', manmeas='MeasuredDTW', pull_db=pull_db)
+    dft = fix_drift(corrwl, man, corrwl='corrwl', manmeas='MeasuredDTW', pull_db=pulldb)
     printmes(arcpy.GetMessages())
     drift = round(float(dft[1]['drift'].values[0]), 3)
 
