@@ -131,11 +131,12 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
             printmes(df.last_valid_index() - datetime.timedelta(days=3))
             printmes(last_man['datetime'])
 
-            printmes(pd.to_datetime(pull_db[0]))
+            #printmes(pd.to_datetime(pull_db[0]))
 
-            if df.first_valid_index() + datetime.timedelta(days=3) < first_man['datetime']:
+            if df.first_valid_index() - datetime.timedelta(days=3) > first_man['datetime']:
+                printmes('No initial manual measurement within 3 days of {:}.'.format(df.first_valid_index()))
                 try:
-                    if df.first_valid_index() - datetime.timedelta(days=3) < pd.to_datetime(pull_db[0]) and pull_db[0] > 0:
+                    if df.first_valid_index() - datetime.timedelta(days=3) < pd.to_datetime(pull_db[0]):
                         first_man[manmeas] = pull_db[1]
                         first_man['julian'] = pd.to_datetime(pull_db[0]).to_julian_date()
                     else:
@@ -143,7 +144,7 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
                 except:
                     first_man[manmeas] = None
 
-            if df.last_valid_index() - datetime.timedelta(days=3) > last_man['datetime']:
+            if df.last_valid_index() + datetime.timedelta(days=3) < last_man['datetime']:
                 last_man[manmeas] = None
 
             drift = 0.000001
@@ -545,7 +546,7 @@ def simp_imp_well(well_table, well_file, baro_out, wellid, manual, conn_file_roo
     else:
         existing_data = pd.DataFrame(egdb_return, columns=['READINGDATE', 'WATERELEVATION'])
         existing_data.set_index('READINGDATE',inplace=True)
-        pull_db = [None,None]
+
 
     SQL = """SELECT LOCATIONID, READINGDATE, MEASUREDDTW FROM UGGP.UGGPADMIN.UGS_GW_reading
     WHERE READINGDATE=(SELECT MAX(READINGDATE) FROM UGGP.UGGPADMIN.UGS_GW_reading WHERE LOCATIONID =  {:}) AND LOCATIONID = {:};
