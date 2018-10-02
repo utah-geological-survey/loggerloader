@@ -55,7 +55,7 @@ def printmes(x):
 # These functions align relative transducer reading to manual data
 
 
-def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolname='DTW_WL'):
+def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolname='DTW_WL', pull_db= None):
     """Remove transducer drift from nonvented transducer data. Faster and should produce same output as fix_drift_stepwise
     Args:
         well (pd.DataFrame):
@@ -124,10 +124,26 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
             first_man = fcl(manualfile, breakpoints[i])
             last_man = fcl(manualfile, breakpoints[i + 1])  # first manual measurement
 
-            if df.first_valid_index() + datetime.timedelta(days=3) < manualfile.first_valid_index():
-                first_man[manmeas] = None
+            #printmes(pd.to_datetime(first_man.name))
+            printmes(df.first_valid_index() + datetime.timedelta(days=3))
+            printmes(first_man['datetime'])
 
-            if df.last_valid_index() - datetime.timedelta(days=3) > manualfile.last_valid_index():
+            printmes(df.last_valid_index() - datetime.timedelta(days=3))
+            printmes(last_man['datetime'])
+
+            printmes(pd.to_datetime(pull_db[0]))
+
+            if df.first_valid_index() + datetime.timedelta(days=3) < first_man['datetime']:
+                try:
+                    if df.first_valid_index() - datetime.timedelta(days=3) < pd.to_datetime(pull_db[0]) and pull_db[0] > 0:
+                        first_man[manmeas] = pull_db[1]
+                        first_man['julian'] = pd.to_datetime(pull_db[0]).to_julian_date()
+                    else:
+                        first_man[manmeas] = None
+                except:
+                    first_man[manmeas] = None
+
+            if df.last_valid_index() - datetime.timedelta(days=3) > last_man['datetime']:
                 last_man[manmeas] = None
 
             drift = 0.000001
@@ -507,30 +523,45 @@ def simp_imp_well(well_table, well_file, baro_out, wellid, manual, conn_file_roo
         corrwl, be = correct_be(wellid, wtr_elevs.well_table, corrwl, be=be)
         corrwl['corrwl'] = corrwl['BAROEFFICIENCYLEVEL']
 
-    dft = fix_drift(corrwl, man, corrwl='corrwl', manmeas='MeasuredDTW')
+    corrwl.sort_index(inplace=True)
+    first_index = corrwl.first_valid_index()
+    last_index = corrwl.last_valid_index()
+
+    # Pull any existing data from the database for the well in the date range of the new data
+    query = "WHERE LOCATIONID = {: .0f} AND READINGDATE >= '{:}' AND READINGDATE <= '{:}'\n".format(wellid, first_index,
+                                                                                            last_index)
+    select_statement = "SELECT {:} FROM {:}\n".format('READINGDATE, WATERELEVATION', gw_reading_table)
+    sql_sn = 'ORDER BY READINGDATE ASC;'
+    SQL = select_statement + query + sql_sn
+    conn = arcpy.ArcSDESQLExecute(conn_file_root)
+    egdb_return = conn.execute(SQL)
+    printmes(query)
+
+    # this accomodates for an empty return
+    if type(egdb_return) == bool and egdb_return == True:
+
+        existing_data = []
+
+    else:
+        existing_data = pd.DataFrame(egdb_return, columns=['READINGDATE', 'WATERELEVATION'])
+        existing_data.set_index('READINGDATE',inplace=True)
+        pull_db = [None,None]
+
+    SQL = """SELECT LOCATIONID, READINGDATE, MEASUREDDTW FROM UGGP.UGGPADMIN.UGS_GW_reading
+    WHERE READINGDATE=(SELECT MAX(READINGDATE) FROM UGGP.UGGPADMIN.UGS_GW_reading WHERE LOCATIONID =  {:}) AND LOCATIONID = {:};
+    """.format(wellid, wellid)  # ,pd.to_datetime(start),pd.to_datetime(end))
+    egdb = conn.execute(SQL)
+    if type(egdb_return) == bool and egdb_return == True:
+        pull_db = [None, None]
+    else:
+        pull_db = egdb[0][1:]
+
+    dft = fix_drift(corrwl, man, corrwl='corrwl', manmeas='MeasuredDTW', pull_db=pull_db)
     printmes(arcpy.GetMessages())
     drift = round(float(dft[1]['drift'].values[0]), 3)
 
     df = dft[0]
     df.sort_index(inplace=True)
-    first_index = df.first_valid_index()
-    last_index = df.last_valid_index()
-
-    # Pull any existing data from the database for the well in the date range of the new data
-    query = "WHERE LOCATIONID = {: .0f} AND READINGDATE >= '{:}' AND READINGDATE <= '{:}'\n".format(wellid, first_index,
-                                                                                            last_index)
-    select_statement = "SELECT {:} FROM {:}\n".format('LOCATIONID, READINGDATE, WATERELEVATION', gw_reading_table)
-    sql_sn = 'ORDER BY READINGDATE ASC;'
-    SQL = select_statement + query + sql_sn
-    conn = arcpy.ArcSDESQLExecute(conn_file_root)
-    egdb_return = conn.execute(SQL)
-    printmes(SQL)
-
-    # this accomodates for an empty return
-    if type(egdb_return) == bool and egdb_return == True:
-        existing_data = []
-    else:
-        existing_data = pd.DataFrame(egdb_return, columns=['LOCATIONID', 'READINGDATE', 'WATERELEVATION'])
 
     #existing_data = table_to_pandas_dataframe(gw_reading_table, query=query)
 
@@ -1142,6 +1173,7 @@ def well_baro_merge(wellfile, barofile, barocolumn='Level', wellcolumn='Level', 
 
     wellbaro['dbp'] = wellbaro['barometer'].diff()
     wellbaro['dwl'] = wellbaro[wellcolumn].diff()
+    #printmes(wellbaro)
     first_well = wellbaro[wellcolumn][0]
 
     if vented:
@@ -1970,10 +2002,12 @@ class wellimport(object):
 
             baro_num = baro_out.loc[int(well_line['BaroLoggerType'])]
             printmes("Using barometer {:} for well {:}!".format(int(well_line['BaroLoggerType']),well_line['LocationName']))
+            #try:
+            man = manl[manl['LOCATIONID'] == int(wells.index[i])]
             df, man, be, drift = simp_imp_well(well_table, well_line['full_filepath'], baro_num, wells.index[i],
-                                               manl, stbl_elev=self.stbl, drift_tol=float(self.tol), jumptol=jumptol,
-                                               conn_file_root=conn_file_root, override=self.ovrd,
-                                               api_token=self.api_token)
+                                           man, stbl_elev=self.stbl, drift_tol=float(self.tol), jumptol=jumptol,
+                                           conn_file_root=conn_file_root, override=self.ovrd,
+                                           api_token=self.api_token)
             printmes(arcpy.GetMessages())
             printmes('Drift for well {:} is {:}.'.format(well_line['LocationName'], drift))
             printmes("Well {:} complete.\n---------------".format(well_line['LocationName']))
@@ -2022,6 +2056,8 @@ class wellimport(object):
                 plt.title('Well: {:}  Drift: {:}  Baro. Eff.: {:}'.format(well_line['LocationName'], drift, be))
                 pdf_pages.savefig(fig)
                 plt.close()
+            #except Exception as err:
+             #   printmes(err)
 
         if self.should_plot:
             pdf_pages.close()
