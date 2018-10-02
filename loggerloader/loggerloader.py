@@ -554,7 +554,7 @@ def simp_imp_well(well_table, well_file, baro_out, wellid, manual, conn_file_roo
     if type(egdb) == bool and egdb == True:
         pulldb = [None, None]
     else:
-        pulldb = egdb[0][1:]
+        pulldb =[egdb[0][1], egdb[0][2] + well_table.loc[wellid,'Offset']]
 
     dft = fix_drift(corrwl, man, corrwl='corrwl', manmeas='MeasuredDTW', pull_db=pulldb)
     printmes(arcpy.GetMessages())
@@ -2002,6 +2002,7 @@ class wellimport(object):
 
             baro_num = baro_out.loc[int(well_line['BaroLoggerType'])]
             printmes("Using barometer {:} for well {:}!".format(int(well_line['BaroLoggerType']),well_line['LocationName']))
+
             #try:
             man = manl[manl['LOCATIONID'] == int(wells.index[i])]
             df, man, be, drift = simp_imp_well(well_table, well_line['full_filepath'], baro_num, wells.index[i],

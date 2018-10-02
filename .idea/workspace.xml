@@ -32,11 +32,11 @@
     <session id="865932417">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="6" />
+          <entry key="project.closed" value="7" />
           <entry key="project.open.time.5" value="5" />
-          <entry key="project.open.time.6" value="2" />
+          <entry key="project.open.time.6" value="3" />
           <entry key="project.open.time.7" value="1" />
-          <entry key="project.opened" value="8" />
+          <entry key="project.opened" value="9" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
@@ -44,7 +44,7 @@
           <entry key="VERSION" value="6" />
           <entry key="gitignore" value="18" />
           <entry key="md" value="24" />
-          <entry key="py" value="8512" />
+          <entry key="py" value="8546" />
           <entry key="pyt" value="358" />
           <entry key="txt" value="325" />
           <entry key="yml" value="8" />
@@ -54,7 +54,7 @@
         <counts>
           <entry key="Markdown" value="24" />
           <entry key="PLAIN_TEXT" value="349" />
-          <entry key="Python" value="8870" />
+          <entry key="Python" value="8904" />
           <entry key="YAML" value="8" />
         </counts>
       </usages-collector>
@@ -90,8 +90,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1529">
-              <caret line="503" column="14" lean-forward="true" selection-start-line="503" selection-start-column="14" selection-end-line="503" selection-end-column="14" />
+            <state relative-caret-position="8551">
+              <caret line="503" column="14" selection-start-line="503" selection-start-column="14" selection-end-line="503" selection-end-column="14" />
             </state>
           </provider>
         </entry>
@@ -99,14 +99,14 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="449">
-              <caret line="146" lean-forward="true" selection-start-line="146" selection-end-line="146" />
+            <state relative-caret-position="729">
+              <caret line="556" column="41" selection-start-line="556" selection-start-column="41" selection-end-line="556" selection-end-column="41" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
-                <marker date="1538519828167" expanded="true" signature="13780:13858" ph="..." />
-                <marker date="1538519828167" expanded="true" signature="62841:66426" ph="..." />
-                <marker date="1538519828167" expanded="true" signature="64678:64881" ph="..." />
-                <marker date="1538519828167" expanded="true" signature="65708:65955" ph="..." />
+                <marker date="1538521158364" expanded="true" signature="13780:13858" ph="..." />
+                <marker date="1538521158364" expanded="true" signature="62887:66472" ph="..." />
+                <marker date="1538521158364" expanded="true" signature="64724:64927" ph="..." />
+                <marker date="1538521158364" expanded="true" signature="65754:66001" ph="..." />
               </folding>
             </state>
           </provider>
@@ -327,13 +327,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
-    </task>
-    <task id="LOCAL-00112" summary="added .lev function format exception">
-      <created>1516285869841</created>
-      <option name="number" value="00112" />
-      <option name="presentableId" value="LOCAL-00112" />
-      <option name="project" value="LOCAL" />
-      <updated>1516285869841</updated>
     </task>
     <task id="LOCAL-00113" summary="added .lev function format exception">
       <created>1516289345762</created>
@@ -671,7 +664,14 @@
       <option name="project" value="LOCAL" />
       <updated>1538519663408</updated>
     </task>
-    <option name="localTasksCounter" value="161" />
+    <task id="LOCAL-00161" summary="fix fix drift">
+      <created>1538519848792</created>
+      <option name="number" value="00161" />
+      <option name="presentableId" value="LOCAL-00161" />
+      <option name="project" value="LOCAL" />
+      <updated>1538519848792</updated>
+    </task>
+    <option name="localTasksCounter" value="162" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -701,8 +701,8 @@
     <frame x="-8" y="-8" width="1874" height="1096" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.48955917" visible="true" weight="0.28059536" />
-      <window_info active="true" id="Structure" order="1" sideWeight="0.5104408" side_tool="true" visible="true" weight="0.28059536" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.48839906" visible="true" weight="0.28390297" />
+      <window_info active="true" id="Structure" order="1" sideWeight="0.5116009" side_tool="true" visible="true" weight="0.28390297" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
@@ -787,17 +787,17 @@
     <entry file="file://$PROJECT_DIR$/loggerloader/utilities.py" />
     <entry file="file://$PROJECT_DIR$/loggerloader_tbx.pyt" />
     <entry file="file://$PROJECT_DIR$/README.md">
+      <provider editor-type-id="text-editor">
+        <state relative-caret-position="590">
+          <caret line="41" lean-forward="true" selection-start-line="41" selection-end-line="41" />
+        </state>
+      </provider>
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
           <first_editor relative-caret-position="153">
             <caret line="9" selection-start-line="9" selection-end-line="9" />
           </first_editor>
           <second_editor />
-        </state>
-      </provider>
-      <provider editor-type-id="text-editor">
-        <state relative-caret-position="590">
-          <caret line="41" lean-forward="true" selection-start-line="41" selection-end-line="41" />
         </state>
       </provider>
     </entry>
@@ -876,13 +876,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/loggerloader/.gitignore">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="6" selection-start-column="6" selection-end-column="6" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.MultTransducerImport.pyt.xml">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="17">
@@ -892,21 +885,28 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1529">
-          <caret line="503" column="14" lean-forward="true" selection-start-line="503" selection-start-column="14" selection-end-line="503" selection-end-column="14" />
+        <state relative-caret-position="8551">
+          <caret line="503" column="14" selection-start-line="503" selection-start-column="14" selection-end-line="503" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/loggerloader/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="6" selection-start-column="6" selection-end-column="6" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="449">
-          <caret line="146" lean-forward="true" selection-start-line="146" selection-end-line="146" />
+        <state relative-caret-position="729">
+          <caret line="556" column="41" selection-start-line="556" selection-start-column="41" selection-end-line="556" selection-end-column="41" />
           <folding>
             <element signature="e#0#82#0" expanded="true" />
-            <marker date="1538519828167" expanded="true" signature="13780:13858" ph="..." />
-            <marker date="1538519828167" expanded="true" signature="62841:66426" ph="..." />
-            <marker date="1538519828167" expanded="true" signature="64678:64881" ph="..." />
-            <marker date="1538519828167" expanded="true" signature="65708:65955" ph="..." />
+            <marker date="1538521158364" expanded="true" signature="13780:13858" ph="..." />
+            <marker date="1538521158364" expanded="true" signature="62887:66472" ph="..." />
+            <marker date="1538521158364" expanded="true" signature="64724:64927" ph="..." />
+            <marker date="1538521158364" expanded="true" signature="65754:66001" ph="..." />
           </folding>
         </state>
       </provider>
