@@ -6,6 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="fix fix drift">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/loggerloader/loggerloader.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/loggerloader.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -31,11 +32,12 @@
     <session id="865932417">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="7" />
+          <entry key="project.closed" value="10" />
           <entry key="project.open.time.5" value="5" />
-          <entry key="project.open.time.6" value="3" />
+          <entry key="project.open.time.6" value="5" />
           <entry key="project.open.time.7" value="1" />
-          <entry key="project.opened" value="9" />
+          <entry key="project.open.time.8" value="1" />
+          <entry key="project.opened" value="12" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
@@ -43,7 +45,8 @@
           <entry key="VERSION" value="6" />
           <entry key="gitignore" value="18" />
           <entry key="md" value="24" />
-          <entry key="py" value="8553" />
+          <entry key="properties" value="12" />
+          <entry key="py" value="8725" />
           <entry key="pyt" value="358" />
           <entry key="txt" value="325" />
           <entry key="yml" value="8" />
@@ -53,7 +56,8 @@
         <counts>
           <entry key="Markdown" value="24" />
           <entry key="PLAIN_TEXT" value="349" />
-          <entry key="Python" value="8911" />
+          <entry key="Properties" value="12" />
+          <entry key="Python" value="9083" />
           <entry key="YAML" value="8" />
         </counts>
       </usages-collector>
@@ -62,6 +66,7 @@
           <entry key="VERSION" value="3" />
           <entry key="csv" value="1" />
           <entry key="gitignore" value="1" />
+          <entry key="properties" value="1" />
           <entry key="py" value="9" />
           <entry key="pyt" value="3" />
           <entry key="txt" value="2" />
@@ -73,6 +78,7 @@
       <usages-collector id="statistics.file.types.open">
         <counts>
           <entry key="PLAIN_TEXT" value="11" />
+          <entry key="Properties" value="1" />
           <entry key="Python" value="12" />
           <entry key="XML" value="2" />
           <entry key="YAML" value="2" />
@@ -89,7 +95,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="8551">
+            <state relative-caret-position="4194">
               <caret line="503" column="14" selection-start-line="503" selection-start-column="14" selection-end-line="503" selection-end-column="14" />
             </state>
           </provider>
@@ -98,24 +104,15 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="474">
-              <caret line="556" column="42" selection-start-line="556" selection-start-column="42" selection-end-line="556" selection-end-column="42" />
+            <state relative-caret-position="1867">
+              <caret line="174" column="50" lean-forward="true" selection-start-line="174" selection-start-column="50" selection-end-line="174" selection-end-column="50" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
-                <marker date="1538521586538" expanded="true" signature="13780:13858" ph="..." />
-                <marker date="1538521586538" expanded="true" signature="62892:66477" ph="..." />
-                <marker date="1538521586538" expanded="true" signature="64729:64932" ph="..." />
-                <marker date="1538521586538" expanded="true" signature="65759:66006" ph="..." />
+                <marker date="1538603582591" expanded="true" signature="13658:13736" ph="..." />
+                <marker date="1538603582591" expanded="true" signature="61147:64732" ph="..." />
+                <marker date="1538603582591" expanded="true" signature="62984:63187" ph="..." />
+                <marker date="1538603582591" expanded="true" signature="64014:64261" ph="..." />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/loggerloader/.gitignore">
-          <provider selected="true" editor-type-id="text-editor">
-            <state>
-              <caret column="6" selection-start-column="6" selection-end-column="6" />
             </state>
           </provider>
         </entry>
@@ -131,7 +128,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>sort_</find>
       <find>get_location_data</find>
       <find>Data sp</find>
       <find>addme</find>
@@ -161,6 +157,7 @@
       <find>rowindex</find>
       <find>new_trans_imp</find>
       <find>fix_drift</find>
+      <find>date</find>
     </findStrings>
     <replaceStrings>
       <replace>altid</replace>
@@ -200,6 +197,7 @@
         <option value="$PROJECT_DIR$/loggerloader/__init__.py" />
         <option value="$PROJECT_DIR$/setup.py" />
         <option value="$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt" />
+        <option value="$APPLICATION_CONFIG_DIR$/idea.properties" />
         <option value="$PROJECT_DIR$/loggerloader/loggerloader.py" />
       </list>
     </option>
@@ -211,8 +209,8 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="220" />
-    <option name="y" value="-21" />
+    <option name="x" value="-1663" />
+    <option name="y" value="-25" />
     <option name="width" value="1576" />
     <option name="height" value="1026" />
   </component>
@@ -221,7 +219,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -243,6 +240,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -326,13 +324,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
-    </task>
-    <task id="LOCAL-00116" summary="added .lev function format exception">
-      <created>1516652655725</created>
-      <option name="number" value="00116" />
-      <option name="presentableId" value="LOCAL-00116" />
-      <option name="project" value="LOCAL" />
-      <updated>1516652655725</updated>
     </task>
     <task id="LOCAL-00117" summary="major overhaul on fix_drift">
       <created>1516662153229</created>
@@ -670,7 +661,14 @@
       <option name="project" value="LOCAL" />
       <updated>1538521608593</updated>
     </task>
-    <option name="localTasksCounter" value="165" />
+    <task id="LOCAL-00165" summary="fix fix drift">
+      <created>1538521635826</created>
+      <option name="number" value="00165" />
+      <option name="presentableId" value="LOCAL-00165" />
+      <option name="project" value="LOCAL" />
+      <updated>1538521635826</updated>
+    </task>
+    <option name="localTasksCounter" value="166" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -697,11 +695,11 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1874" height="1096" extended-state="6" />
+    <frame x="-1688" y="-25" width="1634" height="1066" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.48839906" visible="true" weight="0.28390297" />
-      <window_info active="true" id="Structure" order="1" sideWeight="0.5116009" side_tool="true" visible="true" weight="0.28390297" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.485" visible="true" weight="0.3386277" />
+      <window_info active="true" id="Structure" order="1" sideWeight="0.515" side_tool="true" visible="true" weight="0.3386277" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
@@ -709,11 +707,11 @@
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
-      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="TODO" order="6" sideWeight="0.49936467" visible="true" weight="0.34065935" />
       <window_info anchor="bottom" id="Terminal" order="7" />
       <window_info anchor="bottom" id="Python Console" order="8" />
       <window_info anchor="bottom" id="Version Control" order="9" />
-      <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" visible="true" weight="0.082978725" />
+      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.5006353" side_tool="true" visible="true" weight="0.34065935" />
       <window_info active="true" anchor="bottom" id="Inspection Results" order="11" visible="true" weight="0.32967034" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -848,9 +846,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="391">
           <caret line="23" column="22" selection-start-line="23" selection-start-column="22" selection-end-line="23" selection-end-column="22" />
-          <folding>
-            <element signature="e#0#82#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -884,8 +879,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="8551">
+        <state relative-caret-position="4194">
           <caret line="503" column="14" selection-start-line="503" selection-start-column="14" selection-end-line="503" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$APPLICATION_CONFIG_DIR$/idea.properties">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="68">
+          <caret line="4" column="27" selection-start-line="4" selection-start-column="27" selection-end-line="4" selection-end-column="27" />
         </state>
       </provider>
     </entry>
@@ -898,14 +900,14 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="474">
-          <caret line="556" column="42" selection-start-line="556" selection-start-column="42" selection-end-line="556" selection-end-column="42" />
+        <state relative-caret-position="1867">
+          <caret line="174" column="50" lean-forward="true" selection-start-line="174" selection-start-column="50" selection-end-line="174" selection-end-column="50" />
           <folding>
             <element signature="e#0#82#0" expanded="true" />
-            <marker date="1538521586538" expanded="true" signature="13780:13858" ph="..." />
-            <marker date="1538521586538" expanded="true" signature="62892:66477" ph="..." />
-            <marker date="1538521586538" expanded="true" signature="64729:64932" ph="..." />
-            <marker date="1538521586538" expanded="true" signature="65759:66006" ph="..." />
+            <marker date="1538603582591" expanded="true" signature="13658:13736" ph="..." />
+            <marker date="1538603582591" expanded="true" signature="61147:64732" ph="..." />
+            <marker date="1538603582591" expanded="true" signature="62984:63187" ph="..." />
+            <marker date="1538603582591" expanded="true" signature="64014:64261" ph="..." />
           </folding>
         </state>
       </provider>

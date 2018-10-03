@@ -124,13 +124,6 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
             first_man = fcl(manualfile, breakpoints[i])
             last_man = fcl(manualfile, breakpoints[i + 1])  # first manual measurement
 
-            #printmes(pd.to_datetime(first_man.name))
-            printmes(df.first_valid_index() + datetime.timedelta(days=3))
-            printmes(first_man['datetime'])
-
-            printmes(df.last_valid_index() - datetime.timedelta(days=3))
-            printmes(last_man['datetime'])
-            printmes(pull_db)
             if df.first_valid_index() - datetime.timedelta(days=3) > first_man['datetime']:
                 printmes('No initial manual measurement within 3 days of {:}.'.format(df.first_valid_index()))
 
@@ -148,6 +141,7 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
             drift = 0.000001
             slope_man = 0
             slope_trans = 0
+
 
             # intercept of line = value of first manual measurement
             if pd.isna(first_man[manmeas]):
@@ -170,8 +164,15 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
             else:
                 b = first_trans - first_man[manmeas]
                 drift = ((last_trans - last_man[manmeas]) - b)
-                printmes("First man = {:}, Last man = {:}\nFirst man date = {:%Y-%m-%d %H:%M}, Last man date = {:%Y-%m-%d %H:%M}".format(
-                    first_man[manmeas], last_man[manmeas], first_man['datetime'], last_man['datetime']))
+                printmes("""First man = {:}, 
+                Last man = {:}
+                First man date = {:%Y-%m-%d %H:%M}, 
+                Last man date = {:%Y-%m-%d %H:%M}
+                First trans = {:}
+                First trans date = {:}""".format(
+                    first_man[manmeas], last_man[manmeas],
+                    first_man['datetime'], last_man['datetime'],
+                    first_trans,first_trans_date))
                 try:
                     slope_man = (first_man[manmeas] - last_man[manmeas]) / (first_man['julian'] - last_man['julian'])
                 except RuntimeWarning:
@@ -529,7 +530,7 @@ def simp_imp_well(well_table, well_file, baro_out, wellid, manual, conn_file_roo
     # Pull any existing data from the database for the well in the date range of the new data
     query = "WHERE LOCATIONID = {: .0f} AND READINGDATE >= '{:}' AND READINGDATE <= '{:}'\n".format(wellid, first_index,
                                                                                             last_index)
-    select_statement = "SELECT {:} FROM {:}\n".format('READINGDATE, WATERELEVATION', gw_reading_table)
+    select_statement = "SELECT READINGDATE, WATERELEVATION FROM {:}\n".format(gw_reading_table)
     sql_sn = 'ORDER BY READINGDATE ASC;'
     SQL = select_statement + query + sql_sn
     conn = arcpy.ArcSDESQLExecute(conn_file_root)
@@ -538,17 +539,13 @@ def simp_imp_well(well_table, well_file, baro_out, wellid, manual, conn_file_roo
 
     # this accomodates for an empty return
     if type(egdb_return) == bool and egdb_return == True:
-
         existing_data = []
-
     else:
         existing_data = pd.DataFrame(egdb_return, columns=['READINGDATE', 'WATERELEVATION'])
-        existing_data.set_index('READINGDATE',inplace=True)
 
-
-    SQLm = """SELECT LOCATIONID, READINGDATE, MEASUREDDTW FROM UGGP.UGGPADMIN.UGS_GW_reading
-    WHERE READINGDATE=(SELECT MAX(READINGDATE) FROM UGGP.UGGPADMIN.UGS_GW_reading WHERE LOCATIONID =  {: .0f}) AND LOCATIONID = {: .0f};
-    """.format(wellid, wellid)  # ,pd.to_datetime(start),pd.to_datetime(end))
+    SQLm = """SELECT TOP 1 * FROM UGGP.UGGPADMIN.UGS_GW_reading
+    WHERE LOCATIONID = {0:} AND READINGDATE >= '{1:%Y-%m-%d %M:%H}' 
+    AND READINGDATE <= '{1:%Y-%m-%d %M:%H}' ORDER BY READINGDATE DESC;""".format(wellid, pd.to_datetime(first_index))
     conn1 = arcpy.ArcSDESQLExecute(conn_file_root)
     egdb = conn1.execute(SQLm)
     if type(egdb) == bool and egdb == True:
@@ -654,7 +651,7 @@ def find_extreme(site_number, gw_table="UGGP.UGGPADMIN.UGS_GW_reading", extma='m
     :param extma: options are 'max' (default) or 'min'
     :return: date of extrema, depth to water of extrema, water elevation of extrema
     """
-
+    # TODO MAke fast with SQL
     arcpy.env.overwriteOutput = True
 
     if extma == 'max':
@@ -693,6 +690,7 @@ def get_gap_data(site_number, enviro, gap_tol=0.5, first_date=None, last_date=No
     :param gw_reading_table: Name of SDE table in workspace to use
     :return: pandas dataframe with gap information
     """
+    # TODO MAke fast with SQL
     arcpy.env.workspace = enviro
 
     if first_date is None:
@@ -705,7 +703,7 @@ def get_gap_data(site_number, enviro, gap_tol=0.5, first_date=None, last_date=No
     else:
         site_number = [site_number]
 
-    query_txt = "LOCATIONID IN({:}) AND TAPE = 0 AND READINGDATE >= '{:}' AND READINGDATE <= '{:}'"
+    query_txt = "LOCATIONID IN({:}) AND READINGDATE >= '{:}' AND READINGDATE <= '{:}'"
     query = query_txt.format(','.join([str(i) for i in site_number]), first_date, last_date)
 
     sql_sn = (None, 'ORDER BY READINGDATE ASC')
@@ -817,58 +815,6 @@ def get_field_names(table):
     return field_names
 
 
-def table_to_pandas_dataframe_fast(table, field_names=None, query=None, environ="C:/Users/paulinkenbrandt/AppData/Roaming/Esri/Desktop10.6/ArcCatalog/UGS_SDE.sde"):
-    """
-    Load data into a Pandas Data Frame for subsequent analysis.
-    :param table: Table readable by ArcGIS.
-    :param field_names: List of fields.
-    :param query: SQL query to limit results
-    :param sql_sn: sort fields for sql; see http://pro.arcgis.com/en/pro-app/arcpy/functions/searchcursor.htm
-    :return: Pandas DataFrame object.
-    """
-    import sys
-
-    # if field names are not specified
-    if not field_names:
-        field_names = "*"
-    elif type(field_names) == list:
-        field_names = ",".join([str(i) for i in field_names])
-    else:
-        pass
-
-    select_statement = "SELECT {:} FROM {:}".format(field_names, table)
-
-
-    if query:
-        query =  select_statement +  " WHERE " + query
-    else:
-        query = select_statement
-
-    try:
-        connection_filepath = 'G:/My Drive/Python'
-        sys.path.append(connection_filepath)
-        import databaseconnection_snake
-
-        connection = databaseconnection_snake.sqlconnect()
-        # create a pandas data frame
-        df = pd.read_sql(query, con=connection)
-    except:
-
-        conn = arcpy.ArcSDESQLExecute(environ)
-        egdb_return = conn.execute(query)
-        if field_names == "*":
-            fields = get_field_names(table)
-        else:
-            fields = field_names.split(',')
-        df = pd.DataFrame(egdb_return, columns=fields)
-
-
-
-
-
-
-    # return the pandas data frame
-    return df
 
 
 def table_to_pandas_dataframe(table, field_names=None, query=None, sql_sn=(None, None)):
@@ -880,7 +826,7 @@ def table_to_pandas_dataframe(table, field_names=None, query=None, sql_sn=(None,
     :param sql_sn: sort fields for sql; see http://pro.arcgis.com/en/pro-app/arcpy/functions/searchcursor.htm
     :return: Pandas DataFrame object.
     """
-
+    # TODO Make fast with SQL
     # if field names are not specified
     if not field_names:
         field_names = get_field_names(table)
