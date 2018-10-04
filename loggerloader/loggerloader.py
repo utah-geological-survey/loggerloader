@@ -142,7 +142,6 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
             slope_man = 0
             slope_trans = 0
 
-
             # intercept of line = value of first manual measurement
             if pd.isna(first_man[manmeas]):
                 printmes('First manual measurement missing between {:} and {:}'.format(breakpoints[i],breakpoints[i + 1]))
@@ -164,15 +163,16 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
             else:
                 b = first_trans - first_man[manmeas]
                 drift = ((last_trans - last_man[manmeas]) - b)
-                printmes("""First man = {:}, 
-                Last man = {:}
-                First man date = {:%Y-%m-%d %H:%M}, 
-                Last man date = {:%Y-%m-%d %H:%M}
-                First trans = {:}
-                First trans date = {:}""".format(
-                    first_man[manmeas], last_man[manmeas],
-                    first_man['datetime'], last_man['datetime'],
-                    first_trans,first_trans_date))
+                printmes("""
+            First man = {:}, Last man = {:}
+            First man date = {:%Y-%m-%d %H:%M}, 
+            Last man date = {:%Y-%m-%d %H:%M}
+            -------------------
+            First trans = {:}, Last trans = {:}
+            First trans date = {:%Y-%m-%d %H:%M}
+            Last trans date = {::%Y-%m-%d %H:%M}""".format(first_man[manmeas], last_man[manmeas], first_man['datetime'],
+                                                 last_man['datetime'], first_trans,last_trans,
+                                                df.first_valid_index(), df.last_valid_index()))
                 try:
                     slope_man = (first_man[manmeas] - last_man[manmeas]) / (first_man['julian'] - last_man['julian'])
                 except RuntimeWarning:
@@ -181,7 +181,7 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
                 slope_trans = (first_trans - last_trans) / (first_trans_date - last_trans_date)
 
             new_slope = slope_trans - slope_man
-
+            printmes("Slope = {:} and Intercept = {:}".format(new_slope, b))
             # slope of line = change in difference between manual and transducer over time;
             if last_trans_date == first_trans_date:
                 m = 0
@@ -191,8 +191,6 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
             # datechange = amount of time between manual measurements
             df.loc[:, 'datechange'] = df['julian'].apply(lambda x: x - df.loc[df.index[0], 'julian'], 1)
 
-            # bracketedwls[i].loc[:, 'wldiff'] = bracketedwls[i].loc[:, meas] - first_trans
-            # apply linear drift to transducer data to fix drift; flipped x to match drift
             df.loc[:, 'DRIFTCORRECTION'] = df['datechange'].apply(lambda x: new_slope * x, 1)
             df.loc[:, outcolname] = df[corrwl] - (df['DRIFTCORRECTION'] + b)
             df.sort_index(inplace=True)
@@ -544,8 +542,11 @@ def simp_imp_well(well_table, well_file, baro_out, wellid, manual, conn_file_roo
         existing_data = pd.DataFrame(egdb_return, columns=['READINGDATE', 'WATERELEVATION'])
 
     SQLm = """SELECT TOP 1 * FROM UGGP.UGGPADMIN.UGS_GW_reading
-    WHERE LOCATIONID = {0:} AND READINGDATE >= '{1:%Y-%m-%d %M:%H}' 
-    AND READINGDATE <= '{1:%Y-%m-%d %M:%H}' ORDER BY READINGDATE DESC;""".format(wellid, pd.to_datetime(first_index))
+    WHERE LOCATIONID = {:} AND READINGDATE >= '{:%Y-%m-%d %M:%H}' 
+    AND READINGDATE <= '{:%Y-%m-%d %M:%H}' 
+    ORDER BY READINGDATE DESC;""".format(wellid,
+                                         pd.to_datetime(first_index) - datetime.timedelta(days=3),
+                                         pd.to_datetime(first_index))
     conn1 = arcpy.ArcSDESQLExecute(conn_file_root)
     egdb = conn1.execute(SQLm)
     if type(egdb) == bool and egdb == True:
