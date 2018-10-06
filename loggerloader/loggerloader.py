@@ -75,6 +75,7 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
             dataframe of correction parameters
     """
     # breakpoints = self.get_breakpoints(wellbaro, manualfile)
+    # TODO Calculate pull_db for breakpoints instead of start and end of transducer file
     breakpoints = []
     manualfile.index = pd.to_datetime(manualfile.index)
     manualfile.sort_index(inplace=True)
@@ -89,6 +90,7 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
 
     if manualfile.last_valid_index() < wellnona.last_valid_index():
         breakpoints.append(wellnona.last_valid_index())
+
 
     breakpoints = pd.Series(breakpoints)
     breakpoints = pd.to_datetime(breakpoints)
@@ -165,12 +167,12 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
                 drift = ((last_trans - last_man[manmeas]) - b)
                 printmes("""
             First man = {:}, Last man = {:}
-            First man date = {:%Y-%m-%d %H:%M}, 
-            Last man date = {:%Y-%m-%d %H:%M}
-            -------------------
-            First trans = {:}, Last trans = {:}
-            First trans date = {:%Y-%m-%d %H:%M}
-            Last trans date = {::%Y-%m-%d %H:%M}""".format(first_man[manmeas], last_man[manmeas], first_man['datetime'],
+    First man date = {:%Y-%m-%d %H:%M}, 
+    Last man date = {:%Y-%m-%d %H:%M}
+    -------------------
+    First trans = {:}, Last trans = {:}
+    First trans date = {:%Y-%m-%d %H:%M}
+    Last trans date = {::%Y-%m-%d %H:%M}""".format(first_man[manmeas], last_man[manmeas], first_man['datetime'],
                                                  last_man['datetime'], first_trans,last_trans,
                                                 df.first_valid_index(), df.last_valid_index()))
                 try:
@@ -447,7 +449,7 @@ def imp_one_well(well_file, baro_file, man_startdate, man_start_level, man_endat
 
     # pull stickup and elevation from well table; calculate water level elevations
     wtr_elevs = WaterElevation(wellid, conn_file_root=conn_file_root)
-    man = wtr_elevs.get_gw_elevs(man)
+    man = wtr_elevs.get_gw_elevs()
 
     # correct for barometric efficiency if available
     if be:
@@ -500,7 +502,7 @@ def simp_imp_well(well_table, well_file, baro_out, wellid, manual, conn_file_roo
     well = NewTransImp(well_file, jumptol=jumptol).well
     wtr_elevs = WaterElevation(wellid, well_table=well_table, conn_file_root=conn_file_root)
     man = wtr_elevs.get_gw_elevs(manual, stable_elev=stbl_elev)
-    well = jumpfix(well, 'Level', threashold=2.0)
+    #well = jumpfix(well, 'Level', threashold=2.0)
 
     baroid = wtr_elevs.well_table.loc[wellid, 'BaroLoggerType']
 
@@ -1961,7 +1963,6 @@ class wellimport(object):
             printmes("Well {:} complete.\n---------------".format(well_line['LocationName']))
 
             if self.toexcel:
-                from openpyxl.reader.excel import load_workbook
                 if i == 0:
                     writer = pd.ExcelWriter(self.xledir + '/wells.xlsx', engine= 'xlsxwriter')
                     printmes(maxtime)
