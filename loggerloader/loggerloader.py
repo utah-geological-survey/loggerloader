@@ -55,7 +55,8 @@ def printmes(x):
 # These functions align relative transducer reading to manual data
 
 
-def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolname='DTW_WL', pull_db= [None,None]):
+def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolname='DTW_WL', wellid =  None,
+              conn_file_root = None, well_table=None):
     """Remove transducer drift from nonvented transducer data. Faster and should produce same output as fix_drift_stepwise
     Args:
         well (pd.DataFrame):
@@ -117,6 +118,22 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
             printmes("Processing dates {:} to {:}".format(breakpoints[i],breakpoints[i + 1]))
             df.sort_index(inplace=True)
             df.loc[:, 'julian'] = df.index.to_julian_date()
+
+            if wellid:
+                SQLm = """SELECT TOP 1 * FROM UGGP.UGGPADMIN.UGS_GW_reading
+                WHERE LOCATIONID = {:} AND READINGDATE >= '{:%Y-%m-%d %M:%H}' 
+                AND READINGDATE <= '{:%Y-%m-%d %M:%H}' 
+                ORDER BY READINGDATE DESC;""".format(wellid,
+                                                     pd.to_datetime(breakpoints[i]) - datetime.timedelta(days=3),
+                                                     pd.to_datetime(breakpoints[i + 1]))
+                conn1 = arcpy.ArcSDESQLExecute(conn_file_root)
+                egdb = conn1.execute(SQLm)
+                if type(egdb) == bool and egdb == True:
+                    pull_db = [None, None]
+                else:
+                    pull_db = [egdb[0][1], (egdb[0][2] + well_table.loc[wellid, 'Offset']) * -1]
+            else:
+                pull_db = [None,None]
 
             last_trans = df.loc[df.last_valid_index(), corrwl]  # last transducer measurement
             first_trans = df.loc[df.first_valid_index(), corrwl]  # first transducer measurement
@@ -543,20 +560,8 @@ def simp_imp_well(well_table, well_file, baro_out, wellid, manual, conn_file_roo
     else:
         existing_data = pd.DataFrame(egdb_return, columns=['READINGDATE', 'WATERELEVATION'])
 
-    SQLm = """SELECT TOP 1 * FROM UGGP.UGGPADMIN.UGS_GW_reading
-    WHERE LOCATIONID = {:} AND READINGDATE >= '{:%Y-%m-%d %M:%H}' 
-    AND READINGDATE <= '{:%Y-%m-%d %M:%H}' 
-    ORDER BY READINGDATE DESC;""".format(wellid,
-                                         pd.to_datetime(first_index) - datetime.timedelta(days=3),
-                                         pd.to_datetime(first_index))
-    conn1 = arcpy.ArcSDESQLExecute(conn_file_root)
-    egdb = conn1.execute(SQLm)
-    if type(egdb) == bool and egdb == True:
-        pulldb = [None, None]
-    else:
-        pulldb =[egdb[0][1], (egdb[0][2] + well_table.loc[wellid,'Offset'])*-1]
-
-    dft = fix_drift(corrwl, man, corrwl='corrwl', manmeas='MeasuredDTW', pull_db=pulldb)
+    dft = fix_drift(corrwl, man, corrwl='corrwl', manmeas='MeasuredDTW', wellid = wellid,
+                    well_table=well_table, conn_file_root=conn_file_root)
     printmes(arcpy.GetMessages())
     drift = round(float(dft[1]['drift'].values[0]), 3)
 
