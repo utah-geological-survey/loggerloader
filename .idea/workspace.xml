@@ -5,27 +5,43 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/other.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/loggerloader.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/loggerloader.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/loggerloader/loggerloader.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/loggerloader.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
-    <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CoverageDataManager">
+    <SUITE FILE_PATH="coverage/loggerloader$Doctest_pull_well_table.coverage" NAME="Doctest pull_well_table Coverage Results" MODIFIED="1539297675038" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
+    <SUITE FILE_PATH="coverage/loggerloader$Doctest_fix_drift.coverage" NAME="Doctest fix_drift Coverage Results" MODIFIED="1539291542154" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
+    <SUITE FILE_PATH="coverage/loggerloader$Doctest_pull_elev_and_stickup.coverage" NAME="Doctest pull_elev_and_stickup Coverage Results" MODIFIED="1539297362440" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
+    <SUITE FILE_PATH="coverage/loggerloader$Doctest_get_breakpoints.coverage" NAME="Doctest get_breakpoints Coverage Results" MODIFIED="1539288593261" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
+    <SUITE FILE_PATH="coverage/loggerloader$Doctest_calc_slope_and_intercept.coverage" NAME="Doctest calc_slope_and_intercept Coverage Results" MODIFIED="1539286751227" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
+    <SUITE FILE_PATH="coverage/loggerloader$Doctest_get_stickup.coverage" NAME="Doctest get_stickup Coverage Results" MODIFIED="1539298257035" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
+    <SUITE FILE_PATH="coverage/loggerloader$Doctest_pull_closest_well_data.coverage" NAME="Doctest pull_closest_well_data Coverage Results" MODIFIED="1539287364904" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
+    <SUITE FILE_PATH="coverage/loggerloader$Doctest_printmes.coverage" NAME="Doctest printmes Coverage Results" MODIFIED="1539288921869" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
+    <SUITE FILE_PATH="coverage/loggerloader$Doctest_calc_drift.coverage" NAME="Doctest calc_drift Coverage Results" MODIFIED="1539286353823" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
   </component>
   <component name="CreatePatchCommitExecutor">
     <option name="PATCH_PATH" value="" />
   </component>
   <component name="DatabaseView">
     <option name="SHOW_INTERMEDIATE" value="true" />
+    <option name="GROUP_DATA_SOURCES" value="true" />
     <option name="GROUP_SCHEMA" value="true" />
     <option name="GROUP_CONTENTS" value="false" />
     <option name="SORT_POSITIONED" value="false" />
-    <option name="SHOW_TABLE_DETAILS" value="true" />
     <option name="SHOW_EMPTY_GROUPS" value="false" />
     <option name="AUTO_SCROLL_FROM_SOURCE" value="false" />
+    <option name="HIDDEN_KINDS">
+      <set />
+    </option>
     <expand />
     <select />
   </component>
@@ -95,28 +111,53 @@
         </counts>
       </usages-collector>
     </session>
+    <session id="1641737338">
+      <usages-collector id="statistics.lifecycle.project">
+        <counts>
+          <entry key="project.closed" value="1" />
+          <entry key="project.open.time.5" value="1" />
+          <entry key="project.opened" value="1" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.extensions.edit">
+        <counts>
+          <entry key="py" value="5461" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.types.edit">
+        <counts>
+          <entry key="Python" value="5460" />
+          <entry key="SQL" value="1" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.js.language.service.starts" />
+      <usages-collector id="statistics.file.types.open" />
+      <usages-collector id="statistics.vcs.git.usages" />
+      <usages-collector id="statistics.file.extensions.open" />
+    </session>
   </component>
   <component name="FavoritesManager">
     <favorites_list name="loggerloader" />
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="loggerloader_tbx.pyt" pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="863">
+            <state relative-caret-position="8551">
               <caret line="503" column="14" selection-start-line="503" selection-start-column="14" selection-end-line="503" selection-end-column="14" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="loggerloader.py" pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="714">
-              <caret line="190" column="53" lean-forward="true" selection-start-line="190" selection-start-column="53" selection-end-line="190" selection-end-column="53" />
+            <state relative-caret-position="-40">
+              <caret line="519" lean-forward="true" selection-start-line="519" selection-end-line="519" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
+                <marker date="1539298257021" expanded="true" signature="21466:21964" ph="..." />
               </folding>
             </state>
           </provider>
@@ -219,10 +260,10 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-6" />
-    <option name="y" value="31" />
-    <option name="width" value="1036" />
-    <option name="height" value="743" />
+    <option name="x" value="-127" />
+    <option name="y" value="-11" />
+    <option name="width" value="1576" />
+    <option name="height" value="1026" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -230,24 +271,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
-      <pane id="ProjectPane">
-        <subPane>
-          <expand>
-            <path>
-              <item name="loggerloader" type="b2602c69:ProjectViewProjectNode" />
-              <item name="loggerloader" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="loggerloader" type="b2602c69:ProjectViewProjectNode" />
-              <item name="loggerloader" type="462c0819:PsiDirectoryNode" />
-              <item name="loggerloader" type="462c0819:PsiDirectoryNode" />
-            </path>
-          </expand>
-          <select />
-        </subPane>
-      </pane>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -269,13 +292,14 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+    <property name="settings.editor.selected.configurable" value="terminal" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
@@ -285,183 +309,6 @@
       <recent name="G:\My Drive\Python\Pycharm\loggerloader\test" />
       <recent name="C:\Users\PAULINKENBRANDT\Documents\GitHub\loggerloader" />
     </key>
-  </component>
-  <component name="RestoreUpdateTree" date="Moments ago" ActionInfo="_Update">
-    <UpdatedFiles>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Updated from server" />
-        <option name="myStatusName" value="Changed on server" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="CHANGED_ON_SERVER" />
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Updated" />
-          <option name="myStatusName" value="Changed" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="UPDATED" />
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/.idea/loggerloader.iml</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/.idea/misc.xml</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/.idea/workspace.xml</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/.travis.yml</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/README.md</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/VERSION</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/loggerloader/__init__.py</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/loggerloader/loggerloader.py</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/requirements.txt</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/setup.py</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/test/test.py</PATH>
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Created" />
-          <option name="myStatusName" value="Created" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="CREATED" />
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/.idea/dictionaries/paulinkenbrandt.xml</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/.idea/libraries/R_User_Library.xml</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/loggerloader/.gitignore</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/loggerloader/loggerloader_tbx.GapData.pyt.xml</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/loggerloader/loggerloader_tbx.MultBarometerImport.pyt.xml</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/loggerloader/loggerloader_tbx.MultTransducerImport.pyt.xml</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/loggerloader/loggerloader_tbx.SimpleBaroDriftFix.pyt.xml</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/loggerloader/loggerloader_tbx.SimpleBaroFix.pyt.xml</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/loggerloader/loggerloader_tbx.SingleTransducerImport.pyt.xml</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/loggerloader/loggerloader_tbx.XLERead.pyt.xml</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt.xml</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/test/1037276_Pw10a_2017_08_16.xle</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/test/PW10b 20180801.xle</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/test/SCR BARO_2018_04_24.xle</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/test/SCR-1_2018_04_24.xle</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/test/manual_measurements_example_file.csv</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/test/manual_measurements_master.xlsx</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/test/pw02a 20170308.csv</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/test/pw10a 20171208.xle</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/test/pw10baro 20171208.xle</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/test_chart.pdf</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/test_chart2.pdf</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/test_out.csv</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/test_out.csv.xml</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/test_out2.csv</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/test_out2.csv.xml</PATH>
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Deleted" />
-          <option name="myStatusName" value="Deleted" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="true" />
-          <option name="myId" value="REMOVED_FROM_REPOSITORY" />
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/.gitattributes</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/.gitignore</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/CHANGES.txt</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/LICENSE.txt</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/__file__.py</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/loggerloader/__file__.py</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/loggerloader/corrections.py</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/loggerloader/data_fixers.py</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/loggerloader/loggerloader.pyt</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/loggerloader/transport.py</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/loggerloader/utilities.py</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/loggerloader_tbx.MultTransducerImport.pyt.xml</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/loggerloader_tbx.SimpleBaroDriftFix.pyt.xml</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/loggerloader_tbx.SimpleBaroFix.pyt.xml</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/loggerloader_tbx.SingleTransducerImport.pyt.xml</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/loggerloader_tbx.pyt</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/loggerloader_tbx.pyt.xml</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/test/20160919_LittleHobble.xle</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/test/20161102_Barometer.xle</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/test/All tape measurements.csv</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/test/ManualMeasurements.csv</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/test/__init__.py</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/test/ag13a 2016-08-02.xle</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/test/ag13c 2016-08-02.xle</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/test/ag14a 2016-08-02.csv</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/test/baro.csv</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/test/pw01b 2016-08-02.xle</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/test/usgsP.csv</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/test/wellinfo4.csv</PATH>
-        </FILE-GROUP>
-        <FILE-GROUP>
-          <option name="myUpdateName" value="Restored" />
-          <option name="myStatusName" value="Will be restored" />
-          <option name="mySupportsDeletion" value="false" />
-          <option name="myCanBeAbsent" value="false" />
-          <option name="myId" value="RESTORED" />
-        </FILE-GROUP>
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Modified" />
-        <option name="myStatusName" value="Modified" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="MODIFIED" />
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Skipped" />
-        <option name="myStatusName" value="Skipped" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="SKIPPED" />
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Merged with conflicts" />
-        <option name="myStatusName" value="Will be merged with conflicts" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="MERGED_WITH_CONFLICTS" />
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Merged with tree conflicts" />
-        <option name="myStatusName" value="Merged with tree conflicts" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="MERGED_WITH_TREE_CONFLICT" />
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Merged with property conflicts" />
-        <option name="myStatusName" value="Will be merged with property conflicts" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="MERGED_WITH_PROPERTY_CONFLICT" />
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Merged" />
-        <option name="myStatusName" value="Will be merged" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="MERGED" />
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Not in repository" />
-        <option name="myStatusName" value="Not in repository" />
-        <option name="mySupportsDeletion" value="true" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="UNKNOWN" />
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Locally added" />
-        <option name="myStatusName" value="Locally added" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="LOCALLY_ADDED" />
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Locally removed" />
-        <option name="myStatusName" value="Locally removed" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="LOCALLY_REMOVED" />
-      </FILE-GROUP>
-      <FILE-GROUP>
-        <option name="myUpdateName" value="Switched" />
-        <option name="myStatusName" value="Switched" />
-        <option name="mySupportsDeletion" value="false" />
-        <option name="myCanBeAbsent" value="false" />
-        <option name="myId" value="SWITCHED" />
-      </FILE-GROUP>
-    </UpdatedFiles>
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -475,7 +322,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Python tests.Doctest get_stickup">
     <configuration default="true" type="tests" factoryName="Attests">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -495,28 +342,142 @@
       <option name="USE_PATTERN" value="false" />
       <method />
     </configuration>
-    <configuration name="Nosetests for test.test_HeaderTable" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
+    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
+      <module name="loggerloader" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Doctest fix_drift" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
       <module name="loggerloader" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/test" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/loggerloader" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="_new_regexPattern" value="&quot;&quot;" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test.test_HeaderTable&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/loggerloader/loggerloader.py" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="fix_drift" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_FUNCTION" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <method v="2" />
     </configuration>
+    <configuration name="Doctest get_stickup" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+      <module name="loggerloader" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/loggerloader" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/loggerloader/loggerloader.py" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="get_stickup" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_FUNCTION" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Doctest printmes" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+      <module name="loggerloader" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/loggerloader" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/loggerloader/loggerloader.py" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="printmes" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_FUNCTION" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Doctest pull_elev_and_stickup" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+      <module name="loggerloader" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/loggerloader" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/loggerloader/loggerloader.py" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="pull_elev_and_stickup" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_FUNCTION" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Doctest pull_well_table" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+      <module name="loggerloader" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/loggerloader" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/loggerloader/loggerloader.py" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="pull_well_table" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_FUNCTION" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Python tests.Doctest printmes" />
+      <item itemvalue="Python tests.Doctest fix_drift" />
+      <item itemvalue="Python tests.Doctest pull_elev_and_stickup" />
+      <item itemvalue="Python tests.Doctest pull_well_table" />
+      <item itemvalue="Python tests.Doctest get_stickup" />
+    </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.Nosetests for test.test_HeaderTable" />
+        <item itemvalue="Python tests.Doctest get_stickup" />
+        <item itemvalue="Python tests.Doctest pull_well_table" />
+        <item itemvalue="Python tests.Doctest pull_elev_and_stickup" />
+        <item itemvalue="Python tests.Doctest fix_drift" />
+        <item itemvalue="Python tests.Doctest printmes" />
       </list>
     </recent_temporary>
   </component>
   <component name="StructureViewFactory">
-    <option name="ACTIVE_ACTIONS" value=",SHOW_INHERITED,ALPHA_COMPARATOR" />
+    <option name="ACTIVE_ACTIONS" value=",SHOW_INHERITED" />
   </component>
   <component name="SvnConfiguration">
     <configuration />
@@ -876,20 +837,38 @@
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="Nosetests_for_test_test_HeaderTable - 2018.09.04 at 14h 16m 40s.xml">
-      <configuration name="Nosetests for test.test_HeaderTable" configurationId="tests" />
+    <history-entry file="Doctest_pull_elev_and_stickup - 2018.10.11 at 16h 36m 14s.xml">
+      <configuration name="Doctest pull_elev_and_stickup" configurationId="tests" />
     </history-entry>
-    <history-entry file="Nosetests_for_test_test_HeaderTable - 2018.09.04 at 14h 17m 43s.xml">
-      <configuration name="Nosetests for test.test_HeaderTable" configurationId="tests" />
+    <history-entry file="Doctest_pull_well_table - 2018.10.11 at 16h 39m 47s.xml">
+      <configuration name="Doctest pull_well_table" configurationId="tests" />
     </history-entry>
-    <history-entry file="Nosetests_for_test_test_HeaderTable - 2018.09.04 at 15h 35m 28s.xml">
-      <configuration name="Nosetests for test.test_HeaderTable" configurationId="tests" />
+    <history-entry file="Doctest_pull_well_table - 2018.10.11 at 16h 40m 29s.xml">
+      <configuration name="Doctest pull_well_table" configurationId="tests" />
     </history-entry>
-    <history-entry file="Nosetests_for_test_test_HeaderTable - 2018.09.04 at 16h 02m 16s.xml">
-      <configuration name="Nosetests for test.test_HeaderTable" configurationId="tests" />
+    <history-entry file="Doctest_pull_well_table - 2018.10.11 at 16h 41m 01s.xml">
+      <configuration name="Doctest pull_well_table" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Doctest_pull_well_table - 2018.10.11 at 16h 41m 25s.xml">
+      <configuration name="Doctest pull_well_table" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Doctest_get_stickup - 2018.10.11 at 16h 47m 11s.xml">
+      <configuration name="Doctest get_stickup" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Doctest_get_stickup - 2018.10.11 at 16h 48m 31s.xml">
+      <configuration name="Doctest get_stickup" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Doctest_get_stickup - 2018.10.11 at 16h 49m 48s.xml">
+      <configuration name="Doctest get_stickup" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Doctest_get_stickup - 2018.10.11 at 16h 50m 31s.xml">
+      <configuration name="Doctest get_stickup" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Doctest_get_stickup - 2018.10.11 at 16h 51m 00s.xml">
+      <configuration name="Doctest get_stickup" configurationId="tests" />
     </history-entry>
   </component>
-  <component name="TodoView">
+  <component name="TodoView" selected-index="3">
     <todo-panel id="selected-file">
       <is-autoscroll-to-source value="true" />
     </todo-panel>
@@ -899,41 +878,35 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="22" width="1916" height="1034" extended-state="6" />
+    <frame x="-8" y="-8" width="1874" height="1096" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.49945945" visible="true" weight="0.15263158" />
-      <window_info anchor="bottom" id="TODO" order="6" weight="0.3387978" />
-      <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" weight="0.32896176" />
-      <window_info anchor="bottom" id="Run" order="2" weight="0.32943678" />
-      <window_info anchor="bottom" id="Version Control" order="10" weight="0.32873806" />
-      <window_info anchor="bottom" id="Python Console" order="8" weight="0.32873806" />
-      <window_info id="Structure" order="1" sideWeight="0.50054055" side_tool="true" visible="true" weight="0.15263158" />
-      <window_info anchor="bottom" id="Terminal" order="9" weight="0.31606767" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.47832817" visible="true" weight="0.3037486" />
+      <window_info id="Structure" order="1" sideWeight="0.52167183" side_tool="true" visible="true" weight="0.3037486" />
       <window_info id="Favorites" order="2" side_tool="true" />
-      <window_info anchor="right" id="R Graphics" order="3" />
-      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.47777778" visible="true" weight="0.30705622" />
-      <window_info anchor="right" id="R Packages" order="5" visible="true" weight="0.3296582" />
-      <window_info anchor="bottom" id="Run" order="2" weight="0.32967034" />
-      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
-      <window_info id="Structure" order="1" sideWeight="0.5222222" side_tool="true" visible="true" weight="0.30705622" />
-      <window_info anchor="right" id="Commander" order="0" weight="0.4" />
-      <window_info anchor="bottom" id="TODO" order="6" sideWeight="0.4983462" weight="0.32978722" />
-      <window_info active="true" anchor="bottom" id="Version Control" order="9" sideWeight="0.4966924" visible="true" weight="0.32978722" />
-      <window_info active="true" anchor="bottom" id="Inspection Results" order="11" visible="true" weight="0.32967034" />
-      <window_info anchor="right" id="Data View" order="4" />
-      <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
-      <window_info anchor="bottom" id="Terminal" order="7" />
-      <window_info anchor="bottom" id="Python Console" order="8" />
-      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
-      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
-      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.5033076" side_tool="true" visible="true" weight="0.32978722" />
+      <window_info anchor="bottom" id="Docker" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Database Changes" show_stripe_button="false" />
       <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="right" id="Database" order="3" />
-      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.32917964" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" sideWeight="0.4983462" weight="0.32978722" />
+      <window_info anchor="bottom" id="Terminal" order="7" />
+      <window_info anchor="bottom" id="Python Console" order="8" sideWeight="0.49889746" weight="0.26583594" />
+      <window_info anchor="bottom" id="Version Control" order="9" sideWeight="0.4966924" weight="0.32978722" />
+      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.5011025" side_tool="true" weight="0.26583594" />
+      <window_info active="true" anchor="bottom" id="Inspection Results" order="11" visible="true" weight="0.32967034" />
+      <window_info anchor="right" x="0" y="0" width="418" height="896" id="Documentation" side_tool="true" visible="true" weight="0.17144433" />
+      <window_info anchor="right" id="SciView" weight="0.3296582" />
+      <window_info anchor="right" id="Commander" order="0" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="right" id="R Graphics" order="3" />
+      <window_info anchor="right" id="Database" order="4" weight="0.3296582" />
+      <window_info anchor="right" id="Data View" order="5" />
+      <window_info anchor="right" id="R Packages" order="6" weight="0.3296582" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -971,87 +944,6 @@
     <option name="LAST_COMMIT_MESSAGE" value="fix fix drift" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/.travis.yml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="612">
-          <caret line="36" lean-forward="true" selection-start-line="36" selection-end-line="36" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/loggerloader/secrets.py" />
-    <entry file="file://$PROJECT_DIR$/loggerloader.egg-info/SOURCES.txt" />
-    <entry file="file://$PROJECT_DIR$/test/1037276_Pw10a_2017_08_16.xle">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-357" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/loggerloader/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="153">
-          <caret line="9" column="20" selection-start-line="9" selection-start-column="20" selection-end-line="9" selection-end-column="20" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/setup.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="391">
-          <caret line="23" column="22" selection-start-line="23" selection-start-column="22" selection-end-line="23" selection-end-column="22" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/VERSION">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="5" selection-start-column="5" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/test.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="459">
-          <caret line="27" column="26" lean-forward="true" selection-start-line="27" selection-start-column="26" selection-end-line="27" selection-end-column="26" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="17">
-          <caret line="1" column="736" lean-forward="true" selection-start-line="1" selection-start-column="736" selection-end-line="1" selection-end-column="736" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.MultTransducerImport.pyt.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="17">
-          <caret line="1" column="147" selection-start-line="1" selection-start-column="147" selection-end-line="1" selection-end-column="147" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$APPLICATION_CONFIG_DIR$/idea.properties" />
-    <entry file="file://$PROJECT_DIR$/loggerloader/.gitignore">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="6" selection-start-column="6" selection-end-column="6" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="863">
-          <caret line="503" column="14" selection-start-line="503" selection-start-column="14" selection-end-line="503" selection-end-column="14" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="414">
-          <caret line="563" column="20" selection-start-line="563" selection-start-column="20" selection-end-line="563" selection-end-column="20" />
-          <folding>
-            <element signature="e#0#82#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test/__init__.py" />
     <entry file="file://$PROJECT_DIR$/loggerloader/arcstuff.py" />
     <entry file="file://$PROJECT_DIR$/loggerloader/loader.py" />
@@ -1159,17 +1051,18 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="863">
+        <state relative-caret-position="8551">
           <caret line="503" column="14" selection-start-line="503" selection-start-column="14" selection-end-line="503" selection-end-column="14" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="714">
-          <caret line="190" column="53" lean-forward="true" selection-start-line="190" selection-start-column="53" selection-end-line="190" selection-end-column="53" />
+        <state relative-caret-position="-40">
+          <caret line="519" lean-forward="true" selection-start-line="519" selection-end-line="519" />
           <folding>
             <element signature="e#0#82#0" expanded="true" />
+            <marker date="1539298257021" expanded="true" signature="21466:21964" ph="..." />
           </folding>
         </state>
       </provider>
