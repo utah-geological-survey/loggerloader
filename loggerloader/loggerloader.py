@@ -96,7 +96,7 @@ def pull_closest_well_data(wellid, welloffset, breakpoint1, breakpoint2, conn_fi
     if type(egdb) == bool and egdb == True:
         pull_db = [None, None]
     else:
-        pull_db = [egdb[0][1], (egdb[0][2] + welloffset) * -1]
+        pull_db = [egdb[0][1], (egdb[0][2]) * -1]
     return pull_db
 
 def calc_slope_and_intercept(first_man, first_man_julian_date, last_man, last_man_julian_date, first_trans, first_trans_julian_date,
@@ -131,7 +131,7 @@ def calc_drift(df, corrwl, outcolname, m, b):
     return df
 
 def calc_drift_features(first_man, first_man_date, last_man, last_man_date, first_trans, first_trans_date,
-               last_trans, last_trans_date, b, m):
+               last_trans, last_trans_date, b, m, slope_man, slope_trans):
     drift_features = {'t_beg': first_trans_date, 'man_beg': first_man_date, 't_end': last_trans_date,
                          'man_end': last_man_date, 'slope_man': slope_man, 'slope_trans': slope_trans,
                          'intercept': b, 'slope': m,
@@ -187,7 +187,8 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
                 breakpoint1 = breakpoints[i]
                 breakpoint2 = breakpoints[i + 1]
                 offset = well_table.loc[wellid, 'Offset']
-                pull_db = pull_closest_well_data(wellid, offset, breakpoint1, breakpoint2, conn_file_root, timedel=3)
+                pull_db = pull_closest_well_data(wellid, breakpoint1, breakpoint2, conn_file_root, timedel=3)
+                pull_db[1] = pull_db[1] - offset
 
             else:
                 pull_db = [None,None]
@@ -248,10 +249,10 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
                                                 first_trans_date, last_trans_date))
             printmes("Slope = {:} and Intercept = {:}".format(slope, b))
 
-            df = calc_drift(df, corrwl, outcolname, slope, b)
+            bracketedwls[i] = calc_drift(df, corrwl, outcolname, slope, b)
 
             drift_features[i] = calc_drift_features(first_man, first_man_date, last_man, last_man_date, first_trans, first_trans_date,
-                                last_trans, last_trans_date, b, slope)
+                                last_trans, last_trans_date, b, slope, slope_man, slope_trans)
         else:
             pass
 
