@@ -170,33 +170,35 @@ def calc_slope_and_intercept(first_man, first_man_julian_date, last_man, last_ma
         last_trans_julian_date (float): julain date of last transducer reading
 
     Returns:
-        slope, intercept, manual slope, transducer slope
+        slope, intercept, manual slope, transducer slope, drift
 
     Examples:
 
         >>> calc_slope_and_intercept(0,0,5,5,1,1,6,6)
-        (0.0, 1, 1.0, 1.0)
+        (0.0, 1, 1.0, 1.0, 0)
 
         >>> calc_slope_and_intercept(0,0,5,5,7,0,0,7)
-        (-2.0, 7, 1.0, -1.0)
+        (-2.0, 7, 1.0, -1.0, -12)
     """
     slope_man = 0
     slope_trans = 0
+    drift = 0.00001
 
     if (first_man is None) or (first_man_julian_date == last_man_julian_date):
         b = last_trans - last_man
     elif last_man is None:
         b = first_trans - first_man
-    elif abs(first_man - last_man) < 0.00001:
+    elif abs(first_man - last_man) < drift:
         b = last_trans - last_man
     else:
         b = first_trans - first_man
         slope_man = (first_man - last_man) / (first_man_julian_date - last_man_julian_date)
         slope_trans = (first_trans - last_trans) / (first_trans_julian_date - last_trans_julian_date)
+        drift = ((last_trans - last_man) - b)
 
     new_slope = slope_trans - slope_man
 
-    return new_slope, b, slope_man, slope_trans
+    return new_slope, b, slope_man, slope_trans, drift
 
 def calc_drift(df, corrwl, outcolname, m, b):
     """
@@ -230,7 +232,7 @@ def calc_drift(df, corrwl, outcolname, m, b):
     return df
 
 def calc_drift_features(first_man, first_man_date, last_man, last_man_date, first_trans, first_trans_date,
-               last_trans, last_trans_date, b, m, slope_man, slope_trans):
+               last_trans, last_trans_date, b, m, slope_man, slope_trans, drift):
     """
 
     :param first_man: First manual measurement
@@ -245,13 +247,15 @@ def calc_drift_features(first_man, first_man_date, last_man, last_man_date, firs
     :param m: slope from calc_slope_and_intercept
     :param slope_man: Slope of manual measurements
     :param slope_trans: Slope of transducer measurments
+    :param drift: drift from calc slope and intercept
     :return: dictionary drift_features with standardized keys
     """
+
     drift_features = {'t_beg': first_trans_date, 'man_beg': first_man_date, 't_end': last_trans_date,
                          'man_end': last_man_date, 'slope_man': slope_man, 'slope_trans': slope_trans,
                          'intercept': b, 'slope': m,
                          'first_meas': first_man, 'last_meas': last_man,
-                         'first_trans': first_trans, 'last_trans': last_trans}
+                         'first_trans': first_trans, 'last_trans': last_trans, 'drift':drift}
     return drift_features
 
 def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolname='DTW_WL', wellid =  None,
@@ -358,7 +362,7 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
                 printmes('No final manual measurement within 3 days of {:}.'.format(last_trans_date))
                 last_man = None
 
-            slope, b, slope_man, slope_trans = calc_slope_and_intercept(first_man, first_man_julian_date,
+            slope, b, slope_man, slope_trans, drift = calc_slope_and_intercept(first_man, first_man_julian_date,
                                                                             last_man, last_man_julian_date, first_trans,
                                                                             first_trans_julian_date, last_trans,
                                                                             last_trans_julian_date)
@@ -386,7 +390,7 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
             bracketedwls[i] = calc_drift(df, corrwl, outcolname, slope, b)
 
             drift_features[i] = calc_drift_features(first_man, first_man_date, last_man, last_man_date, first_trans, first_trans_date,
-                                last_trans, last_trans_date, b, slope, slope_man, slope_trans)
+                                last_trans, last_trans_date, b, slope, slope_man, slope_trans, drift)
         else:
             pass
 
@@ -818,8 +822,8 @@ def simp_imp_well(well_table, well_file, baro_out, wellid, manual, conn_file_roo
                     well_table=well_table, conn_file_root=conn_file_root)
     printmes(arcpy.GetMessages())
 
-    drift = round(float(dft[0].loc[dft[0].last_valid_index(), 'DRIFTCORRECTION']),3)
-    #drift = round(float(dft[1]['drift'].values[0]), 3)
+    #drift = round(float(dft[0].loc[dft[0].last_valid_index(), 'DRIFTCORRECTION']),3)
+    drift = round(float(dft[1]['drift'].values[0]), 3)
 
     df = dft[0]
     df.sort_index(inplace=True)

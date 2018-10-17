@@ -4,8 +4,7 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="fix fix drift">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/loggerloader/loggerloader.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/loggerloader.py" afterDir="false" />
     </list>
@@ -20,8 +19,8 @@
     <SUITE FILE_PATH="coverage/loggerloader$Doctest_fix_drift.coverage" NAME="Doctest fix_drift Coverage Results" MODIFIED="1539291542154" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
     <SUITE FILE_PATH="coverage/loggerloader$Doctest_pull_elev_and_stickup.coverage" NAME="Doctest pull_elev_and_stickup Coverage Results" MODIFIED="1539297362440" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
     <SUITE FILE_PATH="coverage/loggerloader$Doctest_get_breakpoints.coverage" NAME="Doctest get_breakpoints Coverage Results" MODIFIED="1539288593261" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
-    <SUITE FILE_PATH="coverage/loggerloader$Doctest_calc_slope_and_intercept.coverage" NAME="Doctest calc_slope_and_intercept Coverage Results" MODIFIED="1539286751227" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
     <SUITE FILE_PATH="coverage/loggerloader$Doctest_get_stickup.coverage" NAME="Doctest get_stickup Coverage Results" MODIFIED="1539298257035" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
+    <SUITE FILE_PATH="coverage/loggerloader$Doctest_calc_slope_and_intercept.coverage" NAME="Doctest calc_slope_and_intercept Coverage Results" MODIFIED="1539797681092" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
     <SUITE FILE_PATH="coverage/loggerloader$Doctest_pull_closest_well_data.coverage" NAME="Doctest pull_closest_well_data Coverage Results" MODIFIED="1539287364904" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
     <SUITE FILE_PATH="coverage/loggerloader$Doctest_printmes.coverage" NAME="Doctest printmes Coverage Results" MODIFIED="1539288921869" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
     <SUITE FILE_PATH="coverage/loggerloader$Doctest_calc_drift.coverage" NAME="Doctest calc_drift Coverage Results" MODIFIED="1539286353823" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
@@ -47,14 +46,14 @@
     <session id="865932417">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="14" />
+          <entry key="project.closed" value="15" />
           <entry key="project.open.time.1" value="1" />
           <entry key="project.open.time.4" value="2" />
           <entry key="project.open.time.5" value="6" />
-          <entry key="project.open.time.6" value="6" />
+          <entry key="project.open.time.6" value="7" />
           <entry key="project.open.time.7" value="1" />
           <entry key="project.open.time.8" value="1" />
-          <entry key="project.opened" value="17" />
+          <entry key="project.opened" value="18" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
@@ -63,7 +62,7 @@
           <entry key="gitignore" value="18" />
           <entry key="md" value="24" />
           <entry key="properties" value="12" />
-          <entry key="py" value="9768" />
+          <entry key="py" value="9934" />
           <entry key="pyt" value="358" />
           <entry key="txt" value="325" />
           <entry key="yml" value="8" />
@@ -74,7 +73,7 @@
           <entry key="Markdown" value="24" />
           <entry key="PLAIN_TEXT" value="349" />
           <entry key="Properties" value="12" />
-          <entry key="Python" value="10126" />
+          <entry key="Python" value="10292" />
           <entry key="YAML" value="8" />
         </counts>
       </usages-collector>
@@ -144,8 +143,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="304">
-              <caret line="821" column="5" selection-start-line="821" selection-start-column="5" selection-end-line="821" selection-end-column="5" />
+            <state relative-caret-position="649">
+              <caret line="825" column="4" selection-start-line="825" selection-start-column="4" selection-end-line="825" selection-end-column="4" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
               </folding>
@@ -164,7 +163,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>new_xle_imp</find>
       <find>baro_out</find>
       <find>simp_imp_well</find>
       <find>baro_file</find>
@@ -194,6 +192,7 @@
       <find>get_gw_elevs</find>
       <find>WaterElevation</find>
       <find>pull_db</find>
+      <find>calc_slope_and_intercept</find>
     </findStrings>
     <replaceStrings>
       <replace>altid</replace>
@@ -289,7 +288,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Python tests.Doctest calc_slope_and_intercept">
     <configuration default="true" type="tests" factoryName="Attests">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -309,6 +308,25 @@
       <option name="USE_PATTERN" value="false" />
       <method />
     </configuration>
+    <configuration name="Doctest calc_slope_and_intercept" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+      <module name="loggerloader" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/loggerloader" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/loggerloader/loggerloader.py" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="calc_slope_and_intercept" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_FUNCTION" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <method v="2" />
+    </configuration>
     <configuration name="Nosetests for test.test_HeaderTable" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
       <module name="loggerloader" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -325,6 +343,15 @@
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
+    <list>
+      <item itemvalue="Python tests.Nosetests for test.test_HeaderTable" />
+      <item itemvalue="Python tests.Doctest calc_slope_and_intercept" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python tests.Doctest calc_slope_and_intercept" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="StructureViewFactory">
     <option name="ACTIVE_ACTIONS" value=",SHOW_INHERITED" />
@@ -339,13 +366,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
-    </task>
-    <task id="LOCAL-00123" summary="Add Test">
-      <created>1536068507107</created>
-      <option name="number" value="00123" />
-      <option name="presentableId" value="LOCAL-00123" />
-      <option name="project" value="LOCAL" />
-      <updated>1536068507107</updated>
     </task>
     <task id="LOCAL-00124" summary="Added HeaderTable">
       <created>1536089642421</created>
@@ -683,19 +703,17 @@
       <option name="project" value="LOCAL" />
       <updated>1539257940233</updated>
     </task>
-    <option name="localTasksCounter" value="172" />
+    <task id="LOCAL-00172" summary="fix fix drift">
+      <created>1539797006044</created>
+      <option name="number" value="00172" />
+      <option name="presentableId" value="LOCAL-00172" />
+      <option name="project" value="LOCAL" />
+      <updated>1539797006044</updated>
+    </task>
+    <option name="localTasksCounter" value="173" />
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="Doctest_pull_elev_and_stickup - 2018.10.11 at 16h 36m 14s.xml">
-      <configuration name="Doctest pull_elev_and_stickup" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Doctest_pull_well_table - 2018.10.11 at 16h 39m 47s.xml">
-      <configuration name="Doctest pull_well_table" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Doctest_pull_well_table - 2018.10.11 at 16h 40m 29s.xml">
-      <configuration name="Doctest pull_well_table" configurationId="tests" />
-    </history-entry>
     <history-entry file="Doctest_pull_well_table - 2018.10.11 at 16h 41m 01s.xml">
       <configuration name="Doctest pull_well_table" configurationId="tests" />
     </history-entry>
@@ -717,6 +735,15 @@
     <history-entry file="Doctest_get_stickup - 2018.10.11 at 16h 51m 00s.xml">
       <configuration name="Doctest get_stickup" configurationId="tests" />
     </history-entry>
+    <history-entry file="Doctest_calc_slope_and_intercept - 2018.10.17 at 11h 29m 59s.xml">
+      <configuration name="Doctest calc_slope_and_intercept" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Doctest_calc_slope_and_intercept - 2018.10.17 at 11h 33m 59s.xml">
+      <configuration name="Doctest calc_slope_and_intercept" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Doctest_calc_slope_and_intercept - 2018.10.17 at 11h 34m 45s.xml">
+      <configuration name="Doctest calc_slope_and_intercept" configurationId="tests" />
+    </history-entry>
   </component>
   <component name="TodoView" selected-index="3">
     <todo-panel id="selected-file">
@@ -732,30 +759,30 @@
     <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" weight="0.24945135" />
-      <window_info active="true" id="Structure" order="1" side_tool="true" visible="true" weight="0.19128996" />
+      <window_info id="Structure" order="1" side_tool="true" visible="true" weight="0.19349504" />
       <window_info id="Favorites" order="2" side_tool="true" />
-      <window_info anchor="bottom" id="Docker" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Database Changes" show_stripe_button="false" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Run" order="2" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49944875" weight="0.32917964" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Version Control" order="7" visible="true" weight="0.09968847" />
+      <window_info anchor="bottom" id="Version Control" order="7" weight="0.09968847" />
       <window_info anchor="bottom" id="Terminal" order="8" />
       <window_info anchor="bottom" id="Python Console" order="9" />
-      <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
-      <window_info anchor="right" id="R Packages" />
-      <window_info anchor="right" x="0" y="0" width="639" height="951" id="Documentation" side_tool="true" visible="true" weight="0.09426682" />
-      <window_info anchor="right" id="R Graphics" />
-      <window_info anchor="right" id="SciView" />
-      <window_info anchor="right" id="Database" />
+      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.5005513" side_tool="true" weight="0.32917964" />
+      <window_info anchor="bottom" id="Docker" order="11" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Database Changes" order="12" show_stripe_button="false" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" id="Data View" order="3" />
+      <window_info anchor="right" id="R Graphics" order="4" />
+      <window_info anchor="right" id="R Packages" order="5" />
+      <window_info anchor="right" x="0" y="0" width="639" height="951" id="Documentation" order="6" side_tool="true" visible="true" weight="0.1907387" />
+      <window_info anchor="right" id="Database" order="7" />
+      <window_info anchor="right" id="SciView" order="8" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -907,8 +934,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="304">
-          <caret line="821" column="5" selection-start-line="821" selection-start-column="5" selection-end-line="821" selection-end-column="5" />
+        <state relative-caret-position="649">
+          <caret line="825" column="4" selection-start-line="825" selection-start-column="4" selection-end-line="825" selection-end-column="4" />
           <folding>
             <element signature="e#0#82#0" expanded="true" />
           </folding>
