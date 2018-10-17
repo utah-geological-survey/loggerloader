@@ -146,6 +146,8 @@ def pull_closest_well_data(wellid, breakpoint1, conn_file_root, timedel = 3):
     egdb = conn1.execute(SQLm)
     if type(egdb) == bool and egdb == True:
         pull_db = [None, None]
+    elif egdb[0][2] is None:
+        pull_db = [None, None]
     else:
         pull_db = [egdb[0][1], (egdb[0][2]) * -1]
     return pull_db
@@ -318,7 +320,10 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
                 breakpoint2 = breakpoints[i + 1]
                 offset = well_table.loc[wellid, 'Offset']
                 pull_db = pull_closest_well_data(wellid, breakpoint1, conn_file_root, timedel=3)
-                pull_db[1] = pull_db[1] - offset
+                if pull_db[1] is None:
+                    pass
+                else:
+                    pull_db[1] = pull_db[1] - offset
 
             else:
                 pull_db = [None,None]
@@ -812,7 +817,9 @@ def simp_imp_well(well_table, well_file, baro_out, wellid, manual, conn_file_roo
     dft = fix_drift(corrwl, man, corrwl='corrwl', manmeas='MeasuredDTW', wellid = wellid,
                     well_table=well_table, conn_file_root=conn_file_root)
     printmes(arcpy.GetMessages())
-    drift = round(float(dft[1]['drift'].values[0]), 3)
+
+    drift = round(float(dft[0].loc[dft[0].last_valid_index(), 'DRIFTCORRECTION']),3)
+    #drift = round(float(dft[1]['drift'].values[0]), 3)
 
     df = dft[0]
     df.sort_index(inplace=True)
