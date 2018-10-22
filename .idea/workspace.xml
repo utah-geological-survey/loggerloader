@@ -4,7 +4,7 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="fix fix drift">
+    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="force">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -45,14 +45,12 @@
     <session id="865932417">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="16" />
           <entry key="project.open.time.1" value="1" />
           <entry key="project.open.time.4" value="3" />
           <entry key="project.open.time.5" value="6" />
           <entry key="project.open.time.6" value="7" />
           <entry key="project.open.time.7" value="1" />
           <entry key="project.open.time.8" value="1" />
-          <entry key="project.opened" value="19" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
@@ -63,14 +61,14 @@
           <entry key="properties" value="12" />
           <entry key="py" value="9934" />
           <entry key="pyt" value="358" />
-          <entry key="txt" value="325" />
+          <entry key="txt" value="340" />
           <entry key="yml" value="8" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="Markdown" value="24" />
-          <entry key="PLAIN_TEXT" value="349" />
+          <entry key="PLAIN_TEXT" value="364" />
           <entry key="Properties" value="12" />
           <entry key="Python" value="10292" />
           <entry key="YAML" value="8" />
@@ -104,6 +102,8 @@
           <entry key="git.branch.checkout.local" value="1" />
           <entry key="git.branch.compare" value="1" />
           <entry key="git.branch.create.new" value="1" />
+          <entry key="git.branch.merge" value="1" />
+          <entry key="git.branch.rebase" value="1" />
           <entry key="git.branch.rename" value="1" />
         </counts>
       </usages-collector>
@@ -156,8 +156,6 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1943">
-              <caret line="1135" column="45" selection-start-line="1135" selection-start-column="45" selection-end-line="1135" selection-end-column="45" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
               </folding>
@@ -214,7 +212,7 @@
     </replaceStrings>
   </component>
   <component name="Git.Settings">
-    <option name="UPDATE_TYPE" value="MERGE" />
+    <option name="UPDATE_CHANGES_POLICY" value="SHELVE" />
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
@@ -262,10 +260,6 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-740" />
-    <option name="y" value="-9" />
-    <option name="width" value="2402" />
-    <option name="height" value="1119" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -281,12 +275,12 @@
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="G:\My Drive\Python\Pycharm\loggerloader\test" />
-    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="G:\My Drive\Python\Pycharm\loggerloader\test" />
       <recent name="C:\Users\PAULINKENBRANDT\Documents\GitHub\loggerloader" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="G:\My Drive\Python\Pycharm\loggerloader\test" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -379,27 +373,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
-    </task>
-    <task id="LOCAL-00125" summary="Improved site lookup for mulitsite">
-      <created>1536089896595</created>
-      <option name="number" value="00125" />
-      <option name="presentableId" value="LOCAL-00125" />
-      <option name="project" value="LOCAL" />
-      <updated>1536089896595</updated>
-    </task>
-    <task id="LOCAL-00126" summary="Fixed many_wells class">
-      <created>1536090653719</created>
-      <option name="number" value="00126" />
-      <option name="presentableId" value="LOCAL-00126" />
-      <option name="project" value="LOCAL" />
-      <updated>1536090653719</updated>
-    </task>
-    <task id="LOCAL-00127" summary="Fixed many_wells class">
-      <created>1536090770286</created>
-      <option name="number" value="00127" />
-      <option name="presentableId" value="LOCAL-00127" />
-      <option name="project" value="LOCAL" />
-      <updated>1536090770286</updated>
     </task>
     <task id="LOCAL-00128" summary="Fixed many_wells class">
       <created>1536090841898</created>
@@ -723,7 +696,6 @@
       <option name="project" value="LOCAL" />
       <updated>1539808679648</updated>
     </task>
-    <option name="localTasksCounter" value="174" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -771,7 +743,6 @@
     <frame x="-8" y="-8" width="1874" height="1096" extended-state="6" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" weight="0.24945135" />
-      <window_info active="true" id="Structure" order="1" side_tool="true" visible="true" weight="0.19790518" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
@@ -780,10 +751,10 @@
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Version Control" order="7" weight="0.09968847" />
-      <window_info anchor="bottom" id="Terminal" order="8" />
+      <window_info anchor="bottom" id="Version Control" order="7" sideWeight="0.49889746" weight="0.20041537" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="8" sideWeight="0.49889746" visible="true" weight="0.32917964" />
       <window_info anchor="bottom" id="Python Console" order="9" />
-      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.5005513" side_tool="true" weight="0.32917964" />
+      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.5011025" side_tool="true" visible="true" weight="0.32917964" />
       <window_info anchor="bottom" id="Docker" order="11" show_stripe_button="false" />
       <window_info anchor="bottom" id="Database Changes" order="12" show_stripe_button="false" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
@@ -946,8 +917,6 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1943">
-          <caret line="1135" column="45" selection-start-line="1135" selection-start-column="45" selection-end-line="1135" selection-end-column="45" />
           <folding>
             <element signature="e#0#82#0" expanded="true" />
           </folding>
