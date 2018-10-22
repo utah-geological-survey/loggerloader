@@ -64,14 +64,14 @@
           <entry key="properties" value="12" />
           <entry key="py" value="9934" />
           <entry key="pyt" value="358" />
-          <entry key="txt" value="331" />
+          <entry key="txt" value="335" />
           <entry key="yml" value="8" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="Markdown" value="24" />
-          <entry key="PLAIN_TEXT" value="355" />
+          <entry key="PLAIN_TEXT" value="359" />
           <entry key="Properties" value="12" />
           <entry key="Python" value="10292" />
           <entry key="YAML" value="8" />
@@ -145,8 +145,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="459">
-              <caret line="929" column="63" lean-forward="true" selection-start-line="929" selection-start-column="63" selection-end-line="929" selection-end-column="63" />
+            <state relative-caret-position="272">
+              <caret line="879" column="32" selection-start-line="879" selection-start-column="32" selection-end-line="879" selection-end-column="32" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
               </folding>
@@ -369,13 +369,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
-    </task>
-    <task id="LOCAL-00126" summary="Fixed many_wells class">
-      <created>1536090653719</created>
-      <option name="number" value="00126" />
-      <option name="presentableId" value="LOCAL-00126" />
-      <option name="project" value="LOCAL" />
-      <updated>1536090653719</updated>
     </task>
     <task id="LOCAL-00127" summary="Fixed many_wells class">
       <created>1536090770286</created>
@@ -713,7 +706,14 @@
       <option name="project" value="LOCAL" />
       <updated>1540219872545</updated>
     </task>
-    <option name="localTasksCounter" value="175" />
+    <task id="LOCAL-00175" summary="fix fix drift">
+      <created>1540220925456</created>
+      <option name="number" value="00175" />
+      <option name="presentableId" value="LOCAL-00175" />
+      <option name="project" value="LOCAL" />
+      <updated>1540220925456</updated>
+    </task>
+    <option name="localTasksCounter" value="176" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -762,7 +762,7 @@
     <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" weight="0.24945135" />
-      <window_info active="true" id="Structure" order="1" side_tool="true" visible="true" weight="0.19790518" />
+      <window_info id="Structure" order="1" side_tool="true" visible="true" weight="0.19790518" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
@@ -771,10 +771,10 @@
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Version Control" order="7" visible="true" weight="0.09968847" />
+      <window_info anchor="bottom" id="Version Control" order="7" sideWeight="0.49944875" visible="true" weight="0.20041537" />
       <window_info anchor="bottom" id="Terminal" order="8" />
       <window_info anchor="bottom" id="Python Console" order="9" />
-      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.5005513" side_tool="true" weight="0.32917964" />
+      <window_info active="true" anchor="bottom" id="Event Log" order="10" sideWeight="0.5005513" side_tool="true" visible="true" weight="0.20041537" />
       <window_info anchor="bottom" id="Docker" order="11" show_stripe_button="false" />
       <window_info anchor="bottom" id="Database Changes" order="12" show_stripe_button="false" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
@@ -937,8 +937,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="459">
-          <caret line="929" column="63" lean-forward="true" selection-start-line="929" selection-start-column="63" selection-end-line="929" selection-end-column="63" />
+        <state relative-caret-position="272">
+          <caret line="879" column="32" selection-start-line="879" selection-start-column="32" selection-end-line="879" selection-end-column="32" />
           <folding>
             <element signature="e#0#82#0" expanded="true" />
           </folding>
