@@ -5,8 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="update tests">
+      <change afterPath="$PROJECT_DIR$/test/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/test.py" afterDir="false" />
     </list>
     <ignored path="E:\My Drive\Python\Pycharm\loggerloader\.idea\shelf/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -162,18 +162,18 @@
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="PLAIN_TEXT" value="33" />
-          <entry key="Python" value="1808" />
+          <entry key="Python" value="1868" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
         <counts>
-          <entry key="py" value="1" />
+          <entry key="py" value="2" />
           <entry key="pyt" value="1" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="py" value="1561" />
+          <entry key="py" value="1621" />
           <entry key="pyt" value="247" />
           <entry key="txt" value="33" />
         </counts>
@@ -181,7 +181,7 @@
       <usages-collector id="statistics.vcs.git.usages" />
       <usages-collector id="statistics.file.types.open">
         <counts>
-          <entry key="Python" value="2" />
+          <entry key="Python" value="3" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.js.language.service.starts" />
@@ -206,16 +206,21 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test/test.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="150">
-              <caret line="32" column="34" selection-start-line="32" selection-start-column="34" selection-end-line="32" selection-end-column="34" />
+            <state relative-caret-position="34">
+              <caret line="10" column="4" selection-start-line="10" selection-start-column="4" selection-end-line="10" selection-end-column="4" />
               <folding>
-                <marker date="1540419371046" expanded="true" signature="1478:1479" ph="..." />
+                <marker date="1540420114153" expanded="true" signature="1478:1479" ph="..." />
               </folding>
             </state>
           </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/test/__init__.py">
+          <provider selected="true" editor-type-id="text-editor" />
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
@@ -366,12 +371,13 @@
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="G:\My Drive\Python\Pycharm\loggerloader\test" />
-      <recent name="C:\Users\PAULINKENBRANDT\Documents\GitHub\loggerloader" />
-    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="G:\My Drive\Python\Pycharm\loggerloader\test" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="E:\My Drive\Python\Pycharm\loggerloader\test" />
+      <recent name="G:\My Drive\Python\Pycharm\loggerloader\test" />
+      <recent name="C:\Users\PAULINKENBRANDT\Documents\GitHub\loggerloader" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -518,13 +524,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
-    </task>
-    <task id="LOCAL-00131" summary="Created PullOutsideBaro">
-      <created>1536101430513</created>
-      <option name="number" value="00131" />
-      <option name="presentableId" value="LOCAL-00131" />
-      <option name="project" value="LOCAL" />
-      <updated>1536101430513</updated>
     </task>
     <task id="LOCAL-00132" summary="Created PullOutsideBaro">
       <created>1536103129540</created>
@@ -862,7 +861,14 @@
       <option name="project" value="LOCAL" />
       <updated>1540419300600</updated>
     </task>
-    <option name="localTasksCounter" value="180" />
+    <task id="LOCAL-00180" summary="update tests">
+      <created>1540419384034</created>
+      <option name="number" value="00180" />
+      <option name="presentableId" value="LOCAL-00180" />
+      <option name="project" value="LOCAL" />
+      <updated>1540419384034</updated>
+    </task>
+    <option name="localTasksCounter" value="181" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -910,8 +916,8 @@
     <frame x="1912" y="-29" width="1936" height="1066" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.4968051" visible="true" weight="0.24093817" />
-      <window_info active="true" id="Structure" order="1" sideWeight="0.50319487" side_tool="true" visible="true" weight="0.24093817" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.4968051" visible="true" weight="0.24093817" />
+      <window_info id="Structure" order="1" sideWeight="0.50319487" side_tool="true" visible="true" weight="0.24093817" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
@@ -972,7 +978,6 @@
     <option name="LAST_COMMIT_MESSAGE" value="update tests" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/test/__init__.py" />
     <entry file="file://$PROJECT_DIR$/loggerloader/arcstuff.py" />
     <entry file="file://$PROJECT_DIR$/loggerloader/loader.py" />
     <entry file="file://$PROJECT_DIR$/CHANGES.txt" />
@@ -1091,13 +1096,16 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/test/test.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="150">
-          <caret line="32" column="34" selection-start-line="32" selection-start-column="34" selection-end-line="32" selection-end-column="34" />
+        <state relative-caret-position="34">
+          <caret line="10" column="4" selection-start-line="10" selection-start-column="4" selection-end-line="10" selection-end-column="4" />
           <folding>
-            <marker date="1540419371046" expanded="true" signature="1478:1479" ph="..." />
+            <marker date="1540420114153" expanded="true" signature="1478:1479" ph="..." />
           </folding>
         </state>
       </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/__init__.py">
+      <provider selected="true" editor-type-id="text-editor" />
     </entry>
   </component>
   <component name="masterDetails">
