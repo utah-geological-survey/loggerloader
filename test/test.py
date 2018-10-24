@@ -7,20 +7,20 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import loggerloader as ll
 import pandas as pd
 #import matplotlib
+import numpy as np
 import sys
 sys.path.append('../')
 #import numpy as np
 
 
-def test_HeaderTable():
-    folder = "test/"
-    filedict = {'test/1037276_Pw10a_2017_08_16.xle':'PW10A'}
-    filelist = ['test/1037276_Pw10a_2017_08_16.xle']
-    workspace = "C:/Users/paulinkenbrandt/AppData/Roaming/Esri/Desktop10.5/ArcCatalog/UGS_SDE.sde"
-    ht = ll.HeaderTable(folder, filedict, filelist = None, workspace = workspace)
-    df = ht.pull_sde_table()
-    assert len(df) >= 1
-
+def testget_breakpoints():
+    manual = {'dates':['6/11/1991','2/1/1999','8/5/2001','7/14/2000','8/19/2002','4/2/2005'],'man_read':[1,10,14,52,10,8]}
+    man_df = pd.DataFrame(manual)
+    man_df.set_index('dates',inplace=True)
+    datefield = pd.date_range(start='1/1/1995',end='12/15/2006',freq='3D')
+    df = pd.DataFrame({'dates':datefield,'data':np.random.rand(len(datefield))})
+    df.set_index('dates',inplace=True)
+    assert ll.get_breakpoints(man_df,df,'data')[1] ==np.datetime64('1999-01-31T00:00:00.000000000')
 
 def test_new_xle_imp():
     xle = 'test/20160919_LittleHobble.xle'
@@ -34,3 +34,13 @@ def test_well_baro_merge():
     baro = pd.read_csv(barofile,index_col=0, parse_dates=True)
     baro['Level'] = baro['pw03']
     assert len(ll.well_baro_merge(xle_df, baro, sampint=60)) > 10
+
+def testcalc_slope_and_intercept():
+    assert ll.calc_slope_and_intercept(0, 0, 5, 5, 1, 1, 6, 6) == (0.0, 1, 1.0, 1.0, 0)
+
+def testcalc_drift():
+    df = pd.DataFrame({'date': pd.date_range(start='1900-01-01', periods=101, freq='1D'),
+                            "data": [i * 0.1 + 2 for i in range(0, 101)]})
+    df.set_index('date', inplace=True)
+    df['julian'] = df.index.to_julian_date()
+    assert ll.calc_drift(df, 'data', 'gooddata', 0.05, 1)['gooddata'][-1] == 6.0

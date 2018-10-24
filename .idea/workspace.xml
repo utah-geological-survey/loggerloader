@@ -6,6 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="single well functions">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/test.py" afterDir="false" />
     </list>
     <ignored path="E:\My Drive\Python\Pycharm\loggerloader\.idea\shelf/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -15,14 +16,17 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="CoverageDataManager">
+    <SUITE FILE_PATH="coverage/loggerloader$Nosetests_for_test_testget_breakpoints.coverage" NAME="Nosetests for test.testget_breakpoints Coverage Results" MODIFIED="1540418502007" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
     <SUITE FILE_PATH="coverage/loggerloader$Doctest_pull_well_table.coverage" NAME="Doctest pull_well_table Coverage Results" MODIFIED="1539297675038" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
     <SUITE FILE_PATH="coverage/loggerloader$Doctest_fix_drift.coverage" NAME="Doctest fix_drift Coverage Results" MODIFIED="1539291542154" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
     <SUITE FILE_PATH="coverage/loggerloader$Doctest_pull_elev_and_stickup.coverage" NAME="Doctest pull_elev_and_stickup Coverage Results" MODIFIED="1539297362440" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
     <SUITE FILE_PATH="coverage/loggerloader$Doctest_get_breakpoints.coverage" NAME="Doctest get_breakpoints Coverage Results" MODIFIED="1539288593261" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
+    <SUITE FILE_PATH="coverage/loggerloader$Nosetests_for_test_testcalc_slope_and_intercept.coverage" NAME="Nosetests for test.testcalc_slope_and_intercept Coverage Results" MODIFIED="1540418469728" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
     <SUITE FILE_PATH="coverage/loggerloader$Doctest_get_stickup.coverage" NAME="Doctest get_stickup Coverage Results" MODIFIED="1539298257035" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
     <SUITE FILE_PATH="coverage/loggerloader$Doctest_calc_slope_and_intercept.coverage" NAME="Doctest calc_slope_and_intercept Coverage Results" MODIFIED="1539797681092" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
     <SUITE FILE_PATH="coverage/loggerloader$Doctest_pull_closest_well_data.coverage" NAME="Doctest pull_closest_well_data Coverage Results" MODIFIED="1539287364904" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
     <SUITE FILE_PATH="coverage/loggerloader$Doctest_printmes.coverage" NAME="Doctest printmes Coverage Results" MODIFIED="1539288921869" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
+    <SUITE FILE_PATH="coverage/loggerloader$Nosetests_for_test_testcalc_drift.coverage" NAME="Nosetests for test.testcalc_drift Coverage Results" MODIFIED="1540418784977" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
     <SUITE FILE_PATH="coverage/loggerloader$Doctest_calc_drift.coverage" NAME="Doctest calc_drift Coverage Results" MODIFIED="1539286353823" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
   </component>
   <component name="CreatePatchCommitExecutor">
@@ -158,17 +162,18 @@
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="PLAIN_TEXT" value="21" />
-          <entry key="Python" value="1600" />
+          <entry key="Python" value="1754" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
         <counts>
+          <entry key="py" value="1" />
           <entry key="pyt" value="1" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="py" value="1353" />
+          <entry key="py" value="1507" />
           <entry key="pyt" value="247" />
           <entry key="txt" value="21" />
         </counts>
@@ -176,7 +181,7 @@
       <usages-collector id="statistics.vcs.git.usages" />
       <usages-collector id="statistics.file.types.open">
         <counts>
-          <entry key="Python" value="1" />
+          <entry key="Python" value="2" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.js.language.service.starts" />
@@ -187,15 +192,27 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="744">
-              <caret line="881" column="35" selection-start-line="881" selection-start-column="35" selection-end-line="881" selection-end-column="35" />
+            <state relative-caret-position="441">
+              <caret line="176" selection-start-line="176" selection-end-line="177" selection-end-column="29" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
-                <marker date="1540410837995" expanded="true" signature="32060:32833" ph="..." />
-                <marker date="1540410837995" expanded="true" signature="49600:49601" ph="..." />
+                <marker date="1540413740917" expanded="true" signature="32037:32810" ph="..." />
+                <marker date="1540413740917" expanded="true" signature="49577:49578" ph="..." />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/test/test.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="476">
+              <caret line="40" lean-forward="true" selection-start-line="40" selection-end-line="40" />
+              <folding>
+                <element signature="e#79#161#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -204,8 +221,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="7973">
-              <caret line="511" column="14" lean-forward="true" selection-start-line="511" selection-start-column="14" selection-end-line="511" selection-end-column="14" />
+            <state relative-caret-position="493">
+              <caret line="74" column="74" selection-start-line="74" selection-start-column="74" selection-end-line="74" selection-end-column="74" />
             </state>
           </provider>
         </entry>
@@ -221,7 +238,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>baro_file</find>
       <find>to_import</find>
       <find>filedict</find>
       <find>baros.index[b]</find>
@@ -251,6 +267,7 @@
       <find>calc_slope_and_intercept</find>
       <find>get_trans_gw_elevations</find>
       <find>simp_imp_well</find>
+      <find>concat</find>
     </findStrings>
     <replaceStrings>
       <replace>altid</replace>
@@ -288,7 +305,6 @@
         <option value="$PROJECT_DIR$/README.md" />
         <option value="$PROJECT_DIR$/.travis.yml" />
         <option value="$PROJECT_DIR$/requirements.txt" />
-        <option value="$PROJECT_DIR$/test/test.py" />
         <option value="$PROJECT_DIR$/loggerloader/.gitignore" />
         <option value="$PROJECT_DIR$/loggerloader/config.py" />
         <option value="$PROJECT_DIR$/VERSION" />
@@ -297,6 +313,7 @@
         <option value="$APPLICATION_CONFIG_DIR$/idea.properties" />
         <option value="$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt" />
         <option value="$PROJECT_DIR$/loggerloader/loggerloader.py" />
+        <option value="$PROJECT_DIR$/test/test.py" />
       </list>
     </option>
   </component>
@@ -369,7 +386,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python tests.Doctest calc_slope_and_intercept">
+  <component name="RunManager" selected="Python tests.Nosetests for test.testcalc_drift">
     <configuration default="true" type="tests" factoryName="Attests">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -424,12 +441,66 @@
       <option name="_new_targetType" value="&quot;PYTHON&quot;" />
       <method v="2" />
     </configuration>
+    <configuration name="Nosetests for test.testcalc_drift" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
+      <module name="loggerloader" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/test" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_regexPattern" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;test.testcalc_drift&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Nosetests for test.testcalc_slope_and_intercept" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
+      <module name="loggerloader" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/test" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_regexPattern" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;test.testcalc_slope_and_intercept&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Nosetests for test.testget_breakpoints" type="tests" factoryName="Nosetests" temporary="true" nameIsGenerated="true">
+      <module name="loggerloader" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/test" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_regexPattern" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;test.testget_breakpoints&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
     <list>
       <item itemvalue="Python tests.Nosetests for test.test_HeaderTable" />
       <item itemvalue="Python tests.Doctest calc_slope_and_intercept" />
+      <item itemvalue="Python tests.Nosetests for test.testcalc_slope_and_intercept" />
+      <item itemvalue="Python tests.Nosetests for test.testget_breakpoints" />
+      <item itemvalue="Python tests.Nosetests for test.testcalc_drift" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python tests.Nosetests for test.testcalc_drift" />
+        <item itemvalue="Python tests.Nosetests for test.testget_breakpoints" />
+        <item itemvalue="Python tests.Nosetests for test.testcalc_slope_and_intercept" />
         <item itemvalue="Python tests.Doctest calc_slope_and_intercept" />
       </list>
     </recent_temporary>
@@ -447,20 +518,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
-    </task>
-    <task id="LOCAL-00126" summary="Fixed many_wells class">
-      <created>1536090653719</created>
-      <option name="number" value="00126" />
-      <option name="presentableId" value="LOCAL-00126" />
-      <option name="project" value="LOCAL" />
-      <updated>1536090653719</updated>
-    </task>
-    <task id="LOCAL-00127" summary="Fixed many_wells class">
-      <created>1536090770286</created>
-      <option name="number" value="00127" />
-      <option name="presentableId" value="LOCAL-00127" />
-      <option name="project" value="LOCAL" />
-      <updated>1536090770286</updated>
     </task>
     <task id="LOCAL-00128" summary="Fixed many_wells class">
       <created>1536090841898</created>
@@ -791,16 +848,24 @@
       <option name="project" value="LOCAL" />
       <updated>1540411093767</updated>
     </task>
-    <option name="localTasksCounter" value="175" />
+    <task id="LOCAL-00175" summary="single well functions">
+      <created>1540411517254</created>
+      <option name="number" value="00175" />
+      <option name="presentableId" value="LOCAL-00175" />
+      <option name="project" value="LOCAL" />
+      <updated>1540411517254</updated>
+    </task>
+    <task id="LOCAL-00176" summary="single well functions">
+      <created>1540413754347</created>
+      <option name="number" value="00176" />
+      <option name="presentableId" value="LOCAL-00176" />
+      <option name="project" value="LOCAL" />
+      <updated>1540413754347</updated>
+    </task>
+    <option name="localTasksCounter" value="177" />
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="Doctest_pull_well_table - 2018.10.11 at 16h 41m 01s.xml">
-      <configuration name="Doctest pull_well_table" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Doctest_pull_well_table - 2018.10.11 at 16h 41m 25s.xml">
-      <configuration name="Doctest pull_well_table" configurationId="tests" />
-    </history-entry>
     <history-entry file="Doctest_get_stickup - 2018.10.11 at 16h 47m 11s.xml">
       <configuration name="Doctest get_stickup" configurationId="tests" />
     </history-entry>
@@ -825,6 +890,12 @@
     <history-entry file="Doctest_calc_slope_and_intercept - 2018.10.17 at 11h 34m 45s.xml">
       <configuration name="Doctest calc_slope_and_intercept" configurationId="tests" />
     </history-entry>
+    <history-entry file="Nosetests_for_test_testcalc_slope_and_intercept - 2018.10.24 at 16h 01m 14s.xml">
+      <configuration name="Nosetests for test.testcalc_slope_and_intercept" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Nosetests_for_test_testget_breakpoints - 2018.10.24 at 16h 01m 46s.xml">
+      <configuration name="Nosetests for test.testget_breakpoints" configurationId="tests" />
+    </history-entry>
   </component>
   <component name="TodoView" selected-index="3">
     <todo-panel id="selected-file">
@@ -837,18 +908,19 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="1912" y="-29" width="1936" height="1066" extended-state="6" />
+    <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.49761903" visible="true" weight="0.24093817" />
-      <window_info id="Structure" order="1" sideWeight="0.50238097" side_tool="true" visible="true" weight="0.24093817" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.4968051" visible="true" weight="0.24093817" />
+      <window_info id="Structure" order="1" sideWeight="0.50319487" side_tool="true" visible="true" weight="0.24093817" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49944875" weight="0.32917964" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49944875" visible="true" weight="0.3290461" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Version Control" order="7" visible="true" weight="0.09967846" />
+      <window_info anchor="bottom" id="Version Control" order="7" weight="0.09967846" />
       <window_info anchor="bottom" id="Terminal" order="8" sideWeight="0.4983462" weight="0.32917964" />
       <window_info anchor="bottom" id="Python Console" order="9" />
       <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.5016538" side_tool="true" weight="0.32917964" />
@@ -976,13 +1048,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/test.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="459">
-          <caret line="27" column="26" lean-forward="true" selection-start-line="27" selection-start-column="26" selection-end-line="27" selection-end-column="26" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt.xml">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="17">
@@ -1007,19 +1072,29 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="7973">
-          <caret line="511" column="14" lean-forward="true" selection-start-line="511" selection-start-column="14" selection-end-line="511" selection-end-column="14" />
+        <state relative-caret-position="493">
+          <caret line="74" column="74" selection-start-line="74" selection-start-column="74" selection-end-line="74" selection-end-column="74" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="744">
-          <caret line="881" column="35" selection-start-line="881" selection-start-column="35" selection-end-line="881" selection-end-column="35" />
+        <state relative-caret-position="441">
+          <caret line="176" selection-start-line="176" selection-end-line="177" selection-end-column="29" />
           <folding>
             <element signature="e#0#82#0" expanded="true" />
-            <marker date="1540410837995" expanded="true" signature="32060:32833" ph="..." />
-            <marker date="1540410837995" expanded="true" signature="49600:49601" ph="..." />
+            <marker date="1540413740917" expanded="true" signature="32037:32810" ph="..." />
+            <marker date="1540413740917" expanded="true" signature="49577:49578" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/test.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="476">
+          <caret line="40" lean-forward="true" selection-start-line="40" selection-end-line="40" />
+          <folding>
+            <element signature="e#79#161#0" expanded="true" />
           </folding>
         </state>
       </provider>
