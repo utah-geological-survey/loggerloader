@@ -4,7 +4,7 @@ Created on Sat Jan 23 13:03:00 2016
 @author: p
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
-import loggerloader as ll
+#import loggerloader as ll
 import pandas as pd
 #import matplotlib
 import numpy as np
@@ -20,7 +20,7 @@ def testget_breakpoints():
     datefield = pd.date_range(start='1/1/1995',end='12/15/2006',freq='3D')
     df = pd.DataFrame({'dates':datefield,'data':np.random.rand(len(datefield))})
     df.set_index('dates',inplace=True)
-    assert ll.get_breakpoints(man_df,df,'data')[1] ==np.datetime64('1999-01-31T00:00:00.000000000')
+    assert get_breakpoints(man_df,df,'data')[1] ==np.datetime64('1999-01-31T00:00:00.000000000')
 
 def test_new_xle_imp():
     xle = 'test/20160919_LittleHobble.xle'
@@ -29,18 +29,18 @@ def test_new_xle_imp():
 
 def test_well_baro_merge():
     xle = "test/ag13c 2016-08-02.xle"
-    xle_df = ll.new_xle_imp(xle)
+    xle_df = new_xle_imp(xle)
     barofile = "test/baro.csv"
     baro = pd.read_csv(barofile,index_col=0, parse_dates=True)
     baro['Level'] = baro['pw03']
-    assert len(ll.well_baro_merge(xle_df, baro, sampint=60)) > 10
+    assert len(well_baro_merge(xle_df, baro, sampint=60)) > 10
 
 def testcalc_slope_and_intercept():
-    assert ll.calc_slope_and_intercept(0, 0, 5, 5, 1, 1, 6, 6) == (0.0, 1, 1.0, 1.0, 0)
+    assert calc_slope_and_intercept(0, 0, 5, 5, 1, 1, 6, 6) == (0.0, 1, 1.0, 1.0, 0)
 
 def testcalc_drift():
     df = pd.DataFrame({'date': pd.date_range(start='1900-01-01', periods=101, freq='1D'),
                             "data": [i * 0.1 + 2 for i in range(0, 101)]})
     df.set_index('date', inplace=True)
     df['julian'] = df.index.to_julian_date()
-    assert ll.calc_drift(df, 'data', 'gooddata', 0.05, 1)['gooddata'][-1] == 6.0
+    assert calc_drift(df, 'data', 'gooddata', 0.05, 1)['gooddata'][-1] == 6.0
