@@ -4,7 +4,7 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="single well functions">
+    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="update tests">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/test.py" afterDir="false" />
     </list>
@@ -161,8 +161,8 @@
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="PLAIN_TEXT" value="21" />
-          <entry key="Python" value="1754" />
+          <entry key="PLAIN_TEXT" value="33" />
+          <entry key="Python" value="1797" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
@@ -173,9 +173,9 @@
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="py" value="1507" />
+          <entry key="py" value="1550" />
           <entry key="pyt" value="247" />
-          <entry key="txt" value="21" />
+          <entry key="txt" value="33" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.vcs.git.usages" />
@@ -195,8 +195,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="441">
-              <caret line="176" selection-start-line="176" selection-end-line="177" selection-end-column="29" />
+            <state relative-caret-position="339">
+              <caret line="218" selection-start-line="218" selection-end-line="221" selection-end-column="74" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
                 <marker date="1540413740917" expanded="true" signature="32037:32810" ph="..." />
@@ -209,10 +209,10 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/test/test.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="476">
-              <caret line="40" lean-forward="true" selection-start-line="40" selection-end-line="40" />
+            <state relative-caret-position="187">
+              <caret line="11" lean-forward="true" selection-start-line="11" selection-end-line="11" />
               <folding>
-                <element signature="e#79#161#0" expanded="true" />
+                <marker date="1540419287547" expanded="true" signature="1468:1469" ph="..." />
               </folding>
             </state>
           </provider>
@@ -221,8 +221,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="493">
-              <caret line="74" column="74" selection-start-line="74" selection-start-column="74" selection-end-line="74" selection-end-column="74" />
+            <state relative-caret-position="68">
+              <caret line="4" column="7" lean-forward="true" selection-start-line="2" selection-end-line="5" selection-end-column="30" />
             </state>
           </provider>
         </entry>
@@ -518,20 +518,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
-    </task>
-    <task id="LOCAL-00128" summary="Fixed many_wells class">
-      <created>1536090841898</created>
-      <option name="number" value="00128" />
-      <option name="presentableId" value="LOCAL-00128" />
-      <option name="project" value="LOCAL" />
-      <updated>1536090841898</updated>
-    </task>
-    <task id="LOCAL-00129" summary="Fixed many_wells class">
-      <created>1536090908987</created>
-      <option name="number" value="00129" />
-      <option name="presentableId" value="LOCAL-00129" />
-      <option name="project" value="LOCAL" />
-      <updated>1536090908987</updated>
     </task>
     <task id="LOCAL-00130" summary="Fixed many_wells class">
       <created>1536097459669</created>
@@ -862,13 +848,24 @@
       <option name="project" value="LOCAL" />
       <updated>1540413754347</updated>
     </task>
-    <option name="localTasksCounter" value="177" />
+    <task id="LOCAL-00177" summary="single well functions">
+      <created>1540418806691</created>
+      <option name="number" value="00177" />
+      <option name="presentableId" value="LOCAL-00177" />
+      <option name="project" value="LOCAL" />
+      <updated>1540418806691</updated>
+    </task>
+    <task id="LOCAL-00178" summary="update tests">
+      <created>1540419101376</created>
+      <option name="number" value="00178" />
+      <option name="presentableId" value="LOCAL-00178" />
+      <option name="project" value="LOCAL" />
+      <updated>1540419101376</updated>
+    </task>
+    <option name="localTasksCounter" value="179" />
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="Doctest_get_stickup - 2018.10.11 at 16h 47m 11s.xml">
-      <configuration name="Doctest get_stickup" configurationId="tests" />
-    </history-entry>
     <history-entry file="Doctest_get_stickup - 2018.10.11 at 16h 48m 31s.xml">
       <configuration name="Doctest get_stickup" configurationId="tests" />
     </history-entry>
@@ -895,6 +892,9 @@
     </history-entry>
     <history-entry file="Nosetests_for_test_testget_breakpoints - 2018.10.24 at 16h 01m 46s.xml">
       <configuration name="Nosetests for test.testget_breakpoints" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Nosetests_for_test_testcalc_drift - 2018.10.24 at 16h 06m 29s.xml">
+      <configuration name="Nosetests for test.testcalc_drift" configurationId="tests" />
     </history-entry>
   </component>
   <component name="TodoView" selected-index="3">
@@ -944,7 +944,6 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix imp_simp_well" />
     <MESSAGE value="openpyxl requirement" />
     <MESSAGE value="example file" />
     <MESSAGE value="updated how baro data is pulled; added function" />
@@ -969,7 +968,8 @@
     <MESSAGE value="fix chart errors" />
     <MESSAGE value="fix fix drift" />
     <MESSAGE value="single well functions" />
-    <option name="LAST_COMMIT_MESSAGE" value="single well functions" />
+    <MESSAGE value="update tests" />
+    <option name="LAST_COMMIT_MESSAGE" value="update tests" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/test/__init__.py" />
@@ -1070,17 +1070,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="493">
-          <caret line="74" column="74" selection-start-line="74" selection-start-column="74" selection-end-line="74" selection-end-column="74" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="441">
-          <caret line="176" selection-start-line="176" selection-end-line="177" selection-end-column="29" />
+        <state relative-caret-position="339">
+          <caret line="218" selection-start-line="218" selection-end-line="221" selection-end-column="74" />
           <folding>
             <element signature="e#0#82#0" expanded="true" />
             <marker date="1540413740917" expanded="true" signature="32037:32810" ph="..." />
@@ -1089,12 +1082,19 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="68">
+          <caret line="4" column="7" lean-forward="true" selection-start-line="2" selection-end-line="5" selection-end-column="30" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/test/test.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="476">
-          <caret line="40" lean-forward="true" selection-start-line="40" selection-end-line="40" />
+        <state relative-caret-position="187">
+          <caret line="11" lean-forward="true" selection-start-line="11" selection-end-line="11" />
           <folding>
-            <element signature="e#79#161#0" expanded="true" />
+            <marker date="1540419287547" expanded="true" signature="1468:1469" ph="..." />
           </folding>
         </state>
       </provider>

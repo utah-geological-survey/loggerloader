@@ -4,6 +4,12 @@ Created on Sat Jan 23 13:03:00 2016
 @author: p
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
+
+try:
+    from loggerloader.loggerloader import *
+except:
+    from loggerloader import *
+
 #import loggerloader as ll
 import pandas as pd
 #import matplotlib
@@ -24,7 +30,7 @@ def testget_breakpoints():
 
 def test_new_xle_imp():
     xle = 'test/20160919_LittleHobble.xle'
-    xle_df = ll.new_xle_imp(xle)
+    xle_df = new_xle_imp(xle)
     assert len(xle_df) > 0
 
 def test_well_baro_merge():
