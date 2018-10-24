@@ -388,13 +388,12 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
             printmes("Slope = {:0.3f} and Intercept = {:0.3f}".format(slope, b))
 
             bracketedwls[i] = calc_drift(df, corrwl, outcolname, slope, b)
-
             drift_features[i] = calc_drift_features(first_man, first_man_date, last_man, last_man_date, first_trans, first_trans_date,
                                 last_trans, last_trans_date, b, slope, slope_man, slope_trans, drift)
         else:
             pass
 
-    wellbarofixed = pd.concat(bracketedwls, sort=True)
+    wellbarofixed = pd.concat(bracketedwls)
     wellbarofixed.reset_index(inplace=True)
     wellbarofixed.set_index(dtnm, inplace=True)
     drift_info = pd.DataFrame(drift_features).T
@@ -698,7 +697,7 @@ class PullOutsideBaro(object):
             printmes(html)
             bar[stat] = pd.read_csv(html, skiprows=[0, 1, 2, 3, 4, 5, 7], index_col=1, parse_dates=True)
             bar[stat].sort_index(inplace=True)
-        baros = pd.concat(bar, sort=True)
+        baros = pd.concat(bar)
         if 'altimeter_set_1' in baros.columns:
             baros.drop('altimeter_set_1', inplace=True, axis=1)
         baros.rename(columns={'pressure_set_1d': 'MEASUREDLEVEL'}, inplace=True)
@@ -1832,7 +1831,7 @@ class HeaderTable(object):
             printmes('xles examined')
             csvs = self.csv_info_table()
             printmes('csvs examined')
-            file_info_table = pd.concat([xles, csvs[0]], sort=False)
+            file_info_table = pd.concat([xles, csvs[0]])
         elif '.xle' in file_extension:
             xles = self.xle_head_table()
             printmes('xles examined')
