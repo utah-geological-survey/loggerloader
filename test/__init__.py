@@ -5,8 +5,10 @@ import os
 try:
     from loggerloader.loggerloader import *
 except ImportError:
-    from .loggerloader import *
-
+    try:
+        from .loggerloader import *
+    except ImportError:
+        from loggerloader import *
 __version__ = '0.4.3'
 __author__ = 'Paul Inkenbrandt'
 __name__ = 'loggerloader'
