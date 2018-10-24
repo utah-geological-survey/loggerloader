@@ -58,7 +58,7 @@ class SingleTransducerImport(object):
         self.canRunInBackground = False
         self.parameters = [
             parameter("Input SDE Connection", "in_conn_file", "DEWorkspace",
-                      defaultValue="C:/Users/{:}/AppData/Roaming/ESRI/Desktop10.5/ArcCatalog/UGS_SDE.sde".format(
+                      defaultValue="C:/Users/{:}/AppData/Roaming/ESRI/Desktop10.6/ArcCatalog/UGS_SDE.sde".format(
                           os.environ.get('USERNAME'))),
             parameter("Well XLE or CSV", "well_file", "DEFile"),
             parameter("Barometer XLE or CSV", "baro_file", "DEFile"),
@@ -70,11 +70,13 @@ class SingleTransducerImport(object):
             parameter("Transducer Drift Tolerance (ft)", "tol", "GPDouble", defaultValue=0.3),
             parameter("Overide Date Filter?", "ovrd", "GPBoolean", parameterType="Optional"),
             parameter("Create a Chart?", "should_plot", "GPBoolean", parameterType="Optional"),
-            parameter("Chart output location", "chart_out", "DEFile", parameterType="Optional", direction="Output")
+            parameter("Chart output location", "chart_out", "DEFile", parameterType="Optional", direction="Output"),
+            parameter("Put in SDE?", "ovrd", "GPBoolean", parameterType="Optional", defaultValue=1),
+            parameter("Output File", "save_location", "DEFile", direction="Output")
         ]
         self.parameters[1].filter.list = ['csv', 'xle']
         self.parameters[2].filter.list = ['csv', 'xle']
-
+        self.parameters[13].filter.list = ['csv']
     def getParameterInfo(self):
         """Define parameter definitions; http://joelmccune.com/lessons-learned-and-ideas-for-python-toolbox-coding/"""
         return self.parameters
@@ -117,6 +119,9 @@ class SingleTransducerImport(object):
         wellimp.ovrd = parameters[9].value
         wellimp.should_plot = parameters[10].value
         wellimp.chart_out = parameters[11].valueAsText
+        wellimp.should_import = parameters[12].value
+        wellimp.save_location = parameters[13].valueAsText
+
 
         wellimp.one_well()
         printmes(arcpy.GetMessages())
@@ -473,6 +478,9 @@ class SimpleBaroDriftFix(object):
             parameter("Initial Manual Measurement", "startlevel", "GPDouble"),
             parameter("Final Manual Measurement", "endlevel", "GPDouble"),
             parameter("Measurement Frequency (minutes)","sampint","GPDouble"),
+            parameter("Well Id", "wellid", "GPDouble", parameterType="Optional"),
+            parameter("Well Elevation (ft)", "well_elev", "GPDouble", parameterType="Optional"),
+            parameter("Well Stickup (ft)", "Stickup", "GPDouble", parameterType="Optional"),
             parameter("Output File", "save_location", "DEFile", direction="Output"),
             parameter("Create a Chart?", "should_plot", "GPBoolean", parameterType="Optional"),
             parameter("Chart output location (end with .pdf)", "chart_out", "DEFile", parameterType="Optional",
@@ -481,8 +489,8 @@ class SimpleBaroDriftFix(object):
         self.parameters[0].filter.list = ['csv', 'xle']
         self.parameters[1].filter.list = ['csv', 'xle']
         self.parameters[6].value = 60
-        self.parameters[7].filter.list = ['csv']
-        # self.parameters[8].filter.list = ['pdf']
+        self.parameters[10].filter.list = ['csv']
+        # self.parameters[12].filter.list = ['pdf']
 
     def getParameterInfo(self):
         """Define parameter definitions; http://joelmccune.com/lessons-learned-and-ideas-for-python-toolbox-coding/"""
@@ -512,9 +520,12 @@ class SimpleBaroDriftFix(object):
         wellimp.man_start_level = parameters[4].value
         wellimp.man_end_level = parameters[5].value
         wellimp.sampint = parameters[6].value
-        wellimp.save_location = parameters[7].valueAsText
-        wellimp.should_plot = parameters[8].value
-        wellimp.chart_out = parameters[9].valueAsText
+        wellimp.wellid = parameters[7].value
+        wellimp.well_elev = parameters[8].value
+        wellimp.stickup = parameters[9].value
+        wellimp.save_location = parameters[10].valueAsText
+        wellimp.should_plot = parameters[11].value
+        wellimp.chart_out = parameters[12].valueAsText
         wellimp.remove_bp_drift()
         printmes(arcpy.GetMessages())
 

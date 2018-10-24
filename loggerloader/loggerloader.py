@@ -501,6 +501,11 @@ def get_stickup(stdata, site_number, stable_elev=True, man=None):
         >>> get_stickup(stdata, 200)
         0.5
 
+        >>> stdata = pd.DataFrame({'wellid':[200],'Offset':[None],'wellname':['foo']})
+        >>> get_stickup(stdata, 200)
+        Well ID 200 missing stickup!
+        0
+
         >>> stdata = pd.DataFrame({'wellid':[10],'Offset':[0.5],'wellname':['foo']})
         >>> manual = {'dates':['6/11/1991','2/1/1999','8/5/2001','7/14/2000','8/19/2002','4/2/2005'], 'MeasuredDTW':[1,10,14,52,10,8],'LOCATIONID':[10,10,10,10,10,10],'Current Stickup Height':[0.8,0.1,0.2,0.5,0.5,0.7]}
         >>> man_df = pd.DataFrame(manual)
@@ -509,7 +514,7 @@ def get_stickup(stdata, site_number, stable_elev=True, man=None):
     """
     if stable_elev:
         # Selects well stickup from well table; if its not in the well table, then sets value to zero
-        if stdata['Offset'].values[0] is None:
+        if pd.isna(stdata['Offset'].values[0]):
             stickup = 0
             printmes('Well ID {:} missing stickup!'.format(site_number))
         else:
@@ -534,8 +539,7 @@ def get_man_gw_elevs(manual, stickup, well_elev):
     manual.rename(columns=old_fields, inplace=True)
 
     manual.loc[:, 'MeasuredDTW'] = manual['DTWBELOWCASING'] * -1
-    manual.loc[:, 'WATERELEVATION'] = manual['MeasuredDTW'].apply(lambda x: well_elev + (x + stickup),
-                                                                    1)
+    manual.loc[:, 'WATERELEVATION'] = manual['MeasuredDTW'].apply(lambda x: well_elev + (x + stickup), 1)
     return manual
 
 
@@ -548,10 +552,21 @@ def get_trans_gw_elevations(df, stickup, well_elev, site_number, level='Level', 
     :return: processed df with necessary field names for import
     """
 
+
     df['MEASUREDLEVEL'] = df[level]
     df['MEASUREDDTW'] = df[dtw] * -1
-    df['DTWBELOWGROUNDSURFACE'] = df['MEASUREDDTW'].apply(lambda x: x - stickup, 1)
-    df['WATERELEVATION'] = df['DTWBELOWGROUNDSURFACE'].apply(lambda x: well_elev - x, 1)
+    printmes([stickup,well_elev,site_number])
+    if pd.isna(stickup):
+        stickup = 0
+    else:
+        pass
+
+    df['DTWBELOWGROUNDSURFACE'] = df['MEASUREDDTW'] - stickup
+
+    if pd.isna(well_elev):
+        df['WATERELEVATION'] = None
+    else:
+        df['WATERELEVATION'] = well_elev - df['DTWBELOWGROUNDSURFACE']
     df['LOCATIONID'] = site_number
 
     df.sort_index(inplace=True)
@@ -747,10 +762,27 @@ def imp_one_well(well_file, baro_file, man_startdate, man_start_level, man_endat
         printmes('Well {:} drift greater than tolerance!'.format(wellid))
     return df, man, be, drift
 
+def pull_exist_ts_data(wellid, first_index, last_index, conn_file_root,
+                       gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading"):
+    # Pull any existing data from the database for the well in the date range of the new data
+    query = "WHERE LOCATIONID = {: .0f} AND READINGDATE >= '{:}' AND READINGDATE <= '{:}'\n".format(wellid, first_index, last_index)
+    select_statement = "SELECT READINGDATE, WATERELEVATION FROM {:}\n".format(gw_reading_table)
+    sql_sn = 'ORDER BY READINGDATE ASC;'
+    SQL = select_statement + query + sql_sn
+    conn = arcpy.ArcSDESQLExecute(conn_file_root)
+    egdb_return = conn.execute(SQL)
+    printmes(query)
 
-def simp_imp_well(well_table, well_file, baro_out, wellid, manual, conn_file_root, stbl_elev=True, be=None,
+    # this accomodates for an empty return
+    if type(egdb_return) == bool and egdb_return == True:
+        existing_data = []
+    else:
+        existing_data = pd.DataFrame(egdb_return, columns=['READINGDATE', 'WATERELEVATION'])
+    return existing_data
+
+def simp_imp_well(well_file, baro_out, wellid, manual, conn_file_root, stbl_elev=True, be=None,
                   gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading", drift_tol=0.3, jumptol=1.0, override=False,
-                  api_token=None):
+                  api_token=None, imp=True):
     """
     Imports single well
     :param well_table: pandas dataframe of well data with ALternateID as index; needs altitude, be, stickup, and barolooger
@@ -779,7 +811,11 @@ def simp_imp_well(well_table, well_file, baro_out, wellid, manual, conn_file_roo
     man = get_man_gw_elevs(manual, stickup, well_elev)
     #well = jumpfix(well, 'Level', threashold=2.0)
 
-    baroid = well_table.loc[wellid, 'BaroLoggerType']
+    # Check to see if well has assigned barometer
+    try:
+        baroid = well_table.loc[wellid, 'BaroLoggerType']
+    except KeyError:
+        baroid = 0
 
     if len(baro_out) + 60 < len(well):
 
@@ -803,20 +839,8 @@ def simp_imp_well(well_table, well_file, baro_out, wellid, manual, conn_file_roo
     last_index = corrwl.last_valid_index()
 
     # Pull any existing data from the database for the well in the date range of the new data
-    query = "WHERE LOCATIONID = {: .0f} AND READINGDATE >= '{:}' AND READINGDATE <= '{:}'\n".format(wellid, first_index,
-                                                                                            last_index)
-    select_statement = "SELECT READINGDATE, WATERELEVATION FROM {:}\n".format(gw_reading_table)
-    sql_sn = 'ORDER BY READINGDATE ASC;'
-    SQL = select_statement + query + sql_sn
-    conn = arcpy.ArcSDESQLExecute(conn_file_root)
-    egdb_return = conn.execute(SQL)
-    printmes(query)
-
-    # this accomodates for an empty return
-    if type(egdb_return) == bool and egdb_return == True:
-        existing_data = []
-    else:
-        existing_data = pd.DataFrame(egdb_return, columns=['READINGDATE', 'WATERELEVATION'])
+    existing_data = pull_exist_ts_data(wellid, first_index, last_index, conn_file_root,
+                       gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading")
 
     dft = fix_drift(corrwl, man, corrwl='corrwl', manmeas='MeasuredDTW', wellid = wellid,
                     well_table=well_table, conn_file_root=conn_file_root)
@@ -833,25 +857,29 @@ def simp_imp_well(well_table, well_file, baro_out, wellid, manual, conn_file_roo
     printmes("Existing Len = {:}. Import Len = {:}.".format(len(existing_data), len(df)))
 
     rowlist, fieldnames = get_trans_gw_elevations(df, stickup, well_elev, wellid)
-
-    if (len(existing_data) == 0) and (abs(drift) < drift_tol):
-        edit_table(rowlist, gw_reading_table, fieldnames)
-        printmes(arcpy.GetMessages())
-        printmes("Well {:} imported.".format(wellid))
-    elif len(existing_data) == len(df) and (abs(drift) < drift_tol):
-        printmes('Data for well {:} already exist!'.format(wellid))
-    elif len(df) > len(existing_data) > 0 and abs(drift) < drift_tol:
-        rowlist = rowlist[~rowlist['READINGDATE'].isin(existing_data['READINGDATE'].values)]
-        edit_table(rowlist, gw_reading_table, fieldnames)
-        printmes('Some values were missing. {:} values added.'.format(len(df) - len(existing_data)))
-    elif override and (abs(drift) < drift_tol):
-        edit_table(rowlist, gw_reading_table, fieldnames)
-        printmes(arcpy.GetMessages())
-        printmes("Override Activated. Well {:} imported.".format(wellid))
-    elif abs(drift) > drift_tol:
-        printmes('Drift for well {:} exceeds tolerance!'.format(wellid))
+    printmes(arcpy.GetMessages())
+    if imp:
+        if (len(existing_data) == 0) and (abs(drift) < drift_tol):
+            edit_table(rowlist, gw_reading_table, fieldnames)
+            printmes(arcpy.GetMessages())
+            printmes("Well {:} imported.".format(wellid))
+        elif len(existing_data) == len(df) and (abs(drift) < drift_tol):
+            printmes('Data for well {:} already exist!'.format(wellid))
+        elif len(df) > len(existing_data) > 0 and abs(drift) < drift_tol:
+            rowlist = rowlist[~rowlist['READINGDATE'].isin(existing_data['READINGDATE'].values)]
+            edit_table(rowlist, gw_reading_table, fieldnames)
+            printmes('Some values were missing. {:} values added.'.format(len(df) - len(existing_data)))
+        elif override and (abs(drift) < drift_tol):
+            edit_table(rowlist, gw_reading_table, fieldnames)
+            printmes(arcpy.GetMessages())
+            printmes("Override Activated. Well {:} imported.".format(wellid))
+        elif abs(drift) > drift_tol:
+            printmes('Drift for well {:} exceeds tolerance!'.format(wellid))
+        else:
+            printmes('Dates later than import data for well {:} already exist!'.format(wellid))
+            pass
     else:
-        printmes('Dates later than import data for well {:} already exist!'.format(wellid))
+        printmes("No data imported.")
         pass
 
     return rowlist, man, be, drift
@@ -1142,7 +1170,6 @@ def edit_table(df, gw_reading_table, fieldnames):
         edit.stopEditing(True)
     else:
         printmes('No data imported!')
-
 
 # -----------------------------------------------------------------------------------------------------------------------
 # These scripts remove outlier data and filter the time series of jumps and erratic measurements
@@ -2030,6 +2057,7 @@ class wellimport(object):
         self.man_file = None
         self.save_location = None
         self.should_plot = None
+        self.should_import = None
         self.chart_out = None
         self.tol = None
         self.stbl = None
@@ -2041,6 +2069,8 @@ class wellimport(object):
         self.sampint = 60
         self.jumptol = 1.0
         self.api_token = None
+        self.stickup = None
+        self.well_elev = None
 
     def read_xle(self):
         wellfile = NewTransImp(self.well_file).well
@@ -2061,10 +2091,25 @@ class wellimport(object):
         if self.man_startdate in ["#", "", None]:
             self.man_startdate, self.man_start_level, wlelev = find_extreme(self.wellid)
 
-        df, man, be, drift = imp_one_well(self.well_file, self.baro_file, self.man_startdate,
-                                          self.man_start_level, self.man_enddate,
-                                          self.man_end_level, self.sde_conn, iddict.get(self.wellid),
-                                          drift_tol=self.tol, override=self.ovrd)
+        man = pd.DataFrame(
+            {'DateTime': [self.man_startdate, self.man_enddate],
+             'Water Level (ft)': [self.man_start_level, self.man_end_level],
+             'LOCATIONID': iddict.get(self.wellid)}).set_index('DateTime')
+        printmes(man)
+
+        baro = NewTransImp(self.baro_file).well
+        baro.rename(columns={'Level':'MEASUREDLEVEL'},inplace=True)
+
+        df, man, be, drift = simp_imp_well(self.well_file, baro, int(iddict.get(self.wellid)), man, self.sde_conn,
+                                           stbl_elev=True, gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading",
+                                           drift_tol=self.tol, override=self.ovrd, api_token=None, imp=self.should_import)
+
+        #df, man, be, drift = imp_one_well(self.well_file, self.baro_file, self.man_startdate,
+        #                                  self.man_start_level, self.man_enddate,
+        #                                  self.man_end_level, self.sde_conn, iddict.get(self.wellid),
+        #                                  drift_tol=self.tol, override=self.ovrd)
+
+        df.to_csv(self.save_location)
 
         if self.should_plot:
             # plot data
@@ -2100,7 +2145,7 @@ class wellimport(object):
         printmes(arcpy.GetMessages())
         return
 
-    def remove_bp(self):
+    def remove_bp(self, stickup=0, well_elev=0, site_number=None):
 
         well = NewTransImp(self.well_file).well
         baro = NewTransImp(self.baro_file).well
@@ -2108,12 +2153,21 @@ class wellimport(object):
         df = well_baro_merge(well, baro, barocolumn='Level', wellcolumn='Level', outcolumn='corrwl', vented=False,
                              sampint=self.sampint)
 
+        df = get_trans_gw_elevations(df, stickup, well_elev, site_number, dtw="corrwl")
         df.to_csv(self.save_location)
 
     def remove_bp_drift(self):
 
         well = NewTransImp(self.well_file).well
         baro = NewTransImp(self.baro_file).well
+        stickup = self.stickup
+        well_elev = self.well_elev
+        site_number = self.wellid
+
+        if pd.isna(stickup):
+            stickup = 0
+        else:
+            pass
 
         corrwl = well_baro_merge(well, baro, barocolumn='Level', wellcolumn='Level', outcolumn='corrwl',
                                  vented=False,
@@ -2128,7 +2182,10 @@ class wellimport(object):
 
         printmes("Drift is {:} feet".format(drift))
 
-        dft[0].to_csv(self.save_location)
+        dfa = get_trans_gw_elevations(dft[0], stickup, well_elev, site_number, dtw="corrwl")
+        df = dfa[0]
+
+        df.to_csv(self.save_location)
 
         if self.should_plot:
             pdf_pages = PdfPages(self.chart_out)
@@ -2217,7 +2274,7 @@ class wellimport(object):
 
             #try:
             man = manl[manl['LOCATIONID'] == int(wells.index[i])]
-            df, man, be, drift = simp_imp_well(well_table, well_line['full_filepath'], baro_num, wells.index[i],
+            df, man, be, drift = simp_imp_well(well_line['full_filepath'], baro_num, wells.index[i],
                                            man, stbl_elev=self.stbl, drift_tol=float(self.tol), jumptol=jumptol,
                                            conn_file_root=conn_file_root, override=self.ovrd,
                                            api_token=self.api_token)
