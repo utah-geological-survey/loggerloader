@@ -30,12 +30,12 @@ def testget_breakpoints():
 
 def test_new_xle_imp():
     xle = 'test/20160919_LittleHobble.xle'
-    xle_df = new_xle_imp(xle)
+    xle_df = NewTransImp(xle).well
     assert len(xle_df) > 0
 
 def test_well_baro_merge():
     xle = "test/ag13c 2016-08-02.xle"
-    xle_df = new_xle_imp(xle)
+    xle_df = NewTransImp(xle).well
     barofile = "test/baro.csv"
     baro = pd.read_csv(barofile,index_col=0, parse_dates=True)
     baro['Level'] = baro['pw03']

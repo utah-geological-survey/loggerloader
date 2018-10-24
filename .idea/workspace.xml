@@ -162,7 +162,7 @@
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="PLAIN_TEXT" value="33" />
-          <entry key="Python" value="1797" />
+          <entry key="Python" value="1808" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
@@ -173,7 +173,7 @@
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="py" value="1550" />
+          <entry key="py" value="1561" />
           <entry key="pyt" value="247" />
           <entry key="txt" value="33" />
         </counts>
@@ -195,8 +195,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="339">
-              <caret line="218" selection-start-line="218" selection-end-line="221" selection-end-column="74" />
+            <state relative-caret-position="81">
+              <caret line="1442" column="6" selection-start-line="1442" selection-start-column="6" selection-end-line="1442" selection-end-column="6" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
                 <marker date="1540413740917" expanded="true" signature="32037:32810" ph="..." />
@@ -209,10 +209,10 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/test/test.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="187">
-              <caret line="11" lean-forward="true" selection-start-line="11" selection-end-line="11" />
+            <state relative-caret-position="150">
+              <caret line="32" column="34" selection-start-line="32" selection-start-column="34" selection-end-line="32" selection-end-column="34" />
               <folding>
-                <marker date="1540419287547" expanded="true" signature="1468:1469" ph="..." />
+                <marker date="1540419371046" expanded="true" signature="1478:1479" ph="..." />
               </folding>
             </state>
           </provider>
@@ -221,7 +221,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="68">
+            <state relative-caret-position="-391">
               <caret line="4" column="7" lean-forward="true" selection-start-line="2" selection-end-line="5" selection-end-column="30" />
             </state>
           </provider>
@@ -518,13 +518,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
-    </task>
-    <task id="LOCAL-00130" summary="Fixed many_wells class">
-      <created>1536097459669</created>
-      <option name="number" value="00130" />
-      <option name="presentableId" value="LOCAL-00130" />
-      <option name="project" value="LOCAL" />
-      <updated>1536097459669</updated>
     </task>
     <task id="LOCAL-00131" summary="Created PullOutsideBaro">
       <created>1536101430513</created>
@@ -862,7 +855,14 @@
       <option name="project" value="LOCAL" />
       <updated>1540419101376</updated>
     </task>
-    <option name="localTasksCounter" value="179" />
+    <task id="LOCAL-00179" summary="update tests">
+      <created>1540419300600</created>
+      <option name="number" value="00179" />
+      <option name="presentableId" value="LOCAL-00179" />
+      <option name="project" value="LOCAL" />
+      <updated>1540419300600</updated>
+    </task>
+    <option name="localTasksCounter" value="180" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -911,11 +911,11 @@
     <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" sideWeight="0.4968051" visible="true" weight="0.24093817" />
-      <window_info id="Structure" order="1" sideWeight="0.50319487" side_tool="true" visible="true" weight="0.24093817" />
+      <window_info active="true" id="Structure" order="1" sideWeight="0.50319487" side_tool="true" visible="true" weight="0.24093817" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49944875" visible="true" weight="0.3290461" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49944875" visible="true" weight="0.3290461" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -1072,8 +1072,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="339">
-          <caret line="218" selection-start-line="218" selection-end-line="221" selection-end-column="74" />
+        <state relative-caret-position="81">
+          <caret line="1442" column="6" selection-start-line="1442" selection-start-column="6" selection-end-line="1442" selection-end-column="6" />
           <folding>
             <element signature="e#0#82#0" expanded="true" />
             <marker date="1540413740917" expanded="true" signature="32037:32810" ph="..." />
@@ -1084,17 +1084,17 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
+        <state relative-caret-position="-391">
           <caret line="4" column="7" lean-forward="true" selection-start-line="2" selection-end-line="5" selection-end-column="30" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/test/test.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="187">
-          <caret line="11" lean-forward="true" selection-start-line="11" selection-end-line="11" />
+        <state relative-caret-position="150">
+          <caret line="32" column="34" selection-start-line="32" selection-start-column="34" selection-end-line="32" selection-end-column="34" />
           <folding>
-            <marker date="1540419287547" expanded="true" signature="1468:1469" ph="..." />
+            <marker date="1540419371046" expanded="true" signature="1478:1479" ph="..." />
           </folding>
         </state>
       </provider>
