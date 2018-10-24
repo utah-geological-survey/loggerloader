@@ -4,11 +4,8 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="fix fix drift">
+    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="single well functions">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/loggerloader/loggerloader.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/loggerloader.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt.xml" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt.xml" afterDir="false" />
     </list>
     <ignored path="E:\My Drive\Python\Pycharm\loggerloader\.idea\shelf/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -160,6 +157,7 @@
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
+          <entry key="PLAIN_TEXT" value="21" />
           <entry key="Python" value="1600" />
         </counts>
       </usages-collector>
@@ -172,6 +170,7 @@
         <counts>
           <entry key="py" value="1353" />
           <entry key="pyt" value="247" />
+          <entry key="txt" value="21" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.vcs.git.usages" />
@@ -205,8 +204,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2057">
-              <caret line="121" column="29" selection-start-line="121" selection-start-column="8" selection-end-line="121" selection-end-column="29" />
+            <state relative-caret-position="7973">
+              <caret line="511" column="14" lean-forward="true" selection-start-line="511" selection-start-column="14" selection-end-line="511" selection-end-column="14" />
             </state>
           </provider>
         </entry>
@@ -260,7 +259,7 @@
     </replaceStrings>
   </component>
   <component name="Git.Settings">
-    <option name="UPDATE_TYPE" value="MERGE" />
+    <option name="UPDATE_TYPE" value="REBASE" />
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
@@ -448,13 +447,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
-    </task>
-    <task id="LOCAL-00125" summary="Improved site lookup for mulitsite">
-      <created>1536089896595</created>
-      <option name="number" value="00125" />
-      <option name="presentableId" value="LOCAL-00125" />
-      <option name="project" value="LOCAL" />
-      <updated>1536089896595</updated>
     </task>
     <task id="LOCAL-00126" summary="Fixed many_wells class">
       <created>1536090653719</created>
@@ -792,7 +784,14 @@
       <option name="project" value="LOCAL" />
       <updated>1539808679648</updated>
     </task>
-    <option name="localTasksCounter" value="174" />
+    <task id="LOCAL-00174" summary="single well functions">
+      <created>1540411093767</created>
+      <option name="number" value="00174" />
+      <option name="presentableId" value="LOCAL-00174" />
+      <option name="project" value="LOCAL" />
+      <updated>1540411093767</updated>
+    </task>
+    <option name="localTasksCounter" value="175" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -838,10 +837,9 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="1912" y="-29" width="1936" height="1066" extended-state="6" />
-    <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49732047" visible="true" weight="0.24093817" />
-      <window_info active="true" id="Structure" order="1" sideWeight="0.5026795" side_tool="true" visible="true" weight="0.24093817" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.49761903" visible="true" weight="0.24093817" />
+      <window_info id="Structure" order="1" sideWeight="0.50238097" side_tool="true" visible="true" weight="0.24093817" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
@@ -850,7 +848,7 @@
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Version Control" order="7" weight="0.09968847" />
+      <window_info anchor="bottom" id="Version Control" order="7" visible="true" weight="0.09967846" />
       <window_info anchor="bottom" id="Terminal" order="8" sideWeight="0.4983462" weight="0.32917964" />
       <window_info anchor="bottom" id="Python Console" order="9" />
       <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.5016538" side_tool="true" weight="0.32917964" />
@@ -874,7 +872,6 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix baro query" />
     <MESSAGE value="fix imp_simp_well" />
     <MESSAGE value="openpyxl requirement" />
     <MESSAGE value="example file" />
@@ -899,7 +896,8 @@
     <MESSAGE value="fix drift errors" />
     <MESSAGE value="fix chart errors" />
     <MESSAGE value="fix fix drift" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix fix drift" />
+    <MESSAGE value="single well functions" />
+    <option name="LAST_COMMIT_MESSAGE" value="single well functions" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/test/__init__.py" />
@@ -1009,8 +1007,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2057">
-          <caret line="121" column="29" selection-start-line="121" selection-start-column="8" selection-end-line="121" selection-end-column="29" />
+        <state relative-caret-position="7973">
+          <caret line="511" column="14" lean-forward="true" selection-start-line="511" selection-start-column="14" selection-end-line="511" selection-end-column="14" />
         </state>
       </provider>
     </entry>
