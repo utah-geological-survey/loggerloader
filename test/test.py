@@ -4,19 +4,17 @@ Created on Sat Jan 23 13:03:00 2016
 @author: p
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
+import pandas as pd
+#import matplotlib
+import numpy as np
+import sys
+sys.path.append('../')
 
 try:
     from loggerloader.loggerloader import *
 except:
     from loggerloader import *
 
-#import loggerloader as ll
-import pandas as pd
-#import matplotlib
-import numpy as np
-import sys
-sys.path.append('../')
-#import numpy as np
 
 
 def testget_breakpoints():
