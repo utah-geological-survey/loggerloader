@@ -25,7 +25,10 @@ from pylab import rcParams
 
 rcParams['figure.figsize'] = 15, 10
 
-pd.options.mode.chained_assignment = None
+try:
+    pd.options.mode.chained_assignment = None
+except AttributeError:
+    pass
 
 try:
     import arcpy
@@ -1733,6 +1736,30 @@ def getfilename(path):
     """
     return path.split('\\').pop().split('/').pop().rsplit('.', 1)[0]
 
+def compilefiles(searchdir,copydir,filecontains,filetypes=['lev','xle']):
+    filecontains = list(filecontains)
+    filetypes = list(filetypes)
+    for pack in os.walk(searchdir):
+        for name in filecontains:
+            for i in glob.glob(pack[0]+'/'+'*{:}*'.format(name)):
+                if i.split('.')[-1] in filetypes:
+                    dater = str(datetime.datetime.fromtimestamp(os.path.getmtime(i)).strftime('%Y-%m-%d'))
+                    rightfile = dater + "_" + os.path.basename(i)
+                    if not os.path.exists(copydir):
+                        print('Creating {:}'.format(copydir))
+                        os.makedirs(copydir)
+                    else:
+                        pass
+                    if os.path.isfile(os.path.join(copydir, rightfile)):
+                        pass
+                    else:
+                        print(os.path.join(copydir, rightfile))
+                        try:
+                            copyfile(i, os.path.join(copydir, rightfile))
+                        except:
+                            pass
+    printmes('Copy Complete!')
+    return
 
 def compile_end_beg_dates(infile):
     """ Searches through directory and compiles transducer files, returning a dataframe of the file name,
@@ -1748,12 +1775,12 @@ def compile_end_beg_dates(infile):
 
 
     """
-    filelist = glob.glob(infile)
+    filelist = glob.glob(infile + "/*")
     f = {}
 
     # iterate through list of relevant files
     for infile in filelist:
-        f[getfilename(infile)] = NewTransImp(infile)
+        f[getfilename(infile)] = NewTransImp(infile).well
 
     dflist = []
     for key, val in f.items():
@@ -1765,8 +1792,17 @@ def compile_end_beg_dates(infile):
 
 
 class HeaderTable(object):
-    def __init__(self, folder, filedict, filelist=None, workspace=None,
+    def __init__(self, folder, filedict=None, filelist=None, workspace=None,
                  loc_table="UGGP.UGGPADMIN.UGS_NGWMN_Monitoring_Locations"):
+        """
+
+        Args:
+            folder: directory containing transducer files
+            filedict: dictionary matching filename to locationid
+            filelist: list of files in folder
+            workspace:
+            loc_table: Table of location table in the SDE
+        """
         self.folder = folder
 
         if filelist:
@@ -2075,6 +2111,41 @@ class wellimport(object):
         wellfile = NewTransImp(self.well_file).well
         wellfile.to_csv(self.save_location)
         return
+
+    def comp_trans_data(self):
+        searchdir = self.xledir
+        wellid = self.wellid
+        copydir = searchdir + "/P{:}/".format(wellid)
+        get_serial = {1001: 1044546,
+                      1002: 1044532, 1003: 1044519, 1004: 1044531, 1005: 1044524,
+                      1006: 1044506, 1007: 1044545, 1008: 1044547,
+                      1009: 1044530, 1010: 1044508, 1011: 1044536, 1012: 1044543,
+                      1013: 1044544, 1014: 1044538, 1015: 1044504, 1016: 1044535,
+                      1018: 1044516, 1019: 1044526, 1020: 1044517, 1021: 1044539,
+                      1022: 1044520, 1023: 1044529, 1024: 1044502, 1025: 1044507,
+                      1026: 1044528, 1028: 1046310, 1029: 1046323, 1030: 1046314,
+                      1031: 1046393, 1033: 1046394, 1035: 1046388, 1036: 1046396,
+                      1037: 1046382, 1038: 1046399, 1039: 1046315, 1040: 1046392,
+                      1041: 1046319, 1042: 1046309, 1043: 1046398, 1044: 1046381,
+                      1045: 1046387, 1046: 1046390, 1047: 1046400, 1048: 1044534,
+                      1049: 1044548,
+                      1051: 1044537, 1052: 1046311, 1053: 1046377, 1054: 1046318,
+                      1055: 1046326, 1056: 1046395, 1057: 1046391, 1060: 1046306,
+                      1061: 2011070, 1063: 2011072, 1065: 2011762, 1067: 2012196,
+                      1068: 2022358, 1069: 2006774, 1070: 2012196, 1071: 2022498,
+                      1072: 2022489, 1062: 2010753,
+                      1073: 2022490, 1075: 2022401, 1076: 2022358, 1077: 2022348,
+                      1078: 2022496, 1079: 2022499, 1080: 2022501, 1081: 2022167,
+                      1090: 2010753, 1091: 1046308, 1092: 2011557, 1093: 1046384,
+                      1094: 1046307, 1095: 1046317, 1096: 1044541, 1097: 1044534,
+                      1098: 1046312, 2001: 2022348, 2002: 2022496, 2003: 2037596,
+                      3001: 2037610, 3002: 2037607, 3003: 2006781,
+                      20: ['pw07b', 'pw 07b', 'pw07 b']}
+        transid = get_serial[wellid]
+        filecontains = [str(transid), '_' + str(wellid) + '_', str(wellid) + '.']
+        compilefiles(searchdir, copydir, filecontains, filetypes=['lev', 'xle'])
+
+
 
     def one_well(self):
         """Used in SingleTransducerImport Class.  This tool leverages the imp_one_well function to load a single well

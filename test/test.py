@@ -8,14 +8,12 @@ import pandas as pd
 #import matplotlib
 import numpy as np
 import sys
-sys.path.append('../')
+
 
 try:
     from loggerloader.loggerloader import *
 except:
     from loggerloader import *
-
-
 
 def testget_breakpoints():
     manual = {'dates':['6/11/1991','2/1/1999','8/5/2001','7/14/2000','8/19/2002','4/2/2005'],'man_read':[1,10,14,52,10,8]}
@@ -27,14 +25,14 @@ def testget_breakpoints():
     assert get_breakpoints(man_df,df,'data')[1] ==np.datetime64('1999-01-31T00:00:00.000000000')
 
 def test_new_xle_imp():
-    xle = 'test/20160919_LittleHobble.xle'
+    xle = './loggerloader/test/20160919_LittleHobble.xle'
     xle_df = NewTransImp(xle).well
     assert len(xle_df) > 0
 
 def test_well_baro_merge():
-    xle = "test/ag13c 2016-08-02.xle"
+    xle = "./test/ag13c 2016-08-02.xle"
     xle_df = NewTransImp(xle).well
-    barofile = "test/baro.csv"
+    barofile = "./test/baro.csv"
     baro = pd.read_csv(barofile,index_col=0, parse_dates=True)
     baro['Level'] = baro['pw03']
     assert len(well_baro_merge(xle_df, baro, sampint=60)) > 10
