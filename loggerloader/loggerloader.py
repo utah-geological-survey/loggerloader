@@ -19,6 +19,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.ticker as tick
 import datetime
 
+from shutil import copyfile
 import xml.etree.ElementTree as eletree
 
 from pylab import rcParams
@@ -110,6 +111,7 @@ def get_breakpoints(manualfile, well, wl_field='corrwl'):
     breakpoints = pd.to_datetime(breakpoints)
     breakpoints.sort_values(inplace=True)
     breakpoints.drop_duplicates(inplace=True)
+    breakpoints = breakpoints[~breakpoints.index.duplicated(keep='first')]
     breakpoints = breakpoints.values
     return breakpoints
 
@@ -189,15 +191,20 @@ def calc_slope_and_intercept(first_man, first_man_julian_date, last_man, last_ma
 
     if (first_man is None) or (first_man_julian_date == last_man_julian_date):
         b = last_trans - last_man
+        first_man_julian_date = first_trans_julian_date
+        first_man = first_trans
     elif last_man is None:
         b = first_trans - first_man
+        last_man_julian_date = last_trans_julian_date
+        last_man = last_trans
     elif abs(first_man - last_man) < drift:
         b = last_trans - last_man
     else:
         b = first_trans - first_man
-        slope_man = (first_man - last_man) / (first_man_julian_date - last_man_julian_date)
-        slope_trans = (first_trans - last_trans) / (first_trans_julian_date - last_trans_julian_date)
-        drift = ((last_trans - last_man) - b)
+
+    slope_man = (first_man - last_man) / (first_man_julian_date - last_man_julian_date)
+    slope_trans = (first_trans - last_trans) / (first_trans_julian_date - last_trans_julian_date)
+    drift = ((last_trans - last_man) - b)
 
     new_slope = slope_trans - slope_man
 
@@ -644,8 +651,8 @@ class PullOutsideBaro(object):
         self.station = []
 
         self.rad = rad
-        self.lat = np.mean(lat.values)
-        self.long = np.mean(long.values)
+        self.lat = np.mean(lat)
+        self.long = np.mean(long)
 
         if bbox:
             self.bbox = bbox
@@ -1662,20 +1669,20 @@ class NewTransImp(object):
         if ch1Unit == "feet" or ch1Unit == "ft":
             f[str(ch1ID).title()] = pd.to_numeric(f['ch1'])
         elif ch1Unit == "kpa":
+            printmes("CH. 1 units in {:}, converting {:} to ft...".format(ch1Unit, os.path.basename(self.infile)))
             f[str(ch1ID).title()] = pd.to_numeric(f['ch1']) * 0.33456
-            printmes("Units in kpa, converting {:} to ft...".format(os.path.basename(self.infile)))
         elif ch1Unit == "mbar":
+            printmes("CH. 1 units in {:}, converting {:} to ft...".format(ch1Unit, os.path.basename(self.infile)))
             f[str(ch1ID).title()] = pd.to_numeric(f['ch1']) * 0.0334552565551
         elif ch1Unit == "psi":
+            printmes("CH. 1 units in {:}, converting {:} to ft...".format(ch1Unit, os.path.basename(self.infile)))
             f[str(ch1ID).title()] = pd.to_numeric(f['ch1']) * 2.306726
-            printmes("Units in psi, converting {:} to ft...".format(os.path.basename(self.infile)))
         elif ch1Unit == "m" or ch1Unit == "meters":
+            printmes("CH. 1 units in {:}, converting {:} to ft...".format(ch1Unit, os.path.basename(self.infile)))
             f[str(ch1ID).title()] = pd.to_numeric(f['ch1']) * 3.28084
-            printmes("Units in psi, converting {:} to ft...".format(os.path.basename(self.infile)))
         else:
             f[str(ch1ID).title()] = pd.to_numeric(f['ch1'])
-            print(ch1Unit)
-            printmes("Unknown units, no conversion")
+            printmes("Unknown units {:}, no conversion for {:}...".format(ch1Unit, os.path.basename(self.infile)))
 
         if 'ch2' in f.columns:
             try:
@@ -1689,10 +1696,10 @@ class NewTransImp(object):
             if ch2Unit == 'Deg C' or ch2Unit == 'Deg_C' or ch2Unit == u'\N{DEGREE SIGN}' + u'C':
                 f[str(ch2ID).title()] = numCh2
             elif ch2Unit == 'Deg F' or ch2Unit == u'\N{DEGREE SIGN}' + u'F':
-                printmes('Temp in F, converting to C')
+                printmes("CH. 2 units in {:}, converting {:} to C...".format(ch2Unit, os.path.basename(self.infile)))
                 f[str(ch2ID).title()] = (numCh2 - 32) * 5 / 9
             else:
-                printmes('Unknown temp Units')
+                printmes("Unknown temp units {:}, no conversion for {:}...".format(ch2Unit, os.path.basename(self.infile)))
                 f[str(ch2ID).title()] = numCh2
         else:
             print('No channel 2 for {:}'.format(self.infile))

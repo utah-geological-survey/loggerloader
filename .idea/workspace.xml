@@ -4,12 +4,9 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="update tests">
-      <change beforePath="$PROJECT_DIR$/.idea/loggerloader.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/loggerloader.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="update HeaderTable to be more modular">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/loggerloader/loggerloader.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/loggerloader.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/test.py" afterDir="false" />
     </list>
     <ignored path="E:\My Drive\Python\Pycharm\loggerloader\.idea\shelf/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -159,18 +156,18 @@
     <session id="1948972349">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="6" />
+          <entry key="project.closed" value="7" />
           <entry key="project.open.time.0" value="1" />
-          <entry key="project.open.time.5" value="1" />
+          <entry key="project.open.time.5" value="2" />
           <entry key="project.open.time.6" value="3" />
           <entry key="project.open.time.7" value="2" />
-          <entry key="project.opened" value="7" />
+          <entry key="project.opened" value="8" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="PLAIN_TEXT" value="33" />
-          <entry key="Python" value="2319" />
+          <entry key="PLAIN_TEXT" value="71" />
+          <entry key="Python" value="2479" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
@@ -181,9 +178,9 @@
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="py" value="2072" />
+          <entry key="py" value="2232" />
           <entry key="pyt" value="247" />
-          <entry key="txt" value="33" />
+          <entry key="txt" value="71" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.vcs.git.usages" />
@@ -199,49 +196,18 @@
     <favorites_list name="loggerloader" />
   </component>
   <component name="FileEditorManager">
-    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+    <leaf>
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="261">
-              <caret line="1807" column="20" lean-forward="true" selection-start-line="1807" selection-start-column="20" selection-end-line="1807" selection-end-column="20" />
+            <state relative-caret-position="142">
+              <caret line="791" selection-start-line="791" selection-end-line="893" selection-end-column="34" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
-                <marker date="1543267603407" expanded="true" signature="32078:32851" ph="..." />
-                <marker date="1543267603407" expanded="true" signature="49618:49619" ph="..." />
-                <marker date="1543267603407" expanded="true" signature="87204:89402" ph="..." />
+                <marker date="1543501173054" expanded="true" signature="32328:33101" ph="..." />
+                <marker date="1543501173054" expanded="true" signature="49868:49869" ph="..." />
+                <marker date="1543501173054" expanded="true" signature="87789:89987" ph="..." />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test/test.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="418">
-              <caret line="27" column="13" selection-start-line="27" selection-start-column="13" selection-end-line="27" selection-end-column="13" />
-              <folding>
-                <element signature="e#79#161#0" expanded="true" />
-                <marker date="1540474291502" expanded="true" signature="1426:1427" ph="..." />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test/__init__.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="17">
-              <caret line="1" selection-start-line="1" selection-end-line="1" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="884">
-              <caret line="52" selection-start-line="52" selection-end-line="127" selection-end-column="14" />
             </state>
           </provider>
         </entry>
@@ -257,10 +223,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>Alti</find>
-      <find>print</find>
-      <find>print(</find>
-      <find>arcpy</find>
       <find>w</find>
       <find>chart_out</find>
       <find>self.</find>
@@ -279,7 +241,6 @@
       <find>get_gw_elevs</find>
       <find>WaterElevation</find>
       <find>pull_db</find>
-      <find>calc_slope_and_intercept</find>
       <find>get_trans_gw_elevations</find>
       <find>simp_imp_well</find>
       <find>concat</find>
@@ -287,6 +248,11 @@
       <find>NewTransImp</find>
       <find>compile_end_beg_dates</find>
       <find>filedict</find>
+      <find>HeaderTable</find>
+      <find>drift</find>
+      <find>calc_slope_and_intercept</find>
+      <find>get_breakpoints</find>
+      <find>arcpy</find>
     </findStrings>
     <replaceStrings>
       <replace>altid</replace>
@@ -344,8 +310,8 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-144" />
-    <option name="y" value="-19" />
+    <option name="x" value="-123" />
+    <option name="y" value="-8" />
     <option name="width" value="1874" />
     <option name="height" value="1096" />
   </component>
@@ -540,13 +506,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
-    </task>
-    <task id="LOCAL-00135" summary="Created PullOutsideBaro">
-      <created>1536152764246</created>
-      <option name="number" value="00135" />
-      <option name="presentableId" value="LOCAL-00135" />
-      <option name="project" value="LOCAL" />
-      <updated>1536152764246</updated>
     </task>
     <task id="LOCAL-00136" summary="Created PullOutsideBaro">
       <created>1536154049644</created>
@@ -884,7 +843,14 @@
       <option name="project" value="LOCAL" />
       <updated>1540471803438</updated>
     </task>
-    <option name="localTasksCounter" value="184" />
+    <task id="LOCAL-00184" summary="update HeaderTable to be more modular">
+      <created>1543267688425</created>
+      <option name="number" value="00184" />
+      <option name="presentableId" value="LOCAL-00184" />
+      <option name="project" value="LOCAL" />
+      <updated>1543267688426</updated>
+    </task>
+    <option name="localTasksCounter" value="185" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -932,8 +898,8 @@
     <frame x="-8" y="-8" width="1874" height="1096" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.4878049" visible="true" weight="0.26681367" />
-      <window_info id="Structure" order="1" sideWeight="0.5121951" side_tool="true" visible="true" weight="0.26681367" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.48641977" visible="true" weight="0.26957002" />
+      <window_info active="true" id="Structure" order="1" sideWeight="0.51358026" side_tool="true" visible="true" weight="0.26957002" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
@@ -945,7 +911,7 @@
       <window_info anchor="bottom" id="Version Control" order="7" weight="0.09967846" />
       <window_info anchor="bottom" id="Terminal" order="8" sideWeight="0.4983462" weight="0.32917964" />
       <window_info anchor="bottom" id="Python Console" order="9" />
-      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.5016538" side_tool="true" visible="true" weight="0.31879544" />
+      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.5016538" side_tool="true" visible="true" weight="0.1588785" />
       <window_info anchor="bottom" id="Docker" order="11" show_stripe_button="false" />
       <window_info anchor="bottom" id="Database Changes" order="12" show_stripe_button="false" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
@@ -954,8 +920,8 @@
       <window_info anchor="right" id="Data View" order="3" />
       <window_info anchor="right" id="R Graphics" order="4" />
       <window_info anchor="right" id="R Packages" order="5" />
-      <window_info anchor="right" x="0" y="0" width="639" height="951" id="Documentation" order="6" sideWeight="0.50914633" side_tool="true" visible="true" weight="0.13340683" />
-      <window_info anchor="right" id="Database" order="7" sideWeight="0.49085367" visible="true" weight="0.13340683" />
+      <window_info anchor="right" x="0" y="0" width="639" height="951" id="Documentation" order="6" sideWeight="0.50987655" side_tool="true" visible="true" weight="0.29768467" />
+      <window_info anchor="right" id="Database" order="7" sideWeight="0.49012345" visible="true" weight="0.29768467" />
       <window_info anchor="right" id="SciView" order="8" />
     </layout>
   </component>
@@ -966,7 +932,6 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="openpyxl requirement" />
     <MESSAGE value="example file" />
     <MESSAGE value="updated how baro data is pulled; added function" />
     <MESSAGE value="added import baro data function" />
@@ -991,7 +956,8 @@
     <MESSAGE value="fix fix drift" />
     <MESSAGE value="single well functions" />
     <MESSAGE value="update tests" />
-    <option name="LAST_COMMIT_MESSAGE" value="update tests" />
+    <MESSAGE value="update HeaderTable to be more modular" />
+    <option name="LAST_COMMIT_MESSAGE" value="update HeaderTable to be more modular" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/loggerloader/arcstuff.py" />
@@ -1091,10 +1057,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt">
+    <entry file="file://$PROJECT_DIR$/test/test.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="884">
-          <caret line="52" selection-start-line="52" selection-end-line="127" selection-end-column="14" />
+        <state relative-caret-position="418">
+          <caret line="27" column="13" selection-start-line="27" selection-start-column="13" selection-end-line="27" selection-end-column="13" />
         </state>
       </provider>
     </entry>
@@ -1105,26 +1071,22 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/test.py">
+    <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="418">
-          <caret line="27" column="13" selection-start-line="27" selection-start-column="13" selection-end-line="27" selection-end-column="13" />
-          <folding>
-            <element signature="e#79#161#0" expanded="true" />
-            <marker date="1540474291502" expanded="true" signature="1426:1427" ph="..." />
-          </folding>
+        <state relative-caret-position="119">
+          <caret line="52" selection-start-line="52" selection-end-line="127" selection-end-column="14" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="261">
-          <caret line="1807" column="20" lean-forward="true" selection-start-line="1807" selection-start-column="20" selection-end-line="1807" selection-end-column="20" />
+        <state relative-caret-position="142">
+          <caret line="791" selection-start-line="791" selection-end-line="893" selection-end-column="34" />
           <folding>
             <element signature="e#0#82#0" expanded="true" />
-            <marker date="1543267603407" expanded="true" signature="32078:32851" ph="..." />
-            <marker date="1543267603407" expanded="true" signature="49618:49619" ph="..." />
-            <marker date="1543267603407" expanded="true" signature="87204:89402" ph="..." />
+            <marker date="1543501173054" expanded="true" signature="32328:33101" ph="..." />
+            <marker date="1543501173054" expanded="true" signature="49868:49869" ph="..." />
+            <marker date="1543501173054" expanded="true" signature="87789:89987" ph="..." />
           </folding>
         </state>
       </provider>
