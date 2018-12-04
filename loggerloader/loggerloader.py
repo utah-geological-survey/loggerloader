@@ -2045,13 +2045,11 @@ class wellimport(object):
     def one_well(self):
         """Used in SingleTransducerImport Class.  This tool leverages the imp_one_well function to load a single well
         into the UGS SDE"""
-        arcpy.env.workspace = self.sde_conn
-        loc_table = "UGGP.UGGPADMIN.UGS_NGWMN_Monitoring_Locations"
 
-        loc_names = [str(row[0]) for row in arcpy.da.SearchCursor(loc_table, 'LocationName')]
-        loc_ids = [str(row[0]) for row in arcpy.da.SearchCursor(loc_table, 'AltLocationID')]
+        loc_table = "MonitoringLocations"
 
-        iddict = dict(zip(loc_names, loc_ids))
+        df = pull_well_table(engine)
+        iddict = df.reset_index().set_index(['LocationName']).to_dict()
 
         if self.man_startdate in ["#", "", None]:
             self.man_startdate, self.man_start_level, wlelev = find_extreme(self.wellid)
@@ -2187,7 +2185,6 @@ class wellimport(object):
 
     def many_wells(self):
         """Used by the MultTransducerImport tool to import multiple wells into the SDE"""
-        arcpy.env.workspace = self.sde_conn
         conn_file_root = self.sde_conn
         jumptol = self.jumptol
 
@@ -2304,6 +2301,7 @@ class wellimport(object):
         last_date = self.man_enddate
         save_local = self.save_location
         quer = self.quer
+
         if first_date == '':
             first_date = None
         if last_date == '':
@@ -2312,16 +2310,21 @@ class wellimport(object):
         if quer == 'all stations':
             where_clause = None
         elif quer == 'wetland_piezometers':
-            where_clause = "WLNetworkName IN('Snake Valley Wetlands','Mills-Mona Wetlands')"
+            where_clause = """"WLNetworkN" IN('Snake Valley Wetlands','Mills-Mona Wetlands')"""
         elif quer == 'snake valley wells':
-            where_clause = "WLNetworkName IN('Snake Valley')"
+            where_clause = """"WLNetworkN" IN('Snake Valley')"""
         elif quer == 'hazards':
-            where_clause = 'Hazards'
+            where_clause = """"WLNetworkN" IN('Hazards')"""
         else:
             where_clause = None
 
-        loc_table = "UGGP.UGGPADMIN.UGS_NGWMN_Monitoring_Locations"
-        loc_ids = [str(row[0]) for row in arcpy.da.SearchCursor(loc_table, 'AltLocationID', where_clause)]
+        if where_clause:
+            sql = 'SELECT "AltLocat_1" FROM "MonitoringLocations" WHERE ' + where_clause
+        else:
+            sql = 'SELECT "AltLocat_1" FROM "MonitoringLocations"'
+
+        loc_ids = list(pd.read_sql(sql, engine)['AltLocat_1'].values)
+
         gapdct = {}
 
         for site_number in loc_ids:
