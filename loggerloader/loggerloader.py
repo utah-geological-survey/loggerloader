@@ -4,6 +4,8 @@ import io
 import os
 import glob
 import re
+import sqlalchemy
+
 
 try:
     from urllib.request import urlopen
@@ -710,9 +712,7 @@ class PullOutsideBaro(object):
 
 def imp_one_well(well_file, baro_file, man_startdate, man_start_level, man_endate, man_end_level,
                  conn_file_root, wellid, be=None,
-                 gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading", drift_tol=0.3, override=False):
-    arcpy.env.workspace = conn_file_root
-
+                 gw_reading_table="readings", drift_tol=0.3, override=False):
     # convert raw files to dataframes
     well = NewTransImp(well_file).well
     baro = NewTransImp(baro_file).well
@@ -756,24 +756,6 @@ def imp_one_well(well_file, baro_file, man_startdate, man_start_level, man_endat
     else:
         print('Well {:} drift greater than tolerance!'.format(wellid))
     return df, man, be, drift
-
-def pull_exist_ts_data(wellid, first_index, last_index, conn_file_root,
-                       gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading"):
-    # Pull any existing data from the database for the well in the date range of the new data
-    query = "WHERE LOCATIONID = {: .0f} AND READINGDATE >= '{:}' AND READINGDATE <= '{:}'\n".format(wellid, first_index, last_index)
-    select_statement = "SELECT READINGDATE, WATERELEVATION FROM {:}\n".format(gw_reading_table)
-    sql_sn = 'ORDER BY READINGDATE ASC;'
-    SQL = select_statement + query + sql_sn
-    conn = arcpy.ArcSDESQLExecute(conn_file_root)
-    egdb_return = conn.execute(SQL)
-    print(query)
-
-    # this accomodates for an empty return
-    if type(egdb_return) == bool and egdb_return == True:
-        existing_data = []
-    else:
-        existing_data = pd.DataFrame(egdb_return, columns=['READINGDATE', 'WATERELEVATION'])
-    return existing_data
 
 def simp_imp_well(well_file, baro_out, wellid, manual, conn_file_root, stbl_elev=True, be=None,
                   gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading", drift_tol=0.3, jumptol=1.0, override=False,
@@ -834,8 +816,7 @@ def simp_imp_well(well_file, baro_out, wellid, manual, conn_file_root, stbl_elev
     last_index = corrwl.last_valid_index()
 
     # Pull any existing data from the database for the well in the date range of the new data
-    existing_data = pull_exist_ts_data(wellid, first_index, last_index, conn_file_root,
-                       gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading")
+    existing_data = get_location_data(wellid, conn_file_root, first_index, last_index)
 
     dft = fix_drift(corrwl, man, corrwl='corrwl', manmeas='MeasuredDTW', wellid = wellid,
                     well_table=well_table, conn_file_root=conn_file_root)
@@ -933,39 +914,20 @@ def upload_bp_data(df, site_number, return_df=False, overide=False, gw_reading_t
 # -----------------------------------------------------------------------------------------------------------------------
 # The following modify and query an SDE database, assuming the user has a connection
 
-def find_extreme(site_number, gw_table="UGGP.UGGPADMIN.UGS_GW_reading", extma='max'):
-    """
-    Find date extrema from a SDE table using query parameters
-    :param site_number: LocationID of the site of interest
-    :param gw_table: SDE table to be queried
-    :param extma: options are 'max' (default) or 'min'
-    :return: date of extrema, depth to water of extrema, water elevation of extrema
-    """
-    # TODO MAke fast with SQL
-    arcpy.env.overwriteOutput = True
+def find_extreme(site_number, gw_table="readings", sort_by= 'READINGDATE', extma='max'):
 
-    if extma == 'max':
-        sort = 'DESC'
+    if extma == 'max' or extma == 'DESC':
+        lorder = 'DESC'
     else:
-        sort = 'ASC'
-    query = "LOCATIONID = '{:.0f}'".format(site_number)
-    field_names = ['READINGDATE', 'LOCATIONID', 'MEASUREDDTW', 'WATERELEVATION']
-    sql_sn = ('TOP 1', 'ORDER BY READINGDATE {:}'.format(sort))
-    # use a search cursor to iterate rows
-    dateval, dtw, wlelev = [], [], []
+        lorder = 'ASC'
 
-    envtable = os.path.join(arcpy.env.workspace, gw_table)
+    sql = """SELECT * FROM {:} WHERE "LOCATIONID" = {:} AND "{:}" IS NOT NULL
+    ORDER by "{:}" {:}
+    LIMIT 1""".format(gw_table, site_number, sort_by, sort_by, lorder)
 
-    with arcpy.da.SearchCursor(envtable, field_names, query, sql_clause=sql_sn) as search_cursor:
-        # iterate the rows
-        for row in search_cursor:
-            dateval.append(row[0])
-            dtw.append(row[1])
-            wlelev.append(row[2])
-    if len(dateval) < 1:
-        return None, 0, 0
-    else:
-        return dateval[0], dtw[0], wlelev[0]
+
+    df = pd.read_sql(sql, engine)
+    return df['READINGDATE'][0],df['MEASUREDDTW'][0],df['WATERELEVATION'][0]
 
 
 def get_gap_data(site_number, enviro, gap_tol=0.5, first_date=None, last_date=None,
@@ -981,8 +943,6 @@ def get_gap_data(site_number, enviro, gap_tol=0.5, first_date=None, last_date=No
     :return: pandas dataframe with gap information
     """
     # TODO MAke fast with SQL
-    arcpy.env.workspace = enviro
-
     if first_date is None:
         first_date = datetime.datetime(1900, 1, 1)
     if last_date is None:
@@ -993,45 +953,22 @@ def get_gap_data(site_number, enviro, gap_tol=0.5, first_date=None, last_date=No
     else:
         site_number = [site_number]
 
-    query_txt = "LOCATIONID IN({:}) AND READINGDATE >= '{:}' AND READINGDATE <= '{:}'"
-    query = query_txt.format(','.join([str(i) for i in site_number]), first_date, last_date)
+    query_txt = """SELECT "READINGDATE","LOCATIONID" FROM {:}
+    WHERE "LOCATIONID" IN ({:}) AND "READINGDATE" >= '{:}' AND "READINGDATE" <= '{:}'
+    ORDER BY "LOCATIONID" ASC, "READINGDATE" ASC"""
+    query = query_txt.format(gw_reading_table, ','.join([str(i) for i in site_number]), first_date, last_date)
+    df = pd.read_sql(query, con=enviro,
+                     parse_dates={'READINGDATE': '%Y-%m-%d %H:%M:%s-%z'})
 
-    sql_sn = (None, 'ORDER BY READINGDATE ASC')
+    df['t_diff'] = df['READINGDATE'].diff()
 
-    fieldnames = ['READINGDATE']
-
-    # readings = table_to_pandas_dataframe(gw_reading_table, fieldnames, query, sql_sn)
-
-    dt = []
-
-    # use a search cursor to iterate rows
-    with arcpy.da.SearchCursor(gw_reading_table, 'READINGDATE', query, sql_clause=sql_sn) as search_cursor:
-        # iterate the rows
-        for row in search_cursor:
-            # combine the field names and row items together, and append them
-            dt.append(row[0])
-
-    df = pd.Series(dt, name='DateTime')
-    df = df.to_frame()
-    df['hr_diff'] = df['DateTime'].diff()
-    df.set_index('DateTime', inplace=True)
-    df['julian'] = df.index.to_julian_date()
-    df['diff'] = df['julian'].diff()
-    df['is_gap'] = df['diff'] > gap_tol
-
-    def rowindex(rownm):
-        return rownm.name
-
-    df['gap_end'] = df.apply(lambda x: rowindex(x) if x['is_gap'] else pd.NaT, axis=1)
-    df['gap_start'] = df.apply(lambda x: rowindex(x) - x['hr_diff'] if x['is_gap'] else pd.NaT, axis=1)
-    df = df[df['is_gap'] == True]
+    df = df[df['t_diff'] > pd.Timedelta('1D')]
+    df.sort_values('t_diff', ascending=False)
     return df
 
 
 def get_location_data(site_numbers, enviro, first_date=None, last_date=None, limit=None,
-                      gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading"):
-    arcpy.env.workspace = enviro
-
+                      gw_reading_table="readings"):
     # fill in missing date info
     if not first_date:
         # set first date to begining of 20th century
@@ -1051,22 +988,16 @@ def get_location_data(site_numbers, enviro, first_date=None, last_date=None, lim
     else:
         pass
 
-    # fieldnames = get_field_names(gw_reading_table)
-    fieldnames = ['READINGDATE', 'MEASUREDLEVEL', 'LOCATIONID']
-    fields = ",".join([str(i) for i in fieldnames])
+    sql = """SELECT * FROM {:} 
+    WHERE "LOCATIONID" IN ({:}) AND "READINGDATE" >= '{:}' AND "READINGDATE" <= '{:}'
+    ORDER BY "LOCATIONID" ASC, "READINGDATE" ASC""".format(gw_reading_table, site_numbers, first_date, last_date)
 
-    # assemble SQL
-    select_statement = "SELECT {:} FROM {:}\n".format(fields, gw_reading_table)
-    query_txt = "WHERE LOCATIONID in({:}) and (READINGDATE >= '{:%m/%d/%Y}' and READINGDATE <= '{:%m/%d/%Y}')\n"
-    query = query_txt.format(site_numbers, first_date, last_date + datetime.timedelta(days=1))
-    sql_sn = 'ORDER BY READINGDATE ASC;'
-    SQL = select_statement + query + sql_sn
+    if limit:
+        sql += "\nLIMIT {:}".format(limit)
 
-    conn = arcpy.ArcSDESQLExecute(enviro)
-    egdb_return = conn.execute(SQL)
+    print(sql)
+    readings = pd.read_sql(sql, con=enviro, parse_dates={'READINGDATE': '%Y-%m-%d %H:%M:%s-%z'})
 
-    readings = pd.DataFrame(egdb_return, columns=fieldnames)
-    readings['READINGDATE'] = pd.to_datetime(readings['READINGDATE'])
     readings.set_index(['LOCATIONID', 'READINGDATE'], inplace=True)
     if len(readings) == 0:
         print('No Records for location(s) {:}'.format(site_numbers))
@@ -1783,7 +1714,8 @@ def compile_end_beg_dates(infile):
 
 class HeaderTable(object):
     def __init__(self, folder, filedict=None, filelist=None, workspace=None,
-                 loc_table="UGGP.UGGPADMIN.UGS_NGWMN_Monitoring_Locations"):
+                 conn_file_root = None,
+                 loc_table="MonitoringLocations"):
         """
 
         Args:
@@ -1807,13 +1739,8 @@ class HeaderTable(object):
         else:
             self.workspace = folder
 
-
-        if arcpy.Exists(loc_table):
-            self.loc_table = loc_table
-            print("Copying sites table !")
-
-        else:
-            print("Sites table not found in working directory!")
+        self.loc_table = pull_well_table(conn_file_root)
+        print("Copying sites table!")
 
     def get_ftype(self, x):
         if x[1] == 'Solinst':
@@ -1821,26 +1748,6 @@ class HeaderTable(object):
         else:
             ft = '.csv'
         return self.filedict.get(x[0] + ft)
-
-    def pull_sde_table(self):
-        # populate dataframe with data from SDE well table
-        field_names = ['LocationID', 'LocationName', 'LocationType', 'LocationDesc', 'AltLocationID', 'VerticalMeasure',
-                       'VerticalUnit', 'WellDepth', 'SiteID', 'Offset', 'LoggerType', 'BaroEfficiency',
-                       'Latitude', 'Longitude', 'BaroEfficiencyStart', 'BaroLoggerType']
-
-        locquery = "WHERE AltLocationID is not Null\n"
-        sql_sn = "ORDER BY AltLocationID ASC;"
-
-        fields = ",".join([str(i) for i in field_names])
-        select_statement = "SELECT {:} FROM {:}\n".format(fields, self.loc_table)
-        SQL = select_statement + locquery + sql_sn
-
-        conn = arcpy.ArcSDESQLExecute(self.workspace)
-        egdb_return = conn.execute(SQL)
-
-        df = pd.DataFrame(egdb_return, columns=field_names)
-
-        return df
 
     # examine and tabulate header information from files
 
@@ -1875,7 +1782,7 @@ class HeaderTable(object):
         for i in ['Latitude', 'Longitude']:
             if i in file_info_table.columns:
                 file_info_table.drop(i, axis=1, inplace=True)
-        df = self.pull_sde_table()
+        df = pull_well_table()
         well_table = pd.merge(file_info_table, df, right_on='LocationName', left_on='WellName', how='left')
         well_table.set_index('AltLocationID', inplace=True)
         well_table['WellID'] = well_table.index
@@ -1988,7 +1895,6 @@ class baroimport(object):
 
     def many_baros(self):
         """Used by the MultBarometerImport tool to import multiple wells into the SDE"""
-        arcpy.env.workspace = self.sde_conn
 
         self.xledir = self.xledir + r"\\"
 

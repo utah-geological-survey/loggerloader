@@ -4,8 +4,9 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="fixed some issues with get recent date">
+    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="Added No_arcpy Branch">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/loggerloader/loggerloader.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/loggerloader.py" afterDir="false" />
     </list>
     <ignored path="E:\My Drive\Python\Pycharm\loggerloader\.idea\shelf/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -24,9 +25,9 @@
     <SUITE FILE_PATH="coverage/loggerloader$Doctest_get_breakpoints.coverage" NAME="Doctest get_breakpoints Coverage Results" MODIFIED="1539288593261" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
     <SUITE FILE_PATH="coverage/loggerloader$Nosetests_for_test_testcalc_slope_and_intercept.coverage" NAME="Nosetests for test.testcalc_slope_and_intercept Coverage Results" MODIFIED="1540418469728" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
     <SUITE FILE_PATH="coverage/loggerloader$Doctest_get_stickup.coverage" NAME="Doctest get_stickup Coverage Results" MODIFIED="1539298257035" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
-    <SUITE FILE_PATH="coverage/loggerloader$Doctest_pull_closest_well_data.coverage" NAME="Doctest pull_closest_well_data Coverage Results" MODIFIED="1539287364904" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
     <SUITE FILE_PATH="coverage/loggerloader$Doctest_printmes.coverage" NAME="Doctest printmes Coverage Results" MODIFIED="1539288921869" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
     <SUITE FILE_PATH="coverage/loggerloader$Nosetests_for_test_testcalc_drift.coverage" NAME="Nosetests for test.testcalc_drift Coverage Results" MODIFIED="1540418784977" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
+    <SUITE FILE_PATH="coverage/loggerloader$Doctest_pull_closest_well_data.coverage" NAME="Doctest pull_closest_well_data Coverage Results" MODIFIED="1543849377166" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
     <SUITE FILE_PATH="coverage/loggerloader$Doctest_calc_drift.coverage" NAME="Doctest calc_drift Coverage Results" MODIFIED="1539286353823" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
   </component>
   <component name="CreatePatchCommitExecutor">
@@ -43,7 +44,16 @@
     <option name="HIDDEN_KINDS">
       <set />
     </option>
-    <expand />
+    <expand>
+      <path>
+        <item name="Database" type="3277223f:DatabaseStructure$DbRootGroup" />
+        <item name="transducer@localhost" type="feb32156:DbDataSourceImpl" />
+      </path>
+      <path>
+        <item name="Database" type="3277223f:DatabaseStructure$DbRootGroup" />
+        <item name="UGGP@uggp.agrc.utah.gov" type="feb32156:DbDataSourceImpl" />
+      </path>
+    </expand>
     <select />
   </component>
   <component name="FUSProjectUsageTrigger">
@@ -155,37 +165,45 @@
     <session id="1948972349">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="7" />
+          <entry key="project.closed" value="8" />
           <entry key="project.open.time.0" value="1" />
           <entry key="project.open.time.5" value="2" />
-          <entry key="project.open.time.6" value="3" />
+          <entry key="project.open.time.6" value="4" />
           <entry key="project.open.time.7" value="2" />
-          <entry key="project.opened" value="8" />
+          <entry key="project.opened" value="9" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="PLAIN_TEXT" value="112" />
-          <entry key="Python" value="2479" />
+          <entry key="PLAIN_TEXT" value="152" />
+          <entry key="Python" value="2908" />
+          <entry key="SQL" value="1" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
         <counts>
           <entry key="py" value="2" />
           <entry key="pyt" value="1" />
+          <entry key="sql" value="2" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="py" value="2232" />
+          <entry key="py" value="2662" />
           <entry key="pyt" value="247" />
-          <entry key="txt" value="112" />
+          <entry key="txt" value="152" />
         </counts>
       </usages-collector>
-      <usages-collector id="statistics.vcs.git.usages" />
+      <usages-collector id="statistics.vcs.git.usages">
+        <counts>
+          <entry key="git.branch.create.new" value="1" />
+          <entry key="git.branch.delete.local" value="1" />
+        </counts>
+      </usages-collector>
       <usages-collector id="statistics.file.types.open">
         <counts>
           <entry key="Python" value="3" />
+          <entry key="Scratch" value="2" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.js.language.service.starts" />
@@ -195,17 +213,18 @@
     <favorites_list name="loggerloader" />
   </component>
   <component name="FileEditorManager">
-    <leaf>
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="142">
-              <caret line="791" selection-start-line="791" selection-end-line="893" selection-end-column="34" />
+            <state relative-caret-position="241">
+              <caret line="1741" column="25" selection-start-line="1741" selection-start-column="25" selection-end-line="1741" selection-end-column="56" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
-                <marker date="1543501173054" expanded="true" signature="32328:33101" ph="..." />
-                <marker date="1543501173054" expanded="true" signature="49868:49869" ph="..." />
-                <marker date="1543501173054" expanded="true" signature="87789:89987" ph="..." />
+                <marker date="1543949529551" expanded="true" signature="31660:31661" ph="..." />
+                <marker date="1543949529551" expanded="true" signature="46135:46136" ph="..." />
+                <marker date="1543949529551" expanded="true" signature="72547:72551" ph="..." />
+                <marker date="1543949529551" expanded="true" signature="82901:85099" ph="..." />
               </folding>
             </state>
           </provider>
@@ -222,13 +241,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>w</find>
-      <find>chart_out</find>
-      <find>self.</find>
-      <find>wa</find>
-      <find>printmes</find>
-      <find>xmltodict</find>
-      <find>get_ftype</find>
       <find>xle_head_table</find>
       <find>for i in</find>
       <find>906</find>
@@ -251,7 +263,14 @@
       <find>drift</find>
       <find>calc_slope_and_intercept</find>
       <find>get_breakpoints</find>
+      <find>get_field_names</find>
+      <find>table_to_pandas_dataframe</find>
+      <find>Arcpy</find>
+      <find>pull_exist_ts_data</find>
       <find>arcpy</find>
+      <find>pull_sde_table</find>
+      <find>pull_well_table</find>
+      <find>pull_ex</find>
     </findStrings>
     <replaceStrings>
       <replace>altid</replace>
@@ -260,13 +279,32 @@
     </replaceStrings>
   </component>
   <component name="Git.Settings">
+    <option name="PREVIOUS_COMMIT_AUTHORS">
+      <list>
+        <option value="paulinkenbrandt@utah.gov" />
+        <option value="PI" />
+      </list>
+    </option>
     <option name="UPDATE_TYPE" value="REBASE" />
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="modularize" />
+        <entry key="$PROJECT_DIR$" value="master" />
       </map>
     </option>
+    <favorite-branches>
+      <branch-storage>
+        <map>
+          <entry type="LOCAL">
+            <value>
+              <list>
+                <branch-info repo="$PROJECT_DIR$" source="no_arcpy" />
+              </list>
+            </value>
+          </entry>
+        </map>
+      </branch-storage>
+    </favorite-branches>
   </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
@@ -309,8 +347,8 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-123" />
-    <option name="y" value="-8" />
+    <option name="x" value="-1940" />
+    <option name="y" value="-25" />
     <option name="width" value="1874" />
     <option name="height" value="1096" />
   </component>
@@ -345,6 +383,7 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
+    <property name="DatabaseDriversLRU" value="postgresql&#10;sqlserver&#10;oracle" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$USER_HOME$/.conda/envs" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
@@ -372,7 +411,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python tests.Nosetests in test.py">
+  <component name="RunManager" selected="Python tests.Doctest pull_closest_well_data">
     <configuration default="true" type="tests" factoryName="Attests">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -392,7 +431,7 @@
       <option name="USE_PATTERN" value="false" />
       <method />
     </configuration>
-    <configuration name="Doctest calc_slope_and_intercept" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
+    <configuration name="Doctest pull_closest_well_data" type="tests" factoryName="Doctests" temporary="true" nameIsGenerated="true">
       <module name="loggerloader" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -404,7 +443,7 @@
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/loggerloader/loggerloader.py" />
       <option name="CLASS_NAME" value="" />
-      <option name="METHOD_NAME" value="calc_slope_and_intercept" />
+      <option name="METHOD_NAME" value="pull_closest_well_data" />
       <option name="FOLDER_NAME" value="" />
       <option name="TEST_TYPE" value="TEST_FUNCTION" />
       <option name="PATTERN" value="" />
@@ -476,19 +515,19 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python tests.Doctest calc_slope_and_intercept" />
       <item itemvalue="Python tests.Nosetests for test.testcalc_slope_and_intercept" />
       <item itemvalue="Python tests.Nosetests for test.testget_breakpoints" />
       <item itemvalue="Python tests.Nosetests for test.testcalc_drift" />
       <item itemvalue="Python tests.Nosetests in test.py" />
+      <item itemvalue="Python tests.Doctest pull_closest_well_data" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python tests.Doctest pull_closest_well_data" />
         <item itemvalue="Python tests.Nosetests in test.py" />
         <item itemvalue="Python tests.Nosetests for test.testcalc_drift" />
         <item itemvalue="Python tests.Nosetests for test.testget_breakpoints" />
         <item itemvalue="Python tests.Nosetests for test.testcalc_slope_and_intercept" />
-        <item itemvalue="Python tests.Doctest calc_slope_and_intercept" />
       </list>
     </recent_temporary>
   </component>
@@ -505,20 +544,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
-    </task>
-    <task id="LOCAL-00137" summary="Created PullOutsideBaro">
-      <created>1536154953711</created>
-      <option name="number" value="00137" />
-      <option name="presentableId" value="LOCAL-00137" />
-      <option name="project" value="LOCAL" />
-      <updated>1536154953711</updated>
-    </task>
-    <task id="LOCAL-00138" summary="Created PullOutsideBaro">
-      <created>1536156125088</created>
-      <option name="number" value="00138" />
-      <option name="presentableId" value="LOCAL-00138" />
-      <option name="project" value="LOCAL" />
-      <updated>1536156125088</updated>
     </task>
     <task id="LOCAL-00139" summary="fixing upload baro data">
       <created>1536159127397</created>
@@ -849,19 +874,24 @@
       <option name="project" value="LOCAL" />
       <updated>1543536069390</updated>
     </task>
-    <option name="localTasksCounter" value="186" />
+    <task id="LOCAL-00186" summary="Added No_arcpy Branch">
+      <created>1543846134153</created>
+      <option name="number" value="00186" />
+      <option name="presentableId" value="LOCAL-00186" />
+      <option name="project" value="LOCAL" />
+      <updated>1543846134153</updated>
+    </task>
+    <task id="LOCAL-00187" summary="Added No_arcpy Branch">
+      <created>1543878957581</created>
+      <option name="number" value="00187" />
+      <option name="presentableId" value="LOCAL-00187" />
+      <option name="project" value="LOCAL" />
+      <updated>1543878957581</updated>
+    </task>
+    <option name="localTasksCounter" value="188" />
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="Nosetests_for_test_testcalc_slope_and_intercept - 2018.10.24 at 16h 01m 14s.xml">
-      <configuration name="Nosetests for test.testcalc_slope_and_intercept" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Nosetests_for_test_testget_breakpoints - 2018.10.24 at 16h 01m 46s.xml">
-      <configuration name="Nosetests for test.testget_breakpoints" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Nosetests_for_test_testcalc_drift - 2018.10.24 at 16h 06m 29s.xml">
-      <configuration name="Nosetests for test.testcalc_drift" configurationId="tests" />
-    </history-entry>
     <history-entry file="Nosetests_in_test_py - 2018.10.25 at 06h 50m 50s.xml">
       <configuration name="Nosetests in test.py" configurationId="tests" />
     </history-entry>
@@ -883,6 +913,15 @@
     <history-entry file="Nosetests_in_test_py - 2018.10.25 at 07h 31m 35s.xml">
       <configuration name="Nosetests in test.py" configurationId="tests" />
     </history-entry>
+    <history-entry file="Doctest_pull_closest_well_data - 2018.12.03 at 08h 02m 07s.xml">
+      <configuration name="Doctest pull_closest_well_data" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Doctest_pull_closest_well_data - 2018.12.03 at 08h 02m 47s.xml">
+      <configuration name="Doctest pull_closest_well_data" configurationId="tests" />
+    </history-entry>
+    <history-entry file="Doctest_pull_closest_well_data - 2018.12.03 at 08h 02m 57s.xml">
+      <configuration name="Doctest pull_closest_well_data" configurationId="tests" />
+    </history-entry>
   </component>
   <component name="TodoView" selected-index="3">
     <todo-panel id="selected-file">
@@ -894,34 +933,34 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1874" height="1096" extended-state="6" />
+    <frame x="-1688" y="-25" width="1696" height="1036" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.48641977" visible="true" weight="0.26957002" />
-      <window_info active="true" id="Structure" order="1" sideWeight="0.51358026" side_tool="true" visible="true" weight="0.26957002" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.48489934" visible="true" weight="0.301956" />
+      <window_info active="true" id="Structure" order="1" sideWeight="0.51510066" side_tool="true" visible="true" weight="0.301956" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4983462" weight="0.31879544" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49779493" weight="0.31879544" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Version Control" order="7" weight="0.09967846" />
+      <window_info anchor="bottom" id="Version Control" order="7" sideWeight="0.49889746" weight="0.09865005" />
       <window_info anchor="bottom" id="Terminal" order="8" sideWeight="0.4983462" weight="0.32917964" />
-      <window_info anchor="bottom" id="Python Console" order="9" />
-      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.5016538" side_tool="true" visible="true" weight="0.1588785" />
+      <window_info anchor="bottom" id="Python Console" order="9" sideWeight="0.49944875" weight="0.211838" />
+      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.5022051" side_tool="true" visible="true" weight="0.33997786" />
       <window_info anchor="bottom" id="Docker" order="11" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Database Changes" order="12" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Database Changes" order="12" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" id="Data View" order="3" />
       <window_info anchor="right" id="R Graphics" order="4" />
       <window_info anchor="right" id="R Packages" order="5" />
-      <window_info anchor="right" x="0" y="0" width="639" height="951" id="Documentation" order="6" sideWeight="0.50987655" side_tool="true" visible="true" weight="0.29768467" />
-      <window_info anchor="right" id="Database" order="7" sideWeight="0.49012345" visible="true" weight="0.29768467" />
-      <window_info anchor="right" id="SciView" order="8" />
+      <window_info anchor="right" x="0" y="0" width="639" height="951" id="Documentation" order="6" sideWeight="0.51342285" side_tool="true" visible="true" weight="0.2720049" />
+      <window_info anchor="right" id="Database" order="7" sideWeight="0.48657718" visible="true" weight="0.2720049" />
+      <window_info anchor="right" id="SciView" order="8" sideWeight="0.4984756" weight="0.3296582" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -931,7 +970,6 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="updated how baro data is pulled; added function" />
     <MESSAGE value="added import baro data function" />
     <MESSAGE value="reestablished package v0.3" />
     <MESSAGE value="added .lev function" />
@@ -956,7 +994,8 @@
     <MESSAGE value="update tests" />
     <MESSAGE value="update HeaderTable to be more modular" />
     <MESSAGE value="fixed some issues with get recent date" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixed some issues with get recent date" />
+    <MESSAGE value="Added No_arcpy Branch" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added No_arcpy Branch" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/loggerloader/arcstuff.py" />
@@ -1077,15 +1116,22 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$APPLICATION_CONFIG_DIR$/consoles/db/75f7decf-0cfa-4145-9b13-6542166162cc/console.sql">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$APPLICATION_CONFIG_DIR$/consoles/db/ab635038-f13f-4816-8e1b-c95a23f0f9bb/console.sql">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="142">
-          <caret line="791" selection-start-line="791" selection-end-line="893" selection-end-column="34" />
+        <state relative-caret-position="241">
+          <caret line="1741" column="25" selection-start-line="1741" selection-start-column="25" selection-end-line="1741" selection-end-column="56" />
           <folding>
             <element signature="e#0#82#0" expanded="true" />
-            <marker date="1543501173054" expanded="true" signature="32328:33101" ph="..." />
-            <marker date="1543501173054" expanded="true" signature="49868:49869" ph="..." />
-            <marker date="1543501173054" expanded="true" signature="87789:89987" ph="..." />
+            <marker date="1543949529551" expanded="true" signature="31660:31661" ph="..." />
+            <marker date="1543949529551" expanded="true" signature="46135:46136" ph="..." />
+            <marker date="1543949529551" expanded="true" signature="72547:72551" ph="..." />
+            <marker date="1543949529551" expanded="true" signature="82901:85099" ph="..." />
           </folding>
         </state>
       </provider>
