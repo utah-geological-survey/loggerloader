@@ -4,7 +4,7 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="Added No_arcpy Branch">
+    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="removed arcpy references to all functions; made functions feed postgresql database instead">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/loggerloader/loggerloader.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/loggerloader.py" afterDir="false" />
     </list>
@@ -175,23 +175,24 @@
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="PLAIN_TEXT" value="152" />
-          <entry key="Python" value="2908" />
+          <entry key="PLAIN_TEXT" value="266" />
+          <entry key="Python" value="3018" />
           <entry key="SQL" value="1" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
         <counts>
-          <entry key="py" value="2" />
+          <entry key="py" value="3" />
           <entry key="pyt" value="1" />
           <entry key="sql" value="2" />
+          <entry key="txt" value="1" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="py" value="2662" />
+          <entry key="py" value="2772" />
           <entry key="pyt" value="247" />
-          <entry key="txt" value="152" />
+          <entry key="txt" value="266" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.vcs.git.usages">
@@ -202,7 +203,8 @@
       </usages-collector>
       <usages-collector id="statistics.file.types.open">
         <counts>
-          <entry key="Python" value="3" />
+          <entry key="PLAIN_TEXT" value="1" />
+          <entry key="Python" value="4" />
           <entry key="Scratch" value="2" />
         </counts>
       </usages-collector>
@@ -217,15 +219,33 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="241">
-              <caret line="1741" column="25" selection-start-line="1741" selection-start-column="25" selection-end-line="1741" selection-end-column="56" />
+            <state relative-caret-position="88">
+              <caret line="1090" column="55" selection-start-line="1090" selection-start-column="55" selection-end-line="1090" selection-end-column="55" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
-                <marker date="1543949529551" expanded="true" signature="31660:31661" ph="..." />
-                <marker date="1543949529551" expanded="true" signature="46135:46136" ph="..." />
-                <marker date="1543949529551" expanded="true" signature="72547:72551" ph="..." />
-                <marker date="1543949529551" expanded="true" signature="82901:85099" ph="..." />
+                <marker date="1543966500408" expanded="true" signature="31660:31661" ph="..." />
+                <marker date="1543966500408" expanded="true" signature="46179:46180" ph="..." />
+                <marker date="1543966500408" expanded="true" signature="72591:72595" ph="..." />
+                <marker date="1543966500408" expanded="true" signature="82945:85143" ph="..." />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/requirements.txt">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="102">
+              <caret line="6" selection-start-line="6" selection-end-line="6" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/setup.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="510">
+              <caret line="33" column="44" selection-start-line="33" selection-start-column="44" selection-end-line="33" selection-end-column="44" />
             </state>
           </provider>
         </entry>
@@ -326,16 +346,16 @@
         <option value="$PROJECT_DIR$/loggerloader_tbx.pyt" />
         <option value="$PROJECT_DIR$/README.md" />
         <option value="$PROJECT_DIR$/.travis.yml" />
-        <option value="$PROJECT_DIR$/requirements.txt" />
         <option value="$PROJECT_DIR$/loggerloader/.gitignore" />
         <option value="$PROJECT_DIR$/loggerloader/config.py" />
         <option value="$PROJECT_DIR$/VERSION" />
         <option value="$PROJECT_DIR$/loggerloader/__init__.py" />
-        <option value="$PROJECT_DIR$/setup.py" />
         <option value="$APPLICATION_CONFIG_DIR$/idea.properties" />
         <option value="$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt" />
         <option value="$PROJECT_DIR$/test/__init__.py" />
         <option value="$PROJECT_DIR$/test/test.py" />
+        <option value="$PROJECT_DIR$/requirements.txt" />
+        <option value="$PROJECT_DIR$/setup.py" />
         <option value="$PROJECT_DIR$/loggerloader/loggerloader.py" />
       </list>
     </option>
@@ -385,9 +405,9 @@
   <component name="PropertiesComponent">
     <property name="DatabaseDriversLRU" value="postgresql&#10;sqlserver&#10;oracle" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$USER_HOME$/.conda/envs" />
+    <property name="last_opened_file_path" value="C:/Program Files/R/R-3.5.1/bin/R.exe" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+    <property name="settings.editor.selected.configurable" value="RSettings" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
@@ -544,20 +564,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
-    </task>
-    <task id="LOCAL-00139" summary="fixing upload baro data">
-      <created>1536159127397</created>
-      <option name="number" value="00139" />
-      <option name="presentableId" value="LOCAL-00139" />
-      <option name="project" value="LOCAL" />
-      <updated>1536159127397</updated>
-    </task>
-    <task id="LOCAL-00140" summary="fixing upload baro data">
-      <created>1536169012495</created>
-      <option name="number" value="00140" />
-      <option name="presentableId" value="LOCAL-00140" />
-      <option name="project" value="LOCAL" />
-      <updated>1536169012495</updated>
     </task>
     <task id="LOCAL-00141" summary="fixing upload baro data">
       <created>1536169207607</created>
@@ -888,7 +894,21 @@
       <option name="project" value="LOCAL" />
       <updated>1543878957581</updated>
     </task>
-    <option name="localTasksCounter" value="188" />
+    <task id="LOCAL-00188" summary="Added No_arcpy Branch">
+      <created>1543949666273</created>
+      <option name="number" value="00188" />
+      <option name="presentableId" value="LOCAL-00188" />
+      <option name="project" value="LOCAL" />
+      <updated>1543949666273</updated>
+    </task>
+    <task id="LOCAL-00189" summary="removed arcpy references to all functions; made functions feed postgresql database instead">
+      <created>1543952062050</created>
+      <option name="number" value="00189" />
+      <option name="presentableId" value="LOCAL-00189" />
+      <option name="project" value="LOCAL" />
+      <updated>1543952062050</updated>
+    </task>
+    <option name="localTasksCounter" value="190" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -970,7 +990,6 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added import baro data function" />
     <MESSAGE value="reestablished package v0.3" />
     <MESSAGE value="added .lev function" />
     <MESSAGE value="added .lev function format exception" />
@@ -995,7 +1014,8 @@
     <MESSAGE value="update HeaderTable to be more modular" />
     <MESSAGE value="fixed some issues with get recent date" />
     <MESSAGE value="Added No_arcpy Branch" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added No_arcpy Branch" />
+    <MESSAGE value="removed arcpy references to all functions; made functions feed postgresql database instead" />
+    <option name="LAST_COMMIT_MESSAGE" value="removed arcpy references to all functions; made functions feed postgresql database instead" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/loggerloader/arcstuff.py" />
@@ -1031,13 +1051,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/requirements.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="16" selection-start-column="16" selection-end-column="16" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/.travis.yml">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="612">
@@ -1056,13 +1069,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="153">
           <caret line="9" column="20" selection-start-line="9" selection-start-column="20" selection-end-line="9" selection-end-column="20" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/setup.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="391">
-          <caret line="23" column="22" selection-start-line="23" selection-start-column="22" selection-end-line="23" selection-end-column="22" />
         </state>
       </provider>
     </entry>
@@ -1122,16 +1128,30 @@
     <entry file="file://$APPLICATION_CONFIG_DIR$/consoles/db/ab635038-f13f-4816-8e1b-c95a23f0f9bb/console.sql">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
+    <entry file="file://$PROJECT_DIR$/requirements.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="102">
+          <caret line="6" selection-start-line="6" selection-end-line="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/setup.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="510">
+          <caret line="33" column="44" selection-start-line="33" selection-start-column="44" selection-end-line="33" selection-end-column="44" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="241">
-          <caret line="1741" column="25" selection-start-line="1741" selection-start-column="25" selection-end-line="1741" selection-end-column="56" />
+        <state relative-caret-position="88">
+          <caret line="1090" column="55" selection-start-line="1090" selection-start-column="55" selection-end-line="1090" selection-end-column="55" />
           <folding>
             <element signature="e#0#82#0" expanded="true" />
-            <marker date="1543949529551" expanded="true" signature="31660:31661" ph="..." />
-            <marker date="1543949529551" expanded="true" signature="46135:46136" ph="..." />
-            <marker date="1543949529551" expanded="true" signature="72547:72551" ph="..." />
-            <marker date="1543949529551" expanded="true" signature="82901:85099" ph="..." />
+            <marker date="1543966500408" expanded="true" signature="31660:31661" ph="..." />
+            <marker date="1543966500408" expanded="true" signature="46179:46180" ph="..." />
+            <marker date="1543966500408" expanded="true" signature="72591:72595" ph="..." />
+            <marker date="1543966500408" expanded="true" signature="82945:85143" ph="..." />
           </folding>
         </state>
       </provider>

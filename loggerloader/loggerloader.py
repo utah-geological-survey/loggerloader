@@ -1088,9 +1088,10 @@ def edit_table(df, gw_reading_table, fieldnames):
         subset.dropna(subset=['READINGDATE'],inplace=True)
         subset.drop_duplicates(subset=['LOCATIONID','READINGDATE'],inplace=True)
         #subset.drop(['OBJECTID'],axis=1,inplace=True)
-        subset.to_sql('readings_test',engine,chunksize=1000,
+        subset.to_sql(gw_reading_table,engine,chunksize=1000,
                    dtype={'READINGDATE':sqlalchemy.types.DateTime(timezone=True)},
                    index=False, if_exists='append')
+        print('Data Sucessfully Imported')
     else:
         print('No data imported!')
 
