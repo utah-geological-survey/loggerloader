@@ -136,8 +136,10 @@ def pull_closest_well_data(wellid, breakpoint1, conn_file_root, timedel = 3):
     pull_db = [pd.to_datetime(df.index.tz_convert('MST'),'%Y-%m-%d')[0],df['MEASUREDLEVEL'].values[0]*-1]
     return pull_db
 
-def calc_slope_and_intercept(first_man, first_man_julian_date, last_man, last_man_julian_date, first_trans, first_trans_julian_date,
-               last_trans, last_trans_julian_date):
+
+def calc_slope_and_intercept(first_man, first_man_julian_date, last_man, last_man_julian_date, first_trans,
+                             first_trans_julian_date,
+                             last_trans, last_trans_julian_date):
     """
     Calculates slope and offset (y-intercept) between manual measurements and transducer readings.
     Julian date can be any numeric datetime.
@@ -166,28 +168,33 @@ def calc_slope_and_intercept(first_man, first_man_julian_date, last_man, last_ma
     """
     slope_man = 0
     slope_trans = 0
+    first_offset = 0
+    last_offset = 0
     drift = 0.00001
 
-    if (first_man is None) or (first_man_julian_date == last_man_julian_date):
-        b = last_trans - last_man
+    if first_man is None:
+        last_offset = last_trans - last_man
         first_man_julian_date = first_trans_julian_date
         first_man = first_trans
     elif last_man is None:
-        b = first_trans - first_man
+        first_offset = first_trans - first_man
         last_man_julian_date = last_trans_julian_date
         last_man = last_trans
-    elif abs(first_man - last_man) < drift:
-        b = last_trans - last_man
     else:
-        b = first_trans - first_man
+        first_offset = first_trans - first_man
 
-    slope_man = (first_man - last_man) / (first_man_julian_date - last_man_julian_date)
-    slope_trans = (first_trans - last_trans) / (first_trans_julian_date - last_trans_julian_date)
-    drift = ((last_trans - last_man) - b)
+        slope_man = (first_man - last_man) / (first_man_julian_date - last_man_julian_date)
+        slope_trans = (first_trans - last_trans) / (first_trans_julian_date - last_trans_julian_date)
 
     new_slope = slope_trans - slope_man
 
-    return new_slope, b, slope_man, slope_trans, drift
+    if first_offset == 0:
+        b = last_offset
+    else:
+        b = first_offset
+
+    return new_slope, b, slope_man, slope_trans
+
 
 def calc_drift(df, corrwl, outcolname, m, b):
     """
@@ -212,13 +219,21 @@ def calc_drift(df, corrwl, outcolname, m, b):
         6.0
     """
     # datechange = amount of time between manual measurements
+    samp_int = pd.Timedelta('1D') / df.index.to_series().diff().mean()
+    slope_adj_for_samp_int = m * samp_int
+    last_julian_date = df.loc[df.index[-1], 'julian']
     initial_julian_date = df.loc[df.index[0], 'julian']
+
+    total_date_change = last_julian_date - initial_julian_date
+    drift = m * total_date_change
     df.loc[:, 'datechange'] = df['julian'] - initial_julian_date
-    df.loc[:, 'DRIFTCORRECTION'] = df['datechange'].apply(lambda x: x* m + b,1)
+
+    df.loc[:, 'DRIFTCORRECTION'] = df['datechange'].apply(lambda x: x * m, 1) + b
     df.loc[:, outcolname] = df[corrwl] - df['DRIFTCORRECTION']
     df.sort_index(inplace=True)
 
-    return df
+    return df, drift
+
 
 def calc_drift_features(first_man, first_man_date, last_man, last_man_date, first_trans, first_trans_date,
                last_trans, last_trans_date, b, m, slope_man, slope_trans, drift):
@@ -247,8 +262,9 @@ def calc_drift_features(first_man, first_man_date, last_man, last_man_date, firs
                          'first_trans': first_trans, 'last_trans': last_trans, 'drift':drift}
     return drift_features
 
-def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolname='DTW_WL', wellid =  None,
-              conn_file_root = None, well_table=None):
+
+def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolname='DTW_WL', wellid=None,
+              conn_file_root=None, well_table=None):
     """Remove transducer drift from nonvented transducer data. Faster and should produce same output as fix_drift_stepwise
 
     Args:
@@ -304,7 +320,7 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
         df = bracketedwls[i]
 
         if len(df) > 0:
-            print("Processing dates {:} to {:}".format(breakpoints[i],breakpoints[i + 1]))
+            print("Processing dates {:} to {:}".format(breakpoints[i], breakpoints[i + 1]))
             df.sort_index(inplace=True)
             df.loc[:, 'julian'] = df.index.to_julian_date()
 
@@ -319,51 +335,54 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
                     pull_db[1] = pull_db[1] - offset
 
             else:
-                pull_db = [None,None]
+                pull_db = [None, None]
 
-            last_trans = df.loc[df.last_valid_index(), corrwl]  # last transducer measurement
-            first_trans = df.loc[df.first_valid_index(), corrwl]  # first transducer measurement
+            first_trans = fcl(df[corrwl], breakpoints[i])  # last transducer measurement
+            last_trans = fcl(df[corrwl], breakpoints[i + 1])  # first transducer measurement
             first_trans_julian_date = df.loc[df.first_valid_index(), 'julian']
             last_trans_julian_date = df.loc[df.last_valid_index(), 'julian']
             first_trans_date = df.first_valid_index()
             last_trans_date = df.last_valid_index()
 
-            man_df1 = fcl(manualfile, breakpoints[i])
             man_df2 = fcl(manualfile, breakpoints[i + 1])
-            first_man_julian_date = man_df1['julian']
-            last_man_julian_date = man_df2['julian']
-            first_man_date = man_df1['datetime']
-            last_man_date = man_df2['datetime']
-            first_man = man_df1[manmeas] # first manual measurement
-            last_man = man_df2[manmeas] # last manual measurement
+            first_man_julian_date = fcl(manualfile['julian'], breakpoints[i])
+            last_man_julian_date = fcl(manualfile['julian'], breakpoints[i + 1])
+            first_man_date = fcl(manualfile['datetime'], breakpoints[i])
+            last_man_date = fcl(manualfile['datetime'], breakpoints[i + 1])
+            first_man = fcl(manualfile[manmeas], breakpoints[i])  # first manual measurement
+            last_man = fcl(manualfile[manmeas], breakpoints[i + 1])  # last manual measurement
 
             if first_trans_date - datetime.timedelta(days=3) > first_man_date:
                 print('No initial manual measurement within 3 days of {:}.'.format(first_trans_date))
 
-                if (pull_db[0] is not None) and (first_trans_date - datetime.timedelta(days=3) < pd.to_datetime(pull_db[0])):
+                if (pull_db[0] is not None) and (
+                        first_trans_date - datetime.timedelta(days=3) < pd.to_datetime(pull_db[0])):
                     first_man = pull_db[1]
                     first_man_julian_date = pd.to_datetime(pull_db[0]).to_julian_date()
                 else:
                     print('No initial transducer measurement within 3 days of {:}.'.format(first_trans_date))
                     first_man = None
+                    first_man_date = None
 
-            if last_trans_date + datetime.timedelta(days=3) < last_man_date:
+            if last_trans_date + datetime.timedelta(days=3) < last_man_date or last_trans_date - datetime.timedelta(
+                    days=3) > last_man_date:
                 print('No final manual measurement within 3 days of {:}.'.format(last_trans_date))
                 last_man = None
+                last_man_date = None
 
-            slope, b, slope_man, slope_trans, drift = calc_slope_and_intercept(first_man, first_man_julian_date,
-                                                                            last_man, last_man_julian_date, first_trans,
-                                                                            first_trans_julian_date, last_trans,
-                                                                            last_trans_julian_date)
+            slope, b, slope_man, slope_trans = calc_slope_and_intercept(first_man, first_man_julian_date,
+                                                                        last_man, last_man_julian_date, first_trans,
+                                                                        first_trans_julian_date, last_trans,
+                                                                        last_trans_julian_date)
 
             # intercept of line = value of first manual measurement
             if pd.isna(first_man):
-                print('First manual measurement missing between {:} and {:}'.format(breakpoints[i],breakpoints[i + 1]))
-                print("Last man = {:}\nLast man date = {:%Y-%m-%d %H:%M}".format(last_man,last_man_date))
+                print('First manual measurement missing between {:} and {:}'.format(breakpoints[i], breakpoints[i + 1]))
+                print("Last man = {:}\nLast man date = {:%Y-%m-%d %H:%M}".format(last_man, last_man_date))
 
             elif pd.isna(last_man):
                 print('Last manual measurement missing between {:} and {:}'.format(breakpoints[i], breakpoints[i + 1]))
-                print("First man = {:}\nFirst man date = {:%Y-%m-%d %H:%M}".format(first_man,first_man_date))
+                print("First man = {:}\nFirst man date = {:%Y-%m-%d %H:%M}".format(first_man, first_man_date))
             else:
                 print("""First man = {:0.3f}, Last man = {:0.3f}
     First man date = {:%Y-%m-%d %H:%M},
@@ -372,13 +391,18 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
     First trans = {:0.3f}, Last trans = {:0.3f}
     First trans date = {:%Y-%m-%d %H:%M}
     Last trans date = {::%Y-%m-%d %H:%M}""".format(first_man, last_man, first_man_date,
-                                                 last_man_date, first_trans,last_trans,
-                                                first_trans_date, last_trans_date))
-            print("Slope = {:0.3f} and Intercept = {:0.3f}".format(slope, b))
+                                                   last_man_date, first_trans, last_trans,
+                                                   first_trans_date, last_trans_date))
 
-            bracketedwls[i] = calc_drift(df, corrwl, outcolname, slope, b)
-            drift_features[i] = calc_drift_features(first_man, first_man_date, last_man, last_man_date, first_trans, first_trans_date,
-                                last_trans, last_trans_date, b, slope, slope_man, slope_trans, drift)
+            bracketedwls[i], drift = calc_drift(df, corrwl, outcolname, slope, b)
+            print("""Manual Slope = {:}
+Transducer Slope = {:}
+Slope = {:0.3f} and Intercept = {:0.3f}
+Drift = {:}""".format(slope_man, slope_trans, slope, b, drift))
+            drift_features[i] = calc_drift_features(first_man, first_man_date, last_man, last_man_date, first_trans,
+                                                    first_trans_date,
+                                                    last_trans, last_trans_date, b, slope, slope_man, slope_trans,
+                                                    drift)
         else:
             pass
 
@@ -386,8 +410,8 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
     wellbarofixed.reset_index(inplace=True)
     wellbarofixed.set_index(dtnm, inplace=True)
     drift_info = pd.DataFrame(drift_features).T
-
-    return wellbarofixed, drift_info
+    max_drift = drift_info['drift'].abs().max()
+    return wellbarofixed, drift_info, max_drift
 
 
 def pull_elev_and_stickup(site_number, manual, well_table=None, conn_file_root=None, stable_elev=True):
@@ -738,10 +762,8 @@ def imp_one_well(well_file, baro_file, man_startdate, man_start_level, man_endat
         corrwl['corrwl'] = corrwl['BAROEFFICIENCYLEVEL']
 
     # adjust for linear transducer drift between manual measurements
-    dft = fix_drift(corrwl, man, corrwl='corrwl', manmeas='MeasuredDTW')
-    drift = round(float(dft[1]['drift'].values[0]), 3)
-    print('Drift for well {:} is {:.3f}.'.format(wellid, drift))
-    df = dft[0]
+    df, drift_info, drift = fix_drift(corrwl, man, corrwl='corrwl', manmeas='MeasuredDTW')
+    print('Maximum Drift for well {:} is {:.3f}.'.format(wellid, drift))
 
     # add, remove, and arrange column names to match database format schema
     rowlist, fieldnames = get_trans_gw_elevations(df, stickup, well_elev, wellid)
@@ -996,8 +1018,10 @@ def get_location_data(site_numbers, enviro, first_date=None, last_date=None, lim
         sql += "\nLIMIT {:}".format(limit)
 
     print(sql)
-    readings = pd.read_sql(sql, con=enviro, parse_dates={'READINGDATE': '%Y-%m-%d %H:%M:%s-%z'})
-
+    readings = pd.read_sql(sql, con=enviro, parse_dates={'READINGDATE': '%Y-%m-%d %H:%M:%s-%z'}, index_col='READINGDATE')
+    readings.index = pd.to_datetime(readings.index,infer_datetime_format=True,utc=True)
+    readings.index = readings.index.tz_convert(tz='MST')
+    readings.reset_index(inplace=True)
     readings.set_index(['LOCATIONID', 'READINGDATE'], inplace=True)
     if len(readings) == 0:
         print('No Records for location(s) {:}'.format(site_numbers))
