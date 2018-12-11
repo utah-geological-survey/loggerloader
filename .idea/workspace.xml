@@ -4,7 +4,7 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="removed arcpy references to all functions; made functions feed postgresql database instead">
+    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="major changes to drift functions calc_drift, fix_drift, and calc_slope_and_intercept&#10;Old script did not identify missing last manual measurements, nor did it correct slope if only last manual measurement was available.  Drift was calculated incorrectly and data were getting rejected.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/loggerloader/loggerloader.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/loggerloader.py" afterDir="false" />
     </list>
@@ -64,13 +64,13 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="156">
-              <caret line="772" column="34" lean-forward="true" selection-start-line="772" selection-start-column="34" selection-end-line="772" selection-end-column="34" />
+            <state relative-caret-position="292">
+              <caret line="549" column="48" lean-forward="true" selection-start-line="549" selection-start-column="48" selection-end-line="549" selection-end-column="48" />
               <folding>
-                <marker date="1544140168395" expanded="true" signature="32473:32474" ph="..." />
-                <marker date="1544140168395" expanded="true" signature="47200:47201" ph="..." />
-                <marker date="1544140168395" expanded="true" signature="73612:73616" ph="..." />
-                <marker date="1544140168395" expanded="true" signature="83966:86164" ph="..." />
+                <marker date="1544489763861" expanded="true" signature="32470:32471" ph="..." />
+                <marker date="1544489763861" expanded="true" signature="47131:47132" ph="..." />
+                <marker date="1544489763861" expanded="true" signature="73543:73547" ph="..." />
+                <marker date="1544489763861" expanded="true" signature="83897:86095" ph="..." />
               </folding>
             </state>
           </provider>
@@ -105,20 +105,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>for i in</find>
-      <find>906</find>
-      <find>ET</find>
-      <find>rowindex</find>
-      <find>new_trans_imp</find>
-      <find>date</find>
-      <find>get_gw_elevs</find>
-      <find>WaterElevation</find>
-      <find>pull_db</find>
-      <find>get_trans_gw_elevations</find>
-      <find>simp_imp_well</find>
-      <find>concat</find>
-      <find>compile</find>
-      <find>NewTransImp</find>
       <find>compile_end_beg_dates</find>
       <find>filedict</find>
       <find>HeaderTable</find>
@@ -134,12 +120,38 @@
       <find>pull_well_table</find>
       <find>pull_ex</find>
       <find>get_location</find>
+      <find>monitorin</find>
+      <find>AltLocat</find>
+      <find>Current Stickup</find>
+      <find>READINGDATE</find>
+      <find>MEASUREDLEVEL</find>
+      <find>LOCATIONID</find>
+      <find>TEMP</find>
+      <find>WATERELEVATION</find>
+      <find>WellID</find>
+      <find>LocationName</find>
       <find>fix_drift</find>
+      <find>tz</find>
+      <find>dtnm</find>
+      <find>get_man</find>
+      <find>offset</find>
     </findStrings>
     <replaceStrings>
       <replace>altid</replace>
       <replace>printmes</replace>
       <replace>NewTransImp</replace>
+      <replace>readingdate</replace>
+      <replace>measuredlevel</replace>
+      <replace>locationid</replace>
+      <replace>temp</replace>
+      <replace>waterelevation</replace>
+      <replace>driftcorrection</replace>
+      <replace>baroefficiencylevel</replace>
+      <replace>wellid</replace>
+      <replace>locationname</replace>
+      <replace>barologgertype</replace>
+      <replace>measureddtw</replace>
+      <replace>wellname</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -402,14 +414,8 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
-      <workItem from="1544034801171" duration="7213000" />
-    </task>
-    <task id="LOCAL-00142" summary="fixing upload baro data">
-      <created>1536169933807</created>
-      <option name="number" value="00142" />
-      <option name="presentableId" value="LOCAL-00142" />
-      <option name="project" value="LOCAL" />
-      <updated>1536169933807</updated>
+      <workItem from="1544034801171" duration="7489000" />
+      <workItem from="1544447927699" duration="9922000" />
     </task>
     <task id="LOCAL-00143" summary="fixing upload baro data">
       <created>1536170761009</created>
@@ -747,7 +753,14 @@
       <option name="project" value="LOCAL" />
       <updated>1544018426981</updated>
     </task>
-    <option name="localTasksCounter" value="191" />
+    <task id="LOCAL-00191" summary="major changes to drift functions calc_drift, fix_drift, and calc_slope_and_intercept&#10;Old script did not identify missing last manual measurements, nor did it correct slope if only last manual measurement was available.  Drift was calculated incorrectly and data were getting rejected.">
+      <created>1544140293498</created>
+      <option name="number" value="00191" />
+      <option name="presentableId" value="LOCAL-00191" />
+      <option name="project" value="LOCAL" />
+      <updated>1544140293498</updated>
+    </task>
+    <option name="localTasksCounter" value="192" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -783,7 +796,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="7213000" />
+    <option name="totallyTimeSpent" value="17411000" />
   </component>
   <component name="TodoView" selected-index="3">
     <todo-panel id="selected-file">
@@ -798,8 +811,8 @@
     <frame x="-1688" y="-25" width="1696" height="1036" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.482835" visible="true" weight="0.21821515" />
-      <window_info active="true" id="Structure" order="1" sideWeight="0.517165" side_tool="true" visible="true" weight="0.21821515" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.48172757" visible="true" weight="0.22066015" />
+      <window_info active="true" id="Structure" order="1" sideWeight="0.5182724" side_tool="true" visible="true" weight="0.22066015" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
@@ -820,8 +833,8 @@
       <window_info anchor="right" id="Data View" order="3" />
       <window_info anchor="right" id="R Graphics" order="4" />
       <window_info anchor="right" id="R Packages" order="5" />
-      <window_info anchor="right" x="0" y="0" width="639" height="951" id="Documentation" order="6" sideWeight="0.51495016" side_tool="true" visible="true" weight="0.19315404" />
-      <window_info anchor="right" id="Database" order="7" sideWeight="0.48504984" visible="true" weight="0.19315404" />
+      <window_info anchor="right" x="0" y="0" width="639" height="951" id="Documentation" order="6" sideWeight="0.5160576" side_tool="true" visible="true" weight="0.19315404" />
+      <window_info anchor="right" id="Database" order="7" sideWeight="0.48394242" visible="true" weight="0.19315404" />
       <window_info anchor="right" id="SciView" order="8" sideWeight="0.4984756" weight="0.3296582" />
     </layout>
   </component>
@@ -829,7 +842,6 @@
     <option name="version" value="1" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="reestablished package v0.3" />
     <MESSAGE value="added .lev function" />
     <MESSAGE value="added .lev function format exception" />
     <MESSAGE value="major overhaul on fix_drift" />
@@ -854,7 +866,8 @@
     <MESSAGE value="fixed some issues with get recent date" />
     <MESSAGE value="Added No_arcpy Branch" />
     <MESSAGE value="removed arcpy references to all functions; made functions feed postgresql database instead" />
-    <option name="LAST_COMMIT_MESSAGE" value="removed arcpy references to all functions; made functions feed postgresql database instead" />
+    <MESSAGE value="major changes to drift functions calc_drift, fix_drift, and calc_slope_and_intercept&#10;Old script did not identify missing last manual measurements, nor did it correct slope if only last manual measurement was available.  Drift was calculated incorrectly and data were getting rejected." />
+    <option name="LAST_COMMIT_MESSAGE" value="major changes to drift functions calc_drift, fix_drift, and calc_slope_and_intercept&#10;Old script did not identify missing last manual measurements, nor did it correct slope if only last manual measurement was available.  Drift was calculated incorrectly and data were getting rejected." />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/loggerloader/arcstuff.py" />
@@ -969,13 +982,13 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="156">
-          <caret line="772" column="34" lean-forward="true" selection-start-line="772" selection-start-column="34" selection-end-line="772" selection-end-column="34" />
+        <state relative-caret-position="292">
+          <caret line="549" column="48" lean-forward="true" selection-start-line="549" selection-start-column="48" selection-end-line="549" selection-end-column="48" />
           <folding>
-            <marker date="1544140168395" expanded="true" signature="32473:32474" ph="..." />
-            <marker date="1544140168395" expanded="true" signature="47200:47201" ph="..." />
-            <marker date="1544140168395" expanded="true" signature="73612:73616" ph="..." />
-            <marker date="1544140168395" expanded="true" signature="83966:86164" ph="..." />
+            <marker date="1544489763861" expanded="true" signature="32470:32471" ph="..." />
+            <marker date="1544489763861" expanded="true" signature="47131:47132" ph="..." />
+            <marker date="1544489763861" expanded="true" signature="73543:73547" ph="..." />
+            <marker date="1544489763861" expanded="true" signature="83897:86095" ph="..." />
           </folding>
         </state>
       </provider>
