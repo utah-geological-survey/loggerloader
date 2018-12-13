@@ -132,8 +132,12 @@ def pull_closest_well_data(wellid, breakpoint1, conn_file_root, timedel = 3):
     df = pd.read_sql(SQLm, con = conn_file_root,
                      parse_dates={'readingdate':'%Y-%m-%d %H:%M:%s-%z'},
                      index_col=['readingdate'])
-
-    pull_db = [pd.to_datetime(df.index.tz_convert('MST'),'%Y-%m-%d')[0].tz_localize(None),df['measuredlevel'].values[0]*-1]
+    lev = df['measuredlevel'].values
+    levdt = pd.to_datetime(df.index, utc=True).tz_convert('MST').tz_localize(None)
+    if pd.isna(df['measuredlevel'].values):
+        pull_db = [levdt,lev]
+    else:
+        pull_db = [levdt,lev*-1]
     return pull_db
 
 
@@ -229,8 +233,9 @@ def calc_drift(df, corrwl, outcolname, m, b):
     drift = m * total_date_change
     df.loc[:, 'datechange'] = df['julian'] - initial_julian_date
 
-    df.loc[:, 'driftcorrection'] = df['datechange'].apply(lambda x: x * m, 1) + b
-    df.loc[:, outcolname] = df[corrwl] - df['driftcorrection']
+    df.loc[:, 'driftcorrection'] = df['datechange'].apply(lambda x: x * m, 1)
+    df.loc[:, 'driftcorrwoffset'] = df['driftcorrection'] + b
+    df.loc[:, outcolname] = df[corrwl] - df['driftcorrwoffset']
     df.sort_index(inplace=True)
 
     return df, drift
@@ -330,7 +335,7 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='measureddtw', outcolna
                 breakpoint2 = breakpoints[i + 1]
                 offset = well_table.loc[wellid, 'stickup']
                 pull_db = pull_closest_well_data(wellid, breakpoint1, conn_file_root, timedel=3)
-                if pull_db[1] is None:
+                if pd.isna(pull_db[1]):
                     pass
                 else:
                     pull_db[1] = pull_db[1] - offset
@@ -534,7 +539,7 @@ def get_stickup(stdata, site_number, stable_elev=True, man=None):
         stickup = man.loc[man.last_valid_index(), 'current_stickup_height']
     return stickup
 
-def get_man_gw_elevs(manual, stickup, well_elev):
+def get_man_gw_elevs(manual, stickup, well_elev, stbelev=True):
     """
     Gets basic well parameters and most recent groundwater level data for a well id for dtw calculations.
     :param manual: Pandas Dataframe of manual data
@@ -549,7 +554,7 @@ def get_man_gw_elevs(manual, stickup, well_elev):
     manual.rename(columns=old_fields, inplace=True)
     manual.loc[:, 'measureddtw'] = (manual['dtwbelowcasing'] * -1)
 
-    if 'current_stickup_height' in manual.columns:
+    if 'current_stickup_height' in manual.columns and stbelev == False:
         manual.loc[:, 'measureddtw'] = (manual['dtwbelowcasing'] * -1) + manual['current_stickup_height']
 
     else:
@@ -567,21 +572,22 @@ def get_trans_gw_elevations(df, stickup, well_elev, site_number, level='Level', 
     :return: processed df with necessary field names for import
     """
 
-
     df['measuredlevel'] = df[level]
-    df['measureddtw'] = df[dtw] * -1
-    print([stickup,well_elev,site_number])
+    df['measureddtw'] = df[dtw] * 1
+
+    print([stickup, well_elev, site_number])
     if pd.isna(stickup):
         stickup = 0
     else:
         pass
 
-    df['dtwbelowgroundsurface'] = df['measureddtw'] - stickup
+    df['dtwbelowgroundsurface'] = df['measureddtw']
 
     if pd.isna(well_elev):
         df['waterelevation'] = None
     else:
-        df['waterelevation'] = well_elev - df['dtwbelowgroundsurface']
+        df['waterelevation'] = well_elev + df['dtwbelowgroundsurface']
+
     df['locationid'] = site_number
 
     df.sort_index(inplace=True)
@@ -801,7 +807,7 @@ def simp_imp_well(well_file, baro_out, wellid, manual, conn_file_root, stbl_elev
     well_table = pull_well_table(conn_file_root)
     stickup, well_elev = pull_elev_and_stickup(wellid, manual, well_table=well_table,
                                                conn_file_root=conn_file_root, stable_elev=stbl_elev)
-    man = get_man_gw_elevs(manual, stickup, well_elev)
+    man = get_man_gw_elevs(manual, stickup, well_elev, stbelev=stbl_elev)
     #well = jumpfix(well, 'Level', threashold=2.0)
 
     # Check to see if well has assigned barometer
@@ -1011,7 +1017,6 @@ def get_location_data(site_numbers, enviro, first_date=None, last_date=None, lim
     if limit:
         sql += "\nLIMIT {:}".format(limit)
 
-    print(sql)
     readings = pd.read_sql(sql, con=enviro, parse_dates={'readingdate': '%Y-%m-%d %H:%M:%s-%z'}, index_col='readingdate')
     readings.index = pd.to_datetime(readings.index,infer_datetime_format=True,utc=True)
     readings.index = readings.index.tz_convert(tz='MST')

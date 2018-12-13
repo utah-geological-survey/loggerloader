@@ -4,7 +4,7 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="major changes to drift functions calc_drift, fix_drift, and calc_slope_and_intercept&#10;Old script did not identify missing last manual measurements, nor did it correct slope if only last manual measurement was available.  Drift was calculated incorrectly and data were getting rejected.">
+    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="changes in get_man_gw_elevs">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/loggerloader/loggerloader.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/loggerloader.py" afterDir="false" />
     </list>
@@ -64,13 +64,13 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="292">
-              <caret line="549" column="48" lean-forward="true" selection-start-line="549" selection-start-column="48" selection-end-line="549" selection-end-column="48" />
+            <state relative-caret-position="241">
+              <caret line="809" column="72" selection-start-line="809" selection-start-column="72" selection-end-line="809" selection-end-column="72" />
               <folding>
-                <marker date="1544489763861" expanded="true" signature="32470:32471" ph="..." />
-                <marker date="1544489763861" expanded="true" signature="47131:47132" ph="..." />
-                <marker date="1544489763861" expanded="true" signature="73543:73547" ph="..." />
-                <marker date="1544489763861" expanded="true" signature="83897:86095" ph="..." />
+                <marker date="1544743546988" expanded="true" signature="32669:32670" ph="..." />
+                <marker date="1544743546988" expanded="true" signature="47334:47335" ph="..." />
+                <marker date="1544743546988" expanded="true" signature="73746:73750" ph="..." />
+                <marker date="1544743546988" expanded="true" signature="84100:86298" ph="..." />
               </folding>
             </state>
           </provider>
@@ -217,10 +217,10 @@
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-1940" />
+    <option name="x" value="-1707" />
     <option name="y" value="-25" />
-    <option name="width" value="1874" />
-    <option name="height" value="1096" />
+    <option name="width" value="1856" />
+    <option name="height" value="1078" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -415,14 +415,7 @@
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
       <workItem from="1544034801171" duration="7489000" />
-      <workItem from="1544447927699" duration="9922000" />
-    </task>
-    <task id="LOCAL-00143" summary="fixing upload baro data">
-      <created>1536170761009</created>
-      <option name="number" value="00143" />
-      <option name="presentableId" value="LOCAL-00143" />
-      <option name="project" value="LOCAL" />
-      <updated>1536170761009</updated>
+      <workItem from="1544447927699" duration="19627000" />
     </task>
     <task id="LOCAL-00144" summary="fixing upload baro data">
       <created>1536172701438</created>
@@ -760,7 +753,14 @@
       <option name="project" value="LOCAL" />
       <updated>1544140293498</updated>
     </task>
-    <option name="localTasksCounter" value="192" />
+    <task id="LOCAL-00192" summary="changes in get_man_gw_elevs">
+      <created>1544489812337</created>
+      <option name="number" value="00192" />
+      <option name="presentableId" value="LOCAL-00192" />
+      <option name="project" value="LOCAL" />
+      <updated>1544489812338</updated>
+    </task>
+    <option name="localTasksCounter" value="193" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -796,7 +796,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="17411000" />
+    <option name="totallyTimeSpent" value="27116000" />
   </component>
   <component name="TodoView" selected-index="3">
     <todo-panel id="selected-file">
@@ -842,7 +842,6 @@
     <option name="version" value="1" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added .lev function" />
     <MESSAGE value="added .lev function format exception" />
     <MESSAGE value="major overhaul on fix_drift" />
     <MESSAGE value="fix some documentation" />
@@ -867,7 +866,8 @@
     <MESSAGE value="Added No_arcpy Branch" />
     <MESSAGE value="removed arcpy references to all functions; made functions feed postgresql database instead" />
     <MESSAGE value="major changes to drift functions calc_drift, fix_drift, and calc_slope_and_intercept&#10;Old script did not identify missing last manual measurements, nor did it correct slope if only last manual measurement was available.  Drift was calculated incorrectly and data were getting rejected." />
-    <option name="LAST_COMMIT_MESSAGE" value="major changes to drift functions calc_drift, fix_drift, and calc_slope_and_intercept&#10;Old script did not identify missing last manual measurements, nor did it correct slope if only last manual measurement was available.  Drift was calculated incorrectly and data were getting rejected." />
+    <MESSAGE value="changes in get_man_gw_elevs" />
+    <option name="LAST_COMMIT_MESSAGE" value="changes in get_man_gw_elevs" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/loggerloader/arcstuff.py" />
@@ -982,13 +982,13 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="292">
-          <caret line="549" column="48" lean-forward="true" selection-start-line="549" selection-start-column="48" selection-end-line="549" selection-end-column="48" />
+        <state relative-caret-position="241">
+          <caret line="809" column="72" selection-start-line="809" selection-start-column="72" selection-end-line="809" selection-end-column="72" />
           <folding>
-            <marker date="1544489763861" expanded="true" signature="32470:32471" ph="..." />
-            <marker date="1544489763861" expanded="true" signature="47131:47132" ph="..." />
-            <marker date="1544489763861" expanded="true" signature="73543:73547" ph="..." />
-            <marker date="1544489763861" expanded="true" signature="83897:86095" ph="..." />
+            <marker date="1544743546988" expanded="true" signature="32669:32670" ph="..." />
+            <marker date="1544743546988" expanded="true" signature="47334:47335" ph="..." />
+            <marker date="1544743546988" expanded="true" signature="73746:73750" ph="..." />
+            <marker date="1544743546988" expanded="true" signature="84100:86298" ph="..." />
           </folding>
         </state>
       </provider>
