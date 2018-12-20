@@ -4,7 +4,7 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="changed how pull_closest_well_data pulls measures">
+    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="changed fix drift to make first_man = first_trans and last_man = last_trans when data are missing">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/loggerloader/loggerloader.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/loggerloader.py" afterDir="false" />
     </list>
@@ -64,8 +64,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="270">
-              <caret line="389" column="43" selection-start-line="389" selection-start-column="42" selection-end-line="389" selection-end-column="43" />
+            <state relative-caret-position="551">
+              <caret line="1455" column="14" selection-start-line="1455" selection-start-column="14" selection-end-line="1455" selection-end-column="14" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
               </folding>
@@ -350,14 +350,7 @@
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
       <workItem from="1545058095630" duration="6949000" />
-      <workItem from="1545223874063" duration="6034000" />
-    </task>
-    <task id="LOCAL-00137" summary="Created PullOutsideBaro">
-      <created>1536154953711</created>
-      <option name="number" value="00137" />
-      <option name="presentableId" value="LOCAL-00137" />
-      <option name="project" value="LOCAL" />
-      <updated>1536154953711</updated>
+      <workItem from="1545223874063" duration="6557000" />
     </task>
     <task id="LOCAL-00138" summary="Created PullOutsideBaro">
       <created>1536156125088</created>
@@ -695,7 +688,14 @@
       <option name="project" value="LOCAL" />
       <updated>1545311557960</updated>
     </task>
-    <option name="localTasksCounter" value="186" />
+    <task id="LOCAL-00186" summary="changed fix drift to make first_man = first_trans and last_man = last_trans when data are missing">
+      <created>1545340354120</created>
+      <option name="number" value="00186" />
+      <option name="presentableId" value="LOCAL-00186" />
+      <option name="project" value="LOCAL" />
+      <updated>1545340354120</updated>
+    </task>
+    <option name="localTasksCounter" value="187" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -731,7 +731,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="40099000" />
+    <option name="totallyTimeSpent" value="40622000" />
   </component>
   <component name="TodoView" selected-index="3">
     <todo-panel id="selected-file">
@@ -777,7 +777,6 @@
     <option name="version" value="1" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="major overhaul on fix_drift" />
     <MESSAGE value="fix some documentation" />
     <MESSAGE value="suppress pandas copy warning" />
     <MESSAGE value="Complete Refactor" />
@@ -802,7 +801,8 @@
     <MESSAGE value="major changes to drift functions calc_drift, fix_drift, and calc_slope_and_intercept&#10;Old script did not identify missing last manual measurements, nor did it correct slope if only last manual measurement was available.  Drift was calculated incorrectly and data were getting rejected." />
     <MESSAGE value="changes in get_man_gw_elevs" />
     <MESSAGE value="changed how pull_closest_well_data pulls measures" />
-    <option name="LAST_COMMIT_MESSAGE" value="changed how pull_closest_well_data pulls measures" />
+    <MESSAGE value="changed fix drift to make first_man = first_trans and last_man = last_trans when data are missing" />
+    <option name="LAST_COMMIT_MESSAGE" value="changed fix drift to make first_man = first_trans and last_man = last_trans when data are missing" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/loggerloader/arcstuff.py" />
@@ -925,8 +925,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="389" column="43" selection-start-line="389" selection-start-column="42" selection-end-line="389" selection-end-column="43" />
+        <state relative-caret-position="551">
+          <caret line="1455" column="14" selection-start-line="1455" selection-start-column="14" selection-end-line="1455" selection-end-column="14" />
           <folding>
             <element signature="e#0#82#0" expanded="true" />
           </folding>

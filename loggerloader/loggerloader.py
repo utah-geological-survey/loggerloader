@@ -1453,6 +1453,7 @@ def compilation(inputfile):
         if file_extension in ['.csv','.lev','.xle']:
             print(infile)
             nti = NewTransImp(infile).well
+            f[getfilename(infile)] = nti
     # concatenate all of the DataFrames in dictionary f to one DataFrame: g
     g = pd.concat(f)
     # remove multiindex and replace with index=Datetime
