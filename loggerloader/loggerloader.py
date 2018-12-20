@@ -387,14 +387,14 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='measureddtw', outcolna
                     first_man_julian_date = pd.to_datetime(pull_db[0]).to_julian_date()
                 else:
                     print('No initial transducer measurement within 3 days of {:}.'.format(first_trans_date))
-                    first_man = None
-                    first_man_date = None
+                    first_man = first_trans
+                    first_man_date = first_trans_date
 
             if last_trans_date + datetime.timedelta(days=3) < last_man_date or last_trans_date - datetime.timedelta(
                     days=3) > last_man_date:
                 print('No final manual measurement within 3 days of {:}.'.format(last_trans_date))
-                last_man = None
-                last_man_date = None
+                last_man = last_trans
+                last_man_date = last_trans_date
 
             slope, b, slope_man, slope_trans = calc_slope_and_intercept(first_man, first_man_julian_date,
                                                                         last_man, last_man_julian_date, first_trans,
