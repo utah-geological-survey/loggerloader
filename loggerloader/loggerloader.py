@@ -42,9 +42,21 @@ spec.loader.exec_module(dbconnect)
 engine = dbconnect.postconn()
 connection = dbconnect.sqlconnect()
 
-
+class Color:
+    """ https://stackoverflow.com/questions/8924173/how-do-i-print-bold-text-in-python"""
+    PURPLE = '\033[95m'
+    CYAN = '\033[96m'
+    DARKCYAN = '\033[36m'
+    BLUE = '\033[94m'
+    GREEN = '\033[92m'
+    YELLOW = '\033[93m'
+    RED = '\033[91m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+    END = '\033[0m'
 # -----------------------------------------------------------------------------------------------------------------------
 # These functions align relative transducer reading to manual data
+
 
 def get_breakpoints(manualfile, well, wl_field='corrwl'):
     """
@@ -128,15 +140,18 @@ def pull_closest_well_data(wellid, breakpoint1, conn_file_root, timedel = 3):
     limit 1;""".format(wellid,
                                          pd.to_datetime(breakpoint1) - datetime.timedelta(days=timedel),
                                          pd.to_datetime(breakpoint1))
-    print(SQLm)
+
     df = pd.read_sql(SQLm, con = conn_file_root,
                      parse_dates={'readingdate':'%Y-%m-%d %H:%M:%s-%z'},
                      index_col=['readingdate'])
-    lev = df['measuredlevel'].values
-    levdt = pd.to_datetime(df.index, utc=True).tz_convert('MST').tz_localize(None)
+
     if pd.isna(df['measuredlevel'].values):
+        lev = None
+        levdt = None
         pull_db = [levdt,lev]
     else:
+        lev = df['measuredlevel'].values[0]
+        levdt = pd.to_datetime(df.index, utc=True).tz_convert('MST').tz_localize(None)
         pull_db = [levdt,lev*-1]
     return pull_db
 
@@ -326,6 +341,7 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='measureddtw', outcolna
         df = bracketedwls[i]
 
         if len(df) > 0:
+            print("----- Well {:} -----".format(wellid))
             print("Processing dates {:} to {:}".format(breakpoints[i], breakpoints[i + 1]))
             df.sort_index(inplace=True)
             df.loc[:, 'julian'] = df.index.to_julian_date()
@@ -343,8 +359,11 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='measureddtw', outcolna
             else:
                 pull_db = [None, None]
 
-            first_trans = fcl(df[corrwl], breakpoints[i])  # last transducer measurement
-            last_trans = fcl(df[corrwl], breakpoints[i + 1])  # first transducer measurement
+            #first_trans = fcl(df[corrwl], breakpoints[i])  # last transducer measurement
+            #last_trans = fcl(df[corrwl], breakpoints[i + 1])  # first transducer measurement
+            df = df.dropna(subset=[corrwl])
+            first_trans = df.loc[df.first_valid_index(),corrwl]
+            last_trans = df.loc[df.last_valid_index(),corrwl]
             first_trans_julian_date = df.loc[df.first_valid_index(), 'julian']
             last_trans_julian_date = df.loc[df.last_valid_index(), 'julian']
             first_trans_date = df.first_valid_index()
@@ -359,11 +378,12 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='measureddtw', outcolna
             last_man = fcl(manualfile[manmeas], breakpoints[i + 1])  # last manual measurement
 
             if first_trans_date - datetime.timedelta(days=3) > first_man_date:
-                print('No initial manual measurement within 3 days of {:}.'.format(first_trans_date))
+                print('No initial actual manual measurement within 3 days of {:}.'.format(first_trans_date))
 
                 if (pull_db[0] is not None) and (
                         first_trans_date - datetime.timedelta(days=3) < pd.to_datetime(pull_db[0])):
-                    first_man = pull_db[1]
+                    print("Pulling first manual measurement from database")
+                    first_man = pull_db[1][0]
                     first_man_julian_date = pd.to_datetime(pull_db[0]).to_julian_date()
                 else:
                     print('No initial transducer measurement within 3 days of {:}.'.format(first_trans_date))
@@ -390,21 +410,21 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='measureddtw', outcolna
                 print('Last manual measurement missing between {:} and {:}'.format(breakpoints[i], breakpoints[i + 1]))
                 print("First man = {:}\nFirst man date = {:%Y-%m-%d %H:%M}".format(first_man, first_man_date))
             else:
-                print("""First man = {:0.3f}, Last man = {:0.3f}
-    First man date = {:%Y-%m-%d %H:%M},
-    Last man date = {:%Y-%m-%d %H:%M}
-    -------------------
-    First trans = {:0.3f}, Last trans = {:0.3f}
-    First trans date = {:%Y-%m-%d %H:%M}
-    Last trans date = {::%Y-%m-%d %H:%M}""".format(first_man, last_man, first_man_date,
-                                                   last_man_date, first_trans, last_trans,
-                                                   first_trans_date, last_trans_date))
+
+                print("First man = {:0.3f}, Last man = {:0.3f}".format(first_man,last_man))
+                print("First man date = {:%Y-%m-%d %H:%M}".format(first_man_date))
+                print("Last man date = {:%Y-%m-%d %H:%M}".format(last_man_date))
+
+                print("First trans = {:0.3f}, Last trans = {:0.3f}".format(first_trans,last_trans))
+                print("First trans date = {:%Y-%m-%d %H:%M}".format(first_trans_date))
+                print("Last trans date = {:%Y-%m-%d %H:%M}".format(last_trans_date))
 
             bracketedwls[i], drift = calc_drift(df, corrwl, outcolname, slope, b)
-            print("""Manual Slope = {:}
-Transducer Slope = {:}
-Slope = {:0.3f} and Intercept = {:0.3f}
-Drift = {:}""".format(slope_man, slope_trans, slope, b, drift))
+            print("Manual Slope = {:}".format(slope_man))
+            print("Transducer Slope = {:}".format(slope_trans))
+            print("Slope = {:0.3f} and Intercept = {:0.3f}".format(slope, b))
+            print("{:}Drift = {:0.3f} {:}".format(Color.BOLD,drift,Color.END))
+            print(" -------------------")
             drift_features[i] = calc_drift_features(first_man, first_man_date, last_man, last_man_date, first_trans,
                                                     first_trans_date,
                                                     last_trans, last_trans_date, b, slope, slope_man, slope_trans,
@@ -1382,7 +1402,71 @@ def fcl(df, dtobj):
     """
     return df.iloc[np.argmin(np.abs(pd.to_datetime(df.index) - dtobj))]  # remove to_pydatetime()
 
+def compilefiles(searchdir,copydir,filecontains,filetypes=['lev','xle']):
+    filecontains = list(filecontains)
+    filetypes = list(filetypes)
+    for pack in os.walk(searchdir):
+        for name in filecontains:
+            for i in glob.glob(pack[0]+'/'+'*{:}*'.format(name)):
+                if i.split('.')[-1] in filetypes:
+                    dater = str(datetime.datetime.fromtimestamp(os.path.getmtime(i)).strftime('%Y-%m-%d'))
+                    rightfile = dater + "_" + os.path.basename(i)
+                    if not os.path.exists(copydir):
+                        print('Creating {:}'.format(copydir))
+                        os.makedirs(copydir)
+                    else:
+                        pass
+                    if os.path.isfile(os.path.join(copydir, rightfile)):
+                        pass
+                    else:
+                        print(os.path.join(copydir, rightfile))
+                        try:
+                            copyfile(i, os.path.join(copydir, rightfile))
+                        except:
+                            pass
+    print('Copy Complete!')
+    return
 
+def compilation(inputfile):
+    """This function reads multiple xle transducer files in a directory and generates a compiled Pandas DataFrame.
+    Args:
+        inputfile (file):
+            complete file path to input files; use * for wildcard in file name
+    Returns:
+        outfile (object):
+            Pandas DataFrame of compiled data
+    Example::
+        >>> compilation('O:/Snake Valley Water/Transducer Data/Raw_data_archive/all/LEV/*baro*')
+        picks any file containing 'baro'
+    """
+
+    # create empty dictionary to hold DataFrames
+    f = {}
+
+    # generate list of relevant files
+    filelist = glob.glob(inputfile)
+
+    # iterate through list of relevant files
+    for infile in filelist:
+        # run computations using lev files
+        filename, file_extension = os.path.splitext(infile)
+        if file_extension in ['.csv','.lev','.xle']:
+            print(infile)
+            nti = NewTransImp(infile).well
+    # concatenate all of the DataFrames in dictionary f to one DataFrame: g
+    g = pd.concat(f)
+    # remove multiindex and replace with index=Datetime
+    g = g.reset_index()
+    g['DateTime'] = g['DateTime'].apply(lambda x: pd.to_datetime(x, errors='coerce'),1)
+    g = g.set_index(['DateTime'])
+    # drop old indexes
+    g = g.drop(['level_0'], axis=1)
+    # remove duplicates based on index then sort by index
+    g['ind'] = g.index
+    g = g.drop_duplicates(subset='ind')
+    g = g.drop('ind', axis=1)
+    g = g.sort_index()
+    return g
 # ----------------------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
 # Raw transducer import functions - these convert raw lev, xle, and csv files to Pandas Dataframes for processing
