@@ -148,12 +148,20 @@ def pull_closest_well_data(wellid, breakpoint1, conn_file_root, timedel = 3):
     if pd.isna(df['measuredlevel'].values):
         lev = None
         levdt = None
-        pull_db = [levdt,lev]
     else:
-        lev = df['measuredlevel'].values[0]
-        levdt = pd.to_datetime(df.index, utc=True).tz_convert('MST').tz_localize(None)
-        pull_db = [levdt,lev*-1]
-    return pull_db
+
+        try:
+            lev = df['measuredlevel'].values
+            if type(lev) == np.ndarray:
+                lev = lev[0]
+            levdt = pd.to_datetime(df.index, utc=True).tz_convert('MST').tz_localize(None)
+            if type(levdt) == pd.core.indexes.datetimes.DatetimeIndex:
+                levdt = levdt[0]
+        except IndexError:
+            lev = None
+            levdt = None
+
+    return levdt, lev
 
 
 def calc_slope_and_intercept(first_man, first_man_julian_date, last_man, last_man_julian_date, first_trans,
@@ -285,7 +293,7 @@ def calc_drift_features(first_man, first_man_date, last_man, last_man_date, firs
 
 
 def fix_drift(well, manualfile, corrwl='corrwl', manmeas='measureddtw', outcolname='DTW_WL', wellid=None,
-              conn_file_root=None, well_table=None):
+              conn_file_root=None, well_table=None, search_tol=3):
     """Remove transducer drift from nonvented transducer data. Faster and should produce same output as fix_drift_stepwise
 
     Args:
@@ -350,14 +358,16 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='measureddtw', outcolna
                 breakpoint1 = breakpoints[i]
                 breakpoint2 = breakpoints[i + 1]
                 offset = well_table.loc[wellid, 'stickup']
-                pull_db = pull_closest_well_data(wellid, breakpoint1, conn_file_root, timedel=3)
-                if pd.isna(pull_db[1]):
+                levdt, lev = pull_closest_well_data(wellid, breakpoint1, conn_file_root, timedel=search_tol)
+                if pd.isna(lev):
                     pass
                 else:
-                    pull_db[1] = pull_db[1] - offset
+                    lev = lev - offset
 
             else:
-                pull_db = [None, None]
+                lev = None
+                levdt = None
+
 
             #first_trans = fcl(df[corrwl], breakpoints[i])  # last transducer measurement
             #last_trans = fcl(df[corrwl], breakpoints[i + 1])  # first transducer measurement
@@ -370,6 +380,7 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='measureddtw', outcolna
             last_trans_date = df.last_valid_index()
 
             man_df2 = fcl(manualfile, breakpoints[i + 1])
+
             first_man_julian_date = fcl(manualfile['julian'], breakpoints[i])
             last_man_julian_date = fcl(manualfile['julian'], breakpoints[i + 1])
             first_man_date = fcl(manualfile['datetime'], breakpoints[i])
@@ -377,24 +388,24 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='measureddtw', outcolna
             first_man = fcl(manualfile[manmeas], breakpoints[i])  # first manual measurement
             last_man = fcl(manualfile[manmeas], breakpoints[i + 1])  # last manual measurement
 
-            if first_trans_date - datetime.timedelta(days=3) > first_man_date:
-                print('No initial actual manual measurement within 3 days of {:}.'.format(first_trans_date))
+            if first_man_date - first_trans_date > datetime.timedelta(days=search_tol):
+                print('No initial actual manual measurement within {:} days of {:}.'.format(search_tol,first_trans_date))
 
-                if (pull_db[0] is not None) and (
-                        first_trans_date - datetime.timedelta(days=3) < pd.to_datetime(pull_db[0])):
+                if (levdt is not None) and (
+                        first_trans_date - datetime.timedelta(days=search_tol) < pd.to_datetime(levdt)):
                     print("Pulling first manual measurement from database")
-                    first_man = pull_db[1][0]
-                    first_man_julian_date = pd.to_datetime(pull_db[0]).to_julian_date()
+                    first_man = lev
+                    first_man_julian_date = pd.to_datetime(levdt).to_julian_date()
                 else:
-                    print('No initial transducer measurement within 3 days of {:}.'.format(first_trans_date))
-                    first_man = first_trans
-                    first_man_date = first_trans_date
+                    print('No initial transducer measurement within {:} days of {:}.'.format(search_tol, first_trans_date))
+                    first_man = None
+                    first_man_date = None
 
-            if last_trans_date + datetime.timedelta(days=3) < last_man_date or last_trans_date - datetime.timedelta(
-                    days=3) > last_man_date:
-                print('No final manual measurement within 3 days of {:}.'.format(last_trans_date))
-                last_man = last_trans
-                last_man_date = last_trans_date
+            if last_trans_date + datetime.timedelta(days=search_tol) < last_man_date or last_trans_date - datetime.timedelta(
+                    days=search_tol) > last_man_date:
+                print('No final manual measurement within {:} days of {:}.'.format(search_tol, last_trans_date))
+                last_man = None
+                last_man_date = None
 
             slope, b, slope_man, slope_trans = calc_slope_and_intercept(first_man, first_man_julian_date,
                                                                         last_man, last_man_julian_date, first_trans,
@@ -1368,9 +1379,9 @@ def well_baro_merge(wellfile, barofile, barocolumn='Level', wellcolumn='Level', 
     baro = baro.rename(columns={barocolumn: 'barometer'})
 
     if 'temp' in baro.columns:
-        baro.drop('temp', axis=1, inplace=True)
+        baro = baro.drop('temp', axis=1)
     elif 'Temperature' in baro.columns:
-        baro.drop('Temperature', axis=1, inplace=True)
+        baro = baro.drop('Temperature', axis=1)
 
     # combine baro and well data for easy calculations, graphing, and manipulation
     wellbaro = pd.merge(well, baro, left_index=True, right_index=True, how='inner')

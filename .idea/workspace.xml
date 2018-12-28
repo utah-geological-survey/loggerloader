@@ -4,7 +4,7 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="changed fix drift to make first_man = first_trans and last_man = last_trans when data are missing">
+    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="added missing dictionary in compilation">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/loggerloader/loggerloader.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/loggerloader.py" afterDir="false" />
     </list>
@@ -64,8 +64,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="551">
-              <caret line="1455" column="14" selection-start-line="1455" selection-start-column="14" selection-end-line="1455" selection-end-column="14" />
+            <state relative-caret-position="-674">
+              <caret line="1864" column="17" lean-forward="true" selection-start-line="1864" selection-start-column="8" selection-end-line="1864" selection-end-column="17" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
               </folding>
@@ -84,8 +84,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>drift</find>
-      <find>calc_slope_and_intercept</find>
       <find>get_breakpoints</find>
       <find>get_field_names</find>
       <find>table_to_pandas_dataframe</find>
@@ -114,6 +112,8 @@
       <find>NewTransImp</find>
       <find>jumpfix</find>
       <find>get_locat</find>
+      <find>pull_cl</find>
+      <find>pull</find>
     </findStrings>
     <replaceStrings>
       <replace>altid</replace>
@@ -176,10 +176,10 @@
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="665" />
+    <option name="x" value="1974" />
     <option name="y" value="-59" />
-    <option name="width" value="2762" />
-    <option name="height" value="1151" />
+    <option name="width" value="943" />
+    <option name="height" value="547" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -350,14 +350,7 @@
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
       <workItem from="1545058095630" duration="6949000" />
-      <workItem from="1545223874063" duration="6557000" />
-    </task>
-    <task id="LOCAL-00138" summary="Created PullOutsideBaro">
-      <created>1536156125088</created>
-      <option name="number" value="00138" />
-      <option name="presentableId" value="LOCAL-00138" />
-      <option name="project" value="LOCAL" />
-      <updated>1536156125088</updated>
+      <workItem from="1545223874063" duration="17718000" />
     </task>
     <task id="LOCAL-00139" summary="fixing upload baro data">
       <created>1536159127397</created>
@@ -695,7 +688,14 @@
       <option name="project" value="LOCAL" />
       <updated>1545340354120</updated>
     </task>
-    <option name="localTasksCounter" value="187" />
+    <task id="LOCAL-00187" summary="added missing dictionary in compilation">
+      <created>1545340950375</created>
+      <option name="number" value="00187" />
+      <option name="presentableId" value="LOCAL-00187" />
+      <option name="project" value="LOCAL" />
+      <updated>1545340950375</updated>
+    </task>
+    <option name="localTasksCounter" value="188" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -731,7 +731,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="40622000" />
+    <option name="totallyTimeSpent" value="51783000" />
   </component>
   <component name="TodoView" selected-index="3">
     <todo-panel id="selected-file">
@@ -777,7 +777,6 @@
     <option name="version" value="1" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix some documentation" />
     <MESSAGE value="suppress pandas copy warning" />
     <MESSAGE value="Complete Refactor" />
     <MESSAGE value="Add Test" />
@@ -802,7 +801,8 @@
     <MESSAGE value="changes in get_man_gw_elevs" />
     <MESSAGE value="changed how pull_closest_well_data pulls measures" />
     <MESSAGE value="changed fix drift to make first_man = first_trans and last_man = last_trans when data are missing" />
-    <option name="LAST_COMMIT_MESSAGE" value="changed fix drift to make first_man = first_trans and last_man = last_trans when data are missing" />
+    <MESSAGE value="added missing dictionary in compilation" />
+    <option name="LAST_COMMIT_MESSAGE" value="added missing dictionary in compilation" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/loggerloader/arcstuff.py" />
@@ -925,8 +925,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="551">
-          <caret line="1455" column="14" selection-start-line="1455" selection-start-column="14" selection-end-line="1455" selection-end-column="14" />
+        <state relative-caret-position="-674">
+          <caret line="1864" column="17" lean-forward="true" selection-start-line="1864" selection-start-column="8" selection-end-line="1864" selection-end-column="17" />
           <folding>
             <element signature="e#0#82#0" expanded="true" />
           </folding>
