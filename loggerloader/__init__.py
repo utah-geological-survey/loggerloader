@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import os
 
 try:
-    from loggerloader.loggerloader import *
+    from loggerloader.loader import *
 except ImportError:
     from .loggerloader import *
 
