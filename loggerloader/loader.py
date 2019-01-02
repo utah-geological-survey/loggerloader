@@ -2299,7 +2299,7 @@ class wellimport(object):
 
         printmes("Drift is {:} feet".format(drift))
 
-        dfa = get_trans_gw_elevations(dft[0], stickup, well_elev, site_number, dtw="corrwl")
+        dfa = get_trans_gw_elevations(dft[0], stickup, well_elev, site_number)
         df = dfa[0]
 
         df.to_csv(self.save_location)
