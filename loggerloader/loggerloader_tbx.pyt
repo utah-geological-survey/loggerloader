@@ -1,9 +1,9 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 try:
-    from loggerloader.loggerloader import *
+    from loggerloader.loader import *
 except:
-    from loggerloader import *
+    from loader import *
 
 from pylab import rcParams
 import os
