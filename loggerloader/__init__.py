@@ -5,7 +5,7 @@ import os
 try:
     from loggerloader.loader import *
 except ImportError:
-    from .loggerloader import *
+    from .loader import *
 
 __version__ = '0.4.3'
 __author__ = 'Paul Inkenbrandt'
