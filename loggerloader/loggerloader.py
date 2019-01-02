@@ -159,7 +159,7 @@ def pull_closest_well_data(wellid, breakpoint1, conn_file_root, timedel = 3):
         levdt = pd.to_datetime(egdb[0][1])
         if type(levdt) == pd.core.indexes.datetimes.DatetimeIndex:
             levdt = levdt[0]
-        
+        lev = egdb[0][2]
         if type(lev) == np.ndarray:
             lev = lev[0]* -1
         else:
@@ -433,7 +433,7 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
             printmes("Manual Slope = {:}".format(slope_man))
             printmes("Transducer Slope = {:}".format(slope_trans))
             printmes("Slope = {:0.3f} and Intercept = {:0.3f}".format(slope, b))
-            printmes("{:}Drift = {:0.3f} {:}".format(Color.BOLD,drift,Color.END))
+            printmes("Drift = {:0.3f}".format(drift))
             printmes(" -------------------")
             drift_features[i] = calc_drift_features(first_man, first_man_date, last_man, last_man_date, first_trans,
                                                     first_trans_date,
@@ -591,7 +591,6 @@ def get_man_gw_elevs(manual, stickup, well_elev):
     manual.loc[:, 'WATERELEVATION'] = manual['MeasuredDTW'].apply(lambda x: well_elev + (x + stickup), 1)
     return manual
 
-
 def get_trans_gw_elevations(df, stickup, well_elev, site_number, level='Level', dtw='DTW_WL'):
     """
     This function adds the necessary field names to import well data into the SDE database.
@@ -601,21 +600,22 @@ def get_trans_gw_elevations(df, stickup, well_elev, site_number, level='Level', 
     :return: processed df with necessary field names for import
     """
 
-
     df['MEASUREDLEVEL'] = df[level]
-    df['MEASUREDDTW'] = df[dtw] * -1
-    printmes([stickup,well_elev,site_number])
+    df['MEASUREDDTW'] = df[dtw] * 1
+
+    print([stickup, well_elev, site_number])
     if pd.isna(stickup):
         stickup = 0
     else:
         pass
 
-    df['DTWBELOWGROUNDSURFACE'] = df['MEASUREDDTW'] - stickup
+    df['DTWBELOWGROUNDSURFACE'] = df['MEASUREDDTW']
 
     if pd.isna(well_elev):
         df['WATERELEVATION'] = None
     else:
-        df['WATERELEVATION'] = well_elev - df['DTWBELOWGROUNDSURFACE']
+        df['WATERELEVATION'] = well_elev + df['DTWBELOWGROUNDSURFACE']
+
     df['LOCATIONID'] = site_number
 
     df.sort_index(inplace=True)
