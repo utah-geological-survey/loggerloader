@@ -258,8 +258,8 @@ def calc_drift(df, corrwl, outcolname, m, b):
     drift = m * total_date_change
     df.loc[:, 'datechange'] = df['julian'] - initial_julian_date
 
-    df.loc[:, 'driftcorrection'] = df['datechange'].apply(lambda x: x * m, 1)
-    df.loc[:, 'driftcorrwoffset'] = df['driftcorrection'] + b
+    df.loc[:, 'DRIFTCORRECTION'] = df['datechange'].apply(lambda x: x * m, 1)
+    df.loc[:, 'driftcorrwoffset'] = df['DRIFTCORRECTION'] + b
     df.loc[:, outcolname] = df[corrwl] - df['driftcorrwoffset']
     df.sort_index(inplace=True)
 
@@ -292,7 +292,7 @@ def calc_drift_features(first_man, first_man_date, last_man, last_man_date, firs
                          'first_trans': first_trans, 'last_trans': last_trans, 'drift':drift}
     return drift_features
 
-def fix_drift(well, manualfile, corrwl='corrwl', manmeas='measureddtw', outcolname='DTW_WL', wellid=None,
+def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolname='DTW_WL', wellid=None,
               conn_file_root=None, well_table=None, search_tol=3):
     """Remove transducer drift from nonvented transducer data. Faster and should produce same output as fix_drift_stepwise
 
@@ -356,7 +356,7 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='measureddtw', outcolna
             if wellid:
                 breakpoint1 = breakpoints[i]
                 breakpoint2 = breakpoints[i + 1]
-                offset = well_table.loc[wellid, 'stickup']
+                offset = well_table.loc[wellid, 'Offset']
                 levdt, lev = pull_closest_well_data(wellid, breakpoint1, conn_file_root, timedel=search_tol)
                 if pd.isna(lev):
                     pass
@@ -413,28 +413,28 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='measureddtw', outcolna
 
             # intercept of line = value of first manual measurement
             if pd.isna(first_man):
-                print('First manual measurement missing between {:} and {:}'.format(breakpoints[i], breakpoints[i + 1]))
-                print("Last man = {:}\nLast man date = {:%Y-%m-%d %H:%M}".format(last_man, last_man_date))
+                printmes('First manual measurement missing between {:} and {:}'.format(breakpoints[i], breakpoints[i + 1]))
+                printmes("Last man = {:}\nLast man date = {:%Y-%m-%d %H:%M}".format(last_man, last_man_date))
 
             elif pd.isna(last_man):
-                print('Last manual measurement missing between {:} and {:}'.format(breakpoints[i], breakpoints[i + 1]))
-                print("First man = {:}\nFirst man date = {:%Y-%m-%d %H:%M}".format(first_man, first_man_date))
+                printmes('Last manual measurement missing between {:} and {:}'.format(breakpoints[i], breakpoints[i + 1]))
+                printmes("First man = {:}\nFirst man date = {:%Y-%m-%d %H:%M}".format(first_man, first_man_date))
             else:
 
-                print("First man = {:0.3f}, Last man = {:0.3f}".format(first_man,last_man))
-                print("First man date = {:%Y-%m-%d %H:%M}".format(first_man_date))
-                print("Last man date = {:%Y-%m-%d %H:%M}".format(last_man_date))
+                printmes("First man = {:0.3f}, Last man = {:0.3f}".format(first_man,last_man))
+                printmes("First man date = {:%Y-%m-%d %H:%M}".format(first_man_date))
+                printmes("Last man date = {:%Y-%m-%d %H:%M}".format(last_man_date))
 
-                print("First trans = {:0.3f}, Last trans = {:0.3f}".format(first_trans,last_trans))
-                print("First trans date = {:%Y-%m-%d %H:%M}".format(first_trans_date))
-                print("Last trans date = {:%Y-%m-%d %H:%M}".format(last_trans_date))
+                printmes("First trans = {:0.3f}, Last trans = {:0.3f}".format(first_trans,last_trans))
+                printmes("First trans date = {:%Y-%m-%d %H:%M}".format(first_trans_date))
+                printmes("Last trans date = {:%Y-%m-%d %H:%M}".format(last_trans_date))
 
             bracketedwls[i], drift = calc_drift(df, corrwl, outcolname, slope, b)
-            print("Manual Slope = {:}".format(slope_man))
-            print("Transducer Slope = {:}".format(slope_trans))
-            print("Slope = {:0.3f} and Intercept = {:0.3f}".format(slope, b))
-            print("{:}Drift = {:0.3f} {:}".format(Color.BOLD,drift,Color.END))
-            print(" -------------------")
+            printmes("Manual Slope = {:}".format(slope_man))
+            printmes("Transducer Slope = {:}".format(slope_trans))
+            printmes("Slope = {:0.3f} and Intercept = {:0.3f}".format(slope, b))
+            printmes("{:}Drift = {:0.3f} {:}".format(Color.BOLD,drift,Color.END))
+            printmes(" -------------------")
             drift_features[i] = calc_drift_features(first_man, first_man_date, last_man, last_man_date, first_trans,
                                                     first_trans_date,
                                                     last_trans, last_trans_date, b, slope, slope_man, slope_trans,
