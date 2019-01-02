@@ -663,7 +663,18 @@ def trans_type(well_file):
 
 
 class PullOutsideBaro(object):
-    def __init__(self, lat, long, begdate=None, enddate=None, bbox=None, rad=30, token=None):
+    def __init__(self, long, lat, begdate=None, enddate=None, bbox=None, rad=30, token=None):
+        """
+        By default, this class aggregates all barometric data within a given area.
+        Args:
+            long: longitude of point of interest
+            lat: latitude of point of interest
+            begdate: string of beginning date of requested data; defaults to 2014-11-1
+            enddate: string of end date of requested data; defaults to today
+            bbox: lat-long bounding box of area of interest; optional
+            rad: radius of area of interest; defaults to 30
+            token: api token used to connect to mesowest; can be accessed at https://synopticlabs.org/api/guides/?getstarted
+        """
         if token:
             self.token = token
         else:
@@ -682,12 +693,12 @@ class PullOutsideBaro(object):
                       Your can create a file called config.py and write `token= 'your api token'` on the first line of the file.""")
 
         if begdate:
-            self.begdate = begdate
+            self.begdate = pd.to_datetime(str(begdate))
         else:
             self.begdate = datetime.datetime(2014, 11, 1)
 
         if enddate:
-            self.enddate = enddate
+            self.enddate = pd.to_datetime(str(enddate))
         else:
             self.enddate = datetime.date.today()
 
@@ -738,27 +749,62 @@ class PullOutsideBaro(object):
         print(self.station)
         return self.station
 
-    def getbaro(self):
+    def getbaro(self, closest=False):
         """
         &bbox=-120,40,-119,41
         """
         self.select_station()
-        addrs = 'https://api.mesowest.net/v2/stations/timeseries?token={:}&stid={:}&state=ut,wy,id,nv&obtimezone=local&start={:%Y%m%d%H%M}&end={:%Y%m%d%H%M}&vars=pressure&units=pres|mb&output=csv'
+        addrs = 'https://api.mesowest.net/v2/stations/timeseries?token={:}&stid={:}&state=ut,wy,id,nv&obtimezone=utc&start={:%Y%m%d%H%M}&end={:%Y%m%d%H%M}&vars=pressure&units=pres|mb&output=csv'
         bar = {}
+
+        if closest:
+            self.station = self.station[0]
+
         for stat in self.station:
             html = addrs.format(self.token, stat, self.begdate, self.enddate)
             print(html)
-            bar[stat] = pd.read_csv(html, skiprows=[0, 1, 2, 3, 4, 5, 7], index_col=1, parse_dates=True)
-            bar[stat].sort_index(inplace=True)
-        baros = pd.concat(bar)
-        if 'altimeter_set_1' in baros.columns:
-            baros.drop('altimeter_set_1', inplace=True, axis=1)
-        baros.rename(columns={'pressure_set_1d': 'measuredlevel'}, inplace=True)
-        baros.index.name = 'readingdate'
-        barom = baros.groupby(baros.index.get_level_values(-1)).mean()
-        barom['measuredlevel'] = 0.03345526 * barom['measuredlevel']
-        barom = barom.resample('1H').mean()
-        return barom
+            bartemp = pd.read_csv(html, skiprows=[0, 1, 2, 3, 4, 5, 7], index_col=1)
+            bartemp.index = pd.to_datetime(bartemp.index, format='%Y-%m-%dT%H:%M:%SZ', utc=True).tz_convert('MST').tz_localize(None)
+            bartemp = bartemp.resample('1H').mean()
+            bar[stat] = bartemp.sort_index()
+
+        #baros = pd.concat(bar)
+        barod = pd.concat(bar, axis=1)
+        dropcols = ['altimeter_set_1','altimeter_set_1d']
+        for col in dropcols:
+            if col in barod.columns.get_level_values(1):
+                barod = barod.drop(col, axis=1, level=1)
+        barod.columns = barod.columns.droplevel(-1)
+        # barod['measuredlevel'] = barod.mean(axis=1)
+        baroe = barod
+        colmeans = baroe.mean(axis=0)
+
+        for col in baroe.columns:
+            #colmean = colmeans[col]
+            try:
+                baroe[col] = baroe[col].diff()
+            except:
+                baroe = baroe.drop([col],axis=1)
+        baroe['diffs'] = baroe.median(axis=1)
+        baroe['measuredpress'] = baroe['diffs'].cumsum() + colmeans.mean()
+
+        baroe['measuredlevelraw'] = 0.03345526 * baroe['measuredpress']
+
+        barof = baroe.dropna(subset=['measuredlevelraw'])
+
+        x = barof.index.to_julian_date()
+        y = barof['measuredlevelraw'].values
+
+        X = np.vstack([x, np.ones(len(x))]).T
+        m, c = np.linalg.lstsq(X, y, rcond=None)[0]
+        print(m, c)
+
+        baroe['juliandate'] = baroe.index.to_julian_date()
+        firstjdate = baroe.loc[baroe.first_valid_index(), 'juliandate']
+        baroe['jday'] = baroe['juliandate'].apply(lambda x: x - firstjdate, 1)
+        baroe['measuredlevel'] = baroe['measuredlevelraw'] - baroe['jday'] * m
+        baroe.index.name = 'readingdate'
+        return baroe
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -801,10 +847,10 @@ def imp_one_well(well_file, baro_file, man_startdate, man_start_level, man_endat
 
     # QA/QC to reject data if it exceeds user-based threshhold
     if drift <= drift_tol:
-        edit_table(rowlist, gw_reading_table, fieldnames)
+        edit_table(rowlist, gw_reading_table, fieldnames, conn_file_root)
         print('Well {:} successfully imported!'.format(wellid))
     elif override == 1:
-        edit_table(rowlist, gw_reading_table, fieldnames)
+        edit_table(rowlist, gw_reading_table, fieldnames, conn_file_root)
         print('Override initiated. Well {:} successfully imported!'.format(wellid))
     else:
         print('Well {:} drift greater than tolerance!'.format(wellid))
@@ -889,17 +935,17 @@ def simp_imp_well(well_file, baro_out, wellid, manual, conn_file_root, stbl_elev
 
     if imp:
         if (len(existing_data) == 0) and (abs(drift) < drift_tol):
-            edit_table(rowlist, gw_reading_table, fieldnames)
+            edit_table(rowlist, gw_reading_table, fieldnames, conn_file_root)
 
             print("Well {:} imported.".format(wellid))
         elif len(existing_data) == len(df) and (abs(drift) < drift_tol):
             print('Data for well {:} already exist!'.format(wellid))
         elif len(df) > len(existing_data) > 0 and abs(drift) < drift_tol:
             rowlist = rowlist[~rowlist['readingdate'].isin(existing_data['readingdate'].values)]
-            edit_table(rowlist, gw_reading_table, fieldnames)
+            edit_table(rowlist, gw_reading_table, fieldnames, conn_file_root)
             print('Some values were missing. {:} values added.'.format(len(df) - len(existing_data)))
         elif override and (abs(drift) < drift_tol):
-            edit_table(rowlist, gw_reading_table, fieldnames)
+            edit_table(rowlist, gw_reading_table, fieldnames, conn_file_root)
 
             print("Override Activated. Well {:} imported.".format(wellid))
         elif abs(drift) > drift_tol:
@@ -914,7 +960,7 @@ def simp_imp_well(well_file, baro_out, wellid, manual, conn_file_root, stbl_elev
     return rowlist, man, be, drift
 
 
-def upload_bp_data(df, site_number, return_df=False, overide=False, gw_reading_table="readings",
+def upload_bp_data(df, site_number, enviro, return_df=False, overide=False, gw_reading_table="readings",
                    resamp_freq="1H"):
     df.sort_index(inplace=True)
     first_index = df.first_valid_index()
@@ -924,7 +970,10 @@ def upload_bp_data(df, site_number, return_df=False, overide=False, gw_reading_t
     query = "locationid = {:.0f} AND readingdate >= '{:}' AND readingdate <= '{:}'".format(float(site_number),
                                                                                            first_index, last_index)
     print(query)
-    existing_data = table_to_pandas_dataframe(gw_reading_table, query=query)
+    existing_data = get_location_data(site_number,enviro=enviro,
+                                      gw_reading_table=gw_reading_table,
+                                      first_date=first_index,
+                                      last_date=last_index)
 
     df.sort_index(inplace=True)
     print("Resampling")
@@ -932,7 +981,7 @@ def upload_bp_data(df, site_number, return_df=False, overide=False, gw_reading_t
     df['measuredlevel'] = df['Level']
     df['locationid'] = site_number
 
-    fieldnames = ['readingdate', 'measuredlevel', 'temp', 'locationid']
+    fieldnames = ['measuredlevel', 'temp', 'locationid']
 
     if 'Temperature' in df.columns:
         df.rename(columns={'Temperature': 'temp'}, inplace=True)
@@ -945,24 +994,25 @@ def upload_bp_data(df, site_number, return_df=False, overide=False, gw_reading_t
     df.index.name = 'readingdate'
 
     print("Existing Len = {:}. Import Len = {:}.".format(len(existing_data), len(df)))
-    subset = df.reset_index()
 
     if (len(existing_data) == 0) or overide is True:
-        edit_table(subset, gw_reading_table, fieldnames)
+        edit_table(df, gw_reading_table, fieldnames, enviro)
 
         print("Well {:} imported.".format(site_number))
     elif len(existing_data) == len(df):
         print('Data for well {:} already exist!'.format(site_number))
     elif len(df) > len(existing_data) > 0:
+        subset = df.reset_index()
         subset = subset[~subset['readingdate'].isin(existing_data['readingdate'].values)]
-        edit_table(subset, gw_reading_table, fieldnames)
+        subset = subset.set_index('readingdate')
+        edit_table(subset, gw_reading_table, fieldnames, enviro)
         print('Some values were missing. {:} values added.'.format(len(df) - len(existing_data)))
     else:
         print('Import data for well {:} already exist! No data imported.'.format(site_number))
         pass
 
     if return_df:
-        return subset
+        return df
 
 # -----------------------------------------------------------------------------------------------------------------------
 # The following modify and query an SDE database, assuming the user has a connection
@@ -1117,7 +1167,7 @@ def get_field_names(table='readings'):
     return columns
 
 
-def edit_table(df, gw_reading_table, fieldnames):
+def edit_table(df, gw_reading_table, fieldnames, engine):
     """
     Edits SDE table by inserting new rows
     :param df: pandas DataFrame
