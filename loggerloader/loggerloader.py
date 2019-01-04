@@ -89,12 +89,15 @@ def get_breakpoints(manualfile, well, wl_field='corrwl'):
 
     wellnona = well.dropna(subset=[wl_field])
 
+    # add first transducer time if it preceeds first manual measurement
     if manualfile.first_valid_index() > wellnona.first_valid_index():
         breakpoints.append(wellnona.first_valid_index())
 
+    # add all manual measurements
     for i in range(len(manualfile)):
         breakpoints.append(fcl(wellnona, manualfile.index[i]).name)
 
+    # add last transducer time if it is after last manual measurement
     if manualfile.last_valid_index() < wellnona.last_valid_index():
         breakpoints.append(wellnona.last_valid_index())
 
@@ -887,20 +890,27 @@ def simp_imp_well(well_file, baro_out, wellid, manual, conn_file_root, stbl_elev
     man = get_man_gw_elevs(manual, stickup, well_elev, stbelev=stbl_elev)
     #well = jumpfix(well, 'Level', threashold=2.0)
 
+    lat = well_table.loc[wellid, 'Latitude']
+    longitude = well_table.loc[wellid, 'Longitude']
+
     # Check to see if well has assigned barometer
     try:
         baroid = well_table.loc[wellid, 'barologgertype']
     except KeyError:
         baroid = 0
 
-    if len(baro_out) + 60 < len(well):
-
-        print("Baro data length from site {:} is {:}! Pulling Mesowest Data for location {:}".format(baroid, len(baro_out), wellid))
-        lat = well_table.loc[wellid, 'Latitude']
-        longitude = well_table.loc[wellid, 'Longitude']
-        baroout = PullOutsideBaro(lat, longitude, begdate=well.index.min(), enddate=well.index.max(),
+    baro_data = baro_out[(baro_out.index >= well.first_valid_index()) & (baro_out.index <= well.last_valid_index())]
+    if (len(baro_data) == 0):
+        print("No baro data for site {:}! Pulling Mesowest Data for location {:}".format(baroid, wellid))
+        barob = PullOutsideBaro(lat, longitude, begdate=well.index.min(), enddate=well.index.max(),
                                   token=api_token).getbaro()
-        barob = baroout
+
+    elif len(df) > len(baro_data) + 60 > 0:
+        barosub = baro_out[~baro_out.index.isin(well.index.values)]
+        print("Baro data length from site {:} is {:}! Pulling Mesowest Data for location {:}".format(baroid, len(baro_out), wellid))
+        barob = PullOutsideBaro(lat, longitude, begdate=well.index.min(), enddate=well.index.max(),
+                                  token=api_token).getbaro()
+
     else:
         barob = baro_out
 
