@@ -926,6 +926,9 @@ def simp_imp_well(well_file, baro_out, wellid, manual, conn_file_root, stbl_elev
 
     # Pull any existing data from the database for the well in the date range of the new data
     existing_data = get_location_data(wellid, conn_file_root, first_index, last_index)
+    existing_data = existing_data[wellid]
+    existing_data.index = pd.to_datetime(existing_data.index, utc=True)
+    existing_data.index = existing_data.index.tz_convert("MST").tz_localize(None)
 
     dft = fix_drift(corrwl, man, corrwl='corrwl', manmeas='measureddtw', wellid = wellid,
                     well_table=well_table, conn_file_root=conn_file_root)
@@ -1007,7 +1010,6 @@ def upload_bp_data(df, site_number, enviro, return_df=False, overide=False, gw_r
 
     if (len(existing_data) == 0) or overide is True:
         edit_table(df, gw_reading_table, fieldnames, enviro)
-
         print("Well {:} imported.".format(site_number))
     elif len(existing_data) == len(df):
         print('Data for well {:} already exist!'.format(site_number))
