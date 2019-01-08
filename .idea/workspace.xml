@@ -64,11 +64,20 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2383">
-              <caret line="950" selection-start-line="950" selection-end-line="950" />
+            <state relative-caret-position="474">
+              <caret line="970" lean-forward="true" selection-start-line="970" selection-end-line="970" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/requirements.txt">
+          <provider selected="true" editor-type-id="text-editor">
+            <state>
+              <caret column="16" selection-start-column="16" selection-end-column="16" />
             </state>
           </provider>
         </entry>
@@ -84,7 +93,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>get_breakpoints</find>
       <find>get_field_names</find>
       <find>table_to_pandas_dataframe</find>
       <find>Arcpy</find>
@@ -114,6 +122,7 @@
       <find>get_locat</find>
       <find>pull_cl</find>
       <find>pull</find>
+      <find>edit_table</find>
     </findStrings>
     <replaceStrings>
       <replace>altid</replace>
@@ -176,17 +185,35 @@
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-10" />
-    <option name="y" value="80" />
-    <option name="width" value="1390" />
-    <option name="height" value="1744" />
+    <option name="x" value="1974" />
+    <option name="y" value="-59" />
+    <option name="width" value="1874" />
+    <option name="height" value="1096" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
     <navigator proportions="" version="1">
       <foldersAlwaysOnTop value="true" />
     </navigator>
-    <panes />
+    <panes>
+      <pane id="Scope" />
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="loggerloader" type="b2602c69:ProjectViewProjectNode" />
+              <item name="loggerloader" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="loggerloader" type="b2602c69:ProjectViewProjectNode" />
+              <item name="loggerloader" type="462c0819:PsiDirectoryNode" />
+              <item name="loggerloader" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+    </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
@@ -351,6 +378,9 @@
       <updated>1500398986654</updated>
       <workItem from="1545058095630" duration="6949000" />
       <workItem from="1545223874063" duration="17789000" />
+      <workItem from="1546268748483" duration="19619000" />
+      <workItem from="1546466167584" duration="1145000" />
+      <workItem from="1546547698043" duration="19551000" />
     </task>
     <task id="LOCAL-00141" summary="fixing upload baro data">
       <created>1536169207607</created>
@@ -689,11 +719,11 @@
       <updated>1545955909860</updated>
     </task>
     <task id="LOCAL-00189" summary="fixed pull of first manual meas issue">
-      <created>1546626298236</created>
+      <created>1546436214933</created>
       <option name="number" value="00189" />
       <option name="presentableId" value="LOCAL-00189" />
       <option name="project" value="LOCAL" />
-      <updated>1546626298236</updated>
+      <updated>1546436214933</updated>
     </task>
     <option name="localTasksCounter" value="190" />
     <servers />
@@ -731,7 +761,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="51854000" />
+    <option name="totallyTimeSpent" value="92169000" />
   </component>
   <component name="TodoView" selected-index="3">
     <todo-panel id="selected-file">
@@ -743,11 +773,11 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-6" y="34" width="1381" height="885" extended-state="6" />
+    <frame x="1974" y="-59" width="1874" height="1096" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" weight="0.24945135" />
-      <window_info active="true" id="Structure" order="1" visible="true" weight="0.25427508" />
+      <window_info content_ui="combo" id="Project" order="0" weight="0.25192943" />
+      <window_info active="true" id="Structure" order="1" visible="true" weight="0.2596472" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
@@ -756,10 +786,10 @@
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Version Control" order="7" sideWeight="0.49888477" visible="true" weight="0.32980132" />
+      <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info anchor="bottom" id="Terminal" order="8" />
       <window_info anchor="bottom" id="Python Console" order="9" />
-      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.50111526" side_tool="true" visible="true" weight="0.32980132" />
+      <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
       <window_info anchor="bottom" id="Docker" order="11" show_stripe_button="false" />
       <window_info anchor="bottom" id="Database Changes" order="12" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
@@ -769,7 +799,7 @@
       <window_info anchor="right" id="SciView" order="4" />
       <window_info anchor="right" id="R Graphics" order="5" />
       <window_info anchor="right" id="R Packages" order="6" />
-      <window_info anchor="right" x="0" y="0" width="418" height="896" id="Documentation" order="7" side_tool="true" visible="true" weight="0.15766263" />
+      <window_info anchor="right" x="0" y="0" width="418" height="896" id="Documentation" order="7" side_tool="true" visible="true" weight="0.13947079" />
       <window_info anchor="right" id="Database" order="8" />
     </layout>
   </component>
@@ -835,13 +865,6 @@
       <provider editor-type-id="text-editor">
         <state relative-caret-position="590">
           <caret line="41" lean-forward="true" selection-start-line="41" selection-end-line="41" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/requirements.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="16" selection-start-column="16" selection-end-column="16" />
         </state>
       </provider>
     </entry>
@@ -923,13 +946,23 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://E:/GIS/loggerloader-master/loggerloader/loggerloader_tbx.pyt">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2383">
-          <caret line="950" selection-start-line="950" selection-end-line="950" />
+        <state relative-caret-position="474">
+          <caret line="970" lean-forward="true" selection-start-line="970" selection-end-line="970" />
           <folding>
             <element signature="e#0#82#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/requirements.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="16" selection-start-column="16" selection-end-column="16" />
         </state>
       </provider>
     </entry>

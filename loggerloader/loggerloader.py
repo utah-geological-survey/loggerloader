@@ -724,6 +724,7 @@ class PullOutsideBaro(object):
         stations['end'] = stations['PERIOD_OF_RECORD'].apply(lambda x: pd.to_datetime(x['end']), 1)
         stations.drop('PERIOD_OF_RECORD', axis=1, inplace=True)
         stations.sort_values(['DISTANCE'], inplace=True)
+
         return stations
 
     def getstations(self):
@@ -735,8 +736,19 @@ class PullOutsideBaro(object):
     def getstationsrad(self):
         addrs = 'https://api.mesowest.net/v2/stations/metadata?token={:}&vars=pressure&radius={:},{:},{:}'
         html = addrs.format(self.token, self.lat, self.long, self.rad)
-        print(html)
+        resp = urlopen(html)
+        data = resp.read().decode("utf-8")
+        summry_cnt = json.loads(data)['SUMMARY']['NUMBER_OF_OBJECTS']
+        while summry_cnt < 1:
+            self.rad += 1
+            html = addrs.format(self.token, self.lat, self.long, self.rad)
+            resp = urlopen(html)
+            data = resp.read().decode("utf-8")
+            summry_cnt = json.loads(data)['SUMMARY']['NUMBER_OF_OBJECTS']
+            #print(html)
+
         stations = self.stationresponse(html)
+        print(html)
         return stations
 
     def select_station(self):
@@ -792,23 +804,26 @@ class PullOutsideBaro(object):
         baroe['measuredpress'] = baroe['diffs'].cumsum() + colmeans.mean()
 
         baroe['measuredlevelraw'] = 0.03345526 * baroe['measuredpress']
+        baroe.index.name = 'readingdate'
 
         barof = baroe.dropna(subset=['measuredlevelraw'])
 
         x = barof.index.to_julian_date()
         y = barof['measuredlevelraw'].values
 
-        X = np.vstack([x, np.ones(len(x))]).T
-        m, c = np.linalg.lstsq(X, y, rcond=None)[0]
-        print(m, c)
+        try:
+            X = np.vstack([x, np.ones(len(x))]).T
+            m, c = np.linalg.lstsq(X, y, rcond=None)[0]
+            print(m, c)
 
-        baroe['juliandate'] = baroe.index.to_julian_date()
-        firstjdate = baroe.loc[baroe.first_valid_index(), 'juliandate']
-        baroe['jday'] = baroe['juliandate'].apply(lambda x: x - firstjdate, 1)
-        baroe['measuredlevel'] = baroe['measuredlevelraw'] - baroe['jday'] * m
-        baroe.index.name = 'readingdate'
-        return baroe
-
+            baroe['juliandate'] = baroe.index.to_julian_date()
+            firstjdate = baroe.loc[baroe.first_valid_index(), 'juliandate']
+            baroe['jday'] = baroe['juliandate'].apply(lambda x: x - firstjdate, 1)
+            baroe['measuredlevel'] = baroe['measuredlevelraw'] - baroe['jday'] * m
+            baroe.index.name = 'readingdate'
+            return baroe
+        except:
+            return barof
 
 # -----------------------------------------------------------------------------------------------------------------------
 # These functions import data into an SDE database
@@ -890,8 +905,8 @@ def simp_imp_well(well_file, baro_out, wellid, manual, conn_file_root, stbl_elev
     man = get_man_gw_elevs(manual, stickup, well_elev, stbelev=stbl_elev)
     #well = jumpfix(well, 'Level', threashold=2.0)
 
-    lat = well_table.loc[wellid, 'Latitude']
-    longitude = well_table.loc[wellid, 'Longitude']
+    lat = well_table.loc[wellid, 'latitude']
+    longitude = well_table.loc[wellid, 'longitude']
 
     # Check to see if well has assigned barometer
     try:
@@ -899,17 +914,24 @@ def simp_imp_well(well_file, baro_out, wellid, manual, conn_file_root, stbl_elev
     except KeyError:
         baroid = 0
 
+    well = well.sort_index()
     baro_data = baro_out[(baro_out.index >= well.first_valid_index()) & (baro_out.index <= well.last_valid_index())]
     if (len(baro_data) == 0):
         print("No baro data for site {:}! Pulling Mesowest Data for location {:}".format(baroid, wellid))
-        barob = PullOutsideBaro(lat, longitude, begdate=well.index.min(), enddate=well.index.max(),
+        barob = PullOutsideBaro(longitude, lat, begdate=well.first_valid_index(), enddate=well.last_valid_index(),
                                   token=api_token).getbaro()
 
-    elif len(df) > len(baro_data) + 60 > 0:
-        barosub = baro_out[~baro_out.index.isin(well.index.values)]
-        print("Baro data length from site {:} is {:}! Pulling Mesowest Data for location {:}".format(baroid, len(baro_out), wellid))
-        barob = PullOutsideBaro(lat, longitude, begdate=well.index.min(), enddate=well.index.max(),
+    elif len(well) > len(baro_data) + 60 > 0:
+        barosub = baro_data[~baro_data.index.isin(well.index.values)]
+        barosub = barosub.sort_index()
+        print("Baro data length from site {:} is {:}! Pulling Mesowest Data for location {:}".format(baroid, len(baro_data), wellid))
+        baromeso = PullOutsideBaro(longitude, lat,
+                                   begdate=barosub.first_valid_index(),
+                                   enddate=barosub.last_valid_index(),
                                   token=api_token).getbaro()
+
+        baromeso = baromeso.sort_index()
+        barob = pd.concat([barosub,baromeso],axis = 0)
 
     else:
         barob = baro_out
@@ -926,13 +948,14 @@ def simp_imp_well(well_file, baro_out, wellid, manual, conn_file_root, stbl_elev
 
     # Pull any existing data from the database for the well in the date range of the new data
     existing_data = get_location_data(wellid, conn_file_root, first_index, last_index)
-    existing_data = existing_data[wellid]
-    existing_data.index = pd.to_datetime(existing_data.index, utc=True)
-    existing_data.index = existing_data.index.tz_convert("MST").tz_localize(None)
+
+    if len(existing_data) > 0:
+        existing_data = existing_data.loc[wellid]
+        existing_data.index = pd.to_datetime(existing_data.index, utc=True)
+        existing_data.index = existing_data.index.tz_convert("MST").tz_localize(None)
 
     dft = fix_drift(corrwl, man, corrwl='corrwl', manmeas='measureddtw', wellid = wellid,
                     well_table=well_table, conn_file_root=conn_file_root)
-
 
     #drift = round(float(dft[0].loc[dft[0].last_valid_index(), 'driftcorrection']),3)
     drift = round(float(dft[1]['drift'].values[0]), 3)
@@ -949,17 +972,15 @@ def simp_imp_well(well_file, baro_out, wellid, manual, conn_file_root, stbl_elev
     if imp:
         if (len(existing_data) == 0) and (abs(drift) < drift_tol):
             edit_table(rowlist, gw_reading_table, fieldnames, conn_file_root)
-
             print("Well {:} imported.".format(wellid))
         elif len(existing_data) == len(df) and (abs(drift) < drift_tol):
             print('Data for well {:} already exist!'.format(wellid))
         elif len(df) > len(existing_data) > 0 and abs(drift) < drift_tol:
-            rowlist = rowlist[~rowlist['readingdate'].isin(existing_data['readingdate'].values)]
+            rowlist = rowlist[~rowlist['readingdate'].isin(existing_data.index.values)]
             edit_table(rowlist, gw_reading_table, fieldnames, conn_file_root)
             print('Some values were missing. {:} values added.'.format(len(df) - len(existing_data)))
         elif override and (abs(drift) < drift_tol):
             edit_table(rowlist, gw_reading_table, fieldnames, conn_file_root)
-
             print("Override Activated. Well {:} imported.".format(wellid))
         elif abs(drift) > drift_tol:
             print('Drift for well {:} exceeds tolerance!'.format(wellid))
@@ -988,6 +1009,12 @@ def upload_bp_data(df, site_number, enviro, return_df=False, overide=False, gw_r
                                       first_date=first_index,
                                       last_date=last_index)
 
+    if len(existing_data) > 0:
+        #existing_data.index = pd.to_datetime(existing_data.index,infer_datetime_format=True,utc=True)
+        existing_data = existing_data.loc[site_number]
+        existing_data.index = existing_data.index.tz_localize(None)
+        existing_data.index.name = 'readingdate'
+
     df.sort_index(inplace=True)
     print("Resampling")
     df = df.resample(resamp_freq).mean()
@@ -1015,7 +1042,7 @@ def upload_bp_data(df, site_number, enviro, return_df=False, overide=False, gw_r
         print('Data for well {:} already exist!'.format(site_number))
     elif len(df) > len(existing_data) > 0:
         subset = df.reset_index()
-        subset = subset[~subset['readingdate'].isin(existing_data['readingdate'].values)]
+        subset = subset[~subset['readingdate'].isin(existing_data.index.values)]
         subset = subset.set_index('readingdate')
         edit_table(subset, gw_reading_table, fieldnames, enviro)
         print('Some values were missing. {:} values added.'.format(len(df) - len(existing_data)))
