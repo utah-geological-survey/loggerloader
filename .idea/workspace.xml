@@ -64,8 +64,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="474">
-              <caret line="970" lean-forward="true" selection-start-line="970" selection-end-line="970" />
+            <state relative-caret-position="287">
+              <caret line="377" column="41" selection-start-line="377" selection-start-column="41" selection-end-line="377" selection-end-column="41" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
               </folding>
@@ -195,25 +195,7 @@
     <navigator proportions="" version="1">
       <foldersAlwaysOnTop value="true" />
     </navigator>
-    <panes>
-      <pane id="Scope" />
-      <pane id="ProjectPane">
-        <subPane>
-          <expand>
-            <path>
-              <item name="loggerloader" type="b2602c69:ProjectViewProjectNode" />
-              <item name="loggerloader" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="loggerloader" type="b2602c69:ProjectViewProjectNode" />
-              <item name="loggerloader" type="462c0819:PsiDirectoryNode" />
-              <item name="loggerloader" type="462c0819:PsiDirectoryNode" />
-            </path>
-          </expand>
-          <select />
-        </subPane>
-      </pane>
-    </panes>
+    <panes />
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
@@ -380,14 +362,8 @@
       <workItem from="1545223874063" duration="17789000" />
       <workItem from="1546268748483" duration="19619000" />
       <workItem from="1546466167584" duration="1145000" />
-      <workItem from="1546547698043" duration="19551000" />
-    </task>
-    <task id="LOCAL-00141" summary="fixing upload baro data">
-      <created>1536169207607</created>
-      <option name="number" value="00141" />
-      <option name="presentableId" value="LOCAL-00141" />
-      <option name="project" value="LOCAL" />
-      <updated>1536169207607</updated>
+      <workItem from="1546547698043" duration="19786000" />
+      <workItem from="1546971809985" duration="2969000" />
     </task>
     <task id="LOCAL-00142" summary="fixing upload baro data">
       <created>1536169933807</created>
@@ -725,7 +701,14 @@
       <option name="project" value="LOCAL" />
       <updated>1546436214933</updated>
     </task>
-    <option name="localTasksCounter" value="190" />
+    <task id="LOCAL-00190" summary="fixed pull of first manual meas issue">
+      <created>1546908322873</created>
+      <option name="number" value="00190" />
+      <option name="presentableId" value="LOCAL-00190" />
+      <option name="project" value="LOCAL" />
+      <updated>1546908322874</updated>
+    </task>
+    <option name="localTasksCounter" value="191" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -761,7 +744,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="92169000" />
+    <option name="totallyTimeSpent" value="95373000" />
   </component>
   <component name="TodoView" selected-index="3">
     <todo-panel id="selected-file">
@@ -777,7 +760,7 @@
     <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" weight="0.25192943" />
-      <window_info active="true" id="Structure" order="1" visible="true" weight="0.2596472" />
+      <window_info active="true" id="Structure" order="1" visible="true" weight="0.26240352" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
@@ -799,7 +782,7 @@
       <window_info anchor="right" id="SciView" order="4" />
       <window_info anchor="right" id="R Graphics" order="5" />
       <window_info anchor="right" id="R Packages" order="6" />
-      <window_info anchor="right" x="0" y="0" width="418" height="896" id="Documentation" order="7" side_tool="true" visible="true" weight="0.13947079" />
+      <window_info anchor="right" x="0" y="0" width="418" height="896" id="Documentation" order="7" side_tool="true" weight="0.2012128" />
       <window_info anchor="right" id="Database" order="8" />
     </layout>
   </component>
@@ -951,8 +934,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="474">
-          <caret line="970" lean-forward="true" selection-start-line="970" selection-end-line="970" />
+        <state relative-caret-position="287">
+          <caret line="377" column="41" selection-start-line="377" selection-start-column="41" selection-end-line="377" selection-end-column="41" />
           <folding>
             <element signature="e#0#82#0" expanded="true" />
           </folding>

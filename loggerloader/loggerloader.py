@@ -375,6 +375,7 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='measureddtw', outcolna
             #first_trans = fcl(df[corrwl], breakpoints[i])  # last transducer measurement
             #last_trans = fcl(df[corrwl], breakpoints[i + 1])  # first transducer measurement
             df = df.dropna(subset=[corrwl])
+            df = dataendclean(df,'corrwl')
             first_trans = df.loc[df.first_valid_index(),corrwl]
             last_trans = df.loc[df.last_valid_index(),corrwl]
             first_trans_julian_date = df.loc[df.first_valid_index(), 'julian']
@@ -954,13 +955,12 @@ def simp_imp_well(well_file, baro_out, wellid, manual, conn_file_root, stbl_elev
         existing_data.index = pd.to_datetime(existing_data.index, utc=True)
         existing_data.index = existing_data.index.tz_convert("MST").tz_localize(None)
 
-    dft = fix_drift(corrwl, man, corrwl='corrwl', manmeas='measureddtw', wellid = wellid,
+    df, drift_info, max_drift = fix_drift(corrwl, man, corrwl='corrwl', manmeas='measureddtw', wellid = wellid,
                     well_table=well_table, conn_file_root=conn_file_root)
 
     #drift = round(float(dft[0].loc[dft[0].last_valid_index(), 'driftcorrection']),3)
-    drift = round(float(dft[1]['drift'].values[0]), 3)
+    drift = round(float(max_drift), 3)
 
-    df = dft[0]
     df.sort_index(inplace=True)
 
     #existing_data = table_to_pandas_dataframe(gw_reading_table, query=query)
@@ -1242,7 +1242,7 @@ def edit_table(df, gw_reading_table, fieldnames, engine):
 # These scripts remove outlier data and filter the time series of jumps and erratic measurements
 
 def dataendclean(df, x, inplace=False, jumptol=1.0):
-    """Trims off ends and beginnings of datasets that exceed 2.0 standard deviations of the first and last 30 values
+    """Trims off ends and beginnings of datasets that exceed 2.0 standard deviations of the first and last 50 values
 
     :param df: Pandas DataFrame
     :type df: pandas.core.frame.DataFrame
