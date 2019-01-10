@@ -375,7 +375,7 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='measureddtw', outcolna
             #first_trans = fcl(df[corrwl], breakpoints[i])  # last transducer measurement
             #last_trans = fcl(df[corrwl], breakpoints[i + 1])  # first transducer measurement
             df = df.dropna(subset=[corrwl])
-            df = dataendclean(df,'corrwl')
+            df = dataendclean(df,'corrwl',jumptol = 0.5)
             first_trans = df.loc[df.first_valid_index(),corrwl]
             last_trans = df.loc[df.last_valid_index(),corrwl]
             first_trans_julian_date = df.loc[df.first_valid_index(), 'julian']
@@ -679,6 +679,7 @@ class PullOutsideBaro(object):
             rad: radius of area of interest; defaults to 30
             token: api token used to connect to mesowest; can be accessed at https://synopticlabs.org/api/guides/?getstarted
         """
+        # TODO fix jumps in data created by aggregating station data
         if token:
             self.token = token
         else:
@@ -765,7 +766,7 @@ class PullOutsideBaro(object):
         print(self.station)
         return self.station
 
-    def getbaro(self, closest=False):
+    def getbaro(self, closest=True):
         """
         &bbox=-120,40,-119,41
         """
@@ -946,7 +947,7 @@ def simp_imp_well(well_file, baro_out, wellid, manual, conn_file_root, stbl_elev
     corrwl.sort_index(inplace=True)
     first_index = corrwl.first_valid_index()
     last_index = corrwl.last_valid_index()
-
+    print(wellid, conn_file_root, first_index, last_index)
     # Pull any existing data from the database for the well in the date range of the new data
     existing_data = get_location_data(wellid, conn_file_root, first_index, last_index)
 
