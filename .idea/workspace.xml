@@ -4,7 +4,7 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="added dataendclean to process breakpoint data in fixdrift">
+    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="well_baro_merge updated to only merge well data with baro data when vented = false">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/loggerloader/loggerloader.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/loggerloader.py" afterDir="false" />
     </list>
@@ -64,8 +64,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="516">
-              <caret line="1483" column="23" lean-forward="true" selection-start-line="1483" selection-start-column="23" selection-end-line="1483" selection-end-column="23" />
+            <state relative-caret-position="295">
+              <caret line="1467" lean-forward="true" selection-start-line="1467" selection-end-line="1467" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
               </folding>
@@ -365,14 +365,7 @@
       <workItem from="1546547698043" duration="19786000" />
       <workItem from="1546971809985" duration="3223000" />
       <workItem from="1546979378077" duration="3968000" />
-      <workItem from="1547478810381" duration="2080000" />
-    </task>
-    <task id="LOCAL-00144" summary="fixing upload baro data">
-      <created>1536172701438</created>
-      <option name="number" value="00144" />
-      <option name="presentableId" value="LOCAL-00144" />
-      <option name="project" value="LOCAL" />
-      <updated>1536172701438</updated>
+      <workItem from="1547478810381" duration="2355000" />
     </task>
     <task id="LOCAL-00145" summary="added hourly resample to baro">
       <created>1536180310872</created>
@@ -710,7 +703,14 @@
       <option name="project" value="LOCAL" />
       <updated>1547082019169</updated>
     </task>
-    <option name="localTasksCounter" value="193" />
+    <task id="LOCAL-00193" summary="well_baro_merge updated to only merge well data with baro data when vented = false">
+      <created>1547594231015</created>
+      <option name="number" value="00193" />
+      <option name="presentableId" value="LOCAL-00193" />
+      <option name="project" value="LOCAL" />
+      <updated>1547594231016</updated>
+    </task>
+    <option name="localTasksCounter" value="194" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -746,7 +746,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="101675000" />
+    <option name="totallyTimeSpent" value="101950000" />
   </component>
   <component name="TodoView" selected-index="3">
     <todo-panel id="selected-file">
@@ -792,7 +792,6 @@
     <option name="version" value="1" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Add Test" />
     <MESSAGE value="Added HeaderTable" />
     <MESSAGE value="Improved site lookup for mulitsite" />
     <MESSAGE value="Fixed many_wells class" />
@@ -817,7 +816,8 @@
     <MESSAGE value="added missing dictionary in compilation" />
     <MESSAGE value="fixed pull of first manual meas issue" />
     <MESSAGE value="added dataendclean to process breakpoint data in fixdrift" />
-    <option name="LAST_COMMIT_MESSAGE" value="added dataendclean to process breakpoint data in fixdrift" />
+    <MESSAGE value="well_baro_merge updated to only merge well data with baro data when vented = false" />
+    <option name="LAST_COMMIT_MESSAGE" value="well_baro_merge updated to only merge well data with baro data when vented = false" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/loggerloader/arcstuff.py" />
@@ -936,8 +936,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="516">
-          <caret line="1483" column="23" lean-forward="true" selection-start-line="1483" selection-start-column="23" selection-end-line="1483" selection-end-column="23" />
+        <state relative-caret-position="295">
+          <caret line="1467" lean-forward="true" selection-start-line="1467" selection-end-line="1467" />
           <folding>
             <element signature="e#0#82#0" expanded="true" />
           </folding>

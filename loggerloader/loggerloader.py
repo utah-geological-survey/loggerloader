@@ -1485,14 +1485,14 @@ def well_baro_merge(wellfile, barofile, barocolumn='Level', wellcolumn='Level', 
         wellbaro[outcolumn] = wellbaro[wellcolumn]
     else:
         # combine baro and well data for easy calculations, graphing, and manipulation
-        wellbaro = pd.merge(well, baro, left_index=True, right_index=True, how='inner')
+        wellbaro = pd.merge(well, baro, left_index=True, right_index=True, how='left')
 
         wellbaro['dbp'] = wellbaro['barometer'].diff()
         wellbaro['dwl'] = wellbaro[wellcolumn].diff()
         # printmes(wellbaro)
         first_well = wellbaro[wellcolumn][0]
         wellbaro[outcolumn] = wellbaro[['dbp', 'dwl']].apply(lambda x: x[1] - x[0], 1).cumsum() + first_well
-    wellbaro.loc[wellbaro.index[0], outcolumn] = first_well
+        wellbaro.loc[wellbaro.index[0], outcolumn] = first_well
     return wellbaro
 
 
