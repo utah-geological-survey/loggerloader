@@ -627,10 +627,6 @@ def get_trans_gw_elevations(df, stickup, well_elev, site_number, level='Level', 
 
     df.sort_index(inplace=True)
 
-    fieldnames = ['readingdate', 'measuredlevel', 'measureddtw', 'driftcorrection',
-                  'temp', 'locationid', 'baroefficiencylevel',
-                  'waterelevation']
-
     if 'Temperature' in df.columns:
         df.rename(columns={'Temperature': 'temp'}, inplace=True)
 
@@ -648,7 +644,7 @@ def get_trans_gw_elevations(df, stickup, well_elev, site_number, level='Level', 
 
     subset = df.reset_index()
 
-    return subset, fieldnames
+    return subset
 
 
 def trans_type(well_file):
@@ -863,7 +859,11 @@ def imp_one_well(well_file, baro_file, man_startdate, man_start_level, man_endat
     print('Maximum Drift for well {:} is {:.3f}.'.format(wellid, drift))
 
     # add, remove, and arrange column names to match database format schema
-    rowlist, fieldnames = get_trans_gw_elevations(df, stickup, well_elev, wellid)
+    rowlist = get_trans_gw_elevations(df, stickup, well_elev, wellid)
+
+    fieldnames = ['measuredlevel', 'measureddtw', 'driftcorrection',
+                  'temp', 'locationid', 'baroefficiencylevel',
+                  'waterelevation']
 
     # QA/QC to reject data if it exceeds user-based threshhold
     if drift <= drift_tol:
@@ -968,8 +968,13 @@ def simp_imp_well(well_file, baro_out, wellid, manual, conn_file_root, stbl_elev
 
     print("Existing Len = {:}. Import Len = {:}.".format(len(existing_data), len(df)))
 
-    rowlist, fieldnames = get_trans_gw_elevations(df, stickup, well_elev, wellid)
+    rowlist = get_trans_gw_elevations(df, stickup, well_elev, wellid)
 
+    fieldnames = ['measuredlevel', 'measureddtw', 'driftcorrection',
+                  'temp', 'locationid', 'baroefficiencylevel',
+                  'waterelevation']
+
+    rowlist = rowlist.set_index('readingdate')
     if imp:
         if (len(existing_data) == 0) and (abs(drift) < drift_tol):
             edit_table(rowlist, gw_reading_table, fieldnames, conn_file_root)
@@ -977,7 +982,7 @@ def simp_imp_well(well_file, baro_out, wellid, manual, conn_file_root, stbl_elev
         elif len(existing_data) == len(df) and (abs(drift) < drift_tol):
             print('Data for well {:} already exist!'.format(wellid))
         elif len(df) > len(existing_data) > 0 and abs(drift) < drift_tol:
-            rowlist = rowlist[~rowlist['readingdate'].isin(existing_data.index.values)]
+            rowlist = rowlist[~rowlist.index.isin(existing_data.index.values)]
             edit_table(rowlist, gw_reading_table, fieldnames, conn_file_root)
             print('Some values were missing. {:} values added.'.format(len(df) - len(existing_data)))
         elif override and (abs(drift) < drift_tol):
@@ -1473,17 +1478,19 @@ def well_baro_merge(wellfile, barofile, barocolumn='Level', wellcolumn='Level', 
     elif 'Temperature' in baro.columns:
         baro = baro.drop('Temperature', axis=1)
 
-    # combine baro and well data for easy calculations, graphing, and manipulation
-    wellbaro = pd.merge(well, baro, left_index=True, right_index=True, how='inner')
 
-    wellbaro['dbp'] = wellbaro['barometer'].diff()
-    wellbaro['dwl'] = wellbaro[wellcolumn].diff()
-    #printmes(wellbaro)
-    first_well = wellbaro[wellcolumn][0]
 
     if vented:
+        wellbaro = well
         wellbaro[outcolumn] = wellbaro[wellcolumn]
     else:
+        # combine baro and well data for easy calculations, graphing, and manipulation
+        wellbaro = pd.merge(well, baro, left_index=True, right_index=True, how='inner')
+
+        wellbaro['dbp'] = wellbaro['barometer'].diff()
+        wellbaro['dwl'] = wellbaro[wellcolumn].diff()
+        # printmes(wellbaro)
+        first_well = wellbaro[wellcolumn][0]
         wellbaro[outcolumn] = wellbaro[['dbp', 'dwl']].apply(lambda x: x[1] - x[0], 1).cumsum() + first_well
     wellbaro.loc[wellbaro.index[0], outcolumn] = first_well
     return wellbaro
@@ -2355,8 +2362,8 @@ class wellimport(object):
 
         print("Drift is {:} feet".format(drift))
 
-        dfa = get_trans_gw_elevations(dft[0], stickup, well_elev, site_number, dtw="corrwl")
-        df = dfa[0]
+        df = get_trans_gw_elevations(dft[0], stickup, well_elev, site_number, dtw="corrwl")
+
 
         df.to_csv(self.save_location)
 
