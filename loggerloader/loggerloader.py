@@ -95,7 +95,8 @@ def get_breakpoints(manualfile, well, wl_field='corrwl'):
 
     # add all manual measurements
     for i in range(len(manualfile)):
-        breakpoints.append(fcl(wellnona, manualfile.index[i]).name)
+        #breakpoints.append(fcl(wellnona, manualfile.index[i]).name)
+        breakpoints.append(manualfile.index[i])
 
     # add last transducer time if it is after last manual measurement
     if manualfile.last_valid_index() < wellnona.last_valid_index():
@@ -203,7 +204,10 @@ def calc_slope_and_intercept(first_man, first_man_julian_date, last_man, last_ma
     drift = 0.00001
 
     if first_man is None:
-        last_offset = last_trans - last_man
+        try:
+            last_offset = last_trans - last_man
+        except TypeError:
+            last_offset = 0
         first_man_julian_date = first_trans_julian_date
         first_man = first_trans
     elif last_man is None:
@@ -350,6 +354,9 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='measureddtw', outcolna
         bracketedwls[i] = well.loc[
             (pd.to_datetime(well.index) >= breakpoints[i]) & (pd.to_datetime(well.index) < breakpoints[i + 1])]
         df = bracketedwls[i]
+        df['datetime'] = df.index
+        df = df.dropna(subset=[corrwl])
+        df = dataendclean(df, 'corrwl', jumptol=0.5)
 
         if len(df) > 0:
             print("----- Well {:} -----".format(wellid))
@@ -358,9 +365,11 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='measureddtw', outcolna
             df.loc[:, 'julian'] = df.index.to_julian_date()
 
             if wellid:
-                breakpoint1 = breakpoints[i]
-                breakpoint2 = breakpoints[i + 1]
+
+                breakpoint1 = fcl(df,breakpoints[i]).name
+                breakpoint2 = fcl(df,breakpoints[i + 1]).name
                 offset = well_table.loc[wellid, 'stickup']
+                print(breakpoint1)
                 levdt, lev = pull_closest_well_data(wellid, breakpoint1, conn_file_root, timedel=search_tol)
                 if pd.isna(lev):
                     pass
@@ -374,8 +383,14 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='measureddtw', outcolna
 
             #first_trans = fcl(df[corrwl], breakpoints[i])  # last transducer measurement
             #last_trans = fcl(df[corrwl], breakpoints[i + 1])  # first transducer measurement
-            df = df.dropna(subset=[corrwl])
-            df = dataendclean(df,'corrwl',jumptol = 0.5)
+
+            first_man_julian_date = fcl(manualfile['julian'], breakpoints[i])
+            last_man_julian_date = fcl(manualfile['julian'], breakpoints[i + 1])
+            first_man_date = fcl(manualfile['datetime'], breakpoints[i])
+            last_man_date = fcl(manualfile['datetime'], breakpoints[i + 1])
+            first_man = fcl(manualfile[manmeas], breakpoints[i])  # first manual measurement
+            last_man = fcl(manualfile[manmeas], breakpoints[i + 1])  # last manual measurement
+
             first_trans = df.loc[df.first_valid_index(),corrwl]
             last_trans = df.loc[df.last_valid_index(),corrwl]
             first_trans_julian_date = df.loc[df.first_valid_index(), 'julian']
@@ -385,12 +400,6 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='measureddtw', outcolna
 
             man_df2 = fcl(manualfile, breakpoints[i + 1])
 
-            first_man_julian_date = fcl(manualfile['julian'], breakpoints[i])
-            last_man_julian_date = fcl(manualfile['julian'], breakpoints[i + 1])
-            first_man_date = fcl(manualfile['datetime'], breakpoints[i])
-            last_man_date = fcl(manualfile['datetime'], breakpoints[i + 1])
-            first_man = fcl(manualfile[manmeas], breakpoints[i])  # first manual measurement
-            last_man = fcl(manualfile[manmeas], breakpoints[i + 1])  # last manual measurement
 
             if first_man_date - first_trans_date > datetime.timedelta(days=search_tol):
                 print('No initial actual manual measurement within {:} days of {:}.'.format(search_tol,first_trans_date))
@@ -587,7 +596,7 @@ def get_man_gw_elevs(manual, stickup, well_elev, stbelev=True):
                   'Location ID': 'locationid',
                   'Water Level (ft)': 'dtwbelowcasing'}
     manual.rename(columns=old_fields, inplace=True)
-    manual.loc[:, 'measureddtw'] = (manual['dtwbelowcasing'] * -1)
+    #manual.loc[:, 'measureddtw'] = (manual['dtwbelowcasing'] * -1)
 
     if 'current_stickup_height' in manual.columns and stbelev == False:
         manual.loc[:, 'measureddtw'] = (manual['dtwbelowcasing'] * -1) + manual['current_stickup_height']
@@ -911,12 +920,15 @@ def simp_imp_well(well_file, baro_out, wellid, manual, conn_file_root, stbl_elev
     longitude = well_table.loc[wellid, 'longitude']
 
     # Check to see if well has assigned barometer
+
     try:
         baroid = well_table.loc[wellid, 'barologgertype']
     except KeyError:
         baroid = 0
 
+
     well = well.sort_index()
+    #well = hourly_resample(well)
     baro_data = baro_out[(baro_out.index >= well.first_valid_index()) & (baro_out.index <= well.last_valid_index())]
     if (len(baro_data) == 0):
         print("No baro data for site {:}! Pulling Mesowest Data for location {:}".format(baroid, wellid))
@@ -1143,7 +1155,7 @@ def get_location_data(site_numbers, enviro, first_date=None, last_date=None, lim
     if limit:
         sql += "\nLIMIT {:}".format(limit)
 
-    readings = pd.read_sql(sql, con=enviro, parse_dates={'readingdate': '%Y-%m-%d %H:%M:%s-%z'}, index_col='readingdate')
+    readings = pd.read_sql(sql, con=enviro, parse_dates=True, index_col='readingdate')
     readings.index = pd.to_datetime(readings.index,infer_datetime_format=True,utc=True)
     readings.index = readings.index.tz_convert(tz='MST')
     readings.reset_index(inplace=True)
