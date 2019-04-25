@@ -1157,7 +1157,10 @@ def get_location_data(site_numbers, enviro, first_date=None, last_date=None, lim
 
     readings = pd.read_sql(sql, con=enviro, parse_dates=True, index_col='readingdate')
     readings.index = pd.to_datetime(readings.index,infer_datetime_format=True,utc=True)
-    readings.index = readings.index.tz_convert(tz='MST')
+    try:
+        readings.index = readings.index.tz_convert(tz='MST')
+    except TypeError:
+        readings.index = readings.index.tz_localize(tz='MST')
     readings.reset_index(inplace=True)
     readings.set_index(['locationid', 'readingdate'], inplace=True)
     if len(readings) == 0:
