@@ -4,9 +4,7 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="well_baro_merge updated to only merge well data with baro data when vented = false">
-      <change beforePath="$PROJECT_DIR$/.idea/loggerloader.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/loggerloader.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="timezone bs">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/loggerloader/loggerloader.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/loggerloader.py" afterDir="false" />
     </list>
@@ -66,20 +64,11 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="423">
-              <caret line="1157" column="60" selection-start-line="1157" selection-start-column="60" selection-end-line="1157" selection-end-column="60" />
+            <state relative-caret-position="651">
+              <caret line="1250" column="9" selection-start-line="1250" selection-start-column="9" selection-end-line="1250" selection-end-column="9" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/requirements.txt">
-          <provider selected="true" editor-type-id="text-editor">
-            <state>
-              <caret column="16" selection-start-column="16" selection-end-column="16" />
             </state>
           </provider>
         </entry>
@@ -95,9 +84,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>table_to_pandas_dataframe</find>
-      <find>Arcpy</find>
-      <find>pull_exist_ts_data</find>
       <find>arcpy</find>
       <find>pull_sde_table</find>
       <find>pull_well_table</find>
@@ -122,9 +108,12 @@
       <find>jumpfix</find>
       <find>get_locat</find>
       <find>pull_cl</find>
-      <find>pull</find>
       <find>edit_table</find>
       <find>get_trans</find>
+      <find>pull</find>
+      <find>measured</find>
+      <find>DTW_WL</find>
+      <find>fcl</find>
     </findStrings>
     <replaceStrings>
       <replace>altid</replace>
@@ -186,11 +175,11 @@
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="1974" />
+  <component name="ProjectFrameBounds" extendedState="7">
+    <option name="x" value="1942" />
     <option name="y" value="-59" />
-    <option name="width" value="1874" />
-    <option name="height" value="1096" />
+    <option name="width" value="1813" />
+    <option name="height" value="1019" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -202,7 +191,7 @@
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../transducer" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
@@ -338,11 +327,11 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python tests.Nosetests in test.py" />
       <item itemvalue="Python tests.Doctest pull_closest_well_data" />
+      <item itemvalue="Python tests.Nosetests for test.testcalc_drift" />
       <item itemvalue="Python tests.Nosetests for test.testcalc_slope_and_intercept" />
       <item itemvalue="Python tests.Nosetests for test.testget_breakpoints" />
-      <item itemvalue="Python tests.Nosetests for test.testcalc_drift" />
+      <item itemvalue="Python tests.Nosetests in test.py" />
     </list>
     <recent_temporary>
       <list>
@@ -384,21 +373,11 @@
       <workItem from="1554154694004" duration="1088000" />
       <workItem from="1554228011637" duration="599000" />
       <workItem from="1555005767676" duration="1035000" />
-      <workItem from="1555956348513" duration="2502000" />
-    </task>
-    <task id="LOCAL-00146" summary="added hourly resample to baro">
-      <created>1536182485984</created>
-      <option name="number" value="00146" />
-      <option name="presentableId" value="LOCAL-00146" />
-      <option name="project" value="LOCAL" />
-      <updated>1536182485984</updated>
-    </task>
-    <task id="LOCAL-00147" summary="docstring cleanup; modified NewWellImp name; changed fix_drift variables">
-      <created>1536596757480</created>
-      <option name="number" value="00147" />
-      <option name="presentableId" value="LOCAL-00147" />
-      <option name="project" value="LOCAL" />
-      <updated>1536596757480</updated>
+      <workItem from="1555956348513" duration="4440000" />
+      <workItem from="1557759717430" duration="2907000" />
+      <workItem from="1560258668841" duration="150000" />
+      <workItem from="1561396166492" duration="4866000" />
+      <workItem from="1561499015482" duration="1069000" />
     </task>
     <task id="LOCAL-00148" summary="docstring cleanup; modified NewWellImp name; changed fix_drift variables">
       <created>1537188768763</created>
@@ -729,7 +708,21 @@
       <option name="project" value="LOCAL" />
       <updated>1547594440640</updated>
     </task>
-    <option name="localTasksCounter" value="195" />
+    <task id="LOCAL-00195" summary="well_baro_merge updated to only merge well data with baro data when vented = false">
+      <created>1556211508725</created>
+      <option name="number" value="00195" />
+      <option name="presentableId" value="LOCAL-00195" />
+      <option name="project" value="LOCAL" />
+      <updated>1556211508726</updated>
+    </task>
+    <task id="LOCAL-00196" summary="timezone bs">
+      <created>1556211953093</created>
+      <option name="number" value="00196" />
+      <option name="presentableId" value="LOCAL-00196" />
+      <option name="project" value="LOCAL" />
+      <updated>1556211953093</updated>
+    </task>
+    <option name="localTasksCounter" value="197" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -765,7 +758,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="131211000" />
+    <option name="totallyTimeSpent" value="142141000" />
   </component>
   <component name="TodoView" selected-index="3">
     <todo-panel id="selected-file">
@@ -777,11 +770,11 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="1974" y="-59" width="1874" height="1096" extended-state="6" />
+    <frame x="1912" y="-59" width="1936" height="1066" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" weight="0.25192943" />
-      <window_info active="true" id="Structure" order="1" visible="true" weight="0.30044103" />
+      <window_info content_ui="combo" id="Project" order="0" weight="0.25179458" />
+      <window_info active="true" id="Structure" order="1" visible="true" weight="0.3033049" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
@@ -803,7 +796,7 @@
       <window_info anchor="right" id="SciView" order="4" />
       <window_info anchor="right" id="R Graphics" order="5" />
       <window_info anchor="right" id="R Packages" order="6" />
-      <window_info anchor="right" x="0" y="0" width="418" height="896" id="Documentation" order="7" side_tool="true" visible="true" weight="0.20198676" />
+      <window_info anchor="right" x="0" y="0" width="418" height="896" id="Documentation" order="7" side_tool="true" visible="true" weight="0.19509594" />
       <window_info anchor="right" id="Database" order="8" />
     </layout>
   </component>
@@ -811,7 +804,6 @@
     <option name="version" value="1" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added HeaderTable" />
     <MESSAGE value="Improved site lookup for mulitsite" />
     <MESSAGE value="Fixed many_wells class" />
     <MESSAGE value="Created PullOutsideBaro" />
@@ -836,7 +828,8 @@
     <MESSAGE value="fixed pull of first manual meas issue" />
     <MESSAGE value="added dataendclean to process breakpoint data in fixdrift" />
     <MESSAGE value="well_baro_merge updated to only merge well data with baro data when vented = false" />
-    <option name="LAST_COMMIT_MESSAGE" value="well_baro_merge updated to only merge well data with baro data when vented = false" />
+    <MESSAGE value="timezone bs" />
+    <option name="LAST_COMMIT_MESSAGE" value="timezone bs" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/loggerloader/arcstuff.py" />
@@ -956,20 +949,20 @@
     <entry file="https://github.com/utah-geological-survey/epa_cdx_wqx_chem_tools">
       <provider selected="true" editor-type-id="httpFileEditor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="423">
-          <caret line="1157" column="60" selection-start-line="1157" selection-start-column="60" selection-end-line="1157" selection-end-column="60" />
-          <folding>
-            <element signature="e#0#82#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/requirements.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state>
           <caret column="16" selection-start-column="16" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="651">
+          <caret line="1250" column="9" selection-start-line="1250" selection-start-column="9" selection-end-line="1250" selection-end-column="9" />
+          <folding>
+            <element signature="e#0#82#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

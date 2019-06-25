@@ -530,7 +530,7 @@ def pull_well_table(conn_file_root, loc_table="monitoringlocations"):
 
     sql = """SELECT locationid, locationname, locationtype, locationdesc, 
     altlocationid, verticalmeasure, verticalunits, welldepth, siteid, stickup,
-    loggertype, baroefficiency, latitude, longitude, baroefficiencystart, barologgertype
+    loggertype, baroefficiency, latitude, longitude, baroefficiencystart, barologgertype, the_geom
     FROM {:}
     WHERE altlocationid <> 0
     ORDER BY altlocationid ASC;""".format(loc_table)
@@ -1156,7 +1156,7 @@ def get_location_data(site_numbers, enviro, first_date=None, last_date=None, lim
         sql += "\nLIMIT {:}".format(limit)
 
     readings = pd.read_sql(sql, con=enviro, parse_dates=True, index_col='readingdate')
-    readings.index = pd.to_datetime(readings.index,infer_datetime_format=True,utc=True)
+    readings.index = pd.to_datetime(readings.index,infer_datetime_format=True, utc=True)
     try:
         readings.index = readings.index.tz_convert(tz='MST')
     except TypeError:
@@ -1248,7 +1248,7 @@ def edit_table(df, gw_reading_table, fieldnames, engine):
         rowlist = subset.values.tolist()
 
         subset['readingdate'] = subset.index.tz_localize('MST', ambiguous="NaT")
-        subset['readingdate'] = subset['readingdate'].astype(pd.Timestamp)
+        #subset['readingdate'] = subset['readingdate'].astype(pd.Timestamp)
         subset.dropna(subset=['readingdate'],inplace=True)
         subset.drop_duplicates(subset=['locationid','readingdate'],inplace=True)
         #subset.drop(['OBJECTID'],axis=1,inplace=True)
