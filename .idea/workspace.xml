@@ -5,6 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="timezone bs">
+      <change afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/loggerloader/loggerloader.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/loggerloader.py" afterDir="false" />
     </list>
@@ -47,11 +48,39 @@
     <expand>
       <path>
         <item name="Database" type="3277223f:DatabaseStructure$DbRootGroup" />
-        <item name="transducer@localhost" type="feb32156:DbDataSourceImpl" />
+        <item name="postgres@localhost" type="feb32156:DbDataSourceImpl" />
       </path>
       <path>
         <item name="Database" type="3277223f:DatabaseStructure$DbRootGroup" />
-        <item name="UGGP@uggp.agrc.utah.gov" type="feb32156:DbDataSourceImpl" />
+        <item name="PostgreSQL - ugsgwp@nrwugspgressp" type="feb32156:DbDataSourceImpl" />
+      </path>
+      <path>
+        <item name="Database" type="3277223f:DatabaseStructure$DbRootGroup" />
+        <item name="uggp.agrc.utah.gov" type="feb32156:DbDataSourceImpl" />
+      </path>
+      <path>
+        <item name="Database" type="3277223f:DatabaseStructure$DbRootGroup" />
+        <item name="uggp.agrc.utah.gov" type="feb32156:DbDataSourceImpl" />
+        <item name="UGGP: database" type="ccb7ac2a:MsImplModel$Database" />
+      </path>
+      <path>
+        <item name="Database" type="3277223f:DatabaseStructure$DbRootGroup" />
+        <item name="uggp.agrc.utah.gov" type="feb32156:DbDataSourceImpl" />
+        <item name="UGGP: database" type="ccb7ac2a:MsImplModel$Database" />
+        <item name="paulinkenbrandt: schema" type="2865ee2e:MsImplModel$Schema" />
+      </path>
+      <path>
+        <item name="Database" type="3277223f:DatabaseStructure$DbRootGroup" />
+        <item name="uggp.agrc.utah.gov" type="feb32156:DbDataSourceImpl" />
+        <item name="UGGP: database" type="ccb7ac2a:MsImplModel$Database" />
+        <item name="uggpadmin: schema" type="2865ee2e:MsImplModel$Schema" />
+      </path>
+      <path>
+        <item name="Database" type="3277223f:DatabaseStructure$DbRootGroup" />
+        <item name="uggp.agrc.utah.gov" type="feb32156:DbDataSourceImpl" />
+        <item name="UGGP: database" type="ccb7ac2a:MsImplModel$Database" />
+        <item name="uggpadmin: schema" type="2865ee2e:MsImplModel$Schema" />
+        <item name="tables" type="d4e8921:DatabaseStructure$FamilyGroup" />
       </path>
     </expand>
     <select />
@@ -61,11 +90,29 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://E:/PROJECTS/Juab/Elevation/tile_Get.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state>
+              <caret column="2" selection-end-line="27" selection-end-column="19" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="884">
+              <caret line="52" selection-start-line="52" selection-end-line="127" selection-end-column="14" />
+            </state>
+          </provider>
+        </entry>
+      </file>
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="651">
-              <caret line="1250" column="9" selection-start-line="1250" selection-start-column="9" selection-end-line="1250" selection-end-column="9" />
+            <state relative-caret-position="375">
+              <caret line="921" column="90" selection-start-line="921" selection-start-column="90" selection-end-line="921" selection-end-column="90" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
               </folding>
@@ -84,15 +131,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>arcpy</find>
-      <find>pull_sde_table</find>
-      <find>pull_well_table</find>
-      <find>pull_ex</find>
-      <find>get_location</find>
-      <find>monitorin</find>
-      <find>AltLocat</find>
-      <find>Current Stickup</find>
-      <find>READINGDATE</find>
       <find>MEASUREDLEVEL</find>
       <find>LOCATIONID</find>
       <find>TEMP</find>
@@ -108,12 +146,21 @@
       <find>jumpfix</find>
       <find>get_locat</find>
       <find>pull_cl</find>
-      <find>edit_table</find>
       <find>get_trans</find>
       <find>pull</find>
       <find>measured</find>
       <find>DTW_WL</find>
       <find>fcl</find>
+      <find>trans_type</find>
+      <find>Pulling</find>
+      <find>pytz</find>
+      <find>No S</find>
+      <find>Well</find>
+      <find>MST</find>
+      <find>dataend</find>
+      <find>tz_</find>
+      <find>calc_drift_features</find>
+      <find>edit_table</find>
     </findStrings>
     <replaceStrings>
       <replace>altid</replace>
@@ -138,7 +185,7 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="master" />
+        <entry key="$PROJECT_DIR$" value="no_arcpy" />
       </map>
     </option>
   </component>
@@ -171,15 +218,18 @@
         <option value="$PROJECT_DIR$/setup.py" />
         <option value="$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt" />
         <option value="$APPLICATION_CONFIG_DIR$/idea.properties" />
+        <option value="$PROJECT_DIR$/../../dbconnect.py" />
+        <option value="$APPLICATION_CONFIG_DIR$/consoles/db/4a00e95d-fd15-48c9-b76e-6723c88a01fa/console.sql" />
+        <option value="E:/PROJECTS/Juab/Elevation/tile_Get.py" />
         <option value="$PROJECT_DIR$/loggerloader/loggerloader.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="7">
-    <option name="x" value="1942" />
-    <option name="y" value="-59" />
-    <option name="width" value="1813" />
-    <option name="height" value="1019" />
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="-12" />
+    <option name="y" value="-9" />
+    <option name="width" value="1694" />
+    <option name="height" value="1007" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -189,26 +239,32 @@
     <panes />
   </component>
   <component name="PropertiesComponent">
+    <property name="DatabaseDriversLRU" value="postgresql&#10;sqlserver" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../transducer" />
+    <property name="database.console.LAST_STATE" value="true" />
+    <property name="last_opened_file_path" value="E:/PROJECTS/Juab/Elevation/tile_Get.py" />
     <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
+    <property name="node.js.path.for.package.tslint" value="project" />
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
+    <property name="node.js.selected.package.tslint" value="(autodetect)" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
     <key name="OPEN_URL_DIALOG">
+      <recent name="https://github.com/inkenbrandt/waipy" />
       <recent name="https://github.com/utah-geological-survey/epa_cdx_wqx_chem_tools" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="G:\My Drive\Python\Pycharm\loggerloader\test" />
     </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="E:\My Drive\Python\Pycharm\loggerloader\test" />
       <recent name="G:\My Drive\Python\Pycharm\loggerloader\test" />
       <recent name="C:\Users\PAULINKENBRANDT\Documents\GitHub\loggerloader" />
-    </key>
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="G:\My Drive\Python\Pycharm\loggerloader\test" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -377,14 +433,17 @@
       <workItem from="1557759717430" duration="2907000" />
       <workItem from="1560258668841" duration="150000" />
       <workItem from="1561396166492" duration="4866000" />
-      <workItem from="1561499015482" duration="1069000" />
-    </task>
-    <task id="LOCAL-00148" summary="docstring cleanup; modified NewWellImp name; changed fix_drift variables">
-      <created>1537188768763</created>
-      <option name="number" value="00148" />
-      <option name="presentableId" value="LOCAL-00148" />
-      <option name="project" value="LOCAL" />
-      <updated>1537188768763</updated>
+      <workItem from="1561499015482" duration="7601000" />
+      <workItem from="1566223597756" duration="1468000" />
+      <workItem from="1567008592079" duration="6954000" />
+      <workItem from="1567110810918" duration="719000" />
+      <workItem from="1567514434874" duration="2428000" />
+      <workItem from="1567718520314" duration="33446000" />
+      <workItem from="1568303059713" duration="688000" />
+      <workItem from="1568322824050" duration="4104000" />
+      <workItem from="1569509997169" duration="73000" />
+      <workItem from="1570747007416" duration="1448000" />
+      <workItem from="1572367727798" duration="20693000" />
     </task>
     <task id="LOCAL-00149" summary="table_to_pandas_dataframe_fast">
       <created>1538089464747</created>
@@ -722,7 +781,14 @@
       <option name="project" value="LOCAL" />
       <updated>1556211953093</updated>
     </task>
-    <option name="localTasksCounter" value="197" />
+    <task id="LOCAL-00197" summary="timezone bs">
+      <created>1561501127230</created>
+      <option name="number" value="00197" />
+      <option name="presentableId" value="LOCAL-00197" />
+      <option name="project" value="LOCAL" />
+      <updated>1561501127230</updated>
+    </task>
+    <option name="localTasksCounter" value="198" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -758,7 +824,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="142141000" />
+    <option name="totallyTimeSpent" value="220694000" />
   </component>
   <component name="TodoView" selected-index="3">
     <todo-panel id="selected-file">
@@ -770,11 +836,11 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="1912" y="-59" width="1936" height="1066" extended-state="6" />
+    <frame x="-8" y="-8" width="1874" height="1096" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" weight="0.25179458" />
-      <window_info active="true" id="Structure" order="1" visible="true" weight="0.3033049" />
+      <window_info content_ui="combo" id="Project" order="0" weight="0.25642595" />
+      <window_info active="true" id="Structure" order="1" visible="true" weight="0.27949283" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
@@ -789,6 +855,7 @@
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
       <window_info anchor="bottom" id="Docker" order="11" show_stripe_button="false" />
       <window_info anchor="bottom" id="Database Changes" order="12" />
+      <window_info anchor="bottom" id="Database Console" order="13" visible="true" weight="0.34897026" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -796,8 +863,8 @@
       <window_info anchor="right" id="SciView" order="4" />
       <window_info anchor="right" id="R Graphics" order="5" />
       <window_info anchor="right" id="R Packages" order="6" />
-      <window_info anchor="right" x="0" y="0" width="418" height="896" id="Documentation" order="7" side_tool="true" visible="true" weight="0.19509594" />
-      <window_info anchor="right" id="Database" order="8" />
+      <window_info anchor="right" x="0" y="0" width="418" height="896" id="Documentation" order="7" sideWeight="0.51713395" side_tool="true" visible="true" weight="0.2216097" />
+      <window_info anchor="right" id="Database" order="8" sideWeight="0.48286605" visible="true" weight="0.2216097" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -936,13 +1003,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="119">
-          <caret line="52" selection-start-line="52" selection-end-line="127" selection-end-column="14" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://E:/GIS/loggerloader-master/loggerloader/loggerloader_tbx.pyt">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -956,10 +1016,68 @@
         </state>
       </provider>
     </entry>
+    <entry file="https://github.com/inkenbrandt/waipy">
+      <provider selected="true" editor-type-id="httpFileEditor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../dbconnect.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="239">
+          <caret line="18" column="120" selection-start-line="18" selection-start-column="120" selection-end-line="18" selection-end-column="120" />
+          <folding>
+            <element signature="e#0#36#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$APPLICATION_CONFIG_DIR$/consoles/db/5df2b470-9caa-477b-a07d-6bf28a0534b2/console.sql">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$APPLICATION_CONFIG_DIR$/consoles/db/93f61aac-34c9-4867-8370-3104ba73341b/console.sql">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="uml://DATABASE/4a00e95d-fd15-48c9-b76e-6723c88a01fa.SCHEMA:UGGP.groundwater">
+      <provider selected="true" editor-type-id="UmlEditorProvider">
+        <state>
+          <ID>DATABASE</ID>
+          <OriginalElement>4a00e95d-fd15-48c9-b76e-6723c88a01fa.SCHEMA:UGGP.groundwater</OriginalElement>
+          <nodes />
+          <notes />
+          <edges />
+          <settings layout="Hierarchic Group" zoom="0.8" x="437.0" y="455.0" />
+          <SelectedNodes />
+          <Categories>
+            <Category>Key columns</Category>
+            <Category>Columns</Category>
+          </Categories>
+          <SCOPE>All</SCOPE>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$APPLICATION_CONFIG_DIR$/consoles/db/4a00e95d-fd15-48c9-b76e-6723c88a01fa/console.sql">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="69" selection-start-column="69" selection-end-column="69" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://E:/PROJECTS/Juab/Elevation/tile_Get.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="2" selection-end-line="27" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="884">
+          <caret line="52" selection-start-line="52" selection-end-line="127" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="651">
-          <caret line="1250" column="9" selection-start-line="1250" selection-start-column="9" selection-end-line="1250" selection-end-column="9" />
+        <state relative-caret-position="375">
+          <caret line="921" column="90" selection-start-line="921" selection-start-column="90" selection-end-line="921" selection-end-column="90" />
           <folding>
             <element signature="e#0#82#0" expanded="true" />
           </folding>
