@@ -904,9 +904,8 @@ class PullOutsideBaro(object):
 
 
 def imp_one_well(well_file, baro_file, man_startdate, man_start_level, man_endate, man_end_level,
-                 conn_file_root, wellid, be=None,
-                 gw_reading_table="readings", drift_tol=0.3, override=False):
-    """
+                 conn_file_root, wellid, be=None, gw_reading_table="readings", drift_tol=0.3, override=False):
+    """Imports one well give raw barometer data and manual measurements
 
     Args:
         well_file: raw file containing well data
@@ -920,7 +919,7 @@ def imp_one_well(well_file, baro_file, man_startdate, man_start_level, man_endat
         be: barometric efficiency of well
         gw_reading_table: database table where groundwater level data are stored; defaults to 'readings'
         drift_tol: allowable drift of transducer readings from manual data; 0.3 is default
-        override:
+        override: force data into database; defaults to false; may cause db errors
 
     Returns:
         df, man, be, drift
@@ -975,23 +974,26 @@ def imp_one_well(well_file, baro_file, man_startdate, man_start_level, man_endat
 
 def simp_imp_well(well_file, baro_out, wellid, manual, conn_file_root, stbl_elev=True, be=None,
                   gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading", drift_tol=0.3, jumptol=1.0, override=False,
-                  api_token=None, imp=True, trim_end=True, timezone=None):
+                 imp=True, trim_end=True, timezone=None):
     """
-    Imports single well
-    :param well_table: pandas dataframe of well data with ALternateID as index; needs altitude, be, stickup, and barolooger
-    :param well_file: raw well file (xle, csv, or lev)
-    :param baro_out: dictionary with barometer ID defining dataframe names
-    :param wellid: unique ID of well field
-    :param manual: manual data dataframe indexed by measure datetime
-    :param conn_file_root: working directory for the groundwater readings table (the workspace environment)
-    :param stbl_elev: does the stickup remain constant; determines source of stickup information (well table vs. water level table); defaults to true (well table)
-    :param be: barometric efficiency value
-    :param gw_reading_table: table name where data will be imported; defaults to "UGGP.UGGPADMIN.UGS_GW_reading"
-    :param drift_tol: maximum amount of transducer drift to allow before transducer data not imported
-    :param jumptol: acceptable amount of offset in feet at beginning and end of transducer data representing out of water measurements
-    :param override: overrides date limitations, but not drift limitations; default is False (no override)
-    :param api_token: api token for grabbing missing barometer data from Mesowest
-    :return:
+    Imports single well into database assuming existing barometer and manual data in database
+
+    Args:
+        well_table (pd.DataFrame): pandas dataframe of well data with ALternateID as index; needs altitude, be, stickup, and barolooger
+        well_file: raw well file (xle, csv, or lev)
+        baro_out (dict): dictionary with barometer ID defining dataframe names
+        wellid (int): unique ID of well field
+        manual (pd.DataFrame): manual data dataframe indexed by measure datetime
+        conn_file_root (object): working directory for the groundwater readings table (the workspace environment)
+        stbl_elev (bool): does the stickup remain constant; determines source of stickup information (well table vs. water level table); defaults to true (well table)
+        be (float): barometric efficiency value
+        gw_reading_table (str): table name where data will be imported; defaults to "UGGP.UGGPADMIN.UGS_GW_reading"
+        drift_tol (float): maximum amount of transducer drift to allow before transducer data not imported
+        jumptol (float): acceptable amount of offset in feet at beginning and end of transducer data representing out of water measurements
+        override (bool): overrides date limitations, but not drift limitations; default is False (no override)
+
+    Return:
+        (tuple): rowlist, toimp, man, be, drift
     """
 
     # import well file
@@ -1004,11 +1006,7 @@ def simp_imp_well(well_file, baro_out, wellid, manual, conn_file_root, stbl_elev
     man = get_man_gw_elevs(manual, stickup, well_elev, stbelev=stbl_elev)
     # well = jumpfix(well, 'Level', threashold=2.0)
 
-    lat = well_table.loc[wellid, 'latitude']
-    longitude = well_table.loc[wellid, 'longitude']
-
     # Check to see if well has assigned barometer
-
     try:
         baroid = well_table.loc[wellid, 'barologgertype']
     except KeyError:
@@ -1016,62 +1014,57 @@ def simp_imp_well(well_file, baro_out, wellid, manual, conn_file_root, stbl_elev
 
     well = well.sort_index()
 
+    # resample well data to compare length of data against barometric pressure data
     wellres = hourly_resample(well)
-
+    print(wellres.first_valid_index(), wellres.last_valid_index())
+    # select a subset of barometer data that align with well data
     baro_data = baro_out[
         (baro_out.index >= wellres.first_valid_index()) & (baro_out.index <= wellres.last_valid_index())]
-
-    print(wellres.first_valid_index(), wellres.last_valid_index())
-
+    # make sure data exists for the selected time interval
     if (len(baro_data) == 0):
-        print("No baro data for site {:}! Pull Mesowest Data for location {:}".format(baroid, wellid))
-
+        print("No baro data for site {:}! Pull Data for location {:}".format(baroid, wellid))
     elif len(wellres) > len(baro_data) + 60 > 0:
         barosub = baro_data[~baro_data.index.isin(well.index.values)]
         barosub = barosub.sort_index()
         print("Baro data length from site {:} is {:}! Provide Data for location {:}".format(baroid, len(baro_data),
                                                                                             wellid))
-    # This function now requires a paid API token
-    #    baromeso = PullOutsideBaro(longitude, lat,
-    #                                   begdate=barosub.first_valid_index(),
-    #                                   enddate=barosub.last_valid_index(),
-    #                                  token=api_token).getbaro()
-    # baromeso = baromeso.sort_index()
-    # barob = pd.concat([barosub,baromeso],axis = 0)
-
     else:
         barosub = baro_out
 
+    # align barometric and well data
     corrwl = well_baro_merge(well, barosub, barocolumn='measuredlevel',
                              vented=(trans_type(well_file) == 'Global Water'))
 
+    # correct for barometric efficiency
     if be:
         corrwl, be = correct_be(wellid, well_table, corrwl, be=be)
         corrwl['corrwl'] = corrwl['baroefficiencylevel']
 
     corrwl.sort_index(inplace=True)
 
-    print(wellid)
-
+    # fix linear transducer drift using manual data
     df, drift_info, max_drift = fix_drift(corrwl, man, corrwl='corrwl', manmeas='measureddtw', wellid=wellid,
                                           well_table=well_table, conn_file_root=conn_file_root)
-
-    # drift = round(float(dft[0].loc[dft[0].last_valid_index(), 'driftcorrection']),3)
     drift = round(float(max_drift), 3)
 
     df = df.sort_index()
 
+    # calculate groundwater elevation based on elevation and stickup data in monitoring locations table
     rowlist = get_trans_gw_elevations(df, stickup, well_elev, wellid)
 
     rowlist = rowlist.set_index('readingdate')
 
-    toimp = check_for_dups(rowlist, wellid, conn_file_root, drift, drift_tol, gw_reading_table, override)
+    # QA/QC to reject data if it exceeds user-based threshhold
+    # check processed data against data in database; if data for a specific wellid and time exists, do not insert data
+    toimp = check_for_dups(rowlist, wellid, conn_file_root, drift, drift_tol, gw_reading_table, imp)
 
     return rowlist, toimp, man, be, drift
 
 
-def check_for_dups(df, wellid, conn_file_root, drift, drift_tol=0.3, gw_reading_table='readings', override=False):
-    """Checks readings data against an existing database for duplication
+def check_for_dups(df, wellid, conn_file_root, drift, drift_tol=0.3, gw_reading_table='readings',
+                   override=False, tmzone=None):
+    """Checks readings data against an existing database for duplication.
+    QA/QC to reject data if it exceeds user-based threshhold
 
     Args:
         df (pd.DataFrame): input dataframe to compare with database
@@ -1086,7 +1079,7 @@ def check_for_dups(df, wellid, conn_file_root, drift, drift_tol=0.3, gw_reading_
         uploads data to database and returns a dataframe of the uploaded data
     """
 
-    first_index, last_index = first_last_indices(df)
+    first_index, last_index = first_last_indices(df, tmzone)
     # Pull any existing data from the database for the well in the date range of the new data
     existing_data = get_location_data(wellid, conn_file_root, first_index, last_index)
     if len(existing_data) > 0:
@@ -1094,16 +1087,16 @@ def check_for_dups(df, wellid, conn_file_root, drift, drift_tol=0.3, gw_reading_
     print("Existing Len = {:}. Import Len = {:}.".format(len(existing_data), len(df)))
 
     if (len(existing_data) == 0) and (abs(drift) < drift_tol):
-        toimp = edit_table(df, gw_reading_table, conn_file_root)
+        toimp = edit_table(df, gw_reading_table, conn_file_root, tmzone)
         print("Well {:} imported.".format(wellid))
     elif len(existing_data) == len(df) and (abs(drift) < drift_tol):
         print('Data for well {:} already exist!'.format(wellid))
     elif len(df) > len(existing_data) > 0 and abs(drift) < drift_tol:
-        rowlist = df[~df.index.isin(existing_data.index.values)]
-        toimp = edit_table(rowlist, gw_reading_table, conn_file_root)
+        df = df[~df.index.isin(existing_data.index.values)]
+        toimp = edit_table(df, gw_reading_table, conn_file_root, tmzone)
         print('Some values were missing. {:} values added.'.format(len(df) - len(existing_data)))
     elif override and (abs(drift) < drift_tol):
-        toimp = edit_table(df, gw_reading_table, conn_file_root)
+        toimp = edit_table(df, gw_reading_table, conn_file_root, tmzone)
         print("Override Activated. Well {:} imported.".format(wellid))
     elif abs(drift) > drift_tol:
         print('Drift for well {:} exceeds tolerance!'.format(wellid))
@@ -1114,20 +1107,30 @@ def check_for_dups(df, wellid, conn_file_root, drift, drift_tol=0.3, gw_reading_
     return toimp
 
 
-def first_last_indices(df, timezone=None):
+def first_last_indices(df, tmzone=None):
+    """
+
+    Args:
+        df (pd.DataFrame): dataframe with indices
+        tmzone (str): timzone code of data if timezone specified; defaults to None
+
+    Returns:
+        first index, last index
+
+    """
     df.sort_index(inplace=True)
 
-    if timezone is None:
+    if tmzone is None:
         first_index = df.first_valid_index()
         last_index = df.last_valid_index()
 
     else:
         if df.index[0].utcoffset() is None:
-            first_index = df.first_valid_index().tz_localize('MST', ambiguous="NaT")
-            last_index = df.last_valid_index().tz_localize('MST', ambiguous="NaT")
+            first_index = df.first_valid_index().tz_localize(tmzone, ambiguous="NaT")
+            last_index = df.last_valid_index().tz_localize(tmzone, ambiguous="NaT")
         elif df.index[0].utcoffset().total_seconds() == 0.0:
-            first_index = df.first_valid_index().tz_convert('MST')
-            last_index = df.last_valid_index().tz_convert('MST')
+            first_index = df.first_valid_index().tz_convert(tmzone)
+            last_index = df.last_valid_index().tz_convert(tmzone)
         else:
             first_index = df.first_valid_index()
             last_index = df.last_valid_index()

@@ -4,8 +4,7 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="timezone bs">
-      <change afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
+    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="making timezone nondefault&#10;added docs">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/loggerloader/loggerloader.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/loggerloader.py" afterDir="false" />
     </list>
@@ -111,8 +110,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="375">
-              <caret line="921" column="90" selection-start-line="921" selection-start-column="90" selection-end-line="921" selection-end-column="90" />
+            <state relative-caret-position="2636">
+              <caret line="1117" column="31" selection-start-line="1117" selection-start-column="31" selection-end-line="1117" selection-end-column="31" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
               </folding>
@@ -443,14 +442,7 @@
       <workItem from="1568322824050" duration="4104000" />
       <workItem from="1569509997169" duration="73000" />
       <workItem from="1570747007416" duration="1448000" />
-      <workItem from="1572367727798" duration="20693000" />
-    </task>
-    <task id="LOCAL-00149" summary="table_to_pandas_dataframe_fast">
-      <created>1538089464747</created>
-      <option name="number" value="00149" />
-      <option name="presentableId" value="LOCAL-00149" />
-      <option name="project" value="LOCAL" />
-      <updated>1538089464748</updated>
+      <workItem from="1572367727798" duration="23914000" />
     </task>
     <task id="LOCAL-00150" summary="table_to_pandas_dataframe_fast">
       <created>1538401751966</created>
@@ -788,7 +780,14 @@
       <option name="project" value="LOCAL" />
       <updated>1561501127230</updated>
     </task>
-    <option name="localTasksCounter" value="198" />
+    <task id="LOCAL-00198" summary="making timezone nondefault&#10;added docs">
+      <created>1573073902974</created>
+      <option name="number" value="00198" />
+      <option name="presentableId" value="LOCAL-00198" />
+      <option name="project" value="LOCAL" />
+      <updated>1573073902975</updated>
+    </task>
+    <option name="localTasksCounter" value="199" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -824,7 +823,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="220694000" />
+    <option name="totallyTimeSpent" value="223915000" />
   </component>
   <component name="TodoView" selected-index="3">
     <todo-panel id="selected-file">
@@ -871,7 +870,6 @@
     <option name="version" value="1" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Improved site lookup for mulitsite" />
     <MESSAGE value="Fixed many_wells class" />
     <MESSAGE value="Created PullOutsideBaro" />
     <MESSAGE value="fixing upload baro data" />
@@ -896,7 +894,8 @@
     <MESSAGE value="added dataendclean to process breakpoint data in fixdrift" />
     <MESSAGE value="well_baro_merge updated to only merge well data with baro data when vented = false" />
     <MESSAGE value="timezone bs" />
-    <option name="LAST_COMMIT_MESSAGE" value="timezone bs" />
+    <MESSAGE value="making timezone nondefault&#10;added docs" />
+    <option name="LAST_COMMIT_MESSAGE" value="making timezone nondefault&#10;added docs" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/loggerloader/arcstuff.py" />
@@ -1076,8 +1075,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="375">
-          <caret line="921" column="90" selection-start-line="921" selection-start-column="90" selection-end-line="921" selection-end-column="90" />
+        <state relative-caret-position="2636">
+          <caret line="1117" column="31" selection-start-line="1117" selection-start-column="31" selection-end-line="1117" selection-end-column="31" />
           <folding>
             <element signature="e#0#82#0" expanded="true" />
           </folding>
