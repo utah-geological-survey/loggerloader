@@ -143,7 +143,7 @@ def pull_closest_well_data(wellid, breakpoint1, conn_file_root, timedel=3, timez
 
     """
 
-    SQLm = """SELECT * FROM readings
+    SQLm = """SELECT * FROM ugs_gw_reading
     WHERE locationid = {:} AND readingdate >= '{:%Y-%m-%d %M:%H}' 
     AND readingdate <= '{:%Y-%m-%d %M:%H}' 
     ORDER BY readingdate DESC
@@ -541,7 +541,7 @@ def pull_elev_and_stickup(site_number, manual, well_table=None, conn_file_root=N
     return stickup, well_elev
 
 
-def pull_well_table(conn_file_root, loc_table="monitoringlocations"):
+def pull_well_table(conn_file_root, loc_table="ugs_ngwmn_monitoring_locations"):
     """
     Extracts Monitoring Location Table from database and converts it into a pandas DataFrame.
     Queries based on if AlternateID exists.
@@ -564,7 +564,7 @@ def pull_well_table(conn_file_root, loc_table="monitoringlocations"):
 
     sql = """SELECT locationid, locationname, locationtype, locationdesc, 
     altlocationid, verticalmeasure, verticalunit, welldepth, siteid, stickup,
-    loggertype, baroefficiency, latitude, longitude, baroefficiencystart, barologgertype, the_geom
+    loggertype, baroefficiency, latitude, longitude, baroefficiencystart, barologgertype
     FROM {:}
     WHERE altlocationid <> 0
     ORDER BY altlocationid ASC;""".format(loc_table)
@@ -620,11 +620,36 @@ def get_stickup(stdata, site_number, stable_elev=True, man=None):
 
 
 def get_man_gw_elevs(manual, stickup, well_elev, stbelev=True):
-    """
-    Gets basic well parameters and most recent groundwater level data for a well id for dtw calculations.
-    :param manual: Pandas Dataframe of manual data
-    :param stable_elev: boolean; if False, stickup is retrieved from the manual measurements table;
-    :return: manual table with new fields for depth to water and groundwater elevation
+    """Gets basic well parameters and most recent groundwater level data for a well id for dtw calculations.
+
+    Args:
+        manual (pd.DataFrame): Pandas Dataframe of manual data
+        stickup (float): stickup of well (distance from mp to ground)
+        well_elev (float): elevation of well (ground surface elevation at wellhead)
+        stbelev (bool): boolean; if False, stickup is retrieved from the manual measurements table;
+
+    Returns:
+        manual table with new fields for depth to water (negative for below ground) and groundwater elevation
+
+    Examples:
+        >>> manual = {'dates':['6/11/1991','2/1/1999'],'dtwbelowcasing':[17,22]}
+        >>> man_df = pd.DataFrame(manual)
+        >>> man_df.set_index('dates',inplace=True)
+        >>> stickup = 1.5
+        >>> well_elevation = 4050.5
+        >>> man = get_man_gw_elevs(man_df, stickup, well_elevation, stbelev=True)
+        >>> man.loc['6/11/1991','waterelevation']
+        4035.0
+
+        >>> manual = {'dates':['6/11/1991','6/12/1991'],'dtwbelowcasing':[17,17],'current_stickup_height':[1.1,1.2]}
+        >>> man_df = pd.DataFrame(manual)
+        >>> man_df.set_index('dates',inplace=True)
+        >>> stickup = 1.5
+        >>> well_elevation = 4050.5
+        >>> man = get_man_gw_elevs(man_df, stickup, well_elevation, stbelev=False)
+        >>> man.loc['6/11/1991','waterelevation']
+        4034.6
+
     """
 
     # some users might have incompatible column names
@@ -632,13 +657,14 @@ def get_man_gw_elevs(manual, stickup, well_elev, stbelev=True):
                   'Location ID': 'locationid',
                   'Water Level (ft)': 'dtwbelowcasing'}
     manual.rename(columns=old_fields, inplace=True)
-    # manual.loc[:, 'measureddtw'] = (manual['dtwbelowcasing'] * -1)
 
+    # this allows for variable stickup heights over time
     if 'current_stickup_height' in manual.columns and stbelev == False:
-        manual.loc[:, 'measureddtw'] = (manual['dtwbelowcasing'] * -1) + manual['current_stickup_height']
+        manual.loc[:, 'measureddtw'] = (-1 * manual['dtwbelowcasing']) + manual['current_stickup_height']
 
     else:
-        manual.loc[:, 'measureddtw'] = (manual['dtwbelowcasing'] * -1) + stickup
+        # assumes stable stickup height
+        manual.loc[:, 'measureddtw'] = (-1* manual['dtwbelowcasing']) + stickup
     manual.loc[:, 'waterelevation'] = manual['measureddtw'].apply(lambda x: well_elev + x, 1)
     return manual
 
@@ -719,8 +745,9 @@ def trans_type(well_file):
 class PullOutsideBaro(object):
     """
     By default, this class aggregates all barometric data within a given area.
+    This function currently does not work due to limits of the API
 
-    Args:
+    Attributes:
         long (float): longitude of point of interest
         lat (float): latitude of point of interest
         begdate (datetime): string of beginning date of requested data; defaults to 2014-11-1
@@ -904,7 +931,7 @@ class PullOutsideBaro(object):
 
 
 def imp_one_well(well_file, baro_file, man_startdate, man_start_level, man_endate, man_end_level,
-                 conn_file_root, wellid, be=None, gw_reading_table="readings", drift_tol=0.3, override=False):
+                 conn_file_root, wellid, be=None, gw_reading_table="ugs_gw_reading", drift_tol=0.3, override=False):
     """Imports one well give raw barometer data and manual measurements
 
     Args:
@@ -1061,7 +1088,7 @@ def simp_imp_well(well_file, baro_out, wellid, manual, conn_file_root, stbl_elev
     return rowlist, toimp, man, be, drift
 
 
-def check_for_dups(df, wellid, conn_file_root, drift, drift_tol=0.3, gw_reading_table='readings',
+def check_for_dups(df, wellid, conn_file_root, drift, drift_tol=0.3, gw_reading_table='ugs_gw_reading',
                    override=False, tmzone=None):
     """Checks readings data against an existing database for duplication.
     QA/QC to reject data if it exceeds user-based threshhold
@@ -1108,7 +1135,7 @@ def check_for_dups(df, wellid, conn_file_root, drift, drift_tol=0.3, gw_reading_
 
 
 def first_last_indices(df, tmzone=None):
-    """
+    """Gets first and last index in a dataset; capable of considering time series with timezone information
 
     Args:
         df (pd.DataFrame): dataframe with indices
@@ -1137,7 +1164,7 @@ def first_last_indices(df, tmzone=None):
     return first_index, last_index
 
 
-def upload_bp_data(df, site_number, enviro, return_df=True, overide=False, gw_reading_table="barometers",
+def upload_bp_data(df, site_number, enviro, return_df=True, overide=False, gw_reading_table="ugs_gw_barometers",
                    resamp_freq="1H", timezone=None):
     df.sort_index(inplace=True)
     first_index = df.first_valid_index()
@@ -1217,7 +1244,8 @@ def upload_bp_data(df, site_number, enviro, return_df=True, overide=False, gw_re
 # -----------------------------------------------------------------------------------------------------------------------
 # The following modify and query an SDE database, assuming the user has a connection
 
-def find_extreme(site_number, gw_table="readings", sort_by='readingdate', extma='max'):
+def find_extreme(site_number, gw_table="ugs_gw_reading", sort_by='readingdate', extma='max'):
+
     if extma == 'max' or extma == 'DESC':
         lorder = 'DESC'
     else:
@@ -1232,16 +1260,19 @@ def find_extreme(site_number, gw_table="readings", sort_by='readingdate', extma=
 
 
 def get_gap_data(site_number, enviro, gap_tol=0.5, first_date=None, last_date=None,
-                 gw_reading_table="readings"):
-    """
+                 gw_reading_table="ugs_gw_reading"):
+    """Finds temporal gaps in regularly sampled data.
 
-    :param site_number: List of Location ID of time series data to be processed
-    :param enviro: workspace of SDE table
-    :param gap_tol: gap tolerance in days; the smallest gap to look for; defaults to half a day (0.5)
-    :param first_date: begining of time interval to search; defaults to 1/1/1900
-    :param last_date: end of time interval to search; defaults to current day
-    :param gw_reading_table: Name of SDE table in workspace to use
-    :return: pandas dataframe with gap information
+    Args:
+        site_number: List of Location ID of time series data to be processed
+        enviro: workspace of SDE table
+        gap_tol: gap tolerance in days; the smallest gap to look for; defaults to half a day (0.5)
+        first_date: begining of time interval to search; defaults to 1/1/1900
+        last_date: end of time interval to search; defaults to current day
+        gw_reading_table: Name of SDE table in workspace to use
+
+    Return:
+        pandas dataframe with gap information
     """
     # TODO MAke fast with SQL
     if first_date is None:
@@ -1263,13 +1294,26 @@ def get_gap_data(site_number, enviro, gap_tol=0.5, first_date=None, last_date=No
 
     df['t_diff'] = df['readingdate'].diff()
 
-    df = df[df['t_diff'] > pd.Timedelta('1D')]
+    df = df[df['t_diff'] > pd.Timedelta('{:}D'.format(gap_tol))]
     df.sort_values('t_diff', ascending=False)
     return df
 
 
 def get_location_data(site_numbers, enviro, first_date=None, last_date=None, limit=None,
-                      gw_reading_table="readings"):
+                      gw_reading_table="ugs_gw_reading"):
+    """Retrieve location data based on a site number and database connection engine
+
+    Args:
+        site_numbers (int): locationid for a specific site in the database
+        enviro (object): database connection object
+        first_date (datetime): first date of data of interest; defaults to 1-1-1900
+        last_date (datetime): last date of data of interest; defaults to today
+        limit (int): maximum number of records to return
+        gw_reading_table (str): table in database with data; defaults to `ugs_gw_reading`
+
+    Returns:
+        readings (pd.DataFrame)
+    """
     # fill in missing date info
     if not first_date:
         # set first date to begining of 20th century
@@ -1341,16 +1385,20 @@ def barodistance(wellinfo):
 def table_to_pandas_dataframe(table, field_names=None, query=None, sql_sn=(None, None)):
     """
     Load data into a Pandas Data Frame for subsequent analysis.
-    :param table: Table readable by ArcGIS.
-    :param field_names: List of fields.
-    :param query: SQL query to limit results
-    :param sql_sn: sort fields for sql; see http://pro.arcgis.com/en/pro-app/arcpy/functions/searchcursor.htm
-    :return: Pandas DataFrame object.
+
+    Args:
+        table: Table readable by ArcGIS.
+        field_names: List of fields.
+        query: SQL query to limit results
+        sql_sn: sort fields for sql; see http://pro.arcgis.com/en/pro-app/arcpy/functions/searchcursor.htm
+
+    Return:
+        Pandas DataFrame object.
     """
     # TODO Make fast with SQL
     # if field names are not specified
     if not field_names:
-        field_names = get_field_names(table)
+        field_names = get_field_names(engine, table)
     # create a pandas data frame
 
     sql = """SELECT {:} FROM {:};""".format('"' + '","'.join(field_names) + '"', table)
@@ -1361,11 +1409,9 @@ def table_to_pandas_dataframe(table, field_names=None, query=None, sql_sn=(None,
     return df
 
 
-def get_field_names(table='readings'):
-    sql = """SELECT *
-    FROM information_schema.columns
-    WHERE table_schema = 'public'
-      AND table_name   = '{:}'""".format(table)
+def get_field_names(engine, table='ugs_gw_reading'):
+    sql = """SELECT * FROM information_schema.columns WHERE table_schema = 'sde' 
+    AND table_name = '{:}'""".format(table)
 
     df = pd.read_sql(sql, con=engine)
     columns = list(df.column_name.values)
@@ -1379,17 +1425,18 @@ def edit_table(df, gw_reading_table, engine, timezone=None, returndf = True):
     Args:
         df: pandas DataFrame
         gw_reading_table: sde table to edit
-        fieldnames: field names that are being appended in order of appearance in dataframe or list row
-
+        engine: database engine object to connect
+        timezone: timezone of data; Defaults to None
+        returndf: return a dataframe of the imported data; defaults to True
 
     Returns:
         pandas dataframe of data imported
 
     """
 
-    table_names = get_field_names(gw_reading_table)
+    table_names = get_field_names(engine, gw_reading_table)
 
-    fieldnames = df.columns
+    fieldnames = list(df.columns.values)
 
     for name in fieldnames:
         if name not in table_names:
@@ -1445,17 +1492,15 @@ def edit_table(df, gw_reading_table, engine, timezone=None, returndf = True):
 def dataendclean(df, x, inplace=False, jumptol=1.0):
     """Trims off ends and beginnings of datasets that exceed 2.0 standard deviations of the first and last 50 values
 
-    :param df: Pandas DataFrame
-    :type df: pandas.core.frame.DataFrame
-    :param x: Column name of data to be trimmed contained in df
-    :type x: str
-    :param inplace: if DataFrame should be duplicated
-    :type inplace: bool
-    :param jumptol: acceptable amount of offset in feet caused by the transducer being out of water at time of measurement; default is 1
-    :type jumptol: float
+    Args:
+        df (pandas.core.frame.DataFrame): Pandas DataFrame
+        x (str): Column name of data to be trimmed contained in df
+        inplace (bool): if DataFrame should be duplicated
+        jumptol (float): acceptable amount of offset in feet caused by the transducer being out of water at time of measurement; default is 1
 
-    :returns: df trimmed data
-    :rtype: pandas.core.frame.DataFrame
+    Returns:
+        (pandas.core.frame.DataFrame) df trimmed data
+
 
     This function printmess a message if data are trimmed.
     """
@@ -2139,7 +2184,7 @@ def compile_end_beg_dates(infile):
 class HeaderTable(object):
     def __init__(self, folder, filedict=None, filelist=None, workspace=None,
                  conn_file_root=None,
-                 loc_table="monitoringlocations"):
+                 loc_table="ugs_ngwmn_monitoring_locations"):
         """
 
         Args:
@@ -2468,7 +2513,7 @@ class wellimport(object):
         """Used in SingleTransducerImport Class.  This tool leverages the imp_one_well function to load a single well
         into the UGS SDE"""
 
-        loc_table = "monitoringlocations"
+        loc_table = "ugs_ngwmn_monitoring_locations"
 
         df = pull_well_table(engine)
         iddict = df.reset_index().set_index(['locationname']).to_dict()
@@ -2486,7 +2531,7 @@ class wellimport(object):
         baro.rename(columns={'Level': 'measuredlevel'}, inplace=True)
 
         df, man, be, drift = simp_imp_well(self.well_file, baro, int(iddict.get(self.wellid)), man, self.sde_conn,
-                                           stbl_elev=True, gw_reading_table="readings",
+                                           stbl_elev=True, gw_reading_table="ugs_gw_reading",
                                            drift_tol=self.tol, override=self.ovrd, api_token=None,
                                            imp=self.should_import)
 
@@ -2742,9 +2787,9 @@ class wellimport(object):
             where_clause = None
 
         if where_clause:
-            sql = 'SELECT altlocationid FROM monitoringlocations WHERE ' + where_clause
+            sql = 'SELECT altlocationid FROM ugs_ngwmn_monitoring_locations WHERE ' + where_clause
         else:
-            sql = 'SELECT altlocationid FROM monitoringlocations'
+            sql = 'SELECT altlocationid FROM ugs_ngwmn_monitoring_locations'
 
         loc_ids = list(pd.read_sql(sql, engine)['altlocationid'].values)
 
@@ -2755,7 +2800,7 @@ class wellimport(object):
             try:
                 gapdct[site_number] = get_gap_data(int(site_number), enviro, gap_tol=0.5, first_date=first_date,
                                                    last_date=last_date,
-                                                   gw_reading_table="readings")
+                                                   gw_reading_table="ugs_gw_reading")
             except AttributeError:
                 print("Error with {:}".format(site_number))
         gapdata = pd.concat(gapdct)
