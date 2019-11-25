@@ -101,7 +101,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="878">
+            <state relative-caret-position="884">
               <caret line="52" selection-start-line="52" selection-end-line="127" selection-end-column="14" />
             </state>
           </provider>
@@ -110,8 +110,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="342">
-              <caret line="1414" selection-start-line="1414" selection-end-line="1414" />
+            <state relative-caret-position="448">
+              <caret line="662" column="58" selection-start-line="662" selection-start-column="58" selection-end-line="662" selection-end-column="58" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
               </folding>
@@ -130,7 +130,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>WellID</find>
       <find>LocationName</find>
       <find>fix_drift</find>
       <find>tz</find>
@@ -160,6 +159,7 @@
       <find>manual</find>
       <find>readings</find>
       <find>get_field</find>
+      <find>get_location_data</find>
     </findStrings>
     <replaceStrings>
       <replace>altid</replace>
@@ -230,10 +230,10 @@
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-12" />
-    <option name="y" value="-9" />
-    <option name="width" value="1694" />
-    <option name="height" value="1007" />
+    <option name="x" value="1888" />
+    <option name="y" value="-13" />
+    <option name="width" value="1459" />
+    <option name="height" value="927" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -451,14 +451,9 @@
       <workItem from="1569509997169" duration="73000" />
       <workItem from="1570747007416" duration="1448000" />
       <workItem from="1572367727798" duration="24580000" />
-      <workItem from="1573155236375" duration="8612000" />
-    </task>
-    <task id="LOCAL-00151" summary="fix drift errors">
-      <created>1538406974718</created>
-      <option name="number" value="00151" />
-      <option name="presentableId" value="LOCAL-00151" />
-      <option name="project" value="LOCAL" />
-      <updated>1538406974718</updated>
+      <workItem from="1573155236375" duration="8698000" />
+      <workItem from="1573670446619" duration="11133000" />
+      <workItem from="1574198464486" duration="10206000" />
     </task>
     <task id="LOCAL-00152" summary="fix drift errors">
       <created>1538408037750</created>
@@ -796,7 +791,14 @@
       <option name="project" value="LOCAL" />
       <updated>1573078366062</updated>
     </task>
-    <option name="localTasksCounter" value="200" />
+    <task id="LOCAL-00200" summary="added more docs and new functions">
+      <created>1573171251146</created>
+      <option name="number" value="00200" />
+      <option name="presentableId" value="LOCAL-00200" />
+      <option name="project" value="LOCAL" />
+      <updated>1573171251146</updated>
+    </task>
+    <option name="localTasksCounter" value="201" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -832,7 +834,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="233193000" />
+    <option name="totallyTimeSpent" value="254618000" />
   </component>
   <component name="TodoView" selected-index="3">
     <todo-panel id="selected-file">
@@ -844,15 +846,15 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1874" height="1096" extended-state="6" />
+    <frame x="1912" y="-7" width="1936" height="1066" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" weight="0.25642595" />
-      <window_info active="true" id="Structure" order="1" visible="true" weight="0.28280044" />
+      <window_info active="true" id="Structure" order="1" visible="true" weight="0.14925373" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Run" order="2" visible="true" weight="0.32917964" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.32917964" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -864,6 +866,7 @@
       <window_info anchor="bottom" id="Docker" order="11" show_stripe_button="false" />
       <window_info anchor="bottom" id="Database Changes" order="12" />
       <window_info anchor="bottom" id="Database Console" order="13" visible="true" weight="0.34897026" />
+      <window_info anchor="bottom" id="Inspection Results" order="14" weight="0.3397642" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -871,8 +874,8 @@
       <window_info anchor="right" id="SciView" order="4" />
       <window_info anchor="right" id="R Graphics" order="5" />
       <window_info anchor="right" id="R Packages" order="6" />
-      <window_info anchor="right" x="0" y="0" width="418" height="896" id="Documentation" order="7" sideWeight="0.51857585" side_tool="true" visible="true" weight="0.2216097" />
-      <window_info anchor="right" id="Database" order="8" sideWeight="0.48142415" visible="true" weight="0.2216097" />
+      <window_info anchor="right" x="0" y="0" width="418" height="896" id="Documentation" order="7" sideWeight="0.5198285" side_tool="true" visible="true" weight="0.18336888" />
+      <window_info anchor="right" id="Database" order="8" sideWeight="0.4801715" visible="true" weight="0.18336888" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1080,15 +1083,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader_tbx.pyt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="878">
+        <state relative-caret-position="884">
           <caret line="52" selection-start-line="52" selection-end-line="127" selection-end-column="14" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="342">
-          <caret line="1414" selection-start-line="1414" selection-end-line="1414" />
+        <state relative-caret-position="448">
+          <caret line="662" column="58" selection-start-line="662" selection-start-column="58" selection-end-line="662" selection-end-column="58" />
           <folding>
             <element signature="e#0#82#0" expanded="true" />
           </folding>
