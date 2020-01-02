@@ -110,8 +110,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="448">
-              <caret line="662" column="58" selection-start-line="662" selection-start-column="58" selection-end-line="662" selection-end-column="58" />
+            <state relative-caret-position="296">
+              <caret line="745" column="6" selection-start-line="745" selection-start-column="6" selection-end-line="745" selection-end-column="6" />
               <folding>
                 <element signature="e#0#82#0" expanded="true" />
               </folding>
@@ -230,8 +230,8 @@
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="1888" />
-    <option name="y" value="-13" />
+    <option name="x" value="177" />
+    <option name="y" value="192" />
     <option name="width" value="1459" />
     <option name="height" value="927" />
   </component>
@@ -453,14 +453,11 @@
       <workItem from="1572367727798" duration="24580000" />
       <workItem from="1573155236375" duration="8698000" />
       <workItem from="1573670446619" duration="11133000" />
-      <workItem from="1574198464486" duration="10206000" />
-    </task>
-    <task id="LOCAL-00152" summary="fix drift errors">
-      <created>1538408037750</created>
-      <option name="number" value="00152" />
-      <option name="presentableId" value="LOCAL-00152" />
-      <option name="project" value="LOCAL" />
-      <updated>1538408037750</updated>
+      <workItem from="1574198464486" duration="17688000" />
+      <workItem from="1575320575843" duration="1456000" />
+      <workItem from="1575998457651" duration="1802000" />
+      <workItem from="1577199150182" duration="602000" />
+      <workItem from="1577813390052" duration="1036000" />
     </task>
     <task id="LOCAL-00153" summary="fix drift errors">
       <created>1538410171419</created>
@@ -798,7 +795,14 @@
       <option name="project" value="LOCAL" />
       <updated>1573171251146</updated>
     </task>
-    <option name="localTasksCounter" value="201" />
+    <task id="LOCAL-00201" summary="added more docs and new functions">
+      <created>1574723022775</created>
+      <option name="number" value="00201" />
+      <option name="presentableId" value="LOCAL-00201" />
+      <option name="project" value="LOCAL" />
+      <updated>1574723022776</updated>
+    </task>
+    <option name="localTasksCounter" value="202" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -834,7 +838,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="254618000" />
+    <option name="totallyTimeSpent" value="266996000" />
   </component>
   <component name="TodoView" selected-index="3">
     <todo-panel id="selected-file">
@@ -846,11 +850,10 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="1912" y="-7" width="1936" height="1066" extended-state="6" />
-    <editor active="true" />
+    <frame x="-8" y="-8" width="1936" height="1066" extended-state="6" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" weight="0.25642595" />
-      <window_info active="true" id="Structure" order="1" visible="true" weight="0.14925373" />
+      <window_info active="true" id="Structure" order="1" visible="true" weight="0.15565032" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
@@ -874,8 +877,8 @@
       <window_info anchor="right" id="SciView" order="4" />
       <window_info anchor="right" id="R Graphics" order="5" />
       <window_info anchor="right" id="R Packages" order="6" />
-      <window_info anchor="right" x="0" y="0" width="418" height="896" id="Documentation" order="7" sideWeight="0.5198285" side_tool="true" visible="true" weight="0.18336888" />
-      <window_info anchor="right" id="Database" order="8" sideWeight="0.4801715" visible="true" weight="0.18336888" />
+      <window_info anchor="right" x="0" y="0" width="418" height="896" id="Documentation" order="7" sideWeight="0.52411574" side_tool="true" visible="true" weight="0.13646056" />
+      <window_info anchor="right" id="Database" order="8" sideWeight="0.47588426" visible="true" weight="0.13646056" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1090,8 +1093,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/loggerloader/loggerloader.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="448">
-          <caret line="662" column="58" selection-start-line="662" selection-start-column="58" selection-end-line="662" selection-end-column="58" />
+        <state relative-caret-position="296">
+          <caret line="745" column="6" selection-start-line="745" selection-start-column="6" selection-end-line="745" selection-end-column="6" />
           <folding>
             <element signature="e#0#82#0" expanded="true" />
           </folding>

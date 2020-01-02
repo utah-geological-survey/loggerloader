@@ -111,7 +111,8 @@ def get_breakpoints(manualfile, well, wl_field='corrwl'):
     return breakpoints
 
 
-def pull_closest_well_data(wellid, breakpoint1, conn_file_root, timedel=3, timezone=None):
+def pull_closest_well_data(wellid, breakpoint1, conn_file_root, timedel=3,
+                           readtable='ugs_gw_reading', timezone=None):
     """
     Finds date and depth to water in database that is closest to, but not greater than, the date entered (breakpoint1)
 
@@ -120,6 +121,7 @@ def pull_closest_well_data(wellid, breakpoint1, conn_file_root, timedel=3, timez
         breakpoint1 (str):  Datetime closest to the begginging of the breakpoint
         conn_file_root (str): SDE connection file location
         timedel (int):  Amount of time, in days to search for readings in the database
+        readtable (str): database table in which readings reside
         timezone (str): Timezone of data; defaults to none
 
     Returns:
@@ -138,11 +140,11 @@ def pull_closest_well_data(wellid, breakpoint1, conn_file_root, timedel=3, timez
 
     """
 
-    sqlm = """SELECT * FROM ugs_gw_reading
+    sqlm = """SELECT * FROM {:}
     WHERE locationid = {:} AND readingdate >= '{:%Y-%m-%d %M:%H}' 
     AND readingdate <= '{:%Y-%m-%d %M:%H}' 
     ORDER BY readingdate DESC
-    limit 1;""".format(wellid,
+    limit 1;""".format(readtable, wellid,
                        pd.to_datetime(breakpoint1) - datetime.timedelta(days=timedel),
                        pd.to_datetime(breakpoint1))
 
@@ -155,12 +157,12 @@ def pull_closest_well_data(wellid, breakpoint1, conn_file_root, timedel=3, timez
                          parse_dates={'readingdate': '%Y-%m-%d %H:%M:%s-%z'},
                          index_col=['readingdate'])
 
-    if pd.isna(df['measuredlevel'].values):
+    if pd.isna(df['measureddtw'].values):
         lev = None
         levdt = None
     elif timezone is None:
         try:
-            lev = df['measuredlevel'].values
+            lev = df['measureddtw'].values
             if type(lev) == np.ndarray:
                 lev = lev[0]
             levdt = pd.to_datetime(df.index)
@@ -171,7 +173,7 @@ def pull_closest_well_data(wellid, breakpoint1, conn_file_root, timedel=3, timez
             levdt = None
     else:
         try:
-            lev = df['measuredlevel'].values
+            lev = df['measureddtw'].values
             if type(lev) == np.ndarray:
                 lev = lev[0]
             levdt = pd.to_datetime(df.index, utc=True).tz_convert('MST').tz_localize(None)
@@ -394,16 +396,13 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='measureddtw', outcolna
             df.loc[:, 'julian'] = df.index.to_julian_date()
 
             if wellid:
-
+                # pull existing data if a wellid is given
                 breakpoint1 = fcl(df, breakpoints[i]).name
                 breakpoint2 = fcl(df, breakpoints[i + 1]).name
                 offset = well_table.loc[wellid, 'stickup']
                 print(breakpoint1)
-                levdt, lev = pull_closest_well_data(wellid, breakpoint1, conn_file_root, timedel=search_tol)
-                if pd.isna(lev):
-                    pass
-                else:
-                    lev = lev - offset
+                levdt, lev = pull_closest_well_data(wellid, breakpoint1,
+                                                    conn_file_root, timedel=search_tol)
 
             else:
                 lev = None
@@ -443,9 +442,7 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='measureddtw', outcolna
                     first_man = None
                     first_man_date = None
 
-            if last_trans_date + datetime.timedelta(
-                    days=search_tol) < last_man_date or last_trans_date - datetime.timedelta(
-                days=search_tol) > last_man_date:
+            if np.abs(last_trans_date - last_man_date) > datetime.timedelta(days=search_tol):
                 print('No final manual measurement within {:} days of {:}.'.format(search_tol, last_trans_date))
                 last_man = None
                 last_man_date = None
@@ -459,10 +456,16 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='measureddtw', outcolna
             if pd.isna(first_man):
                 print('First manual measurement missing between {:} and {:}'.format(breakpoints[i], breakpoints[i + 1]))
                 print("Last man = {:}\nLast man date = {:%Y-%m-%d %H:%M}".format(last_man, last_man_date))
+                print("First trans = {:0.3f}, Last trans = {:0.3f}".format(first_trans, last_trans))
+                print("First trans date = {:%Y-%m-%d %H:%M}".format(first_trans_date))
+                print("Last trans date = {:%Y-%m-%d %H:%M}".format(last_trans_date))
 
             elif pd.isna(last_man):
                 print('Last manual measurement missing between {:} and {:}'.format(breakpoints[i], breakpoints[i + 1]))
                 print("First man = {:}\nFirst man date = {:%Y-%m-%d %H:%M}".format(first_man, first_man_date))
+                print("First trans = {:0.3f}, Last trans = {:0.3f}".format(first_trans, last_trans))
+                print("First trans date = {:%Y-%m-%d %H:%M}".format(first_trans_date))
+                print("Last trans date = {:%Y-%m-%d %H:%M}".format(last_trans_date))
             else:
 
                 print("First man = {:0.3f}, Last man = {:0.3f} (from ground)".format(first_man, last_man))
@@ -660,7 +663,7 @@ def get_man_gw_elevs(manual, stickup, well_elev, stbelev=True):
 
     else:
         # assumes stable stickup height
-        manual.loc[:, 'measureddtw'] = stickup - (-1 * manual['dtwbelowcasing'])
+        manual.loc[:, 'measureddtw'] = (-1*manual['dtwbelowcasing']) + stickup
     manual.loc[:, 'waterelevation'] = manual['measureddtw'].apply(lambda x: well_elev + x, 1)
     return manual
 
