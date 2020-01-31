@@ -92,43 +92,56 @@ class Feedback:
         self.manbook.add(self.manframe, text='Manual Entry')
         self.manbook.add(self.manfileframe, text='Data Import')
         # validates time number inputs
-        validation = self.manframe.register(self.only_numbers)
+        hrsvalidation = self.manframe.register(self.only_hours)
+        minvalidation = self.manframe.register(self.only_mins)
+        #measvalidation = self.manframe.register(self.only_meas)
+        measvalidation= (self.manframe.register(self.only_meas),
+                '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
 
-        # measure 2 manually input manual data ---------------------------------
+        # measure 1 manually input manual data ---------------------------------
         # labels
         ttk.Label(self.manframe, text= "Date of Measure 1").grid(row=0, column=0)
-        ttk.Label(self.manframe, text="HH:MM").grid(row=0, column=1, columnspan=2)
+        ttk.Label(self.manframe, text="HH:MM").grid(row=0, column=1, columnspan=3, sticky='WENS')
         ttk.Label(self.manframe, text="Measure 1").grid(row=0, column=4)
+        ttk.Label(self.manframe, text="Units").grid(row=0, column=5)
         # date picker
-        man_date1entry = DateEntry(self.manframe, width=20, locale='en_US', date_pattern='MM/dd/yyyy')
-        man_date1entry.grid(row=1, column=0,padx=2)
+        self.man_date1entry = DateEntry(self.manframe, width=20, locale='en_US', date_pattern='MM/dd/yyyy')
+        self.man_date1entry.grid(row=1, column=0,padx=2)
         # time picker
-        hour1 = ttk.Entry(self.manframe, validate="key", validatecommand=(validation, '%S'), width=5)
-        min1 = ttk.Entry(self.manframe, validate="key", validatecommand=(validation, '%S'), width=5)
-        hour1.grid(row=1,column=1)
+        self.hour1 = ttk.Entry(self.manframe, validate="key", validatecommand=(hrsvalidation, '%P'), width=5)
+        self.min1var = StringVar(value='00')
+        self.min1 = ttk.Entry(self.manframe, validate="key", textvariable=self.min1var,
+                              validatecommand=(minvalidation, '%P'), width=5)
+        self.hour1.grid(row=1,column=1)
         ttk.Label(self.manframe, text=":").grid(row=1, column=2)
-        min1.grid(row=1,column=3)
+        self.min1.grid(row=1,column=3)
         # measure
-        man_meas1entry = ttk.Entry(self.manframe, validate="key", validatecommand=(validation, '%S'), width=10)
-        man_meas1entry.grid(row=1, column=4,padx=2)
+        self.man_meas1entry = ttk.Entry(self.manframe, validate="key", validatecommand=measvalidation, width=10)
+        self.man_meas1entry.grid(row=1, column=4,padx=2)
+        # units
+        self.man_units = ttk.Combobox(self.manframe, width=5,
+                                    values=['ft','m'],state="readonly").grid(row=1, column=5, rowspan=3)
 
         # measure 2 manually input manual data -----------------------------------
         ttk.Label(self.manframe, text= "Date of Measure 2").grid(row=2, column=0)
-        ttk.Label(self.manframe, text="HH:MM").grid(row=3, column=1, columnspan=2)
+        ttk.Label(self.manframe, text="HH:MM").grid(row=2, column=1, columnspan=3, sticky='WENS')
         ttk.Label(self.manframe, text="Measure 2").grid(row=2, column=4)
+
         # date picker
-        man_date2entry = DateEntry(self.manframe, width=20,
+        self.man_date2entry = DateEntry(self.manframe, width=20,
                                    locale='en_US', date_pattern='MM/dd/yyyy')
-        man_date2entry.grid(row=3, column=0,padx=2)
+        self.man_date2entry.grid(row=3, column=0,padx=2)
         # time picker
-        hour2 = ttk.Entry(self.manframe, validate="key", validatecommand=(validation, '%S'), width=5)
-        min2 = ttk.Entry(self.manframe, validate="key", validatecommand=(validation, '%S'), width=5)
-        hour2.grid(row=3,column=1)
+        self.hour2 = ttk.Entry(self.manframe, validate="key", validatecommand=(hrsvalidation, '%P'), width=5)
+        self.min2var = StringVar(value='00')
+        self.min2 = ttk.Entry(self.manframe, validate="key", textvariable=self.min2var,
+                              validatecommand=(minvalidation, '%P'), width=5)
+        self.hour2.grid(row=3,column=1)
         ttk.Label(self.manframe, text=":").grid(row=3, column=2)
-        min2.grid(row=3,column=3)
+        self.min2.grid(row=3,column=3)
         # measure
-        man_meas2entry = ttk.Entry(self.manframe, validate="key", validatecommand=(validation, '%S'), width=10)
-        man_meas2entry.grid(row=3, column=4,padx=2)
+        self.man_meas2entry = ttk.Entry(self.manframe, validate="key", validatecommand=measvalidation, width=10)
+        self.man_meas2entry.grid(row=3, column=4,padx=2)
 
         # Tab for entering manual data by file
         ttk.Label(self.manfileframe,
@@ -168,6 +181,7 @@ class Feedback:
         self.manunits = ttk.Combobox(self.manfileframe, width=5,
                                     values=['ft','m'],state="readonly")
         self.manunits.grid(row=4, column=3)
+        ttk.Button(self.frame_content, text='Process Manual Data',command=self.proc_man).grid(column=0,row=6,columnspan=3)
 
         #self.well_entry.grid(row=2, column=1, columnspan=2)
         #self.well_file = ttk.Entry(self.frame_content, width=24).grid(row=0,column=1)
@@ -182,6 +196,18 @@ class Feedback:
         self.notebook.select(1)
         #self.frame5.pack()
 
+    def proc_man(self):
+        nbnum = self.manbook.index(self.manbook.select())
+        if nbnum == 0:
+            man1_datetime = pd.to_datetime(f'{self.man_date1entry.get()} {self.hour1.get()}:{self.min1.get()}',
+                                                format='%m/%d/%Y %H:%M')
+            man2_datetime = pd.to_datetime(f'{self.man_date2entry.get()} {self.hour2.get()}:{self.min2.get()}',
+                                                format='%m/%d/%Y %H:%M')
+            self.man_entry_df = pd.DataFrame({'Dates':[man1_datetime,man2_datetime],
+                                              'Measures':[self.man_meas1entry.get(),
+                                                          self.man_meas2entry.get()]})
+            print(self.man_entry_df)
+
     def combodateassign(self, cmbo):
         print(cmbo.get())
 
@@ -190,10 +216,31 @@ class Feedback:
             cmbo['values'] = list(self.mandata.columns.values)
         else:
             messagebox.showinfo(title='Attention', message='Select a manual file!')
-            self.browsemanfunc(True)
+            self.graphframe(True, framename='Man Data')
 
-    def only_numbers(self, char):
-        return char.isdigit()
+    def only_hours(self, char):
+        if char.isdigit() and int(char)<24:
+            charval = True
+        else:
+            charval = False
+        return charval
+
+    def only_mins(self, char):
+        if char.isdigit() and int(char) < 60:
+            charval = True
+        else:
+            charval = False
+        return charval
+
+    def only_meas(self, action, index, value_if_allowed,
+                       prior_value, text, validation_type, trigger_type, widget_name):
+        try:
+            float(value_if_allowed)
+            bool = True
+        except ValueError:
+            bool = False
+        return bool
+
 
     def destroy_graph(self, frame):
         for widget in frame.winfo_children():
@@ -205,7 +252,7 @@ class Feedback:
         self.graph_button_frame1 = ttk.Frame(frame)
         self.button_left = Button(self.graph_button_frame1, text="< Decrease Slope", command=self.decrease)
         self.button_left.pack(side="left")
-        self.button_right = Button(self.graph_button_frame1,text="Increase Slope >", command=self.increase)
+        self.button_right = Button(self.graph_button_frame1, text="Increase Slope >", command=self.increase)
         self.button_right.pack(side="left")
         self.graph_button_frame1.pack()
 
@@ -224,14 +271,14 @@ class Feedback:
                                       'Level':[8,9,8,8]})
 
         self.line, = ax.plot(df.index, df[plotvar])
+        ax.set_ylabel("Pressure")
         ax.fmt_xdata = mdates.DateFormatter('%Y-%m-%d %H:%M')
-        self.canvas = FigureCanvasTkAgg(fig, master=self.graph_frame1)
-        self.toolbar = NavigationToolbar2Tk(self.canvas, self.graph_frame1)
-        self.toolbar.update()
-        self.canvas.draw()
-        self.canvas.get_tk_widget().pack(side='top', fill='both', expand=1)
-
-        self.canvas.mpl_connect("key_press_event", self.on_key_press)
+        canvas = FigureCanvasTkAgg(fig, master=self.graph_frame1)
+        toolbar = NavigationToolbar2Tk(canvas, self.graph_frame1)
+        toolbar.update()
+        canvas.draw()
+        canvas.get_tk_widget().pack(side='top', fill='both', expand=1)
+        canvas.mpl_connect("key_press_event", self.on_key_press)
 
     def on_key_press(self, event):
         print("you pressed {}".format(event.key))
@@ -263,16 +310,15 @@ class Feedback:
         if filename == '' or type(filename) == tuple:
             pass
         else:
-            new_frame = ttk.Frame(self.notebook)
-            self.notebook.add(new_frame, text=framename)
-            panedframe = ttk.Panedwindow(new_frame, orient=VERTICAL)
-            panedframe.pack(fill=BOTH, expand=True)
-            tableframe = ttk.Frame(panedframe, relief=SUNKEN)
-            graphframe = ttk.Frame(panedframe, relief=SUNKEN)
-            panedframe.add(tableframe, weight=1)
-            panedframe.add(graphframe, weight=4)
-
             if framename in ('Raw Well','Raw Baro'):
+                new_frame = ttk.Frame(self.notebook)
+                self.notebook.add(new_frame, text=framename)
+                panedframe = ttk.Panedwindow(new_frame, orient=VERTICAL)
+                panedframe.pack(fill=BOTH, expand=True)
+                tableframe = ttk.Frame(panedframe, relief=SUNKEN)
+                graphframe = ttk.Frame(panedframe, relief=SUNKEN)
+                panedframe.add(tableframe, weight=1)
+                panedframe.add(graphframe, weight=4)
                 df = ll.NewTransImp(filename).well.drop(['name'], axis=1)
                 if framename == 'Raw Well':
                     self.welldata = df
@@ -280,8 +326,8 @@ class Feedback:
                 elif framename == 'Raw Baro':
                     self.barodata = df
                     self.baro_string.set(filename)
-                #pt = pandastable.Table(tableframe, dataframe=df, showtoolbar=True, showstatusbar=True)
-                #pt.show()
+                pt = pandastable.Table(tableframe, dataframe=df, showtoolbar=True, showstatusbar=True)
+                pt.show()
                 self.make_graph(graphframe)
             elif framename == 'Man Data':
                 filenm, file_extension = os.path.splitext(filename)

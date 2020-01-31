@@ -5,11 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="added gui">
-      <change beforePath="$PROJECT_DIR$/.idea/loggerloader.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/loggerloader.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/rSettings.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/loggerloader/llgui.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/llgui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -358,13 +356,6 @@
       <workItem from="1580389627148" duration="26126000" />
       <workItem from="1580427628078" duration="1322000" />
     </task>
-    <task id="LOCAL-00156" summary="fix chart errors">
-      <created>1538483222755</created>
-      <option name="number" value="00156" />
-      <option name="presentableId" value="LOCAL-00156" />
-      <option name="project" value="LOCAL" />
-      <updated>1538483222756</updated>
-    </task>
     <task id="LOCAL-00157" summary="fix chart errors">
       <created>1538516961020</created>
       <option name="number" value="00157" />
@@ -701,7 +692,14 @@
       <option name="project" value="LOCAL" />
       <updated>1580390774376</updated>
     </task>
-    <option name="localTasksCounter" value="205" />
+    <task id="LOCAL-00205" summary="added gui">
+      <created>1580453251551</created>
+      <option name="number" value="00205" />
+      <option name="presentableId" value="LOCAL-00205" />
+      <option name="project" value="LOCAL" />
+      <updated>1580453251554</updated>
+    </task>
+    <option name="localTasksCounter" value="206" />
     <servers />
   </component>
   <component name="TodoView" selected-index="3">
@@ -749,29 +747,32 @@
       <screen x="1920" y="1" width="1920" height="1050" />
     </state>
     <state x="2472" y="185" key="#Notifications/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@1920.1.1920.1050" timestamp="1580135782912" />
-    <state x="615" y="120" key="CommitChangelistDialog2" timestamp="1580390769615">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state x="438" y="105" key="CommitChangelistDialog2" timestamp="1580453250338">
+      <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state x="615" y="120" key="CommitChangelistDialog2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580390769615" />
+    <state x="438" y="105" key="CommitChangelistDialog2/0.40.1368.872@0.40.1368.872" timestamp="1580453250338" />
     <state x="2659" y="281" key="FileChooserDialogImpl" timestamp="1580136790190">
       <screen x="1920" y="1" width="1920" height="1050" />
     </state>
     <state x="2659" y="281" key="FileChooserDialogImpl/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@1920.1.1920.1050" timestamp="1580136790190" />
-    <state x="331" y="87" key="SettingsEditor" timestamp="1580449550820">
+    <state x="331" y="87" key="SettingsEditor" timestamp="1580481251969">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state x="465" y="57" key="SettingsEditor/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580390433263" />
     <state x="2385" y="58" key="SettingsEditor/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@1920.1.1920.1050" timestamp="1580136800577" />
-    <state x="331" y="87" key="SettingsEditor/0.40.1368.872@0.40.1368.872" timestamp="1580449550820" />
-    <state x="552" y="247" key="Vcs.Push.Dialog.v2" timestamp="1580390777985">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state x="331" y="87" key="SettingsEditor/0.40.1368.872@0.40.1368.872" timestamp="1580481251969" />
+    <state x="393" y="245" key="Vcs.Push.Dialog.v2" timestamp="1580453254542">
+      <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state x="552" y="247" key="Vcs.Push.Dialog.v2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580390777985" />
-    <state x="656" y="350" key="com.intellij.ide.util.TipDialog" timestamp="1580427631577">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state x="393" y="245" key="Vcs.Push.Dialog.v2/0.40.1368.872@0.40.1368.872" timestamp="1580453254542" />
+    <state x="467" y="331" key="com.intellij.ide.util.TipDialog" timestamp="1580480606089">
+      <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state x="656" y="350" key="com.intellij.ide.util.TipDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580427631577" />
     <state x="2576" y="351" key="com.intellij.ide.util.TipDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@1920.1.1920.1050" timestamp="1580135658528" />
+    <state x="467" y="331" key="com.intellij.ide.util.TipDialog/0.40.1368.872@0.40.1368.872" timestamp="1580480606089" />
     <state x="492" y="395" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1580453234467">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
