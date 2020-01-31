@@ -12,7 +12,8 @@ from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
 from tkcalendar import Calendar, DateEntry
-from pandastable import Table
+import pandastable
+
 from pandas.plotting import register_matplotlib_converters
 register_matplotlib_converters()
 
@@ -26,6 +27,8 @@ class Feedback:
         master.geometry('1000x800')
         master.wm_title("Transducer Processing")
         self.root = master
+
+        self.currentdir = os.path.expanduser('~')
 
         # menu bars at the top of the main window
         master.option_add('*tearOff', False)
@@ -69,22 +72,16 @@ class Feedback:
         # Select Well Table Interface
         ttk.Label(self.frame_content, text= "1. Select Well Data:").grid(row=0, column=0, columnspan=3)
         self.well_string = StringVar(self.frame_content, value='Double-Click for file')
-        self.well_entry = ttk.Entry(self.frame_content, textvariable=self.well_string,
-                                    width=80, justify=LEFT)
-        self.well_entry.grid(row=1, column=0, columnspan=2)
-        ttk.Button(self.frame_content, text='Import',
-                   command=lambda: self.graphframe(framename='Raw Well')).grid(row=1, column=2)
-        self.well_entry.bind('<Double-ButtonRelease-1>', lambda: self.graphframe(framename='Raw Well'))
+        self.well_entry = ttk.Entry(self.frame_content, textvariable=self.well_string,width=80, justify=LEFT)
+        self.well_entry.grid(row=1, column=0, columnspan=3)
+        self.well_entry.bind('<Double-ButtonRelease-1>', lambda fn: self.graphframe(framename='Raw Well'))
 
         # Select Baro Table Interface
         ttk.Label(self.frame_content, text="2. Select Barometric Data:").grid(row=2, column=0, columnspan=3)
         self.baro_string = StringVar(self.frame_content, value='Double-Click for file')
-        self.baro_entry = ttk.Entry(self.frame_content, textvariable=self.baro_string,
-                                    width=80, justify=LEFT)
-        self.baro_entry.grid(row=3, column=0, columnspan=2)
-        #ttk.Button(self.frame_content, text='Import',
-        #           command=lambda: self.graphframe(framename='Raw Baro')).grid(row=3, column=2)
-        self.baro_entry.bind('<Double-ButtonRelease-1>', lambda: self.graphframe(framename='Raw Baro'))
+        self.baro_entry = ttk.Entry(self.frame_content, textvariable=self.baro_string, width=80, justify=LEFT)
+        self.baro_entry.grid(row=3, column=0, columnspan=3)
+        self.baro_entry.bind('<Double-ButtonRelease-1>', lambda fn: self.graphframe(framename='Raw Baro'))
 
         # Select Manual Table Interface
         ttk.Label(self.frame_content, text="3. Select Manual Data:").grid(row=4,column=0,columnspan=3)
@@ -141,35 +138,34 @@ class Feedback:
         ttk.Label(self.manfileframe,
                   text="Good for matching bulk manual data").grid(row=1, column=0, columnspan=4)
 
-        self.man_file = StringVar(self.manfileframe, value='Double-Click for file')
-        self.man_entry = ttk.Entry(self.manfileframe, textvariable=self.man_file,
-                                    width=80, justify=LEFT)
+        self.man_string = StringVar(self.manfileframe, value='Double-Click for file')
+        self.man_entry = ttk.Entry(self.manfileframe, textvariable=self.man_string, width=80, justify=LEFT)
         self.man_entry.grid(row=2, column=0, columnspan=4)
-        self.man_entry.bind('<Double-ButtonRelease-1>', self.browsemanfunc)
+        self.man_entry.bind('<Double-ButtonRelease-1>', lambda fn: self.graphframe(framename='Man Data'))
 
         ttk.Label(self.manfileframe,  text="Datetime").grid(row=3, column=0)
-        self.mandatetime = ttk.Combobox(self.manfileframe,
+        self.mandatetime = ttk.Combobox(self.manfileframe, width=15,
                                     values=['datetime','meas','locid'],
                                     postcommand=lambda: self.man_col_select(self.mandatetime))
         self.mandatetime.grid(row=4, column=0)
         self.mandatetime.bind("<<ComboboxSelected>>", lambda cmb: self.combodateassign(self.mandatetime))
 
         ttk.Label(self.manfileframe, text="DTW").grid(row=3, column=1)
-        self.manmeas = ttk.Combobox(self.manfileframe,
+        self.manmeas = ttk.Combobox(self.manfileframe, width=15,
                                     values=['datetime','meas','locid'],
                                     postcommand=lambda: self.man_col_select(self.manmeas))
         self.manmeas.grid(row=4, column=1)
         self.manmeas.bind("<<ComboboxSelected>>", lambda cmb: self.combodateassign(self.manmeas))
 
         ttk.Label(self.manfileframe, text="locationid").grid(row=3, column=2)
-        self.manlocid = ttk.Combobox(self.manfileframe,
+        self.manlocid = ttk.Combobox(self.manfileframe, width=15,
                                     values=['datetime','meas','locid'],
                                     postcommand=lambda: self.man_col_select(self.manlocid))
         self.manlocid.grid(row=4, column=2)
         self.manlocid.bind("<<ComboboxSelected>>", lambda cmb: self.combodateassign(self.manlocid))
 
         ttk.Label(self.manfileframe, text="units").grid(row=3, column=3)
-        self.manunits = ttk.Combobox(self.manfileframe,
+        self.manunits = ttk.Combobox(self.manfileframe, width=5,
                                     values=['ft','m'],state="readonly")
         self.manunits.grid(row=4, column=3)
 
@@ -256,57 +252,44 @@ class Feedback:
         self.destroy()  # this is necessary on Windows to prevent
                     # Fatal Python Error: PyEval_RestoreThread: NULL tstate
 
-    def browsemanfunc(self, event):
-        if event:
-            filename = filedialog.askopenfilename(initialdir = "/",title = "Select well file",
-                                              filetypes = (("csv","*.csv*"),("xlsx","*.xlsx"),("xls",".xls")))
-            if filename == '' or type(filename) == tuple:
-                pass
-            else:
-                self.man_file.set(filename)
-            print(self.man_file.get())
-            if len(filename) > 0:
-                filenm, file_extension = os.path.splitext(filename)
-                if file_extension in ('.xls', '.xlsx'):
-                    self.mandata = pd.read_excel(filename)
-                elif file_extension == '.csv':
-                    self.mandata = pd.read_csv(filename)
-
-    def graphframe(self, event, framename='New'):
+    def graphframe(self, framename='New'):
         if framename in ('Raw Well','Raw Baro'):
             ftypelist = (("Solinst xle","*.xle*"),("Solinst csv","*.csv"))
         else:
             ftypelist = (("csv","*.csv*"),("xlsx","*.xlsx"),("xls",".xls"))
-        if event:
-            filename = filedialog.askopenfilename(initialdir = "/",title = "Select well file", filetypes = ftypelist)
-            if filename == '' or type(filename) == tuple:
-                pass
-            else:
-                new_frame = ttk.Frame(self.notebook)
-                self.notebook.add(new_frame, text=framename)
-                panedframe = ttk.Panedwindow(new_frame, orient=VERTICAL)
-                panedframe.pack(fill=BOTH, expand=True)
-                tableframe = ttk.Frame(panedframe, relief=SUNKEN)
-                graphframe = ttk.Frame(panedframe, relief=SUNKEN)
-                panedframe.add(tableframe, weight=1)
-                panedframe.add(graphframe, weight=4)
+        #if event:
+        filename = filedialog.askopenfilename(initialdir = self.currentdir, title = "Select file", filetypes = ftypelist)
+        self.currentdir = os.path.dirname(filename)
+        if filename == '' or type(filename) == tuple:
+            pass
+        else:
+            new_frame = ttk.Frame(self.notebook)
+            self.notebook.add(new_frame, text=framename)
+            panedframe = ttk.Panedwindow(new_frame, orient=VERTICAL)
+            panedframe.pack(fill=BOTH, expand=True)
+            tableframe = ttk.Frame(panedframe, relief=SUNKEN)
+            graphframe = ttk.Frame(panedframe, relief=SUNKEN)
+            panedframe.add(tableframe, weight=1)
+            panedframe.add(graphframe, weight=4)
 
             if framename in ('Raw Well','Raw Baro'):
                 df = ll.NewTransImp(filename).well.drop(['name'], axis=1)
                 if framename == 'Raw Well':
                     self.welldata = df
-                elif framename == 'Baro Well':
+                    self.well_string.set(filename)
+                elif framename == 'Raw Baro':
                     self.barodata = df
-                pt = Table(tableframe, dataframe=df, showtoolbar=True, showstatusbar=True)
-                pt.show()
+                    self.baro_string.set(filename)
+                #pt = pandastable.Table(tableframe, dataframe=df, showtoolbar=True, showstatusbar=True)
+                #pt.show()
                 self.make_graph(graphframe)
             elif framename == 'Man Data':
                 filenm, file_extension = os.path.splitext(filename)
+                self.man_string.set(filename)
                 if file_extension in ('.xls', '.xlsx'):
                     self.mandata = pd.read_excel(filename)
                 elif file_extension == '.csv':
                     self.mandata = pd.read_csv(filename)
-
 
 def main():
     root = Tk()
