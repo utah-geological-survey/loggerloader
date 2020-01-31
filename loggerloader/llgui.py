@@ -1,354 +1,319 @@
-#!/usr/bin/env python
-"""
-    File rename utility.
-    Created January 2012
-    Copyright (C) Damien Farrell
-
-    This program is free software; you can redistribute it and/or
-    modify it under the terms of the GNU General Public License
-    as published by the Free Software Foundation; either version 3
-    of the License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-"""
-
-from __future__ import absolute_import, division, print_function
-try:
-    from tkinter import *
-    from tkinter.ttk import *
-    from tkinter.scrolledtext import ScrolledText
-except:
-    from Tkinter import *
-    from ttk import *
-
-if (sys.version_info > (3, 0)):
-    from tkinter import filedialog, messagebox, simpledialog
-else:
-    import tkFileDialog as filedialog
-    import tkSimpleDialog as simpledialog
-    import tkMessageBox as messagebox
-    from ScrolledText import ScrolledText
-import os
-import string
-import time
-import re
-import glob
+from matplotlib.backends.backend_tkagg import (
+    FigureCanvasTkAgg, NavigationToolbar2Tk)
+# Implement the default Matplotlib key bindings.
+from matplotlib.backend_bases import key_press_handler
+from matplotlib.figure import Figure
+import matplotlib.dates as mdates
+import numpy as np
 import pandas as pd
-from pandastable.plugin import Plugin
-from pandastable import Table, TableModel, dialogs
-import pylab as plt
+import os
+from tkinter import *
+from tkinter import ttk
+from tkinter import filedialog
+from tkinter import messagebox
+from tkcalendar import Calendar, DateEntry
+from pandastable import Table
+from pandas.plotting import register_matplotlib_converters
+register_matplotlib_converters()
+
 
 import loggerloader as ll
 
+class Feedback:
 
-class TransPro(Table):
-    """
-      Custom table class inherits from Table.
-      You can then override required methods
-     """
-    def __init__(self, parent=None, app=None, **kwargs):
-        Table.__init__(self, parent, **kwargs)
-        self.app = app
-        return
+    def __init__(self, master):
+        # create main window and configure size and title
+        master.geometry('1000x800')
+        master.wm_title("Transducer Processing")
+        self.root = master
 
-    def handle_right_click(self, event):
-        """respond to a right click"""
+        # menu bars at the top of the main window
+        master.option_add('*tearOff', False)
+        menubar = Menu(master)
+        master.config(menu=menubar)
+        file = Menu(menubar)
+        edit = Menu(menubar)
+        help_ = Menu(menubar)
+        menubar.add_cascade(menu=file, label='File')
+        menubar.add_cascade(menu=edit, label='edit')
+        menubar.add_cascade(menu=help_, label='Help')
+        file.add_command(label='New', command=lambda: print('New File'))
+        file.add_separator()
+        file.add_command(label="Open...", command=lambda: print('Opening'))
+        file.add_command(label="Save", command=lambda: print('Save File'))
+        file.entryconfig('New', accelerator='Ctrl + N')
+        save = Menu(file)
+        file.add_cascade(menu=save, label='Save')
+        save.add_command(label='Save As', command=lambda: print('save as'))
+        save.add_command(label='Save All', command=lambda: print('saving'))
 
-        return
+        # Create side by side panel areas
+        self.panedwindow = ttk.Panedwindow(master, orient=HORIZONTAL)
+        self.panedwindow.pack(fill=BOTH, expand=True)
+        self.frame1 = ttk.Frame(self.panedwindow, width=150, height=400, relief=SUNKEN)
+        self.frame2 = ttk.Frame(self.panedwindow, width=400, height=400, relief=SUNKEN)
+        self.panedwindow.add(self.frame1, weight=1)
+        self.panedwindow.add(self.frame2, weight=4)
 
-    def handle_left_click(self, event):
-        """respond to a right click"""
+        # Header image logo and Description seen by user
+        self.frame_header = ttk.Frame(self.frame1)
+        self.frame_header.pack(pady=5)
+        self.logo = PhotoImage(file = "./GeologicalSurvey.png").subsample(10,10)
+        ttk.Label(self.frame_header, image = self.logo).grid(row = 0, column = 0, rowspan=2)
+        ttk.Label(self.frame_header, wraplength=300, text = "Processing transducer data").grid(row= 0, column=1)
 
-        Table.handle_left_click(self, event)
-        self.app.previewTable()
-        return
+        # Data Entry Frame
+        self.frame_content = ttk.Frame(self.frame1)
+        self.frame_content.pack()
 
+        # Select Well Table Interface
+        ttk.Label(self.frame_content, text= "1. Select Well Data:").grid(row=0, column=0, columnspan=3)
+        self.well_string = StringVar(self.frame_content, value='Double-Click for file')
+        self.well_entry = ttk.Entry(self.frame_content, textvariable=self.well_string,
+                                    width=80, justify=LEFT)
+        self.well_entry.grid(row=1, column=0, columnspan=2)
+        ttk.Button(self.frame_content, text='Import',
+                   command=lambda: self.graphframe(framename='Raw Well')).grid(row=1, column=2)
+        self.well_entry.bind('<Double-ButtonRelease-1>', lambda: self.graphframe(framename='Raw Well'))
 
-class BatchProcessPlugin(Plugin):
-    """Batch processing plugin for DataExplore. Useful for multiple file import
-    and plotting.
-    """
+        # Select Baro Table Interface
+        ttk.Label(self.frame_content, text="2. Select Barometric Data:").grid(row=2, column=0, columnspan=3)
+        self.baro_string = StringVar(self.frame_content, value='Double-Click for file')
+        self.baro_entry = ttk.Entry(self.frame_content, textvariable=self.baro_string,
+                                    width=80, justify=LEFT)
+        self.baro_entry.grid(row=3, column=0, columnspan=2)
+        #ttk.Button(self.frame_content, text='Import',
+        #           command=lambda: self.graphframe(framename='Raw Baro')).grid(row=3, column=2)
+        self.baro_entry.bind('<Double-ButtonRelease-1>', lambda: self.graphframe(framename='Raw Baro'))
 
-    capabilities = ['gui', 'uses_sidepane']
-    requires = ['']
-    menuentry = 'Transducer Process'
-    gui_methods = {}
-    version = '0.1'
+        # Select Manual Table Interface
+        ttk.Label(self.frame_content, text="3. Select Manual Data:").grid(row=4,column=0,columnspan=3)
+        self.manbook = ttk.Notebook(self.frame_content)
+        self.manbook.grid(row=5, column=0, columnspan=3)
+        self.manframe = ttk.Frame(self.manbook)
+        self.manfileframe = ttk.Frame(self.manbook)
+        self.manbook.add(self.manframe, text='Manual Entry')
+        self.manbook.add(self.manfileframe, text='Data Import')
+        # validates time number inputs
+        validation = self.manframe.register(self.only_numbers)
 
-    def __init__(self):
-        return
+        # measure 2 manually input manual data ---------------------------------
+        # labels
+        ttk.Label(self.manframe, text= "Date of Measure 1").grid(row=0, column=0)
+        ttk.Label(self.manframe, text="HH:MM").grid(row=0, column=1, columnspan=2)
+        ttk.Label(self.manframe, text="Measure 1").grid(row=0, column=4)
+        # date picker
+        man_date1entry = DateEntry(self.manframe, width=20, locale='en_US', date_pattern='MM/dd/yyyy')
+        man_date1entry.grid(row=1, column=0,padx=2)
+        # time picker
+        hour1 = ttk.Entry(self.manframe, validate="key", validatecommand=(validation, '%S'), width=5)
+        min1 = ttk.Entry(self.manframe, validate="key", validatecommand=(validation, '%S'), width=5)
+        hour1.grid(row=1,column=1)
+        ttk.Label(self.manframe, text=":").grid(row=1, column=2)
+        min1.grid(row=1,column=3)
+        # measure
+        man_meas1entry = ttk.Entry(self.manframe, validate="key", validatecommand=(validation, '%S'), width=10)
+        man_meas1entry.grid(row=1, column=4,padx=2)
 
-    def main(self, parent):
-        self.parent = parent
-        if parent == None:
-            self.main = Toplevel()
-            self.master = self.main
-            self.main.title('Transducer Process')
-            ws = self.main.winfo_screenwidth()
-            hs = self.main.winfo_screenheight()
-            w = 900
-            h = 500
-            x = (ws/2)-(w/2)
-            y = (hs/2)-(h/2)
-            self.main.geometry('%dx%d+%d+%d' % (w,h,x,y))
+        # measure 2 manually input manual data -----------------------------------
+        ttk.Label(self.manframe, text= "Date of Measure 2").grid(row=2, column=0)
+        ttk.Label(self.manframe, text="HH:MM").grid(row=3, column=1, columnspan=2)
+        ttk.Label(self.manframe, text="Measure 2").grid(row=2, column=4)
+        # date picker
+        man_date2entry = DateEntry(self.manframe, width=20,
+                                   locale='en_US', date_pattern='MM/dd/yyyy')
+        man_date2entry.grid(row=3, column=0,padx=2)
+        # time picker
+        hour2 = ttk.Entry(self.manframe, validate="key", validatecommand=(validation, '%S'), width=5)
+        min2 = ttk.Entry(self.manframe, validate="key", validatecommand=(validation, '%S'), width=5)
+        hour2.grid(row=3,column=1)
+        ttk.Label(self.manframe, text=":").grid(row=3, column=2)
+        min2.grid(row=3,column=3)
+        # measure
+        man_meas2entry = ttk.Entry(self.manframe, validate="key", validatecommand=(validation, '%S'), width=10)
+        man_meas2entry.grid(row=3, column=4,padx=2)
+
+        # Tab for entering manual data by file
+        ttk.Label(self.manfileframe,
+                  text="File with manual data must have datetime, reading, and locationid fields").grid(row=0,
+                                                                                                        column=0,
+                                                                                                        columnspan=4)
+        ttk.Label(self.manfileframe,
+                  text="Good for matching bulk manual data").grid(row=1, column=0, columnspan=4)
+
+        self.man_file = StringVar(self.manfileframe, value='Double-Click for file')
+        self.man_entry = ttk.Entry(self.manfileframe, textvariable=self.man_file,
+                                    width=80, justify=LEFT)
+        self.man_entry.grid(row=2, column=0, columnspan=4)
+        self.man_entry.bind('<Double-ButtonRelease-1>', self.browsemanfunc)
+
+        ttk.Label(self.manfileframe,  text="Datetime").grid(row=3, column=0)
+        self.mandatetime = ttk.Combobox(self.manfileframe,
+                                    values=['datetime','meas','locid'],
+                                    postcommand=lambda: self.man_col_select(self.mandatetime))
+        self.mandatetime.grid(row=4, column=0)
+        self.mandatetime.bind("<<ComboboxSelected>>", lambda cmb: self.combodateassign(self.mandatetime))
+
+        ttk.Label(self.manfileframe, text="DTW").grid(row=3, column=1)
+        self.manmeas = ttk.Combobox(self.manfileframe,
+                                    values=['datetime','meas','locid'],
+                                    postcommand=lambda: self.man_col_select(self.manmeas))
+        self.manmeas.grid(row=4, column=1)
+        self.manmeas.bind("<<ComboboxSelected>>", lambda cmb: self.combodateassign(self.manmeas))
+
+        ttk.Label(self.manfileframe, text="locationid").grid(row=3, column=2)
+        self.manlocid = ttk.Combobox(self.manfileframe,
+                                    values=['datetime','meas','locid'],
+                                    postcommand=lambda: self.man_col_select(self.manlocid))
+        self.manlocid.grid(row=4, column=2)
+        self.manlocid.bind("<<ComboboxSelected>>", lambda cmb: self.combodateassign(self.manlocid))
+
+        ttk.Label(self.manfileframe, text="units").grid(row=3, column=3)
+        self.manunits = ttk.Combobox(self.manfileframe,
+                                    values=['ft','m'],state="readonly")
+        self.manunits.grid(row=4, column=3)
+
+        #self.well_entry.grid(row=2, column=1, columnspan=2)
+        #self.well_file = ttk.Entry(self.frame_content, width=24).grid(row=0,column=1)
+
+        # add tabs in the frame to the right
+        self.notebook = ttk.Notebook(self.frame2)
+        self.notebook.pack(fill=BOTH, expand=True)
+        self.frame4 = ttk.Frame(self.notebook)
+        self.frame5 = ttk.Frame(self.notebook)
+        self.notebook.add(self.frame4, text='Table')
+        self.notebook.add(self.frame5, text='Plot Well Data')
+        self.notebook.select(1)
+        #self.frame5.pack()
+
+    def combodateassign(self, cmbo):
+        print(cmbo.get())
+
+    def man_col_select(self, cmbo):
+        if 'mandata' in self.__dict__.keys():
+            cmbo['values'] = list(self.mandata.columns.values)
         else:
-            self.parent = parent
-            self._doFrame()
-            self.main = self.mainwin
-        self.doGUI()
-        self.currentdir = self.homedir = os.path.expanduser('~')
+            messagebox.showinfo(title='Attention', message='Select a manual file!')
+            self.browsemanfunc(True)
 
-        self.addFolder(path='test_batch')
-        self.savepath = os.path.join(self.homedir, 'batchplots')
-        #self.test()
-        return
+    def only_numbers(self, char):
+        return char.isdigit()
 
-    def doGUI(self):
-        """Create GUI"""
+    def destroy_graph(self, frame):
+        for widget in frame.winfo_children():
+            widget.destroy()
 
-        frame = Frame(self.main)
-        frame.pack(side=LEFT, fill=BOTH, expand=1)
-        df = pd.DataFrame()
-        self.pt = MyTable(frame, app=self, dataframe=df, read_only=1, showtoolbar=0, width=100)
-        self.pt.show()
-        #self.m.add(frame)
-        fr = Frame(self.main, padding=(4, 4), width=120)
-        fr.pack(side=RIGHT, fill=BOTH)
+    def make_graph(self, frame, plotvar='Level', framename='Raw Well'):
+        # populate main graph tab
+        # Create Tab Buttons
+        self.graph_button_frame1 = ttk.Frame(frame)
+        self.button_left = Button(self.graph_button_frame1, text="< Decrease Slope", command=self.decrease)
+        self.button_left.pack(side="left")
+        self.button_right = Button(self.graph_button_frame1,text="Increase Slope >", command=self.increase)
+        self.button_right.pack(side="left")
+        self.graph_button_frame1.pack()
 
-        b = Button(fr, text='Add Folder', command=self.addFolder)
-        b.pack(side=TOP, fill=BOTH, pady=2)
-        self.recursivevar = BooleanVar()
-        self.recursivevar.set(False)
-        b=Checkbutton(fr, text='Load Recursive', variable=self.recursivevar)
-        b.pack(side=TOP, fill=BOTH, pady=2)
-        b=Button(fr, text='Clear', command=self.clear)
-        b.pack(side=TOP, fill=BOTH, pady=2)
+        # Create Main Graph
+        self.graph_frame1 = ttk.Frame(frame)
+        self.graph_frame1.pack()
 
-        self.extensionvar = StringVar()
-        w = Combobox(fr, values=['csv','txt','xle','*'], textvariable=self.extensionvar, width=6)
-        w.pack(side=TOP, fill=BOTH, pady=2)
-        w.set('xle')
-        Label(fr, text='delimiter').pack()
-        self.delimvar = StringVar()
-        delimiters = [',', r'\t', ' ', ';', '/', '&', '|', '^', '+', '-']
-        w = Combobox(fr, values=delimiters, textvariable=self.delimvar, width=6)
-        w.pack(side=TOP, fill=BOTH, pady=2)
-        w.set(',')
-        self.indexcolvar = IntVar()
-        Label(fr, text='index column').pack()
-        w = Entry(fr, textvariable=self.indexcolvar, width=6)
-        w.pack(side=TOP, fill=BOTH, pady=2)
-        self.useselectedvar = BooleanVar()
-        self.useselectedvar.set(False)
-        b = Checkbutton(fr, text='Selected Only', variable=self.useselectedvar)
-        b.pack(side=TOP, fill=BOTH, pady=2)
-        b= Button(fr, text='Import All', command=self.importAll)
-        b.pack(side=TOP, fill=BOTH, pady=2)
-        b = Button(fr, text='Preview Plot', command=self.previewPlot)
-        b.pack(side=TOP, fill=BOTH, pady=2)
-        b = Button(fr, text='Run Batch Plots', command=self.batchPlot)
-        b.pack(side=TOP, fill=BOTH, pady=2)
-        self.saveformatvar = StringVar()
-        self.saveformatvar.set('png')
-        w = Combobox(fr, values=['png', 'jpg', 'svg', 'tif', 'eps', 'pdf'],
-                 textvariable=self.saveformatvar, width=6)
-        w.pack(side=TOP, fill=BOTH, pady=2)
-        b=Button(fr, text='Save Folder', command=self.selectSaveFolder)
-        b.pack(side=TOP, fill=BOTH, pady=2)
+        if framename not in('Raw Baro', 'Manual'):
+            fig = Figure()
+            ax = fig.add_subplot(111)
 
-        table = self.parent.getCurrentTable()
-        self.pf = table.pf
-        return
-
-    def selectSaveFolder(self):
-        self.savepath = filedialog.askdirectory(parent=self.main, initialdir=self.currentdir, title='Select folder')
-        return
-
-    def addFolder(self, path=None):
-        """Get a folder"""
-
-        if path == None:
-            path = filedialog.askdirectory(parent=self.main, initialdir=self.currentdir, title='Select folder')
-        if path:
-            self.path = path
-            self.refresh()
-            self.currentdir = path
-        return
-
-    def refresh(self):
-        """Load files list into table"""
-
-        currdf = self.pt.model.df
-        ext = self.extensionvar.get()
-        fp = '*.' + ext
-        if self.recursivevar.get() == 1:
-            fp = '**/*.' + ext
-            flist = glob.glob(os.path.join(self.path, fp), recursive=True)
+        if 'welldata' in self.__dict__.keys():
+            df = self.welldata
         else:
-            flist = glob.glob(os.path.join(self.path, fp))
-        sizes = []
-        cols = []
-        rows = []
-        for f in flist:
-            s = os.path.getsize(f)
-            sizes.append(s)
-            df = ll.NewTransImp(f, nrows=10).well
-            cols.append(len(df.columns))
+            df = pd.DataFrame({'a':pd.date_range('2019-01-01','2019-01-04',freq='1D'),
+                                      'Level':[8,9,8,8]})
 
-        df = pd.DataFrame({'filename':flist, 'filesize':sizes, 'columns':cols})
-        #print (df)
-        new = pd.concat([currdf, df])
-        new = new.drop_duplicates('filename')
-        self.pt.model.df = new
-        self.pt.autoResizeColumns()
-        self.pt.columnwidths['filename'] = 350
-        #self.pt.redraw()
-        return
+        self.line, = ax.plot(df.index, df[plotvar])
+        ax.fmt_xdata = mdates.DateFormatter('%Y-%m-%d %H:%M')
+        self.canvas = FigureCanvasTkAgg(fig, master=self.graph_frame1)
+        self.toolbar = NavigationToolbar2Tk(self.canvas, self.graph_frame1)
+        self.toolbar.update()
+        self.canvas.draw()
+        self.canvas.get_tk_widget().pack(side='top', fill='both', expand=1)
 
-    def loadFile(self, row=None):
-        """Load a file from the table"""
+        self.canvas.mpl_connect("key_press_event", self.on_key_press)
 
-        if row is None:
-            row = self.pt.currentrow
-        df = self.pt.model.df
-        r = df.iloc[row]
-        df = pd.read_csv(r.filename, sep=self.delimvar.get())
-        idx = self.indexcolvar.get()
-        df = df.set_index(df.columns[idx])
-        return df
+    def on_key_press(self, event):
+        print("you pressed {}".format(event.key))
+        key_press_handler(event, self.canvas, self.toolbar)
 
-    def previewTable(self):
-        """Preview selected table in main table."""
+    def decrease(self):
+        x, y = self.line.get_data()
+        self.line.set_ydata(y*0.8)
+        self.canvas.draw()
 
-        df = self.loadFile()
-        #print (df)
-        table = self.parent.getCurrentTable()
-        table.model.df = df
-        table.autoResizeColumns()
-        return
+    def increase(self):
+        x, y = self.line.get_data()
+        self.line.set_ydata(y*1.2)
+        self.canvas.draw()
 
-    def importAll(self):
-        """Import selected or all files as tables"""
+    def _quit(self):
+        self.quit()     # stops mainloop
+        self.destroy()  # this is necessary on Windows to prevent
+                    # Fatal Python Error: PyEval_RestoreThread: NULL tstate
 
-        ops = ['separately', 'concat', 'merge']
-        d = dialogs.MultipleValDialog(title='Batch Import Files',
-                                initialvalues=[ops],
-                                labels=['How to Import:'],
-                                types=['combobox'],
-                                parent = self.mainwin)
-        if d.result == None:
-            return
-        how = d.results[0]
-        if how == 'join':
-            self.joinTables()
-        else:
-            filelist = self.pt.model.df
-            for i,r in filelist.iterrows():
-                df = self.loadFile(i)
-                self.parent.addSheet(i, df)
-        return
-
-    def joinTables(self):
-        """Joins selected tables together and send to dataexplore"""
-
-        filelist = self.pt.model.df
-        res = []
-        for i, r in filelist.iterrows():
-            df = self.loadFile(i)
-            res.append(df)
-        res = pd.concat(res)
-        t = time.strftime('%X')
-        self.parent.addSheet('joined-'+t, res)
-        return
-
-    def clear(self):
-        """Clear file list"""
-
-        self.path = None
-        df = self.pt.model.df
-        self.pt.model.df = df.iloc[0:0]
-        self.pt.redraw()
-        return
-
-    def previewPlot(self):
-        """Make preview plot"""
-
-        cols = self.getCurrentSelections()
-        df = self.loadFile()
-        df = df[df.columns[cols]]
-        self.pf.replot(df)
-        return
-
-    def batchPlot(self):
-        """Plot multiple files"""
-
-        plotdir = self.savepath
-        if not os.path.exists(plotdir):
-            os.mkdir(plotdir)
-        form = self.saveformatvar.get()
-        if form == 'pdf':
-            pdf_pages = self.pdfPages()
-        df = self.pt.model.df
-        cols = self.getCurrentSelections()
-        for i, r in df.iterrows():
-            f = r.filename
-            name = os.path.basename(f)
-            df = self.loadFile(i)
-            if len(df) == 0:
-                continue
-            df = df[df.columns[cols]]
-            self.pf.replot(df)
-            self.pf.fig.suptitle(name)
-            if form == 'pdf':
-                fig = self.pf.fig
-                pdf_pages.savefig(fig)
+    def browsemanfunc(self, event):
+        if event:
+            filename = filedialog.askopenfilename(initialdir = "/",title = "Select well file",
+                                              filetypes = (("csv","*.csv*"),("xlsx","*.xlsx"),("xls",".xls")))
+            if filename == '' or type(filename) == tuple:
+                pass
             else:
-                self.pf.savePlot(filename=os.path.join(plotdir, name+'.'+form))
-        if form == 'pdf':
-            pdf_pages.close()
-        return
+                self.man_file.set(filename)
+            print(self.man_file.get())
+            if len(filename) > 0:
+                filenm, file_extension = os.path.splitext(filename)
+                if file_extension in ('.xls', '.xlsx'):
+                    self.mandata = pd.read_excel(filename)
+                elif file_extension == '.csv':
+                    self.mandata = pd.read_csv(filename)
 
-    def getCurrentSelections(self):
-        """Get row/col selections from main table for plotting"""
+    def graphframe(self, event, framename='New'):
+        if framename in ('Raw Well','Raw Baro'):
+            ftypelist = (("Solinst xle","*.xle*"),("Solinst csv","*.csv"))
+        else:
+            ftypelist = (("csv","*.csv*"),("xlsx","*.xlsx"),("xls",".xls"))
+        if event:
+            filename = filedialog.askopenfilename(initialdir = "/",title = "Select well file", filetypes = ftypelist)
+            if filename == '' or type(filename) == tuple:
+                pass
+            else:
+                new_frame = ttk.Frame(self.notebook)
+                self.notebook.add(new_frame, text=framename)
+                panedframe = ttk.Panedwindow(new_frame, orient=VERTICAL)
+                panedframe.pack(fill=BOTH, expand=True)
+                tableframe = ttk.Frame(panedframe, relief=SUNKEN)
+                graphframe = ttk.Frame(panedframe, relief=SUNKEN)
+                panedframe.add(tableframe, weight=1)
+                panedframe.add(graphframe, weight=4)
 
-        table = self.parent.getCurrentTable()
-        cols = table.multiplecollist
-        return cols
+            if framename in ('Raw Well','Raw Baro'):
+                df = ll.NewTransImp(filename).well.drop(['name'], axis=1)
+                if framename == 'Raw Well':
+                    self.welldata = df
+                elif framename == 'Baro Well':
+                    self.barodata = df
+                pt = Table(tableframe, dataframe=df, showtoolbar=True, showstatusbar=True)
+                pt.show()
+                self.make_graph(graphframe)
+            elif framename == 'Man Data':
+                filenm, file_extension = os.path.splitext(filename)
+                if file_extension in ('.xls', '.xlsx'):
+                    self.mandata = pd.read_excel(filename)
+                elif file_extension == '.csv':
+                    self.mandata = pd.read_csv(filename)
 
-    def pdfPages(self):
-        """Create pdf pages object"""
-
-        from matplotlib.backends.backend_pdf import PdfPages
-        filename = os.path.join(self.savepath, 'batch_plots.pdf')
-        pdf_pages = PdfPages(filename)
-        from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-        return pdf_pages
-
-    def test(self):
-        path = 'test_batch'
-        for i in range(20):
-            df = TableModel.getSampleData()
-            df.to_csv(os.path.join(path,'test%s.csv' %str(i)))
-        return
 
 def main():
-    from optparse import OptionParser
-    parser = OptionParser()
-    parser.add_option("-d", "--dir", dest="directory",
-                        help="Folder of raw files")
+    root = Tk()
+    feedback = Feedback(root)
+    root.mainloop()
 
-    opts, remainder = parser.parse_args()
-    app = BatchProcessPlugin()
-    if opts.directory != None:
-        app.addFolder(opts.directory)
-    app.mainloop()
-
-if __name__ == '__main__':
-    main()
+#tkinter.mainloop()
+# If you put root.destroy() here, it will cause an error if the window is
+# closed with the window manager.
+if __name__ == "__main__": main()
