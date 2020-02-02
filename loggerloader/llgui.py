@@ -90,7 +90,7 @@ class Feedback:
         ttk.Label(self.frame_step3, text='Pref. Data Freq.').grid(row=1, column=0, columnspan=2)
         self.freqint = ttk.Combobox(self.frame_step3, width=4, values=list(range(1,120)))
         self.freqint.grid(row=2,column=0)
-        self.freqint.current(60)
+        self.freqint.current(59)
         self.freqtype = ttk.Combobox(self.frame_step3, width=4, values=['M'])
         self.freqtype.grid(row=2, column=1)
         self.freqtype.current(0)
@@ -166,6 +166,7 @@ class Feedback:
         self.man_meas2entry.grid(row=3, column=4,padx=2)
 
         # Tab for entering manual data by file
+        #TODO Auto align sheet fields to columns
         ttk.Label(self.manfileframe,
                   text="File with manual data must have datetime, reading, and locationid fields").grid(row=0,
                                                                                                         column=0,
@@ -206,31 +207,73 @@ class Feedback:
         self.manunits = ttk.Combobox(self.manfileframe, width=5,
                                     values=['ft','m'], state="readonly")
         self.manunits.grid(row=4, column=3)
+        self.manunits.current(0)
 
         ttk.Button(self.frame_step4, text='Process Manual Data',
                    command=self.proc_man).grid(column=0,row=2,columnspan=3)
 
-        # Select Manual Table Interface
+        # Fix Drift Button
         self.frame_step5 = ttk.Frame(self.frame_content)
         self.frame_step5.grid(row=6, column=0, columnspan=3)
-        ttk.Button(self.frame_step5, text='Fix Drift',
-                   command=self.fix_drift).grid(column=0,row=0,columnspan=1)
-        self.locchk = ttk.Entry(self.frame_step5)
-        self.locchk.grid(column=1,row=0)
+        ttk.Label(self.frame_step5, text='5. Fix Drift').grid(column=0,row=0,columnspan=3)
 
+        self.max_drift = StringVar(self.frame_step5,value="")
+        ttk.Button(self.frame_step5, text='Fix Drift',
+                   command=self.fix_drift).grid(column=0,row=1,columnspan=1)
+        ttk.Label(self.frame_step5, text='Drift = ').grid(row=1, column=1)
+        ttk.Label(self.frame_step5, textvariable=self.max_drift).grid(row=1, column=2)
+        #self.locchk = ttk.Entry(self.frame_step5)
+        #self.locchk.grid(column=1,row=0)
+
+        # Fix Drift Button
+        self.frame_step6 = ttk.Frame(self.frame_content)
+        self.frame_step6.grid(row=7, column=0, columnspan=3)
+        ttk.Label(self.frame_step6,text='6. Align Elevation and Offset').grid(row=0,column=0, columnspan = 4)
+        ttk.Label(self.frame_step6, text='Ground Elev.').grid(row=1, column=0)
+        ttk.Label(self.frame_step6, text='Stickup').grid(row=1, column=2)
+        ttk.Label(self.frame_step6, text='Elev. Units').grid(row=1, column=1)
+        ttk.Label(self.frame_step6, text='Stickup Units').grid(row=1, column=3)
+        self.wellgroundelev = ttk.Entry(self.frame_step6,width=6)
+        self.wellgroundelevunits = ttk.Combobox(self.frame_step6, width=5,
+                                    values=['ft','m'], state="readonly")
+        self.wellgroundelevunits.current(0)
+        self.wellstickup = ttk.Entry(self.frame_step6,width=4)
+        self.wellstickupunits = ttk.Combobox(self.frame_step6, width=5,
+                                    values=['ft','m'], state="readonly")
+        self.wellgroundelevunits.current(0)
+        self.wellgroundelev.grid(row=2,column=0)
+        self.wellgroundelevunits.grid(row=2,column=1)
+        self.wellstickup.grid(row=2,column=2)
+        self.wellstickupunits.grid(row=2,column=3)
 
         # add tabs in the frame to the right
         self.notebook = ttk.Notebook(self.frame2)
         self.notebook.pack(fill=BOTH, expand=True)
-        self.frame4 = ttk.Frame(self.notebook)
-        self.frame5 = ttk.Frame(self.notebook)
-        self.notebook.add(self.frame4, text='Table')
-        self.notebook.add(self.frame5, text='Plot Well Data')
-        self.notebook.select(1)
+        #self.frame4 = ttk.Frame(self.notebook)
+        #self.frame5 = ttk.Frame(self.notebook)
+        #self.notebook.add(self.frame4, text='Table')
+        #self.notebook.add(self.frame5, text='Plot Well Data')
+        #self.notebook.select(1)
         #self.frame5.pack()
 
     def fix_drift(self):
-        self.drift_fixed = ll.fix_drift(self.alignwellbaro,self.man_entry_df)
+        self.wellbarofixed, self.drift_info, mxdrft = ll.fix_drift(self.alignwellbaro,self.man_entry_df)
+        self.max_drift.set(mxdrft)
+        self.wellbarofixed = self.wellbarofixed[['datetime','barometer','corrwl','DTW_WL']]
+        df = self.wellbarofixed
+        framename = 'Fixed Drift'
+        new_frame = ttk.Frame(self.notebook)
+        self.notebook.add(new_frame, text=framename)
+        panedframe = ttk.Panedwindow(new_frame, orient=VERTICAL)
+        panedframe.pack(fill=BOTH, expand=True)
+        tableframe = ttk.Frame(panedframe, relief=SUNKEN)
+        graphframe = ttk.Frame(panedframe, relief=SUNKEN)
+        panedframe.add(tableframe, weight=1)
+        panedframe.add(graphframe, weight=4)
+        pt = pandastable.Table(tableframe, dataframe=df,
+                               showtoolbar=True, showstatusbar=True)
+        pt.show()
+        self.make_graph(graphframe, framename=framename)
 
     def aligndata(self):
         self.alignwellbaro = ll.well_baro_merge(self.welldata, self.barodata, sampint=self.freqint.get())
@@ -257,7 +300,7 @@ class Feedback:
             man2_datetime = pd.to_datetime(f'{self.man_date2entry.get()} {self.hour2.get()}:{self.min2.get()}',
                                                 format='%m/%d/%Y %H:%M')
             df = pd.DataFrame({'readingdate':[man1_datetime,man2_datetime],
-                                              'dtwbelowcasing':[self.man_meas1entry.get(),
+                                              'measureddtw':[self.man_meas1entry.get(),
                                                           self.man_meas2entry.get()],
                                               'locationid':[self.man_locid.get()]*2,
                                               'units':[self.manunits.get()]*2})
@@ -265,15 +308,16 @@ class Feedback:
             print(self.man_entry_df)
         elif nbnum == 1:
             df = self.mandata.rename(columns={self.mandatetime.get():'readingdate',
-                                                     self.manmeas.get():'dtwbelowcasing',
+                                                     self.manmeas.get():'measureddtw',
                                                      self.manlocid.get():'locationid'})
             df['units']=self.manunits.get()
             df = df.set_index(['readingdate'])
-            self.man_entry_df = df[['dtwbelowcasing','locationid','units']]
+            self.man_entry_df = df[['measureddtw','locationid','units']]
             self.man_entry_df = self.man_entry_df[self.man_entry_df['locationid']==int(self.reallocid.get())]
 
         if 'man_entry_df' in self.__dict__.keys():
             framename = 'Man Data'
+            #TODO destroy framename by the same name
             new_frame = ttk.Frame(self.notebook)
             self.notebook.add(new_frame, text=framename)
             panedframe = ttk.Panedwindow(new_frame, orient=VERTICAL)
@@ -285,7 +329,7 @@ class Feedback:
             pt = pandastable.Table(tableframe, dataframe=self.man_entry_df.reset_index(),
                                    showtoolbar=True, showstatusbar=True)
             pt.show()
-            self.make_graph(graphframe, framename=framename, plotvar='dtwbelowcasing')
+            self.make_graph(graphframe, framename=framename, plotvar='measureddtw')
 
     def combodateassign(self, cmbo):
         print(cmbo.get())
@@ -351,7 +395,7 @@ class Feedback:
             if 'man_entry_df' in self.__dict__.keys():
                 df = self.man_entry_df
                 ax.scatter(df.index, df[plotvar])
-                ax.set_ylabel(f"Depth To Water {self.manunits}")
+                ax.set_ylabel(f"Depth To Water {self.manunits.get()}")
         elif framename == 'Well Baro':
             if 'alignwellbaro' in self.__dict__.keys():
                 df = self.alignwellbaro
@@ -361,6 +405,17 @@ class Feedback:
                 ax2 = ax.twinx()
                 ax2.plot(df.index, df['barometer'], color='blue', label='Baro')
                 ax2.set_ylabel('Baro Pressure', color='blue')
+        elif framename == 'Fixed Drift':
+            if 'wellbarofixed' in self.__dict__.keys():
+                df1 = self.wellbarofixed.set_index('datetime')
+                plotvar = 'DTW_WL'
+                ax.plot(df1.index, df1[plotvar], color='red', label='Well')
+                df2 = self.man_entry_df
+                ax.scatter(df2.index, df2['measureddtw'])
+                ax.set_ylabel(f"Depth To Water {self.manunits.get()}")
+                ax.set_xlim(df1.first_valid_index()-pd.Timedelta('3 days'),
+                            df1.last_valid_index()+pd.Timedelta('3 days'),)
+
 
         #self.line, = ax.plot(df.index, df[plotvar])
 
