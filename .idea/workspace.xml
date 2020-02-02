@@ -5,7 +5,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="added gui">
+      <change afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/rSettings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/loggerloader/GeologicalSurvey.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/loggerloader/llgui.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/loggerloader/scratch2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/loggerloader.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/loggerloader.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/loggerloader/loader.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/loader.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/setup.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -182,6 +191,9 @@
       <module name="loggerloader" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="C:\ProgramData\Anaconda3\python.exe" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/loggerloader" />
       <option name="IS_MODULE_SDK" value="false" />
@@ -271,10 +283,10 @@
     </configuration>
     <list>
       <item itemvalue="Python.llgui" />
+      <item itemvalue="Python.scratch2" />
+      <item itemvalue="Python tests.Doctest get_man_gw_elevs" />
       <item itemvalue="Python tests.Nosetests for test.testcalc_drift" />
       <item itemvalue="Python tests.Nosetests for test.testget_breakpoints" />
-      <item itemvalue="Python tests.Doctest get_man_gw_elevs" />
-      <item itemvalue="Python.scratch2" />
     </list>
     <recent_temporary>
       <list>
@@ -779,6 +791,10 @@
       <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state width="1348" height="227" key="GridCell.Tab.0.right/0.40.1368.872@0.40.1368.872" timestamp="1580613848259" />
+    <state x="397" y="193" width="937" height="564" key="MultipleFileMergeDialog" timestamp="1580684461164">
+      <screen x="0" y="40" width="1368" height="872" />
+    </state>
+    <state x="397" y="193" width="937" height="564" key="MultipleFileMergeDialog/0.40.1368.872@0.40.1368.872" timestamp="1580684461164" />
     <state x="331" y="87" key="SettingsEditor" timestamp="1580481251969">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
