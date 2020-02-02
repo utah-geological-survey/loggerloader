@@ -4,11 +4,10 @@ import io
 import os
 import glob
 import re
+import sqlalchemy
+import pytz
 
-try:
-    from urllib.request import urlopen
-except ImportError:
-    import ullib2.urlopen as urlopen
+from urllib.request import urlopen
 
 import json
 
@@ -31,44 +30,37 @@ try:
 except AttributeError:
     pass
 
-try:
-    import arcpy
 
-    arcpy.env.overwriteOutput = True
+import importlib.util
 
-except ImportError:
-    pass
+spec = importlib.util.spec_from_file_location("dbconnect", "G:/My Drive/Python/dbconnect.py")
+dbconnect = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(dbconnect)
+engine = dbconnect.postconn()
+connection = dbconnect.sqlconnect()
 
 
-def printmes(x):
-    """Attempts to turn print statements into messages in ArcGIS tools.
-    If arcpy is not present, just a print statement is returned.
-
-    Args:
-        x: intended print statement
-
-    Returns:
-        printed statement
-
-    Examples:
-        >>> printmes("this tool works!")
-        this tool works!
-    """
-
-    try:
-        from arcpy import AddMessage
-        AddMessage(x)
-        print(x)
-    except ModuleNotFoundError:
-        print(x)
+class Color:
+    """ https://stackoverflow.com/questions/8924173/how-do-i-print-bold-text-in-python"""
+    PURPLE = '\033[95m'
+    CYAN = '\033[96m'
+    DARKCYAN = '\033[36m'
+    BLUE = '\033[94m'
+    GREEN = '\033[92m'
+    YELLOW = '\033[93m'
+    RED = '\033[91m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+    END = '\033[0m'
 
 
 # -----------------------------------------------------------------------------------------------------------------------
 # These functions align relative transducer reading to manual data
 
+
 def get_breakpoints(manualfile, well, wl_field='corrwl'):
-    """
-    Finds important break-point dates in well file that match manual measurements and mark end and beginning times.
+    """Finds important break-point dates in well file that match manual measurements
+    and mark end and beginning times.
     The transducer file will be split into chunks based on these dates to be processed for drift and corrected.
 
     Args:
@@ -97,15 +89,18 @@ def get_breakpoints(manualfile, well, wl_field='corrwl'):
 
     wellnona = well.dropna(subset=[wl_field])
 
+    # add first transducer time if it preceeds first manual measurement
     if manualfile.first_valid_index() > wellnona.first_valid_index():
         breakpoints.append(wellnona.first_valid_index())
 
+    # add all manual measurements
     for i in range(len(manualfile)):
-        breakpoints.append(fcl(wellnona, manualfile.index[i]).name)
+        # breakpoints.append(fcl(wellnona, manualfile.index[i]).name)
+        breakpoints.append(manualfile.index[i])
 
+    # add last transducer time if it is after last manual measurement
     if manualfile.last_valid_index() < wellnona.last_valid_index():
         breakpoints.append(wellnona.last_valid_index())
-
 
     breakpoints = pd.Series(breakpoints)
     breakpoints = pd.to_datetime(breakpoints)
@@ -115,7 +110,9 @@ def get_breakpoints(manualfile, well, wl_field='corrwl'):
     breakpoints = breakpoints.values
     return breakpoints
 
-def pull_closest_well_data(wellid, breakpoint1, conn_file_root, timedel = 3):
+
+def pull_closest_well_data(wellid, breakpoint1, conn_file_root, timedel=3,
+                           readtable='ugs_gw_reading', timezone=None):
     """
     Finds date and depth to water in database that is closest to, but not greater than, the date entered (breakpoint1)
 
@@ -124,6 +121,8 @@ def pull_closest_well_data(wellid, breakpoint1, conn_file_root, timedel = 3):
         breakpoint1 (str):  Datetime closest to the begginging of the breakpoint
         conn_file_root (str): SDE connection file location
         timedel (int):  Amount of time, in days to search for readings in the database
+        readtable (str): database table in which readings reside
+        timezone (str): Timezone of data; defaults to none
 
     Returns:
 
@@ -131,41 +130,61 @@ def pull_closest_well_data(wellid, breakpoint1, conn_file_root, timedel = 3):
 
     Examples:
 
-        >>> enviro = "C:/Users/paulinkenbrandt/AppData/Roaming/Esri/Desktop10.6/ArcCatalog/UGS_SDE.sde"
-        >>> pull_closest_well_data(1001, '1/1/2014', enviro)
+        >>> engine = dbconnect.postconn()
+        >>> pull_closest_well_data(1001, '1/1/2014', engine)
         ['1/1/2014', -7.22]
 
-        >>> enviro = "C:/Users/paulinkenbrandt/AppData/Roaming/Esri/Desktop10.6/ArcCatalog/UGS_SDE.sde"
-        >>> pull_closest_well_data(10, '2011-10-24', enviro)
+        >>> engine = dbconnect.postconn()
+        >>> pull_closest_well_data(10, '2011-10-24', engine)
         ['10/23/2011 11:00:26 PM', -17.05]
 
     """
 
-    SQLm = """SELECT TOP 1 * FROM UGGP.UGGPADMIN.UGS_GW_reading
-    WHERE LOCATIONID = {:} AND READINGDATE >= '{:%Y-%m-%d %M:%H}' 
-    AND READINGDATE <= '{:%Y-%m-%d %M:%H}' 
-    ORDER BY READINGDATE DESC;""".format(wellid,
-                                         pd.to_datetime(breakpoint1) - datetime.timedelta(days=timedel),
-                                         pd.to_datetime(breakpoint1))
-    conn1 = arcpy.ArcSDESQLExecute(conn_file_root)
-    egdb = conn1.execute(SQLm)
-    if type(egdb) == bool and egdb == True:
-        lev = None
-        levdt = None
-    elif egdb[0][2] is None:
-        lev = None
-        levdt = None
+    sqlm = """SELECT * FROM {:}
+    WHERE locationid = {:} AND readingdate >= '{:%Y-%m-%d %M:%H}' 
+    AND readingdate <= '{:%Y-%m-%d %M:%H}' 
+    ORDER BY readingdate DESC
+    limit 1;""".format(readtable, wellid,
+                       pd.to_datetime(breakpoint1) - datetime.timedelta(days=timedel),
+                       pd.to_datetime(breakpoint1))
+
+    if timezone is None:
+        df = pd.read_sql(sqlm, con=conn_file_root,
+                         parse_dates={'readingdate': '%Y-%m-%d %H:%M'},
+                         index_col=['readingdate'])
     else:
-        levdt = pd.to_datetime(egdb[0][1])
-        if type(levdt) == pd.core.indexes.datetimes.DatetimeIndex:
-            levdt = levdt[0]
-        lev = egdb[0][2]
-        if type(lev) == np.ndarray:
-            lev = lev[0]* -1
-        else:
-            lev = (egdb[0][2]) * -1
+        df = pd.read_sql(sqlm, con=conn_file_root,
+                         parse_dates={'readingdate': '%Y-%m-%d %H:%M:%s-%z'},
+                         index_col=['readingdate'])
+
+    if pd.isna(df['measureddtw'].values):
+        lev = None
+        levdt = None
+    elif timezone is None:
+        try:
+            lev = df['measureddtw'].values
+            if type(lev) == np.ndarray:
+                lev = lev[0]
+            levdt = pd.to_datetime(df.index)
+            if type(levdt) == pd.core.indexes.datetimes.DatetimeIndex:
+                levdt = levdt[0]
+        except IndexError:
+            lev = None
+            levdt = None
+    else:
+        try:
+            lev = df['measureddtw'].values
+            if type(lev) == np.ndarray:
+                lev = lev[0]
+            levdt = pd.to_datetime(df.index, utc=True).tz_convert('MST').tz_localize(None)
+            if type(levdt) == pd.core.indexes.datetimes.DatetimeIndex:
+                levdt = levdt[0]
+        except IndexError:
+            lev = None
+            levdt = None
 
     return levdt, lev
+
 
 def calc_slope_and_intercept(first_man, first_man_julian_date, last_man, last_man_julian_date, first_trans,
                              first_trans_julian_date,
@@ -183,7 +202,7 @@ def calc_slope_and_intercept(first_man, first_man_julian_date, last_man, last_ma
         first_trans (float): first transducer reading
         first_trans_julian_date (float):  julian date of first manual reading
         last_trans (float): last (most recent) transducer reading
-        last_trans_julian_date (float): julain date of last transducer reading
+        last_trans_julian_date (float): julian date of last transducer reading
 
     Returns:
         slope, intercept, manual slope, transducer slope, drift
@@ -203,7 +222,10 @@ def calc_slope_and_intercept(first_man, first_man_julian_date, last_man, last_ma
     drift = 0.00001
 
     if first_man is None:
-        last_offset = last_trans - last_man
+        try:
+            last_offset = last_trans - last_man
+        except TypeError:
+            last_offset = 0
         first_man_julian_date = first_trans_julian_date
         first_man = first_trans
     elif last_man is None:
@@ -225,6 +247,7 @@ def calc_slope_and_intercept(first_man, first_man_julian_date, last_man, last_ma
 
     return new_slope, b, slope_man, slope_trans
 
+
 def calc_drift(df, corrwl, outcolname, m, b):
     """
     Uses slope and offset from calc_slope_and_intercept to correct for transducer drift
@@ -241,7 +264,8 @@ def calc_drift(df, corrwl, outcolname, m, b):
 
     Examples:
 
-        >>> df = pd.DataFrame({'date':pd.date_range(start='1900-01-01',periods=101,freq='1D'),"data":[i*0.1+2 for i in range(0,101)]});
+        >>> df = pd.DataFrame({'date':pd.date_range(start='1900-01-01',periods=101,freq='1D'),
+        "data":[i*0.1+2 for i in range(0,101)]});
         >>> df.set_index('date',inplace=True);
         >>> df['julian'] = df.index.to_julian_date();
         >>> print(calc_drift(df,'data','gooddata',0.05,1)['gooddata'][-1])
@@ -258,42 +282,47 @@ def calc_drift(df, corrwl, outcolname, m, b):
     drift = m * total_date_change
     df.loc[:, 'datechange'] = df['julian'] - initial_julian_date
 
-    df.loc[:, 'DRIFTCORRECTION'] = df['datechange'].apply(lambda x: x * m, 1)
-    df.loc[:, 'driftcorrwoffset'] = df['DRIFTCORRECTION'] + b
+    df.loc[:, 'driftcorrection'] = df['datechange'].apply(lambda x: x * m, 1)
+    df.loc[:, 'driftcorrwoffset'] = df['driftcorrection'] + b
     df.loc[:, outcolname] = df[corrwl] - df['driftcorrwoffset']
     df.sort_index(inplace=True)
 
     return df, drift
 
-def calc_drift_features(first_man, first_man_date, last_man, last_man_date, first_trans, first_trans_date,
-               last_trans, last_trans_date, b, m, slope_man, slope_trans, drift):
-    """
 
-    :param first_man: First manual measurement
-    :param first_man_date: Date of first manual measurement
-    :param last_man: Last manual measurement
-    :param last_man_date: Date of last manual measurement
-    :param first_trans: First Transducer Reading
-    :param first_trans_date: Date of first transducer reading
-    :param last_trans: Last transducer reading
-    :param last_trans_date: Date of last transducer reading
-    :param b: Offset (y-intercept) from calc_slope_and_intercept
-    :param m: slope from calc_slope_and_intercept
-    :param slope_man: Slope of manual measurements
-    :param slope_trans: Slope of transducer measurments
-    :param drift: drift from calc slope and intercept
-    :return: dictionary drift_features with standardized keys
+def calc_drift_features(first_man, first_man_date, last_man, last_man_date, first_trans, first_trans_date,
+                        last_trans, last_trans_date, b, m, slope_man, slope_trans, drift) -> dict:
+    """Packages all drift calculations into a dictionary. Used by `fix_drift` function.
+
+    Args:
+        first_man (float): First manual measurement
+        first_man_date (datetime): Date of first manual measurement
+        last_man (float): Last manual measurement
+        last_man_date (datetime): Date of last manual measurement
+        first_trans (float): First Transducer Reading
+        first_trans_date (datetime): Date of first transducer reading
+        last_trans (float): Last transducer reading
+        last_trans_date (datetime): Date of last transducer reading
+        b (float): Offset (y-intercept) from calc_slope_and_intercept
+        m (float): slope from calc_slope_and_intercept
+        slope_man (float): Slope of manual measurements
+        slope_trans (float): Slope of transducer measurments
+        drift (float): drift from calc slope and intercept
+
+    Returns:
+        dictionary drift_features with standardized keys
     """
 
     drift_features = {'t_beg': first_trans_date, 'man_beg': first_man_date, 't_end': last_trans_date,
-                         'man_end': last_man_date, 'slope_man': slope_man, 'slope_trans': slope_trans,
-                         'intercept': b, 'slope': m,
-                         'first_meas': first_man, 'last_meas': last_man,
-                         'first_trans': first_trans, 'last_trans': last_trans, 'drift':drift}
+                      'man_end': last_man_date, 'slope_man': slope_man, 'slope_trans': slope_trans,
+                      'intercept': b, 'slope': m,
+                      'first_meas': first_man, 'last_meas': last_man,
+                      'first_trans': first_trans, 'last_trans': last_trans, 'drift': drift}
     return drift_features
 
-def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolname='DTW_WL', wellid=None,
-              conn_file_root=None, well_table=None, search_tol=3):
+
+def fix_drift(well, manualfile, corrwl='corrwl', manmeas='measureddtw', outcolname='DTW_WL', wellid=None,
+              conn_file_root=None, well_table=None, search_tol=3, trim_end=True):
     """Remove transducer drift from nonvented transducer data. Faster and should produce same output as fix_drift_stepwise
 
     Args:
@@ -302,12 +331,21 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
         corrwl (str): name of column in well DataFrame containing transducer data to be corrected
         manmeas (str): name of column in manualfile Dataframe containing manual measurement data
         outcolname (str): name of column resulting from correction
+        wellid (int): unique id for well being analyzed; defaults to None
+        conn_file_root: database connection engine; defaults to None
+        well_table (str): name of table in database that contains well information; Defaults to None
+        search_tol (int): Amount of time, in days to search for readings in the database; Defaults to 3
+        trim_end (bool): Removes jumps from ends of data breakpoints that exceed a threshold; Defaults to True
 
     Returns:
-        wellbarofixed (pandas.core.frame.DataFrame):
-            corrected water levels with bp removed
-        driftinfo (pandas.core.frame.DataFrame):
-            dataframe of correction parameters
+        (tuple): tuple containing:
+
+            - wellbarofixed (pandas.core.frame.DataFrame):
+                corrected water levels with bp removed
+            - driftinfo (pandas.core.frame.DataFrame):
+                dataframe of correction parameters
+            - max_drift (float):
+                maximum drift for all breakpoints
 
     Examples:
 
@@ -346,6 +384,10 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
         bracketedwls[i] = well.loc[
             (pd.to_datetime(well.index) >= breakpoints[i]) & (pd.to_datetime(well.index) < breakpoints[i + 1])]
         df = bracketedwls[i]
+        df['datetime'] = df.index
+        df = df.dropna(subset=[corrwl])
+        if trim_end:
+            df = dataendclean(df, 'corrwl', jumptol=0.5)
 
         if len(df) > 0:
             print("----- Well {:} -----".format(wellid))
@@ -354,31 +396,20 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
             df.loc[:, 'julian'] = df.index.to_julian_date()
 
             if wellid:
-                breakpoint1 = breakpoints[i]
-                breakpoint2 = breakpoints[i + 1]
-                offset = well_table.loc[wellid, 'Offset']
-                levdt, lev = pull_closest_well_data(wellid, breakpoint1, conn_file_root, timedel=search_tol)
-                if pd.isna(lev):
-                    pass
-                else:
-                    lev = lev - offset
+                # pull existing data if a wellid is given
+                breakpoint1 = fcl(df, breakpoints[i]).name
+                breakpoint2 = fcl(df, breakpoints[i + 1]).name
+                offset = well_table.loc[wellid, 'stickup']
+                print(breakpoint1)
+                levdt, lev = pull_closest_well_data(wellid, breakpoint1,
+                                                    conn_file_root, timedel=search_tol)
 
             else:
                 lev = None
                 levdt = None
 
-
-            #first_trans = fcl(df[corrwl], breakpoints[i])  # last transducer measurement
-            #last_trans = fcl(df[corrwl], breakpoints[i + 1])  # first transducer measurement
-            df = df.dropna(subset=[corrwl])
-            first_trans = df.loc[df.first_valid_index(),corrwl]
-            last_trans = df.loc[df.last_valid_index(),corrwl]
-            first_trans_julian_date = df.loc[df.first_valid_index(), 'julian']
-            last_trans_julian_date = df.loc[df.last_valid_index(), 'julian']
-            first_trans_date = df.first_valid_index()
-            last_trans_date = df.last_valid_index()
-
-            man_df2 = fcl(manualfile, breakpoints[i + 1])
+            # first_trans = fcl(df[corrwl], breakpoints[i])  # last transducer measurement
+            # last_trans = fcl(df[corrwl], breakpoints[i + 1])  # first transducer measurement
 
             first_man_julian_date = fcl(manualfile['julian'], breakpoints[i])
             last_man_julian_date = fcl(manualfile['julian'], breakpoints[i + 1])
@@ -387,8 +418,18 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
             first_man = fcl(manualfile[manmeas], breakpoints[i])  # first manual measurement
             last_man = fcl(manualfile[manmeas], breakpoints[i + 1])  # last manual measurement
 
-            if first_man_date - first_trans_date > datetime.timedelta(days=search_tol):
-                print('No initial actual manual measurement within {:} days of {:}.'.format(search_tol,first_trans_date))
+            first_trans = df.loc[df.first_valid_index(), corrwl]
+            last_trans = df.loc[df.last_valid_index(), corrwl]
+            first_trans_julian_date = df.loc[df.first_valid_index(), 'julian']
+            last_trans_julian_date = df.loc[df.last_valid_index(), 'julian']
+            first_trans_date = df.first_valid_index()
+            last_trans_date = df.last_valid_index()
+
+            man_df2 = fcl(manualfile, breakpoints[i + 1])
+
+            if np.abs(first_man_date - first_trans_date) > datetime.timedelta(days=search_tol):
+                print(
+                    'No initial actual manual measurement within {:} days of {:}.'.format(search_tol, first_trans_date))
 
                 if (levdt is not None) and (
                         first_trans_date - datetime.timedelta(days=search_tol) < pd.to_datetime(levdt)):
@@ -396,12 +437,12 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
                     first_man = lev
                     first_man_julian_date = pd.to_datetime(levdt).to_julian_date()
                 else:
-                    print('No initial transducer measurement within {:} days of {:}.'.format(search_tol, first_trans_date))
+                    print('No initial transducer measurement within {:} days of {:}.'.format(search_tol,
+                                                                                             first_man_date))
                     first_man = None
                     first_man_date = None
 
-            if last_trans_date + datetime.timedelta(days=search_tol) < last_man_date or last_trans_date - datetime.timedelta(
-                    days=search_tol) > last_man_date:
+            if np.abs(last_trans_date - last_man_date) > datetime.timedelta(days=search_tol):
                 print('No final manual measurement within {:} days of {:}.'.format(search_tol, last_trans_date))
                 last_man = None
                 last_man_date = None
@@ -413,28 +454,34 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
 
             # intercept of line = value of first manual measurement
             if pd.isna(first_man):
-                printmes('First manual measurement missing between {:} and {:}'.format(breakpoints[i], breakpoints[i + 1]))
-                printmes("Last man = {:}\nLast man date = {:%Y-%m-%d %H:%M}".format(last_man, last_man_date))
+                print('First manual measurement missing between {:} and {:}'.format(breakpoints[i], breakpoints[i + 1]))
+                print("Last man = {:}\nLast man date = {:%Y-%m-%d %H:%M}".format(last_man, last_man_date))
+                print("First trans = {:0.3f}, Last trans = {:0.3f}".format(first_trans, last_trans))
+                print("First trans date = {:%Y-%m-%d %H:%M}".format(first_trans_date))
+                print("Last trans date = {:%Y-%m-%d %H:%M}".format(last_trans_date))
 
             elif pd.isna(last_man):
-                printmes('Last manual measurement missing between {:} and {:}'.format(breakpoints[i], breakpoints[i + 1]))
-                printmes("First man = {:}\nFirst man date = {:%Y-%m-%d %H:%M}".format(first_man, first_man_date))
+                print('Last manual measurement missing between {:} and {:}'.format(breakpoints[i], breakpoints[i + 1]))
+                print("First man = {:}\nFirst man date = {:%Y-%m-%d %H:%M}".format(first_man, first_man_date))
+                print("First trans = {:0.3f}, Last trans = {:0.3f}".format(first_trans, last_trans))
+                print("First trans date = {:%Y-%m-%d %H:%M}".format(first_trans_date))
+                print("Last trans date = {:%Y-%m-%d %H:%M}".format(last_trans_date))
             else:
 
-                printmes("First man = {:0.3f}, Last man = {:0.3f}".format(first_man,last_man))
-                printmes("First man date = {:%Y-%m-%d %H:%M}".format(first_man_date))
-                printmes("Last man date = {:%Y-%m-%d %H:%M}".format(last_man_date))
+                print("First man = {:0.3f}, Last man = {:0.3f} (from ground)".format(first_man, last_man))
+                print("First man date = {:%Y-%m-%d %H:%M}".format(first_man_date))
+                print("Last man date = {:%Y-%m-%d %H:%M}".format(last_man_date))
 
-                printmes("First trans = {:0.3f}, Last trans = {:0.3f}".format(first_trans,last_trans))
-                printmes("First trans date = {:%Y-%m-%d %H:%M}".format(first_trans_date))
-                printmes("Last trans date = {:%Y-%m-%d %H:%M}".format(last_trans_date))
+                print("First trans = {:0.3f}, Last trans = {:0.3f}".format(first_trans, last_trans))
+                print("First trans date = {:%Y-%m-%d %H:%M}".format(first_trans_date))
+                print("Last trans date = {:%Y-%m-%d %H:%M}".format(last_trans_date))
 
             bracketedwls[i], drift = calc_drift(df, corrwl, outcolname, slope, b)
-            printmes("Manual Slope = {:}".format(slope_man))
-            printmes("Transducer Slope = {:}".format(slope_trans))
-            printmes("Slope = {:0.3f} and Intercept = {:0.3f}".format(slope, b))
-            printmes("Drift = {:0.3f}".format(drift))
-            printmes(" -------------------")
+            print("Manual Slope = {:}".format(slope_man))
+            print("Transducer Slope = {:}".format(slope_trans))
+            print("Slope = {:0.3f} and Intercept = {:0.3f}".format(slope, b))
+            print("{:}Drift = {:0.3f} {:}".format(Color.BOLD, drift, Color.END))
+            print(" -------------------")
             drift_features[i] = calc_drift_features(first_man, first_man_date, last_man, last_man_date, first_trans,
                                                     first_trans_date,
                                                     last_trans, last_trans_date, b, slope, slope_man, slope_trans,
@@ -442,7 +489,7 @@ def fix_drift(well, manualfile, corrwl='corrwl', manmeas='MeasuredDTW', outcolna
         else:
             pass
 
-    wellbarofixed = pd.concat(bracketedwls)
+    wellbarofixed = pd.concat(bracketedwls, sort=True)
     wellbarofixed.reset_index(inplace=True)
     wellbarofixed.set_index(dtnm, inplace=True)
     wellbarofixed.sort_index(inplace=True)
@@ -463,24 +510,24 @@ def pull_elev_and_stickup(site_number, manual, well_table=None, conn_file_root=N
         stable_elev (bool): True if well elevation should be pulled from well_table; False if elevation is from manual readings; default is True
 
     Returns:
-        stickup, well_elevation
+        stickup (float), well_elevation (float)
 
     Examples:
 
         >>> enviro = "C:/Users/paulinkenbrandt/AppData/Roaming/Esri/Desktop10.6/ArcCatalog/UGS_SDE.sde"
-        >>> manual = {'dates':['6/11/1991','2/1/1999','8/5/2001','7/14/2000','8/19/2002','4/2/2005'], 'MeasuredDTW':[1,10,14,52,10,8],'LOCATIONID':[10,10,10,10,10,10],'Current Stickup Height':[0.5,0.1,0.2,0.5,0.5,0.7]}
+        >>> manual = {'dates':['6/11/1991','2/1/1999','8/5/2001','7/14/2000','8/19/2002','4/2/2005'], 'measureddtw':[1,10,14,52,10,8],'locationid':[10,10,10,10,10,10],'current_stickup_height':[0.5,0.1,0.2,0.5,0.5,0.7]}
         >>> man_df = pd.DataFrame(manual)
         >>> pull_elev_and_stickup(10,man_df,conn_file_root=enviro)
         (1.71, 6180.2)
 
         >>> enviro = "C:/Users/paulinkenbrandt/AppData/Roaming/Esri/Desktop10.6/ArcCatalog/UGS_SDE.sde"
-        >>> manual = {'dates':['6/11/1991','2/1/1999','8/5/2001','7/14/2000','8/19/2002','4/2/2005'], 'MeasuredDTW':[1,10,14,52,10,8],'LOCATIONID':[10,10,10,10,10,10],'Current Stickup Height':[0.5,0.1,0.2,0.5,0.5,0.7]}
+        >>> manual = {'dates':['6/11/1991','2/1/1999','8/5/2001','7/14/2000','8/19/2002','4/2/2005'], 'measureddtw':[1,10,14,52,10,8],'locationid':[10,10,10,10,10,10],'current_stickup_height':[0.5,0.1,0.2,0.5,0.5,0.7]}
         >>> man_df = pd.DataFrame(manual)
         >>> pull_elev_and_stickup(10,man_df,conn_file_root=enviro, stable_elev=False)
         (0.7, 6180.2)
     """
 
-    man = manual[manual['LOCATIONID'] == int(site_number)]
+    man = manual[manual['locationid'] == int(site_number)]
 
     if well_table is None:
         well_table = pull_well_table(conn_file_root)
@@ -488,13 +535,14 @@ def pull_elev_and_stickup(site_number, manual, well_table=None, conn_file_root=N
         well_table = well_table
 
     stdata = well_table[well_table.index == int(site_number)]
-    well_elev = float(stdata['VerticalMeasure'].values[0])
+    well_elev = float(stdata['verticalmeasure'].values[0])
     stickup = get_stickup(stdata, site_number, stable_elev=stable_elev, man=man)
     return stickup, well_elev
 
-def pull_well_table(conn_file_root, loc_table = "UGGP.UGGPADMIN.UGS_NGWMN_Monitoring_Locations"):
+
+def pull_well_table(conn_file_root, loc_table="ugs_ngwmn_monitoring_locations"):
     """
-    Extracts Monitoring Location Table from SDE and converts it into a pandas DataFrame.
+    Extracts Monitoring Location Table from database and converts it into a pandas DataFrame.
     Queries based on if AlternateID exists.
 
     Args:
@@ -507,29 +555,25 @@ def pull_well_table(conn_file_root, loc_table = "UGGP.UGGPADMIN.UGS_NGWMN_Monito
     Examples:
         >>> enviro = "C:/Users/paulinkenbrandt/AppData/Roaming/Esri/Desktop10.6/ArcCatalog/UGS_SDE.sde"
         >>> df = pull_well_table(enviro)
-        >>> print(df.loc[10, 'LocationName'])
+        >>> print(df.loc[10, 'locationname'])
         PW04B
     """
 
     # populate dataframe with data from SDE well table
-    field_names = ['LocationID', 'LocationName', 'LocationType', 'LocationDesc', 'AltLocationID', 'VerticalMeasure',
-                   'VerticalUnit', 'WellDepth', 'SiteID', 'Offset', 'LoggerType', 'BaroEfficiency',
-                   'Latitude', 'Longitude', 'BaroEfficiencyStart', 'BaroLoggerType']
 
-    locquery = "WHERE AltLocationID is not Null\n"
-    sql_sn = "ORDER BY AltLocationID ASC;"
+    sql = """SELECT locationid, locationname, locationtype, locationdesc, 
+    altlocationid, verticalmeasure, verticalunit, welldepth, siteid, stickup,
+    loggertype, baroefficiency, latitude, longitude, baroefficiencystart, barologgertype
+    FROM {:}
+    WHERE altlocationid <> 0
+    ORDER BY altlocationid ASC;""".format(loc_table)
 
-    fields = ",".join([str(i) for i in field_names])
-    select_statement = "SELECT {:} FROM {:}\n".format(fields, loc_table)
-    SQL = select_statement + locquery + sql_sn
+    df = pd.read_sql(sql, conn_file_root)
 
-    conn = arcpy.ArcSDESQLExecute(conn_file_root)
-    egdb_return = conn.execute(SQL)
-
-    df = pd.DataFrame(egdb_return, columns=field_names)
-    df.set_index('AltLocationID',inplace=True)
+    df.set_index('altlocationid', inplace=True)
 
     return df
+
 
 def get_stickup(stdata, site_number, stable_elev=True, man=None):
     """
@@ -542,66 +586,105 @@ def get_stickup(stdata, site_number, stable_elev=True, man=None):
         man (pd.DataFrame): defaults to None; dataframe of manual readings
 
     Returns:
-        stickup height
+        stickup height (float)
 
     Examples:
 
-        >>> stdata = pd.DataFrame({'wellid':[200],'Offset':[0.5],'wellname':['foo']})
+        >>> stdata = pd.DataFrame({'wellid':[200],'stickup':[0.5],'wellname':['foo']})
         >>> get_stickup(stdata, 200)
         0.5
 
-        >>> stdata = pd.DataFrame({'wellid':[200],'Offset':[None],'wellname':['foo']})
+        >>> stdata = pd.DataFrame({'wellid':[200],'stickup':[None],'wellname':['foo']})
         >>> get_stickup(stdata, 200)
         Well ID 200 missing stickup!
         0
 
-        >>> stdata = pd.DataFrame({'wellid':[10],'Offset':[0.5],'wellname':['foo']})
-        >>> manual = {'dates':['6/11/1991','2/1/1999','8/5/2001','7/14/2000','8/19/2002','4/2/2005'], 'MeasuredDTW':[1,10,14,52,10,8],'LOCATIONID':[10,10,10,10,10,10],'Current Stickup Height':[0.8,0.1,0.2,0.5,0.5,0.7]}
+        >>> stdata = pd.DataFrame({'wellid':[10],'stickup':[0.5],'wellname':['foo']})
+        >>> manual = {'dates':['6/11/1991','2/1/1999','8/5/2001','7/14/2000','8/19/2002','4/2/2005'], 'measureddtw':[1,10,14,52,10,8],'locationid':[10,10,10,10,10,10],'current_stickup_height':[0.8,0.1,0.2,0.5,0.5,0.7]}
         >>> man_df = pd.DataFrame(manual)
         >>> get_stickup(stdata, 10, stable_elev=False, man=man_df)
         0.7
     """
     if stable_elev:
         # Selects well stickup from well table; if its not in the well table, then sets value to zero
-        if pd.isna(stdata['Offset'].values[0]):
+        if pd.isna(stdata['stickup'].values[0]):
             stickup = 0
-            printmes('Well ID {:} missing stickup!'.format(site_number))
+            print('Well ID {:} missing stickup!'.format(site_number))
         else:
-            stickup = float(stdata['Offset'].values[0])
+            stickup = float(stdata['stickup'].values[0])
     else:
         # uses measured stickup data from manual table
-        stickup = man.loc[man.last_valid_index(), 'Current Stickup Height']
+        stickup = man.loc[man.last_valid_index(), 'current_stickup_height']
     return stickup
 
-def get_man_gw_elevs(manual, stickup, well_elev):
-    """
-    Gets basic well parameters and most recent groundwater level data for a well id for dtw calculations.
-    :param manual: Pandas Dataframe of manual data
-    :param stable_elev: boolean; if False, stickup is retrieved from the manual measurements table;
-    :return: manual table with new fields for depth to water and groundwater elevation
+
+def get_man_gw_elevs(manual, stickup, well_elev, stbelev=True):
+    """Gets basic well parameters and most recent groundwater level data for a well id for dtw calculations.
+
+    Args:
+        manual (pd.DataFrame): Pandas Dataframe of manual data
+        stickup (float): stickup of well (distance from mp to ground)
+        well_elev (float): elevation of well (ground surface elevation at wellhead)
+        stbelev (bool): boolean; if False, stickup is retrieved from the manual measurements table;
+
+    Returns:
+        manual table with new fields for depth to water (negative for below ground) and groundwater elevation
+
+    Examples:
+        >>> manual = {'dates':['6/11/1991','2/1/1999'],'dtwbelowcasing':[17,22]}
+        >>> man_df = pd.DataFrame(manual)
+        >>> man_df.set_index('dates',inplace=True)
+        >>> stickup = 1.5
+        >>> well_elevation = 4050.5
+        >>> man = get_man_gw_elevs(man_df, stickup, well_elevation, stbelev=True)
+        >>> man.loc['6/11/1991','waterelevation']
+        4035.0
+
+        >>> manual = {'dates':['6/11/1991','6/12/1991'],'dtwbelowcasing':[17,17],'current_stickup_height':[1.1,1.2]}
+        >>> man_df = pd.DataFrame(manual)
+        >>> man_df.set_index('dates',inplace=True)
+        >>> stickup = 1.5
+        >>> well_elevation = 4050.5
+        >>> man = get_man_gw_elevs(man_df, stickup, well_elevation, stbelev=False)
+        >>> man.loc['6/11/1991','waterelevation']
+        4034.6
+
     """
 
     # some users might have incompatible column names
-    old_fields = {'DateTime': 'READINGDATE',
-                  'Location ID': 'LOCATIONID',
-                  'Water Level (ft)': 'DTWBELOWCASING'}
+    old_fields = {'DateTime': 'readingdate',
+                  'Location ID': 'locationid',
+                  'Water Level (ft)': 'dtwbelowcasing'}
     manual.rename(columns=old_fields, inplace=True)
 
-    manual.loc[:, 'MeasuredDTW'] = manual['DTWBELOWCASING'] * -1
-    manual.loc[:, 'WATERELEVATION'] = manual['MeasuredDTW'].apply(lambda x: well_elev + (x + stickup), 1)
+    # this allows for variable stickup heights over time
+    if 'current_stickup_height' in manual.columns and stbelev is False:
+        manual.loc[:, 'measureddtw'] = (-1 * manual['dtwbelowcasing']) + manual['current_stickup_height']
+
+    else:
+        # assumes stable stickup height
+        manual.loc[:, 'measureddtw'] = (-1*manual['dtwbelowcasing']) + stickup
+    manual.loc[:, 'waterelevation'] = manual['measureddtw'].apply(lambda x: well_elev + x, 1)
     return manual
 
+
 def get_trans_gw_elevations(df, stickup, well_elev, site_number, level='Level', dtw='DTW_WL'):
-    """
-    This function adds the necessary field names to import well data into the SDE database.
-    :param df: pandas DataFrame of processed well data
-    :param level: raw transducer level from NewTransImp, new_xle_imp, or new_csv_imp functions
-    :param dtw: drift-corrected depth to water from fix_drift function
-    :return: processed df with necessary field names for import
+    """This function adds the necessary field names to import well data into the database.
+
+    Args:
+        df (pd.DataFrame): pandas DataFrame of processed well data
+        well_elev (float): elevation of ground surface at wellhead
+        site_number (int): unique id of monitoring location (well) in database
+        stickup (float): wellhead stickup above ground
+        level (float): raw transducer level from NewTransImp, new_xle_imp, or new_csv_imp functions
+        dtw (float): drift-corrected depth to water from fix_drift function
+
+    Returns:
+        processed df with necessary field names for import
     """
 
-    df['MEASUREDLEVEL'] = df[level]
-    df['MEASUREDDTW'] = df[dtw] * 1
+    df['measuredlevel'] = df[level]
+    df['measureddtw'] = df[dtw] * 1
 
     print([stickup, well_elev, site_number])
     if pd.isna(stickup):
@@ -609,45 +692,46 @@ def get_trans_gw_elevations(df, stickup, well_elev, site_number, level='Level', 
     else:
         pass
 
-    df['DTWBELOWGROUNDSURFACE'] = df['MEASUREDDTW']
+    df['dtwbelowgroundsurface'] = df['measureddtw']
 
     if pd.isna(well_elev):
-        df['WATERELEVATION'] = None
+        df['waterelevation'] = None
     else:
-        df['WATERELEVATION'] = well_elev + df['DTWBELOWGROUNDSURFACE']
+        df['waterelevation'] = well_elev + df['dtwbelowgroundsurface']
 
-    df['LOCATIONID'] = site_number
+    df['locationid'] = site_number
 
     df.sort_index(inplace=True)
 
-    fieldnames = ['READINGDATE', 'MEASUREDLEVEL', 'MEASUREDDTW', 'DRIFTCORRECTION',
-                  'TEMP', 'LOCATIONID', 'BAROEFFICIENCYLEVEL',
-                  'WATERELEVATION']
-
     if 'Temperature' in df.columns:
-        df.rename(columns={'Temperature': 'TEMP'}, inplace=True)
+        df.rename(columns={'Temperature': 'temp'}, inplace=True)
 
-    if 'TEMP' in df.columns:
-        df['TEMP'] = df['TEMP'].apply(lambda x: np.round(x, 4), 1)
+    if 'temp' in df.columns:
+        df['temp'] = df['temp'].apply(lambda x: np.round(x, 4), 1)
     else:
-        df['TEMP'] = None
+        df['temp'] = None
 
-    if 'BAROEFFICIENCYLEVEL' in df.columns:
+    if 'baroefficiencylevel' in df.columns:
         pass
     else:
-        df['BAROEFFICIENCYLEVEL'] = 0
+        df['baroefficiencylevel'] = 0
     # subset bp df and add relevant fields
-    df.index.name = 'READINGDATE'
+    df.index.name = 'readingdate'
 
     subset = df.reset_index()
 
-    return subset, fieldnames
+    return subset
 
 
 def trans_type(well_file):
     """Uses information from the raw transducer file to determine the type of transducer used.
-    :param well_file: full path to raw transducer file
-    :returns: transducer type"""
+
+    Args:
+        well_file: full path to raw transducer file
+
+    Returns:
+        transducer type
+    """
     if os.path.splitext(well_file)[1] == '.xle':
         t_type = 'Solinst'
     elif os.path.splitext(well_file)[1] == '.lev':
@@ -655,12 +739,29 @@ def trans_type(well_file):
     else:
         t_type = 'Global Water'
 
-    printmes('Trans type for well is {:}.'.format(t_type))
+    print('Trans type for well is {:}.'.format(t_type))
     return t_type
 
 
 class PullOutsideBaro(object):
-    def __init__(self, lat, long, begdate=None, enddate=None, bbox=None, rad=30, token=None):
+    """
+    By default, this class aggregates all barometric data within a given area.
+    This function currently does not work due to limits of the API
+
+    Attributes:
+        long (float): longitude of point of interest
+        lat (float): latitude of point of interest
+        begdate (datetime): string of beginning date of requested data; defaults to 2014-11-1
+        enddate (datetime): string of end date of requested data; defaults to today
+        bbox: lat-long bounding box of area of interest; optional
+        rad (float): radius of area of interest; defaults to 30
+        token: api token used to connect to mesowest; can be accessed at https://synopticlabs.org/api/guides/?getstarted
+        timezone: Timezone to use; Defaults to None
+    """
+
+    def __init__(self, long, lat, begdate=None, enddate=None, bbox=None, rad=30, token=None, timezone=None):
+
+        # TODO fix jumps in data created by aggregating station data
         if token:
             self.token = token
         else:
@@ -678,15 +779,29 @@ class PullOutsideBaro(object):
                 print("""No api token.  Please visit https://synopticlabs.org/api/guides/?getstarted to get one.\n
                       Your can create a file called config.py and write `token= 'your api token'` on the first line of the file.""")
 
-        if begdate:
-            self.begdate = begdate
-        else:
-            self.begdate = datetime.datetime(2014, 11, 1)
+            if timezone:
 
-        if enddate:
-            self.enddate = enddate
-        else:
-            self.enddate = datetime.date.today()
+                if begdate:
+                    self.begdate = pd.to_datetime(str(begdate), utc=True)
+                else:
+                    self.begdate = datetime.datetime(2014, 11, 1).replace(tzinfo=timezone.utc)
+
+                if enddate:
+                    self.enddate = pd.to_datetime(str(enddate), utc=True)
+                else:
+                    self.enddate = datetime.datetime.now().replace(tzinfo=timezone.utc)
+
+            else:
+
+                if begdate:
+                    self.begdate = pd.to_datetime(str(begdate), utc=True)
+                else:
+                    self.begdate = datetime.datetime(2014, 11, 1).replace(tzinfo=timezone.utc)
+
+                if enddate:
+                    self.enddate = pd.to_datetime(str(enddate), utc=True)
+                else:
+                    self.enddate = datetime.datetime.now().replace(tzinfo=timezone.utc)
 
         self.station = []
 
@@ -699,14 +814,18 @@ class PullOutsideBaro(object):
         else:
             self.bbox = [self.long - self.rad, self.lat - self.rad, self.long + self.rad, self.lat + self.rad]
 
-    def stationresponse(self, html):
+    @staticmethod
+    def stationresponse(html):
         response = urlopen(html)
         data = response.read().decode("utf-8")
         stations = pd.DataFrame(json.loads(data)['STATION'])
-        stations['start'] = stations['PERIOD_OF_RECORD'].apply(lambda x: pd.to_datetime(x['start']), 1)
-        stations['end'] = stations['PERIOD_OF_RECORD'].apply(lambda x: pd.to_datetime(x['end']), 1)
+        stations['start'] = stations[['PERIOD_OF_RECORD', 'TIMEZONE']].apply(
+            lambda x: pd.to_datetime(x[0]['start']).tz_convert(x[1]), 1)
+        stations['end'] = stations[['PERIOD_OF_RECORD', 'TIMEZONE']].apply(
+            lambda x: pd.to_datetime(x[0]['end']).tz_convert(x[1]), 1)
         stations.drop('PERIOD_OF_RECORD', axis=1, inplace=True)
         stations.sort_values(['DISTANCE'], inplace=True)
+
         return stations
 
     def getstations(self):
@@ -718,8 +837,19 @@ class PullOutsideBaro(object):
     def getstationsrad(self):
         addrs = 'https://api.mesowest.net/v2/stations/metadata?token={:}&vars=pressure&radius={:},{:},{:}'
         html = addrs.format(self.token, self.lat, self.long, self.rad)
-        printmes(html)
+        resp = urlopen(html)
+        data = resp.read().decode("utf-8")
+        summry_cnt = json.loads(data)['SUMMARY']['NUMBER_OF_OBJECTS']
+        while summry_cnt < 1:
+            self.rad += 1
+            html = addrs.format(self.token, self.lat, self.long, self.rad)
+            resp = urlopen(html)
+            data = resp.read().decode("utf-8")
+            summry_cnt = json.loads(data)['SUMMARY']['NUMBER_OF_OBJECTS']
+            # print(html)
+
         stations = self.stationresponse(html)
+        print(html)
         return stations
 
     def select_station(self):
@@ -735,38 +865,95 @@ class PullOutsideBaro(object):
         print(self.station)
         return self.station
 
-    def getbaro(self):
+    def getbaro(self, closest=True):
         """
         &bbox=-120,40,-119,41
         """
         self.select_station()
-        addrs = 'https://api.mesowest.net/v2/stations/timeseries?token={:}&stid={:}&state=ut,wy,id,nv&obtimezone=local&start={:%Y%m%d%H%M}&end={:%Y%m%d%H%M}&vars=pressure&units=pres|mb&output=csv'
+        addrs = 'https://api.mesowest.net/v2/stations/timeseries?token={:}&stid={:}&state=ut,wy,id,nv&obtimezone=utc&start={:%Y%m%d%H%M}&end={:%Y%m%d%H%M}&vars=pressure&units=pres|mb&output=csv'
         bar = {}
+
+        if closest:
+            self.station = self.station[0]
+
         for stat in self.station:
             html = addrs.format(self.token, stat, self.begdate, self.enddate)
-            printmes(html)
-            bar[stat] = pd.read_csv(html, skiprows=[0, 1, 2, 3, 4, 5, 7], index_col=1, parse_dates=True)
-            bar[stat].sort_index(inplace=True)
-        baros = pd.concat(bar)
-        if 'altimeter_set_1' in baros.columns:
-            baros.drop('altimeter_set_1', inplace=True, axis=1)
-        baros.rename(columns={'pressure_set_1d': 'MEASUREDLEVEL'}, inplace=True)
-        baros.index.name = 'READINGDATE'
-        barom = baros.groupby(baros.index.get_level_values(-1)).mean()
-        barom['MEASUREDLEVEL'] = 0.03345526 * barom['MEASUREDLEVEL']
-        barom = barom.resample('1H').mean()
-        return barom
+            print(html)
+            bartemp = pd.read_csv(html, skiprows=[0, 1, 2, 3, 4, 5, 7], index_col=1)
+            bartemp.index = pd.to_datetime(bartemp.index, format='%Y-%m-%dT%H:%M:%SZ', utc=True).tz_convert(
+                'MST').tz_localize(None)
+            bartemp = bartemp.resample('1H').mean()
+            bar[stat] = bartemp.sort_index()
+
+        # baros = pd.concat(bar)
+        barod = pd.concat(bar, axis=1)
+        dropcols = ['altimeter_set_1', 'altimeter_set_1d']
+        for col in dropcols:
+            if col in barod.columns.get_level_values(1):
+                barod = barod.drop(col, axis=1, level=1)
+        barod.columns = barod.columns.droplevel(-1)
+        # barod['measuredlevel'] = barod.mean(axis=1)
+        baroe = barod
+        colmeans = baroe.mean(axis=0)
+
+        for col in baroe.columns:
+            # colmean = colmeans[col]
+            try:
+                baroe[col] = baroe[col].diff()
+            except:
+                baroe = baroe.drop([col], axis=1)
+        baroe['diffs'] = baroe.median(axis=1)
+        baroe['measuredpress'] = baroe['diffs'].cumsum() + colmeans.mean()
+
+        baroe['measuredlevelraw'] = 0.03345526 * baroe['measuredpress']
+        baroe.index.name = 'readingdate'
+
+        barof = baroe.dropna(subset=['measuredlevelraw'])
+
+        x = barof.index.to_julian_date()
+        y = barof['measuredlevelraw'].values
+
+        try:
+            X = np.vstack([x, np.ones(len(x))]).T
+            m, c = np.linalg.lstsq(X, y, rcond=None)[0]
+            print(m, c)
+
+            baroe['juliandate'] = baroe.index.to_julian_date()
+            firstjdate = baroe.loc[baroe.first_valid_index(), 'juliandate']
+            baroe['jday'] = baroe['juliandate'].apply(lambda x: x - firstjdate, 1)
+            baroe['measuredlevel'] = baroe['measuredlevelraw'] - baroe['jday'] * m
+            baroe.index.name = 'readingdate'
+            return baroe
+        except:
+            return barof
 
 
 # -----------------------------------------------------------------------------------------------------------------------
-# These functions import data into an SDE database
+# These functions import data into a database
 
 
 def imp_one_well(well_file, baro_file, man_startdate, man_start_level, man_endate, man_end_level,
-                 conn_file_root, wellid, be=None,
-                 gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading", drift_tol=0.3, override=False):
-    arcpy.env.workspace = conn_file_root
+                 conn_file_root, wellid, be=None, gw_reading_table="ugs_gw_reading", drift_tol=0.3, override=False):
+    """Imports one well give raw barometer data and manual measurements
 
+    Args:
+        well_file: raw file containing well data
+        baro_file: raw file containing baro data
+        man_startdate: date-time of first manual reading
+        man_start_level: depth to water from mp of first manual reading
+        man_endate: date-time of last manual reading
+        man_end_level: depth to water from mp of last manual reading
+        conn_file_root: connection object for the database
+        wellid: locationid of well where data are being imported
+        be: barometric efficiency of well
+        gw_reading_table: database table where groundwater level data are stored; defaults to 'readings'
+        drift_tol: allowable drift of transducer readings from manual data; 0.3 is default
+        override: force data into database; defaults to false; may cause db errors
+
+    Returns:
+        df, man, be, drift
+
+    """
     # convert raw files to dataframes
     well = NewTransImp(well_file).well
     baro = NewTransImp(baro_file).well
@@ -779,264 +966,357 @@ def imp_one_well(well_file, baro_file, man_startdate, man_start_level, man_endat
         {'DateTime': [man_startdate, man_endate],
          'Water Level (ft)': [man_start_level, man_end_level],
          'Location ID': wellid}).set_index('DateTime')
-    printmes(man)
+    print(man)
 
     # pull stickup and elevation from well table; calculate water level elevations
     well_table = pull_well_table(conn_file_root)
-    stickup, well_elev = pull_elev_and_stickup(wellid,man,well_table=well_table, conn_file_root=conn_file_root)
+    stickup, well_elev = pull_elev_and_stickup(wellid, man, well_table=well_table, conn_file_root=conn_file_root)
     man = get_man_gw_elevs(man, stickup, well_elev)
 
     # correct for barometric efficiency if available
     if be:
         corrwl, be = correct_be(wellid, well_table, corrwl, be=be)
-        corrwl['corrwl'] = corrwl['BAROEFFICIENCYLEVEL']
+        corrwl['corrwl'] = corrwl['baroefficiencylevel']
 
     # adjust for linear transducer drift between manual measurements
-    dft = fix_drift(corrwl, man, corrwl='corrwl', manmeas='MeasuredDTW')
-    drift = round(float(dft[1]['drift'].values[0]), 3)
-    printmes('Drift for well {:} is {:.3f}.'.format(wellid, drift))
-    df = dft[0]
+    df, drift_info, drift = fix_drift(corrwl, man, corrwl='corrwl', manmeas='measureddtw')
+    print('Maximum Drift for well {:} is {:.3f}.'.format(wellid, drift))
 
     # add, remove, and arrange column names to match database format schema
-    rowlist, fieldnames = get_trans_gw_elevations(df, stickup, well_elev, wellid)
+    rowlist = get_trans_gw_elevations(df, stickup, well_elev, wellid)
+
+    fieldnames = ['measuredlevel', 'measureddtw', 'driftcorrection',
+                  'temp', 'locationid', 'baroefficiencylevel',
+                  'waterelevation']
 
     # QA/QC to reject data if it exceeds user-based threshhold
     if drift <= drift_tol:
-        edit_table(rowlist, gw_reading_table, fieldnames)
-        printmes('Well {:} successfully imported!'.format(wellid))
+        edit_table(rowlist, gw_reading_table, fieldnames, conn_file_root)
+        print('Well {:} successfully imported!'.format(wellid))
     elif override == 1:
-        edit_table(rowlist, gw_reading_table, fieldnames)
-        printmes('Override initiated. Well {:} successfully imported!'.format(wellid))
+        edit_table(rowlist, gw_reading_table, fieldnames, conn_file_root)
+        print('Override initiated. Well {:} successfully imported!'.format(wellid))
     else:
-        printmes('Well {:} drift greater than tolerance!'.format(wellid))
+        print('Well {:} drift greater than tolerance!'.format(wellid))
     return df, man, be, drift
 
-def pull_exist_ts_data(wellid, first_index, last_index, conn_file_root,
-                       gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading"):
-    # Pull any existing data from the database for the well in the date range of the new data
-    query = "WHERE LOCATIONID = {: .0f} AND READINGDATE >= '{:}' AND READINGDATE <= '{:}'\n".format(wellid, first_index, last_index)
-    select_statement = "SELECT READINGDATE, WATERELEVATION FROM {:}\n".format(gw_reading_table)
-    sql_sn = 'ORDER BY READINGDATE ASC;'
-    SQL = select_statement + query + sql_sn
-    conn = arcpy.ArcSDESQLExecute(conn_file_root)
-    egdb_return = conn.execute(SQL)
-    printmes(query)
-
-    # this accomodates for an empty return
-    if type(egdb_return) == bool and egdb_return == True:
-        existing_data = []
-    else:
-        existing_data = pd.DataFrame(egdb_return, columns=['READINGDATE', 'WATERELEVATION'])
-    return existing_data
 
 def simp_imp_well(well_file, baro_out, wellid, manual, conn_file_root, stbl_elev=True, be=None,
-                  gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading", drift_tol=0.3, jumptol=1.0, override=False,
-                  api_token=None, imp=True):
+                  gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading", drift_tol=0.3, jumptol=1.0,
+                 imp=True, trim_end=True, timezone=None):
     """
-    Imports single well
-    :param well_table: pandas dataframe of well data with ALternateID as index; needs altitude, be, stickup, and barolooger
-    :param well_file: raw well file (xle, csv, or lev)
-    :param baro_out: dictionary with barometer ID defining dataframe names
-    :param wellid: unique ID of well field
-    :param manual: manual data dataframe indexed by measure datetime
-    :param conn_file_root: working directory for the groundwater readings table (the workspace environment)
-    :param stbl_elev: does the stickup remain constant; determines source of stickup information (well table vs. water level table); defaults to true (well table)
-    :param be: barometric efficiency value
-    :param gw_reading_table: table name where data will be imported; defaults to "UGGP.UGGPADMIN.UGS_GW_reading"
-    :param drift_tol: maximum amount of transducer drift to allow before transducer data not imported
-    :param jumptol: acceptable amount of offset in feet at beginning and end of transducer data representing out of water measurements
-    :param override: overrides date limitations, but not drift limitations; default is False (no override)
-    :param api_token: api token for grabbing missing barometer data from Mesowest
-    :return:
+    Imports single well into database assuming existing barometer and manual data in database
+
+    Args:
+        well_file: raw well file (xle, csv, or lev)
+        baro_out (dict): dictionary with barometer ID defining dataframe names
+        wellid (int): unique ID of well field
+        manual (pd.DataFrame): manual data dataframe indexed by measure datetime
+        conn_file_root (object): working directory for the groundwater readings table (the workspace environment)
+        stbl_elev (bool): does the stickup remain constant; determines source of stickup information (well table vs. water level table); defaults to true (well table)
+        be (float): barometric efficiency value
+        gw_reading_table (str): table name where data will be imported; defaults to "UGGP.UGGPADMIN.UGS_GW_reading"
+        drift_tol (float): maximum amount of transducer drift to allow before transducer data not imported
+        jumptol (float): acceptable amount of offset in feet at beginning and end of transducer data representing out of water measurements
+        imp (bool): dictates whether well is imported into database; Defaults to True
+        trim_end (bool): controls if end trimming filter is used; Defaults to True
+        timezone (str): timezone of data, if any; Defaults to None
+
+    Return:
+        (tuple): rowlist, toimp, man, be, drift
     """
 
     # import well file
-    well = NewTransImp(well_file, jumptol=jumptol).well
+    well = NewTransImp(well_file, jumptol=jumptol, trim_end=trim_end).well
 
     # pull stickup and elevation from well table; calculate water level elevations
     well_table = pull_well_table(conn_file_root)
     stickup, well_elev = pull_elev_and_stickup(wellid, manual, well_table=well_table,
                                                conn_file_root=conn_file_root, stable_elev=stbl_elev)
-    man = get_man_gw_elevs(manual, stickup, well_elev)
-    #well = jumpfix(well, 'Level', threashold=2.0)
+    man = get_man_gw_elevs(manual, stickup, well_elev, stbelev=stbl_elev)
 
     # Check to see if well has assigned barometer
     try:
-        baroid = well_table.loc[wellid, 'BaroLoggerType']
+        baroid = well_table.loc[wellid, 'barologgertype']
     except KeyError:
         baroid = 0
 
-    if len(baro_out) + 60 < len(well):
+    well = well.sort_index()
 
-        printmes("Baro data length from site {:} is {:}! Pulling Mesowest Data for location {:}".format(baroid, len(baro_out), wellid))
-        lat = well_table.loc[wellid, 'Latitude']
-        longitude = well_table.loc[wellid, 'Longitude']
-        baroout = PullOutsideBaro(lat, longitude, begdate=well.index.min(), enddate=well.index.max(),
-                                  token=api_token).getbaro()
-        barob = baroout
+    # resample well data to compare length of data against barometric pressure data
+    wellres = hourly_resample(well)
+    print(wellres.first_valid_index(), wellres.last_valid_index())
+    # select a subset of barometer data that align with well data
+    baro_data = baro_out[
+        (baro_out.index >= wellres.first_valid_index()) & (baro_out.index <= wellres.last_valid_index())]
+    # make sure data exists for the selected time interval
+    if len(baro_data) == 0:
+        print("No baro data for site {:}! Pull Data for location {:}".format(baroid, wellid))
+        barosub = None
+    elif len(wellres) > len(baro_data) + 60 > 0:
+        barosub = baro_data[~baro_data.index.isin(well.index.values)]
+        barosub = barosub.sort_index()
+        print("Baro data length from site {:} is {:}! Provide Data for location {:}".format(baroid, len(baro_data),
+                                                                                            wellid))
     else:
-        barob = baro_out
+        barosub = baro_out
 
-    corrwl = well_baro_merge(well, barob, barocolumn='MEASUREDLEVEL', vented=(trans_type(well_file) != 'Solinst'))
+    # align barometric and well data
+    corrwl = well_baro_merge(well, barosub, barocolumn='measuredlevel',
+                             vented=(trans_type(well_file) == 'Global Water'))
 
+    # correct for barometric efficiency
     if be:
         corrwl, be = correct_be(wellid, well_table, corrwl, be=be)
-        corrwl['corrwl'] = corrwl['BAROEFFICIENCYLEVEL']
+        corrwl['corrwl'] = corrwl['baroefficiencylevel']
 
     corrwl.sort_index(inplace=True)
-    first_index = corrwl.first_valid_index()
-    last_index = corrwl.last_valid_index()
+
+    # fix linear transducer drift using manual data
+    df, drift_info, max_drift = fix_drift(corrwl, man, corrwl='corrwl', manmeas='measureddtw', wellid=wellid,
+                                          well_table=well_table, conn_file_root=conn_file_root)
+    drift = round(float(max_drift), 3)
+
+    df = df.sort_index()
+
+    # calculate groundwater elevation based on elevation and stickup data in monitoring locations table
+    rowlist = get_trans_gw_elevations(df, stickup, well_elev, wellid)
+
+    rowlist = rowlist.set_index('readingdate')
+
+    # QA/QC to reject data if it exceeds user-based threshhold
+    # check processed data against data in database; if data for a specific wellid and time exists, do not insert data
+    toimp = check_for_dups(rowlist, wellid, conn_file_root, drift, drift_tol, gw_reading_table, imp)
+
+    if len(toimp) > 0 and imp:
+        impdf = edit_table(toimp, gw_reading_table, conn_file_root, timezone)
+    else:
+        impdf = toimp
+
+    return rowlist, impdf, man, be, drift
+
+
+def check_for_dups(df, wellid, conn_file_root, drift, drift_tol=0.3, gw_reading_table='ugs_gw_reading',
+                   tmzone=None):
+    """Checks readings data against an existing database for duplication.
+    QA/QC to reject data if it exceeds user-based threshhold
+
+    Args:
+        df (pd.DataFrame): input dataframe to compare with database
+        wellid (int): locationid in the database for the well
+        conn_file_root: connection object for the the database
+        drift (float): amount of drift calculated from `fix_drift`
+        drift_tol (float): amount of drift allowable; default is 0.3 feet
+        gw_reading_table (pd.Dataframe): table in database with groundwater readings; default is 'readings'
+        tmzone (str): timezone of data; defaults to none
+
+    Returns:
+        uploads data to database and returns a dataframe of the uploaded data
+    """
+
+    first_index, last_index = first_last_indices(df, tmzone)
 
     # Pull any existing data from the database for the well in the date range of the new data
-    existing_data = pull_exist_ts_data(wellid, first_index, last_index, conn_file_root,
-                       gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading")
+    existing_data = get_location_data(wellid, conn_file_root, first_index, last_index,
+                                      gw_reading_table=gw_reading_table)
 
-    dft = fix_drift(corrwl, man, corrwl='corrwl', manmeas='MeasuredDTW', wellid = wellid,
-                    well_table=well_table, conn_file_root=conn_file_root)
-    printmes(arcpy.GetMessages())
-
-    #drift = round(float(dft[0].loc[dft[0].last_valid_index(), 'DRIFTCORRECTION']),3)
-    drift = round(float(dft[1]['drift'].values[0]), 3)
-
-    df = dft[0]
-    df.sort_index(inplace=True)
-
-    #existing_data = table_to_pandas_dataframe(gw_reading_table, query=query)
-
-    printmes("Existing Len = {:}. Import Len = {:}.".format(len(existing_data), len(df)))
-
-    rowlist, fieldnames = get_trans_gw_elevations(df, stickup, well_elev, wellid)
-    printmes(arcpy.GetMessages())
-    if imp:
-        if (len(existing_data) == 0) and (abs(drift) < drift_tol):
-            edit_table(rowlist, gw_reading_table, fieldnames)
-            printmes(arcpy.GetMessages())
-            printmes("Well {:} imported.".format(wellid))
-        elif len(existing_data) == len(df) and (abs(drift) < drift_tol):
-            printmes('Data for well {:} already exist!'.format(wellid))
-        elif len(df) > len(existing_data) > 0 and abs(drift) < drift_tol:
-            rowlist = rowlist[~rowlist['READINGDATE'].isin(existing_data['READINGDATE'].values)]
-            edit_table(rowlist, gw_reading_table, fieldnames)
-            printmes('Some values were missing. {:} values added.'.format(len(df) - len(existing_data)))
-        elif override and (abs(drift) < drift_tol):
-            edit_table(rowlist, gw_reading_table, fieldnames)
-            printmes(arcpy.GetMessages())
-            printmes("Override Activated. Well {:} imported.".format(wellid))
-        elif abs(drift) > drift_tol:
-            printmes('Drift for well {:} exceeds tolerance!'.format(wellid))
+    if len(existing_data) > 0:
+        # existing_data.index = pd.to_datetime(existing_data.index,infer_datetime_format=True,utc=True)
+        existing_data = existing_data.loc[wellid].sort_index()
+        if tmzone is None:
+            if existing_data.index[0].utcoffset() is None:
+                existing_data.index = existing_data.index.tz_localize(None)
+            elif existing_data.index[0].utcoffset().total_seconds() > 0.0:
+                existing_data.index = existing_data.index.tz_convert(None)
+            elif existing_data.index[0].utcoffset().total_seconds() == 0.0:
+                existing_data.index = existing_data.index.tz_convert(None)
+            else:
+                existing_data.index = existing_data.index.tz_localize(None)
         else:
-            printmes('Dates later than import data for well {:} already exist!'.format(wellid))
-            pass
+            if existing_data.index[0].utcoffset() is None:
+                existing_data.index = existing_data.index.tz_localize('MST', ambiguous="NaT")
+            elif existing_data.index[0].utcoffset().total_seconds() == 0.0:
+                existing_data.index = existing_data.index.tz_convert('MST')
+
+        existing_data.index.name = 'readingdate'
+    print("Existing Len = {:}. Import Len = {:}.".format(len(existing_data), len(df)))
+
+    if (len(existing_data) == 0) and (abs(drift) < drift_tol):
+        print("Well {:} imported.".format(wellid))
+        df1 = df
+    elif len(existing_data) == len(df) and (abs(drift) < drift_tol):
+        df1 = None
+        print('Data for well {:} already exist!'.format(wellid))
+    elif len(df) > len(existing_data) > 0 and abs(drift) < drift_tol:
+        df1 = df[~df.index.isin(existing_data.index.values)]
+        print('Some values were missing. {:} values added.'.format(len(existing_data) - len(df)))
+    elif abs(drift) > drift_tol:
+        df1 = None
+        print('Drift for well {:} exceeds tolerance!'.format(wellid))
     else:
-        printmes("No data imported.")
+        df1 = None
+        print('Dates later than import data for well {:} already exist!'.format(wellid))
         pass
 
-    return rowlist, man, be, drift
+    return df1
 
 
-def upload_bp_data(df, site_number, return_df=False, overide=False, gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading",
-                   resamp_freq="1H"):
+def first_last_indices(df, tmzone=None):
+    """Gets first and last index in a dataset; capable of considering time series with timezone information
+
+    Args:
+        df (pd.DataFrame): dataframe with indices
+        tmzone (str): timzone code of data if timezone specified; defaults to None
+
+    Returns:
+        first index, last index
+
+    """
     df.sort_index(inplace=True)
+
+    if tmzone is None:
+        first_index = df.first_valid_index()
+        last_index = df.last_valid_index()
+
+    else:
+        if df.index[0].utcoffset() is None:
+            first_index = df.first_valid_index().tz_localize(tmzone, ambiguous="NaT")
+            last_index = df.last_valid_index().tz_localize(tmzone, ambiguous="NaT")
+        elif df.index[0].utcoffset().total_seconds() == 0.0:
+            first_index = df.first_valid_index().tz_convert(tmzone)
+            last_index = df.last_valid_index().tz_convert(tmzone)
+        else:
+            first_index = df.first_valid_index()
+            last_index = df.last_valid_index()
+    return first_index, last_index
+
+
+def upload_bp_data(df, site_number, enviro, return_df=True, overide=False, gw_reading_table="ugs_gw_barometers",
+                   resamp_freq="1H", timezone=None, schema='sde'):
+    df.sort_index(inplace=True)
+    print("Resampling")
+    df = df.resample(resamp_freq).mean()
+
     first_index = df.first_valid_index()
     last_index = df.last_valid_index()
     site_number = int(site_number)
 
-    query = "LOCATIONID = {:.0f} AND READINGDATE >= '{:}' AND READINGDATE <= '{:}'".format(float(site_number),
+    if timezone is None:
+        pass
+    else:
+        if df.index[0].utcoffset() is None:
+            df.index = df.index.tz_localize('MST')
+        elif df.index[0].utcoffset().total_seconds() == 0.0:
+            df.index = df.index.tz_convert('MST')
+
+    query = "locationid = {:.0f} AND readingdate >= '{:}' AND readingdate <= '{:}'".format(float(site_number),
                                                                                            first_index, last_index)
-    printmes(query)
-    existing_data = table_to_pandas_dataframe(gw_reading_table, query=query)
+    print(query)
+    existing_data = get_location_data(site_number, enviro=enviro,
+                                      gw_reading_table=gw_reading_table,
+                                      first_date=first_index,
+                                      last_date=last_index)
 
-    df.sort_index(inplace=True)
-    printmes("Resampling")
-    df = df.resample(resamp_freq).mean()
-    df['MEASUREDLEVEL'] = df['Level']
-    df['LOCATIONID'] = site_number
+    if len(existing_data) > 0:
+        # existing_data.index = pd.to_datetime(existing_data.index,infer_datetime_format=True,utc=True)
+        existing_data = existing_data.loc[site_number].sort_index()
+        if timezone is None:
+            if existing_data.index[0].utcoffset() is None:
+                existing_data.index = existing_data.index.tz_localize(None)
+            elif existing_data.index[0].utcoffset().total_seconds() > 0.0:
+                existing_data.index = existing_data.index.tz_convert(None)
+            elif existing_data.index[0].utcoffset().total_seconds() == 0.0:
+                existing_data.index = existing_data.index.tz_convert(None)
+            else:
+                existing_data.index = existing_data.index.tz_localize(None)
+        else:
+            if existing_data.index[0].utcoffset() is None:
+                existing_data.index = existing_data.index.tz_localize('MST', ambiguous="NaT")
+            elif existing_data.index[0].utcoffset().total_seconds() == 0.0:
+                existing_data.index = existing_data.index.tz_convert('MST')
 
-    fieldnames = ['READINGDATE', 'MEASUREDLEVEL', 'TEMP', 'LOCATIONID']
+        existing_data.index.name = 'readingdate'
+
+
+    if 'measuredlevel' in df.columns:
+        pass
+    else:
+        df['measuredlevel'] = df['Level']
+
+    df['locationid'] = site_number
+
+    fieldnames = ['measuredlevel', 'temp', 'locationid']
 
     if 'Temperature' in df.columns:
-        df.rename(columns={'Temperature': 'TEMP'}, inplace=True)
+        df.rename(columns={'Temperature': 'temp'}, inplace=True)
 
-    if 'TEMP' in df.columns:
-        df['TEMP'] = df['TEMP'].apply(lambda x: np.round(x, 4), 1)
+    if 'temp' in df.columns:
+        df['temp'] = df['temp'].apply(lambda x: np.round(x, 4), 1)
     else:
-        df['TEMP'] = None
+        df['temp'] = None
 
-    df.index.name = 'READINGDATE'
+    df.index.name = 'readingdate'
 
-    printmes("Existing Len = {:}. Import Len = {:}.".format(len(existing_data), len(df)))
-    subset = df.reset_index()
+    print("Existing Len = {:}. Processed Data Len = {:}.".format(len(existing_data), len(df)))
 
     if (len(existing_data) == 0) or overide is True:
-        edit_table(subset, gw_reading_table, fieldnames)
-        printmes(arcpy.GetMessages())
-        printmes("Well {:} imported.".format(site_number))
+        toimp = edit_table(df, gw_reading_table, enviro)
+        print("Well {:} imported.".format(site_number))
     elif len(existing_data) == len(df):
-        printmes('Data for well {:} already exist!'.format(site_number))
-    elif len(df) > len(existing_data) > 0:
-        subset = subset[~subset['READINGDATE'].isin(existing_data['READINGDATE'].values)]
-        edit_table(subset, gw_reading_table, fieldnames)
-        printmes('Some values were missing. {:} values added.'.format(len(df) - len(existing_data)))
+        print('Data for well {:} already exist!'.format(site_number))
+        toimp = None
+    elif len(df) > len(existing_data) and len(df) > 0:
+
+        subset = df.reset_index()
+        subset = subset[~subset['readingdate'].isin(existing_data.index.values)]
+        print('Some values were missing. {:} values to be added.'.format(len(df) - len(existing_data)))
+        print('Upload size is {:}'.format(len(subset)))
+        subset = subset.set_index('readingdate')
+        toimp = edit_table(subset, gw_reading_table, enviro, schema=schema)
+
     else:
-        printmes('Import data for well {:} already exist! No data imported.'.format(site_number))
+        print('Import data for well {:} already exist! No data imported.'.format(site_number))
+        toimp = None
         pass
 
     if return_df:
-        return subset
+        return toimp
+
 
 # -----------------------------------------------------------------------------------------------------------------------
 # The following modify and query an SDE database, assuming the user has a connection
 
-def find_extreme(site_number, gw_table="UGGP.UGGPADMIN.UGS_GW_reading", extma='max'):
-    """
-    Find date extrema from a SDE table using query parameters
-    :param site_number: LocationID of the site of interest
-    :param gw_table: SDE table to be queried
-    :param extma: options are 'max' (default) or 'min'
-    :return: date of extrema, depth to water of extrema, water elevation of extrema
-    """
-    # TODO MAke fast with SQL
-    arcpy.env.overwriteOutput = True
+def find_extreme(site_number, gw_table="ugs_gw_reading", sort_by='readingdate', extma='max'):
 
-    if extma == 'max':
-        sort = 'DESC'
+    if extma == 'max' or extma == 'DESC':
+        lorder = 'DESC'
     else:
-        sort = 'ASC'
-    query = "LOCATIONID = '{:.0f}'".format(site_number)
-    field_names = ['READINGDATE', 'LOCATIONID', 'MEASUREDDTW', 'WATERELEVATION']
-    sql_sn = ('TOP 1', 'ORDER BY READINGDATE {:}'.format(sort))
-    # use a search cursor to iterate rows
-    dateval, dtw, wlelev = [], [], []
+        lorder = 'ASC'
 
-    envtable = os.path.join(arcpy.env.workspace, gw_table)
+    sql = """SELECT * FROM {:} WHERE "locationid" = {:} AND "{:}" IS NOT NULL
+    ORDER by "{:}" {:}
+    LIMIT 1""".format(gw_table, site_number, sort_by, sort_by, lorder)
 
-    with arcpy.da.SearchCursor(envtable, field_names, query, sql_clause=sql_sn) as search_cursor:
-        # iterate the rows
-        for row in search_cursor:
-            dateval.append(row[0])
-            dtw.append(row[1])
-            wlelev.append(row[2])
-    if len(dateval) < 1:
-        return None, 0, 0
-    else:
-        return dateval[0], dtw[0], wlelev[0]
+    df = pd.read_sql(sql, engine)
+    return df['readingdate'][0], df['measureddtw'][0], df['waterelevation'][0]
 
 
 def get_gap_data(site_number, enviro, gap_tol=0.5, first_date=None, last_date=None,
-                 gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading"):
-    """
+                 gw_reading_table="ugs_gw_reading"):
+    """Finds temporal gaps in regularly sampled data.
 
-    :param site_number: List of Location ID of time series data to be processed
-    :param enviro: workspace of SDE table
-    :param gap_tol: gap tolerance in days; the smallest gap to look for; defaults to half a day (0.5)
-    :param first_date: begining of time interval to search; defaults to 1/1/1900
-    :param last_date: end of time interval to search; defaults to current day
-    :param gw_reading_table: Name of SDE table in workspace to use
-    :return: pandas dataframe with gap information
+    Args:
+        site_number: List of Location ID of time series data to be processed
+        enviro: workspace of SDE table
+        gap_tol: gap tolerance in days; the smallest gap to look for; defaults to half a day (0.5)
+        first_date: begining of time interval to search; defaults to 1/1/1900
+        last_date: end of time interval to search; defaults to current day
+        gw_reading_table: Name of SDE table in workspace to use
+
+    Return:
+        pandas dataframe with gap information
     """
     # TODO MAke fast with SQL
-    arcpy.env.workspace = enviro
-
     if first_date is None:
         first_date = datetime.datetime(1900, 1, 1)
     if last_date is None:
@@ -1047,45 +1327,35 @@ def get_gap_data(site_number, enviro, gap_tol=0.5, first_date=None, last_date=No
     else:
         site_number = [site_number]
 
-    query_txt = "LOCATIONID IN({:}) AND READINGDATE >= '{:}' AND READINGDATE <= '{:}'"
-    query = query_txt.format(','.join([str(i) for i in site_number]), first_date, last_date)
+    query_txt = """SELECT readingdate,locationid FROM {:}
+    WHERE locationid IN ({:}) AND readingdate >= '{:}' AND readingdate <= '{:}'
+    ORDER BY locationid ASC, readingdate ASC"""
+    query = query_txt.format(gw_reading_table, ','.join([str(i) for i in site_number]), first_date, last_date)
+    df = pd.read_sql(query, con=enviro,
+                     parse_dates={'readingdate': '%Y-%m-%d %H:%M:%s-%z'})
 
-    sql_sn = (None, 'ORDER BY READINGDATE ASC')
+    df['t_diff'] = df['readingdate'].diff()
 
-    fieldnames = ['READINGDATE']
-
-    # readings = table_to_pandas_dataframe(gw_reading_table, fieldnames, query, sql_sn)
-
-    dt = []
-
-    # use a search cursor to iterate rows
-    with arcpy.da.SearchCursor(gw_reading_table, 'READINGDATE', query, sql_clause=sql_sn) as search_cursor:
-        # iterate the rows
-        for row in search_cursor:
-            # combine the field names and row items together, and append them
-            dt.append(row[0])
-
-    df = pd.Series(dt, name='DateTime')
-    df = df.to_frame()
-    df['hr_diff'] = df['DateTime'].diff()
-    df.set_index('DateTime', inplace=True)
-    df['julian'] = df.index.to_julian_date()
-    df['diff'] = df['julian'].diff()
-    df['is_gap'] = df['diff'] > gap_tol
-
-    def rowindex(rownm):
-        return rownm.name
-
-    df['gap_end'] = df.apply(lambda x: rowindex(x) if x['is_gap'] else pd.NaT, axis=1)
-    df['gap_start'] = df.apply(lambda x: rowindex(x) - x['hr_diff'] if x['is_gap'] else pd.NaT, axis=1)
-    df = df[df['is_gap'] == True]
+    df = df[df['t_diff'] > pd.Timedelta('{:}D'.format(gap_tol))]
+    df.sort_values('t_diff', ascending=False)
     return df
 
 
 def get_location_data(site_numbers, enviro, first_date=None, last_date=None, limit=None,
-                      gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading"):
-    arcpy.env.workspace = enviro
+                      gw_reading_table="ugs_gw_reading"):
+    """Retrieve location data based on a site number and database connection engine
 
+    Args:
+        site_numbers (int): locationid for a specific site in the database
+        enviro (object): database connection object
+        first_date (datetime): first date of data of interest; defaults to 1-1-1900
+        last_date (datetime): last date of data of interest; defaults to today
+        limit (int): maximum number of records to return
+        gw_reading_table (str): table in database with data; defaults to `ugs_gw_reading`
+
+    Returns:
+        readings (pd.DataFrame)
+    """
     # fill in missing date info
     if not first_date:
         # set first date to begining of 20th century
@@ -1097,34 +1367,37 @@ def get_location_data(site_numbers, enviro, first_date=None, last_date=None, lim
             first_date = datetime.datetime(1900, 1, 1)
 
     # Get last reading at the specified location
-    if not last_date or last_date > datetime.datetime.now():
-        last_date = datetime.datetime.now()
-
+    try:
+        if not last_date or last_date > datetime.datetime.now():
+            last_date = datetime.datetime.now()
+    except TypeError:
+        if not last_date or last_date > datetime.datetime.now(tz=pytz.timezone('MST')):
+            last_date = datetime.datetime.now(tz=pytz.timezone('MST'))
     if type(site_numbers) == list:
         site_numbers = ",".join([str(i) for i in site_numbers])
     else:
         pass
 
-    # fieldnames = get_field_names(gw_reading_table)
-    fieldnames = ['READINGDATE', 'MEASUREDLEVEL', 'LOCATIONID']
-    fields = ",".join([str(i) for i in fieldnames])
+    sql = """SELECT * FROM {:} 
+    WHERE locationid IN ({:}) AND readingdate >= '{:}' AND readingdate <= '{:}'
+    ORDER BY locationid ASC, readingdate ASC""".format(gw_reading_table, site_numbers, first_date, last_date)
 
-    # assemble SQL
-    select_statement = "SELECT {:} FROM {:}\n".format(fields, gw_reading_table)
-    query_txt = "WHERE LOCATIONID in({:}) and (READINGDATE >= '{:%m/%d/%Y}' and READINGDATE <= '{:%m/%d/%Y}')\n"
-    query = query_txt.format(site_numbers, first_date, last_date + datetime.timedelta(days=1))
-    sql_sn = 'ORDER BY READINGDATE ASC;'
-    SQL = select_statement + query + sql_sn
+    if limit:
+        sql += "\nLIMIT {:}".format(limit)
 
-    conn = arcpy.ArcSDESQLExecute(enviro)
-    egdb_return = conn.execute(SQL)
+    readings = pd.read_sql(sql, con=enviro, parse_dates=True, index_col='readingdate')
+    readings.index = pd.to_datetime(readings.index, infer_datetime_format=True, utc=True)
 
-    readings = pd.DataFrame(egdb_return, columns=fieldnames)
-    readings['READINGDATE'] = pd.to_datetime(readings['READINGDATE'])
-    readings.set_index(['LOCATIONID', 'READINGDATE'], inplace=True)
+    try:
+        readings.index = readings.index.tz_convert(tz='MST')
+    except TypeError:
+        readings.index = readings.index.tz_localize(tz='MST')
+    readings.reset_index(inplace=True)
+    readings.set_index(['locationid', 'readingdate'], inplace=True)
     if len(readings) == 0:
-        printmes('No Records for location(s) {:}'.format(site_numbers))
+        print('No Records for location(s) {:}'.format(site_numbers))
     return readings
+
 
 def barodistance(wellinfo):
     """Determines Closest Barometer to Each Well using wellinfo DataFrame"""
@@ -1150,93 +1423,135 @@ def barodistance(wellinfo):
 # -----------------------------------------------------------------------------------------------------------------------
 # These are the core functions that are used to import and export data from an SDE database
 
-def get_field_names(table):
-    read_descr = arcpy.Describe(table)
-    field_names = []
-    for field in read_descr.fields:
-        field_names.append(field.name)
-    field_names.remove('OBJECTID')
-    return field_names
 
-def table_to_pandas_dataframe(table, field_names=None, query=None, sql_sn=(None, None)):
+def table_to_pandas_dataframe(table, engine, field_names=None):
     """
     Load data into a Pandas Data Frame for subsequent analysis.
-    :param table: Table readable by ArcGIS.
-    :param field_names: List of fields.
-    :param query: SQL query to limit results
-    :param sql_sn: sort fields for sql; see http://pro.arcgis.com/en/pro-app/arcpy/functions/searchcursor.htm
-    :return: Pandas DataFrame object.
+
+    Args:
+        table: Table readable by ArcGIS.
+        field_names: List of fields.
+
+    Return:
+        Pandas DataFrame object.
     """
     # TODO Make fast with SQL
     # if field names are not specified
     if not field_names:
-        field_names = get_field_names(table)
+        field_names = get_field_names(engine, table)
     # create a pandas data frame
-    df = pd.DataFrame(columns=field_names)
 
-    # use a search cursor to iterate rows
-    with arcpy.da.SearchCursor(table, field_names, query, sql_clause=sql_sn) as search_cursor:
-        # iterate the rows
-        for row in search_cursor:
-            # combine the field names and row items together, and append them
-            df = df.append(dict(zip(field_names, row)), ignore_index=True)
+    sql = """SELECT {:} FROM {:};""".format('"' + '","'.join(field_names) + '"', table)
+
+    df = pd.read_sql(sql, con=engine)
 
     # return the pandas data frame
     return df
 
 
-def edit_table(df, gw_reading_table, fieldnames):
-    """
-    Edits SDE table by inserting new rows
-    :param df: pandas DataFrame
-    :param gw_reading_table: sde table to edit
-    :param fieldnames: field names that are being appended in order of appearance in dataframe or list row
-    :return:
+def get_field_names(engine, table='ugs_gw_reading', table_schema='sde'):
+    """Gets a list of columns in a table in a database
+
+    Args:
+        engine: connection object with the table of interest
+        table: database table with field names
+        table_schema: name of schema in which the table resides; defaults to sde
+
+    Returns:
+        field names in a table
     """
 
-    table_names = get_field_names(gw_reading_table)
+    sql = """SELECT * FROM information_schema.columns 
+    WHERE table_schema = '{:}' 
+    AND table_name = '{:}'""".format(table_schema, table)
+
+    df = pd.read_sql(sql, con=engine)
+    columns = list(df.column_name.values)
+    return columns
+
+
+def edit_table(df, gw_reading_table, engine, timezone=None, schema='sde'):
+    """
+    Edits SDE table by inserting new rows
+
+    Args:
+        df: pandas DataFrame
+        gw_reading_table: sde table to edit
+        engine: database engine object to connect
+        timezone: timezone of data; Defaults to None
+        schema: database table schema in which the table resides; defaults to sde
+
+    Returns:
+        pandas dataframe of data imported
+
+    """
+
+    table_names = get_field_names(engine, gw_reading_table, table_schema=schema)
+
+    fieldnames = list(df.columns.values)
 
     for name in fieldnames:
         if name not in table_names:
             fieldnames.remove(name)
-            printmes("{:} not in {:} fieldnames!".format(name, gw_reading_table))
+            print("{:} not in {:} fieldnames!".format(name, gw_reading_table))
+
+    namelist = []
+    for name in table_names:
+        if name in fieldnames:
+            namelist.append(name)
 
     if len(fieldnames) > 0:
-        subset = df[fieldnames]
-        rowlist = subset.values.tolist()
+        subset = df[namelist]
 
-        arcpy.env.overwriteOutput = True
-        edit = arcpy.da.Editor(arcpy.env.workspace)
-        edit.startEditing(False, False)
-        edit.startOperation()
+        if timezone:
+            if subset.index[0].utcoffset() is None:
+                subset['readingdate'] = subset.index.tz_localize('MST', ambiguous="NaT")
+            elif subset.index[0].utcoffset().total_seconds() == 0.0:
+                subset['readingdate'] = subset.index.tz_convert('MST')
+            else:
+                subset['readingdate'] = subset.index
+        else:
+            subset['readingdate'] = subset.index
 
-        cursor = arcpy.da.InsertCursor(gw_reading_table, fieldnames)
-        for j in range(len(rowlist)):
-            cursor.insertRow(rowlist[j])
+        subset.dropna(subset=['readingdate'], inplace=True)
+        subset.drop_duplicates(subset=['locationid', 'readingdate'], inplace=True)
 
-        del cursor
-        edit.stopOperation()
-        edit.stopEditing(True)
+        try:
+            if timezone:
+                subset.to_sql(gw_reading_table, engine, chunksize=1000,
+                              dtype={'readingdate': sqlalchemy.types.DateTime(timezone=True)},
+                              index=False, if_exists='append')
+            else:
+                subset.to_sql(gw_reading_table, engine, chunksize=1000,
+                              dtype={'readingdate': sqlalchemy.types.DateTime()},
+                              index=False, if_exists='append')
+            print('Data Sucessfully Imported')
+        except Exception as e:
+            print('Import Failed')
+            print(str(e))
+            pass
+
     else:
-        printmes('No data imported!')
+        print('No data imported!')
+
+    return subset
+
 
 # -----------------------------------------------------------------------------------------------------------------------
 # These scripts remove outlier data and filter the time series of jumps and erratic measurements
 
 def dataendclean(df, x, inplace=False, jumptol=1.0):
-    """Trims off ends and beginnings of datasets that exceed 2.0 standard deviations of the first and last 30 values
+    """Trims off ends and beginnings of datasets that exceed 2.0 standard deviations of the first and last 50 values
 
-    :param df: Pandas DataFrame
-    :type df: pandas.core.frame.DataFrame
-    :param x: Column name of data to be trimmed contained in df
-    :type x: str
-    :param inplace: if DataFrame should be duplicated
-    :type inplace: bool
-    :param jumptol: acceptable amount of offset in feet caused by the transducer being out of water at time of measurement; default is 1
-    :type jumptol: float
+    Args:
+        df (pandas.core.frame.DataFrame): Pandas DataFrame
+        x (str): Column name of data to be trimmed contained in df
+        inplace (bool): if DataFrame should be duplicated
+        jumptol (float): acceptable amount of offset in feet caused by the transducer being out of water at time of measurement; default is 1
 
-    :returns: df trimmed data
-    :rtype: pandas.core.frame.DataFrame
+    Returns:
+        (pandas.core.frame.DataFrame) df trimmed data
+
 
     This function printmess a message if data are trimmed.
     """
@@ -1251,12 +1566,12 @@ def dataendclean(df, x, inplace=False, jumptol=1.0):
         for i in range(len(jump)):
             if jump.index[i] < df.index[50]:
                 df = df[df.index > jump.index[i]]
-                printmes("Dropped from beginning to " + str(jump.index[i]))
+                print("Dropped from beginning to " + str(jump.index[i]))
             if jump.index[i] > df.index[-50]:
                 df = df[df.index < jump.index[i]]
-                printmes("Dropped from end to " + str(jump.index[i]))
+                print("Dropped from end to " + str(jump.index[i]))
     except IndexError:
-        printmes('No Jumps')
+        print('No Jumps')
     return df
 
 
@@ -1384,7 +1699,7 @@ def correct_be(site_number, well_table, welldata, be=None, meas='corrwl', baro='
     if be:
         be = float(be)
     else:
-        stdata = well_table[well_table['WellID'] == site_number]
+        stdata = well_table[well_table['wellid'] == site_number]
         be = stdata['BaroEfficiency'].values[0]
     if be is None:
         be = 0
@@ -1392,9 +1707,9 @@ def correct_be(site_number, well_table, welldata, be=None, meas='corrwl', baro='
         be = float(be)
 
     if be == 0:
-        welldata['BAROEFFICIENCYLEVEL'] = welldata[meas]
+        welldata['baroefficiencylevel'] = welldata[meas]
     else:
-        welldata['BAROEFFICIENCYLEVEL'] = welldata[[meas, baro]].apply(lambda x: x[0] + be * x[1], 1)
+        welldata['baroefficiencylevel'] = welldata[[meas, baro]].apply(lambda x: x[0] + be * x[1], 1)
 
     return welldata, be
 
@@ -1422,7 +1737,12 @@ def hourly_resample(df, bse=0, minutes=60):
 
     df = df.resample('1Min').mean().interpolate(method='time', limit=90)
 
-    df = df.resample(str(minutes) + 'Min', closed='left', label='left', base=bse).mean()
+    if minutes == 60:
+        sampfrq = '1H'
+    else:
+        sampfrq = str(minutes) + 'Min'
+
+    df = df.resample(sampfrq, closed='right', label='right', base=bse).asfreq()
     return df
 
 
@@ -1449,24 +1769,26 @@ def well_baro_merge(wellfile, barofile, barocolumn='Level', wellcolumn='Level', 
     # reassign `Level` to reduce ambiguity
     baro = baro.rename(columns={barocolumn: 'barometer'})
 
-    if 'TEMP' in baro.columns:
-        baro.drop('TEMP', axis=1, inplace=True)
+    if 'temp' in baro.columns:
+        baro = baro.drop('temp', axis=1)
     elif 'Temperature' in baro.columns:
-        baro.drop('Temperature', axis=1, inplace=True)
-
-    # combine baro and well data for easy calculations, graphing, and manipulation
-    wellbaro = pd.merge(well, baro, left_index=True, right_index=True, how='inner')
-
-    wellbaro['dbp'] = wellbaro['barometer'].diff()
-    wellbaro['dwl'] = wellbaro[wellcolumn].diff()
-    #printmes(wellbaro)
-    first_well = wellbaro[wellcolumn][0]
+        baro = baro.drop('Temperature', axis=1)
+    elif 'temperature' in baro.columns:
+        baro = baro.drop('temperature', axis=1)
 
     if vented:
+        wellbaro = well
         wellbaro[outcolumn] = wellbaro[wellcolumn]
     else:
+        # combine baro and well data for easy calculations, graphing, and manipulation
+        wellbaro = pd.merge(well, baro, left_index=True, right_index=True, how='left')
+        wellbaro = wellbaro.dropna(subset=['barometer',wellcolumn], how='any')
+        wellbaro['dbp'] = wellbaro['barometer'].diff()
+        wellbaro['dwl'] = wellbaro[wellcolumn].diff()
+        # printmes(wellbaro)
+        first_well = wellbaro[wellcolumn][0]
         wellbaro[outcolumn] = wellbaro[['dbp', 'dwl']].apply(lambda x: x[1] - x[0], 1).cumsum() + first_well
-    wellbaro.loc[wellbaro.index[0], outcolumn] = first_well
+        wellbaro.loc[wellbaro.index[0], outcolumn] = first_well
     return wellbaro
 
 
@@ -1483,6 +1805,76 @@ def fcl(df, dtobj):
     taken from: http://stackoverflow.com/questions/15115547/find-closest-row-of-dataframe-to-given-time-in-pandas
     """
     return df.iloc[np.argmin(np.abs(pd.to_datetime(df.index) - dtobj))]  # remove to_pydatetime()
+
+
+def compilefiles(searchdir, copydir, filecontains, filetypes=('lev', 'xle')):
+    filecontains = list(filecontains)
+    filetypes = list(filetypes)
+    for pack in os.walk(searchdir):
+        for name in filecontains:
+            for i in glob.glob(pack[0] + '/' + '*{:}*'.format(name)):
+                if i.split('.')[-1] in filetypes:
+                    dater = str(datetime.datetime.fromtimestamp(os.path.getmtime(i)).strftime('%Y-%m-%d'))
+                    rightfile = dater + "_" + os.path.basename(i)
+                    if not os.path.exists(copydir):
+                        print('Creating {:}'.format(copydir))
+                        os.makedirs(copydir)
+                    else:
+                        pass
+                    if os.path.isfile(os.path.join(copydir, rightfile)):
+                        pass
+                    else:
+                        print(os.path.join(copydir, rightfile))
+                        try:
+                            copyfile(i, os.path.join(copydir, rightfile))
+                        except:
+                            pass
+    print('Copy Complete!')
+    return
+
+def compilation(inputfile, trm=True):
+    """This function reads multiple xle transducer files in a directory and generates a compiled Pandas DataFrame.
+    Args:
+        inputfile (file):
+            complete file path to input files; use * for wildcard in file name
+        trm (bool):
+            whether or not to trim the end
+    Returns:
+        outfile (object):
+            Pandas DataFrame of compiled data
+    Example::
+        >>> compilation('O:/Snake Valley Water/Transducer Data/Raw_data_archive/all/LEV/*baro*')
+        picks any file containing 'baro'
+    """
+
+    # create empty dictionary to hold DataFrames
+    f = {}
+
+    # generate list of relevant files
+    filelist = glob.glob(inputfile)
+
+    # iterate through list of relevant files
+    for infile in filelist:
+        # run computations using lev files
+        filename, file_extension = os.path.splitext(infile)
+        if file_extension in ['.csv', '.lev', '.xle']:
+            print(infile)
+            nti = NewTransImp(infile, trim_end=trm).well
+            f[getfilename(infile)] = nti
+    # concatenate all of the DataFrames in dictionary f to one DataFrame: g
+    g = pd.concat(f)
+    # remove multiindex and replace with index=Datetime
+    g = g.reset_index()
+    g['DateTime'] = g['DateTime'].apply(lambda x: pd.to_datetime(x, errors='coerce'), 1)
+    g = g.set_index(['DateTime'])
+    # drop old indexes
+    g = g.drop(['level_0'], axis=1)
+    # remove duplicates based on index then sort by index
+    g['ind'] = g.index
+    g = g.drop_duplicates(subset='ind')
+    g = g.drop('ind', axis=1)
+    g = g.sort_index()
+    return g
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -1521,7 +1913,7 @@ class NewTransImp(object):
             elif file_ext == '.csv':
                 self.well = self.new_csv_imp()
             else:
-                printmes('filetype not recognized')
+                print('filetype not recognized')
                 self.well = None
 
             if self.well is None:
@@ -1533,15 +1925,11 @@ class NewTransImp(object):
             return
 
         except AttributeError:
-            printmes('Bad File')
+            print('Bad File')
             return
 
     def new_csv_imp(self):
         """This function uses an exact file path to upload a csv transducer file.
-
-        Args:
-            infile (file):
-                complete file path to input file
 
         Returns:
             A Pandas DataFrame containing the transducer data
@@ -1568,23 +1956,27 @@ class NewTransImp(object):
                         f[level] = pd.to_numeric(f[level])
                     elif level_units == "kpa":
                         f[level] = pd.to_numeric(f[level]) * 0.33456
-                        printmes("Units in kpa, converting {:} to ft...".format(os.path.basename(self.infile)))
+                        print("Units in kpa, converting {:} to ft...".format(os.path.basename(self.infile)))
                     elif level_units == "mbar":
                         f[level] = pd.to_numeric(f[level]) * 0.0334552565551
                     elif level_units == "psi":
                         f[level] = pd.to_numeric(f[level]) * 2.306726
-                        printmes("Units in psi, converting {:} to ft...".format(os.path.basename(self.infile)))
+                        print("Units in psi, converting {:} to ft...".format(os.path.basename(self.infile)))
                     elif level_units == "m" or level_units == "meters":
                         f[level] = pd.to_numeric(f[level]) * 3.28084
-                        printmes("Units in psi, converting {:} to ft...".format(os.path.basename(self.infile)))
+                        print("Units in psi, converting {:} to ft...".format(os.path.basename(self.infile)))
+                    elif level_units == "???":
+                        f[level] = pd.to_numeric(f[level])
+                        print("Units in ???, {:} is messed up...".format(
+                            os.path.basename(self.infile)))
                     else:
                         f[level] = pd.to_numeric(f[level])
-                        printmes("Unknown units, no conversion")
+                        print("Unknown units, no conversion")
 
                     if temp_units == 'Deg C' or temp_units == u'\N{DEGREE SIGN}' + u'C':
                         f[temp] = f[temp]
                     elif temp_units == 'Deg F' or temp_units == u'\N{DEGREE SIGN}' + u'F':
-                        printmes('Temp in F, converting {:} to C...'.format(os.path.basename(self.infile)))
+                        print('Temp in F, converting {:} to C...'.format(os.path.basename(self.infile)))
                         f[temp] = (f[temp] - 32.0) * 5.0 / 9.0
                     return f
 
@@ -1657,35 +2049,31 @@ class NewTransImp(object):
                 df[level] = pd.to_numeric(df[level])
             elif level_units == "kpa":
                 df[level] = pd.to_numeric(df[level]) * 0.33456
-                printmes("Units in kpa, converting {:} to ft...".format(os.path.basename(self.infile)))
+                print("Units in kpa, converting {:} to ft...".format(os.path.basename(self.infile)))
             elif level_units == "mbar":
                 df[level] = pd.to_numeric(df[level]) * 0.0334552565551
             elif level_units == "psi":
                 df[level] = pd.to_numeric(df[level]) * 2.306726
-                printmes("Units in psi, converting {:} to ft...".format(os.path.basename(self.infile)))
+                print("Units in psi, converting {:} to ft...".format(os.path.basename(self.infile)))
             elif level_units == "m" or level_units == "meters":
                 df[level] = pd.to_numeric(df[level]) * 3.28084
-                printmes("Units in psi, converting {:} to ft...".format(os.path.basename(self.infile)))
+                print("Units in psi, converting {:} to ft...".format(os.path.basename(self.infile)))
             else:
                 df[level] = pd.to_numeric(df[level])
-                printmes("Unknown units, no conversion")
+                print("Unknown units, no conversion")
 
             if temp_units == 'Deg C' or temp_units == u'\N{DEGREE SIGN}' + u'C':
                 df[temp] = df[temp]
             elif temp_units == 'Deg F' or temp_units == u'\N{DEGREE SIGN}' + u'F':
-                printmes('Temp in F, converting {:} to C...'.format(os.path.basename(self.infile)))
+                print('Temp in F, converting {:} to C...'.format(os.path.basename(self.infile)))
                 df[temp] = (df[temp] - 32.0) * 5.0 / 9.0
             df['name'] = self.infile
             return df
         except ValueError:
-            printmes('File {:} has formatting issues'.format(self.infile))
+            print('File {:} has formatting issues'.format(self.infile))
 
     def new_xle_imp(self):
         """This function uses an exact file path to upload a xle transducer file.
-
-        Args:
-            infile (file):
-                complete file path to input file
 
         Returns:
             A Pandas DataFrame containing the transducer data
@@ -1709,20 +2097,23 @@ class NewTransImp(object):
         if ch1Unit == "feet" or ch1Unit == "ft":
             f[str(ch1ID).title()] = pd.to_numeric(f['ch1'])
         elif ch1Unit == "kpa":
-            printmes("CH. 1 units in {:}, converting {:} to ft...".format(ch1Unit, os.path.basename(self.infile)))
+            print("CH. 1 units in {:}, converting {:} to ft...".format(ch1Unit, os.path.basename(self.infile)))
             f[str(ch1ID).title()] = pd.to_numeric(f['ch1']) * 0.33456
         elif ch1Unit == "mbar":
-            printmes("CH. 1 units in {:}, converting {:} to ft...".format(ch1Unit, os.path.basename(self.infile)))
+            print("CH. 1 units in {:}, converting {:} to ft...".format(ch1Unit, os.path.basename(self.infile)))
             f[str(ch1ID).title()] = pd.to_numeric(f['ch1']) * 0.0334552565551
         elif ch1Unit == "psi":
-            printmes("CH. 1 units in {:}, converting {:} to ft...".format(ch1Unit, os.path.basename(self.infile)))
+            print("CH. 1 units in {:}, converting {:} to ft...".format(ch1Unit, os.path.basename(self.infile)))
             f[str(ch1ID).title()] = pd.to_numeric(f['ch1']) * 2.306726
         elif ch1Unit == "m" or ch1Unit == "meters":
-            printmes("CH. 1 units in {:}, converting {:} to ft...".format(ch1Unit, os.path.basename(self.infile)))
+            print("CH. 1 units in {:}, converting {:} to ft...".format(ch1Unit, os.path.basename(self.infile)))
             f[str(ch1ID).title()] = pd.to_numeric(f['ch1']) * 3.28084
+        elif ch1Unit == "???":
+            print("CH. 1 units in {:}, {:} messed up...".format(ch1Unit, os.path.basename(self.infile)))
+            f[str(ch1ID).title()] = pd.to_numeric(f['ch1'])
         else:
             f[str(ch1ID).title()] = pd.to_numeric(f['ch1'])
-            printmes("Unknown units {:}, no conversion for {:}...".format(ch1Unit, os.path.basename(self.infile)))
+            print("Unknown units {:}, no conversion for {:}...".format(ch1Unit, os.path.basename(self.infile)))
 
         if 'ch2' in f.columns:
             try:
@@ -1736,10 +2127,10 @@ class NewTransImp(object):
             if ch2Unit == 'Deg C' or ch2Unit == 'Deg_C' or ch2Unit == u'\N{DEGREE SIGN}' + u'C':
                 f[str(ch2ID).title()] = numCh2
             elif ch2Unit == 'Deg F' or ch2Unit == u'\N{DEGREE SIGN}' + u'F':
-                printmes("CH. 2 units in {:}, converting {:} to C...".format(ch2Unit, os.path.basename(self.infile)))
+                print("CH. 2 units in {:}, converting {:} to C...".format(ch2Unit, os.path.basename(self.infile)))
                 f[str(ch2ID).title()] = (numCh2 - 32) * 5 / 9
             else:
-                printmes("Unknown temp units {:}, no conversion for {:}...".format(ch2Unit, os.path.basename(self.infile)))
+                print("Unknown temp units {:}, no conversion for {:}...".format(ch2Unit, os.path.basename(self.infile)))
                 f[str(ch2ID).title()] = numCh2
         else:
             print('No channel 2 for {:}'.format(self.infile))
@@ -1783,37 +2174,13 @@ def getfilename(path):
     """
     return path.split('\\').pop().split('/').pop().rsplit('.', 1)[0]
 
-def compilefiles(searchdir,copydir,filecontains,filetypes=['lev','xle']):
-    filecontains = list(filecontains)
-    filetypes = list(filetypes)
-    for pack in os.walk(searchdir):
-        for name in filecontains:
-            for i in glob.glob(pack[0]+'/'+'*{:}*'.format(name)):
-                if i.split('.')[-1] in filetypes:
-                    dater = str(datetime.datetime.fromtimestamp(os.path.getmtime(i)).strftime('%Y-%m-%d'))
-                    rightfile = dater + "_" + os.path.basename(i)
-                    if not os.path.exists(copydir):
-                        print('Creating {:}'.format(copydir))
-                        os.makedirs(copydir)
-                    else:
-                        pass
-                    if os.path.isfile(os.path.join(copydir, rightfile)):
-                        pass
-                    else:
-                        print(os.path.join(copydir, rightfile))
-                        try:
-                            copyfile(i, os.path.join(copydir, rightfile))
-                        except:
-                            pass
-    printmes('Copy Complete!')
-    return
 
 def compile_end_beg_dates(infile):
     """ Searches through directory and compiles transducer files, returning a dataframe of the file name,
     beginning measurement, and ending measurement. Complements xle_head_table, which derives these dates from an
     xle header.
     Args:
-        folder (directory):
+        infile (directory):
             folder containing transducer files
     Returns:
         A Pandas DataFrame containing the file name, beginning measurement date, and end measurement date
@@ -1840,7 +2207,8 @@ def compile_end_beg_dates(infile):
 
 class HeaderTable(object):
     def __init__(self, folder, filedict=None, filelist=None, workspace=None,
-                 loc_table="UGGP.UGGPADMIN.UGS_NGWMN_Monitoring_Locations"):
+                 conn_file_root=None,
+                 loc_table="ugs_ngwmn_monitoring_locations"):
         """
 
         Args:
@@ -1864,14 +2232,8 @@ class HeaderTable(object):
         else:
             self.workspace = folder
 
-        arcpy.env.workspace = self.workspace
-
-        if arcpy.Exists(loc_table):
-            self.loc_table = loc_table
-            printmes("Copying sites table !")
-
-        else:
-            printmes("Sites table not found in working directory!")
+        self.loc_table = pull_well_table(conn_file_root)
+        print("Copying sites table!")
 
     def get_ftype(self, x):
         if x[1] == 'Solinst':
@@ -1879,26 +2241,6 @@ class HeaderTable(object):
         else:
             ft = '.csv'
         return self.filedict.get(x[0] + ft)
-
-    def pull_sde_table(self):
-        # populate dataframe with data from SDE well table
-        field_names = ['LocationID', 'LocationName', 'LocationType', 'LocationDesc', 'AltLocationID', 'VerticalMeasure',
-                       'VerticalUnit', 'WellDepth', 'SiteID', 'Offset', 'LoggerType', 'BaroEfficiency',
-                       'Latitude', 'Longitude', 'BaroEfficiencyStart', 'BaroLoggerType']
-
-        locquery = "WHERE AltLocationID is not Null\n"
-        sql_sn = "ORDER BY AltLocationID ASC;"
-
-        fields = ",".join([str(i) for i in field_names])
-        select_statement = "SELECT {:} FROM {:}\n".format(fields, self.loc_table)
-        SQL = select_statement + locquery + sql_sn
-
-        conn = arcpy.ArcSDESQLExecute(self.workspace)
-        egdb_return = conn.execute(SQL)
-
-        df = pd.DataFrame(egdb_return, columns=field_names)
-
-        return df
 
     # examine and tabulate header information from files
 
@@ -1911,21 +2253,21 @@ class HeaderTable(object):
 
         if '.xle' in file_extension and '.csv' in file_extension:
             xles = self.xle_head_table()
-            printmes('xles examined')
+            print('xles examined')
             csvs = self.csv_info_table()
-            printmes('csvs examined')
+            print('csvs examined')
             file_info_table = pd.concat([xles, csvs[0]])
         elif '.xle' in file_extension:
             xles = self.xle_head_table()
-            printmes('xles examined')
+            print('xles examined')
             file_info_table = xles
         elif '.csv' in file_extension:
             csvs = self.csv_info_table()
-            printmes('csvs examined')
+            print('csvs examined')
             file_info_table = csvs[0]
 
         # combine header table with the sde table
-        file_info_table['WellName'] = file_info_table[['fileroot', 'trans type']].apply(lambda x: self.get_ftype(x), 1)
+        file_info_table['wellname'] = file_info_table[['fileroot', 'trans type']].apply(lambda x: self.get_ftype(x), 1)
         return file_info_table
 
     def make_well_table(self):
@@ -1933,24 +2275,23 @@ class HeaderTable(object):
         for i in ['Latitude', 'Longitude']:
             if i in file_info_table.columns:
                 file_info_table.drop(i, axis=1, inplace=True)
-        df = self.pull_sde_table()
-        well_table = pd.merge(file_info_table, df, right_on='LocationName', left_on='WellName', how='left')
-        well_table.set_index('AltLocationID', inplace=True)
-        well_table['WellID'] = well_table.index
-        well_table.dropna(subset=['WellName'], inplace=True)
+        df = self.loc_table
+        well_table = pd.merge(file_info_table, df, right_on='locationname', left_on='wellname', how='left')
+        well_table.set_index('altlocationid', inplace=True)
+        well_table['wellid'] = well_table.index
+        well_table.dropna(subset=['wellname'], inplace=True)
         well_table.to_csv(self.folder + '/file_info_table.csv')
-        printmes("Header Table with well information created at {:}/file_info_table.csv".format(self.folder))
+        print("Header Table with well information created at {:}/file_info_table.csv".format(self.folder))
 
         return well_table
 
     def xle_head_table(self):
         """Creates a Pandas DataFrame containing header information from all xle files in a folder
-        Args:
-            folder (directory):
-                folder containing xle files
+
         Returns:
             A Pandas DataFrame containing the transducer header data
-        Example::
+
+        Example:
             >>> xle_head_table('C:/folder_with_xles/')
         """
         # open text file
@@ -2017,7 +2358,7 @@ def getwellid(infile, wellinfo):
         wellname = getfilename(infile)[0:m.start()].strip().lower()
     else:
         wellname = getfilename(infile)[0:s.start()].strip().lower()
-    wellid = wellinfo[wellinfo['Well'] == wellname]['WellID'].values[0]
+    wellid = wellinfo[wellinfo['Well'] == wellname]['wellid'].values[0]
     return wellname, wellid
 
 
@@ -2046,7 +2387,6 @@ class baroimport(object):
 
     def many_baros(self):
         """Used by the MultBarometerImport tool to import multiple wells into the SDE"""
-        arcpy.env.workspace = self.sde_conn
 
         self.xledir = self.xledir + r"\\"
 
@@ -2062,11 +2402,11 @@ class baroimport(object):
             altid = self.idget[sitename]
 
             df[altid] = NewTransImp(self.xledir + self.well_files[b]).well
-            printmes("Importing {:} ({:})".format(sitename, altid))
+            print("Importing {:} ({:})".format(sitename, altid))
 
             if self.to_import:
-                upload_bp_data(df[altid], altid)
-                printmes('Barometer {:} ({:}) Imported'.format(sitename, altid))
+                upload_bp_data(df[altid], altid, enviro=self.sde_conn)
+                print('Barometer {:} ({:}) Imported'.format(sitename, altid))
 
             if self.toexcel:
                 from openpyxl import load_workbook
@@ -2086,8 +2426,8 @@ class baroimport(object):
 
             if self.should_plot:
                 # plot data
-                df[altid].set_index('READINGDATE', inplace=True)
-                y1 = df[altid]['WATERELEVATION'].values
+                df[altid].set_index('readingdate', inplace=True)
+                y1 = df[altid]['waterelevation'].values
                 y2 = df[altid]['barometer'].values
                 x1 = df[altid].index.values
                 x2 = df[altid].index.values
@@ -2096,7 +2436,7 @@ class baroimport(object):
 
                 ax1.plot(x1, y1, color='blue', label='Water Level Elevation')
                 ax1.set_ylabel('Water Level Elevation', color='blue')
-                ax1.set_ylim(min(df[altid]['WATERELEVATION']), max(df[altid]['WATERELEVATION']))
+                ax1.set_ylim(min(df[altid]['waterelevation']), max(df[altid]['waterelevation']))
                 y_formatter = tick.ScalarFormatter(useOffset=False)
                 ax1.yaxis.set_major_formatter(y_formatter)
                 ax2 = ax1.twinx()
@@ -2192,18 +2532,14 @@ class wellimport(object):
         filecontains = [str(transid), '_' + str(wellid) + '_', str(wellid) + '.']
         compilefiles(searchdir, copydir, filecontains, filetypes=['lev', 'xle'])
 
-
-
     def one_well(self):
         """Used in SingleTransducerImport Class.  This tool leverages the imp_one_well function to load a single well
         into the UGS SDE"""
-        arcpy.env.workspace = self.sde_conn
-        loc_table = "UGGP.UGGPADMIN.UGS_NGWMN_Monitoring_Locations"
 
-        loc_names = [str(row[0]) for row in arcpy.da.SearchCursor(loc_table, 'LocationName')]
-        loc_ids = [str(row[0]) for row in arcpy.da.SearchCursor(loc_table, 'AltLocationID')]
+        loc_table = "ugs_ngwmn_monitoring_locations"
 
-        iddict = dict(zip(loc_names, loc_ids))
+        df = pull_well_table(engine)
+        iddict = df.reset_index().set_index(['locationname']).to_dict()
 
         if self.man_startdate in ["#", "", None]:
             self.man_startdate, self.man_start_level, wlelev = find_extreme(self.wellid)
@@ -2211,17 +2547,18 @@ class wellimport(object):
         man = pd.DataFrame(
             {'DateTime': [self.man_startdate, self.man_enddate],
              'Water Level (ft)': [self.man_start_level, self.man_end_level],
-             'LOCATIONID': iddict.get(self.wellid)}).set_index('DateTime')
-        printmes(man)
+             'locationid': iddict.get(self.wellid)}).set_index('DateTime')
+        print(man)
 
         baro = NewTransImp(self.baro_file).well
-        baro.rename(columns={'Level':'MEASUREDLEVEL'},inplace=True)
+        baro.rename(columns={'Level': 'measuredlevel'}, inplace=True)
 
         df, man, be, drift = simp_imp_well(self.well_file, baro, int(iddict.get(self.wellid)), man, self.sde_conn,
-                                           stbl_elev=True, gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading",
-                                           drift_tol=self.tol, override=self.ovrd, api_token=None, imp=self.should_import)
+                                           stbl_elev=True, gw_reading_table="ugs_gw_reading",
+                                           drift_tol=self.tol,
+                                           imp=self.should_import)
 
-        #df, man, be, drift = imp_one_well(self.well_file, self.baro_file, self.man_startdate,
+        # df, man, be, drift = imp_one_well(self.well_file, self.baro_file, self.man_startdate,
         #                                  self.man_start_level, self.man_enddate,
         #                                  self.man_end_level, self.sde_conn, iddict.get(self.wellid),
         #                                  drift_tol=self.tol, override=self.ovrd)
@@ -2231,7 +2568,7 @@ class wellimport(object):
         if self.should_plot:
             # plot data
             pdf_pages = PdfPages(self.chart_out)
-            y1 = df['WATERELEVATION'].values
+            y1 = df['waterelevation'].values
             y2 = df['barometer'].values
             x1 = df.index.values
             x2 = df.index.values
@@ -2242,7 +2579,7 @@ class wellimport(object):
             ax1.scatter(x4, y4, color='purple')
             ax1.plot(x1, y1, color='blue', label='Water Level Elevation')
             ax1.set_ylabel('Water Level Elevation', color='blue')
-            ax1.set_ylim(min(df['WATERELEVATION']), max(df['WATERELEVATION']))
+            ax1.set_ylim(min(df['waterelevation']), max(df['waterelevation']))
             y_formatter = tick.ScalarFormatter(useOffset=False)
             ax1.yaxis.set_major_formatter(y_formatter)
             ax2 = ax1.twinx()
@@ -2258,8 +2595,8 @@ class wellimport(object):
             plt.close()
             pdf_pages.close()
 
-        printmes('Well Imported!')
-        printmes(arcpy.GetMessages())
+        print('Well Imported!')
+
         return
 
     def remove_bp(self, stickup=0, well_elev=0, site_number=None):
@@ -2292,15 +2629,14 @@ class wellimport(object):
 
         man = pd.DataFrame(
             {'DateTime': [self.man_startdate, self.man_enddate],
-             'MeasuredDTW': [self.man_start_level * -1, self.man_end_level * -1]}).set_index('DateTime')
+             'measureddtw': [self.man_start_level * -1, self.man_end_level * -1]}).set_index('DateTime')
 
-        dft = fix_drift(corrwl, man, corrwl='corrwl', manmeas='MeasuredDTW')
+        dft = fix_drift(corrwl, man, corrwl='corrwl', manmeas='measureddtw')
         drift = round(float(dft[1]['drift'].values[0]), 3)
 
-        printmes("Drift is {:} feet".format(drift))
+        print("Drift is {:} feet".format(drift))
 
-        dfa = get_trans_gw_elevations(dft[0], stickup, well_elev, site_number)
-        df = dfa[0]
+        df = get_trans_gw_elevations(dft[0], stickup, well_elev, site_number, dtw="corrwl")
 
         df.to_csv(self.save_location)
 
@@ -2315,7 +2651,7 @@ class wellimport(object):
             x2 = df.index.values
 
             x4 = man.index
-            y4 = man['MeasuredDTW']
+            y4 = man['measureddtw']
             fig, ax1 = plt.subplots()
             plt.xticks(rotation=70)
             ax1.scatter(x4, y4, color='purple')
@@ -2339,7 +2675,6 @@ class wellimport(object):
 
     def many_wells(self):
         """Used by the MultTransducerImport tool to import multiple wells into the SDE"""
-        arcpy.env.workspace = self.sde_conn
         conn_file_root = self.sde_conn
         jumptol = self.jumptol
 
@@ -2348,7 +2683,7 @@ class wellimport(object):
 
         maxtime = max(pd.to_datetime(well_table['last_reading_date']))
         mintime = min(pd.to_datetime(well_table['Start_time']))
-        printmes("Data span from {:} to {:}.".format(mintime, maxtime))
+        print("Data span from {:} to {:}.".format(mintime, maxtime))
 
         maxtimebuff = maxtime + pd.DateOffset(days=2)
         mintimebuff = mintime - pd.DateOffset(days=2)
@@ -2365,17 +2700,17 @@ class wellimport(object):
                 barline = baros.iloc[b, :]
                 df = NewTransImp(barline['full_filepath']).well
                 upload_bp_data(df, baros.index[b])
-                printmes('Barometer {:} ({:}) Imported'.format(barline['LocationName'], baros.index[b]))
+                print('Barometer {:} ({:}) Imported'.format(barline['locationname'], baros.index[b]))
 
         baros = [9024, 9025, 9027, 9049, 9003, 9062]
         baro_out = get_location_data(baros, self.sde_conn, first_date=mintimebuff, last_date=maxtimebuff)
-        printmes('Barometer data download success!')
+        print('Barometer data download success!')
 
         # upload manual data from csv file
         if os.path.splitext(self.man_file)[-1] == '.csv':
-            manl = pd.read_csv(self.man_file, index_col="READINGDATE")
+            manl = pd.read_csv(self.man_file, index_col="readingdate")
         else:
-            manl = pd.read_excel(self.man_file, index_col="READINGDATE")
+            manl = pd.read_excel(self.man_file, index_col="readingdate")
 
         if self.should_plot:
             pdf_pages = PdfPages(self.chart_out)
@@ -2384,53 +2719,54 @@ class wellimport(object):
         wells = well_table[well_table['LocationType'] == 'Well']
         for i in range(len(wells)):
             well_line = wells.iloc[i, :]
-            printmes("Importing {:} ({:})".format(well_line['LocationName'], wells.index[i]))
+            print("Importing {:} ({:})".format(well_line['locationname'], wells.index[i]))
 
-            baro_num = baro_out.loc[int(well_line['BaroLoggerType'])]
-            printmes("Using barometer {:} for well {:}!".format(int(well_line['BaroLoggerType']),well_line['LocationName']))
+            baro_num = baro_out.loc[int(well_line['barologgertype'])]
+            print(
+                "Using barometer {:} for well {:}!".format(int(well_line['barologgertype']), well_line['locationname']))
 
-            #try:
-            man = manl[manl['LOCATIONID'] == int(wells.index[i])]
+            # try:
+            man = manl[manl['locationid'] == int(wells.index[i])]
             df, man, be, drift = simp_imp_well(well_line['full_filepath'], baro_num, wells.index[i],
-                                           man, stbl_elev=self.stbl, drift_tol=float(self.tol), jumptol=jumptol,
-                                           conn_file_root=conn_file_root, override=self.ovrd,
-                                           api_token=self.api_token)
-            printmes(arcpy.GetMessages())
-            printmes('Drift for well {:} is {:}.'.format(well_line['LocationName'], drift))
-            printmes("Well {:} complete.\n---------------".format(well_line['LocationName']))
+                                               man, stbl_elev=self.stbl, drift_tol=float(self.tol), jumptol=jumptol,
+                                               conn_file_root=conn_file_root, imp=self.ovrd,
+                                               api_token=self.api_token)
+
+            print('Drift for well {:} is {:}.'.format(well_line['locationname'], drift))
+            print("Well {:} complete.\n---------------".format(well_line['locationname']))
 
             if self.toexcel:
                 if i == 0:
-                    writer = pd.ExcelWriter(self.xledir + '/wells.xlsx', engine= 'xlsxwriter')
-                    printmes(maxtime)
-                    df.to_excel(writer, sheet_name='{:}_{:%Y%m}'.format(well_line['LocationName'], maxtime))
+                    writer = pd.ExcelWriter(self.xledir + '/wells.xlsx', engine='xlsxwriter')
+                    print(maxtime)
+                    df.to_excel(writer, sheet_name='{:}_{:%Y%m}'.format(well_line['locationname'], maxtime))
                     writer.save()
 
                 else:
-                    df.to_excel(writer, sheet_name='{:}_{:%Y%m}'.format(well_line['LocationName'], maxtime))
+                    df.to_excel(writer, sheet_name='{:}_{:%Y%m}'.format(well_line['locationname'], maxtime))
                     writer.save()
                 writer.close()
 
             if self.should_plot:
                 # plot data
-                df.set_index('READINGDATE', inplace=True)
-                y1 = df['WATERELEVATION'].values
+                df.set_index('readingdate', inplace=True)
+                y1 = df['waterelevation'].values
                 y2 = df['barometer'].values
                 x1 = df.index.values
                 x2 = df.index.values
 
                 x4 = man.index
-                y4 = man['WATERELEVATION']
+                y4 = man['waterelevation']
                 fig, ax1 = plt.subplots()
                 ax1.scatter(x4, y4, color='purple')
                 ax1.plot(x1, y1, color='blue', label='Water Level Elevation')
                 ax1.set_ylabel('Water Level Elevation', color='blue')
-                #try:
-                #    ax1.set_ylim(df['WATERELEVATION'].min(), df['WATERELEVATION'].min())
-                #except:
+                # try:
+                #    ax1.set_ylim(df['waterelevation'].min(), df['waterelevation'].min())
+                # except:
                 #    pass
-                #y_formatter = tick.ScalarFormatter(useOffset=False)
-                #ax1.yaxis.set_major_formatter(y_formatter)
+                # y_formatter = tick.ScalarFormatter(useOffset=False)
+                # ax1.yaxis.set_major_formatter(y_formatter)
                 ax2 = ax1.twinx()
                 ax2.set_ylabel('Barometric Pressure (ft)', color='red')
                 ax2.plot(x2, y2, color='red', label='Barometric pressure (ft)')
@@ -2439,11 +2775,11 @@ class wellimport(object):
                 ax1.legend(h1 + h2, l1 + l2, loc=3)
                 plt.xlim(df.first_valid_index() - datetime.timedelta(days=3),
                          df.last_valid_index() + datetime.timedelta(days=3))
-                plt.title('Well: {:}  Drift: {:}  Baro. Eff.: {:}'.format(well_line['LocationName'], drift, be))
+                plt.title('Well: {:}  Drift: {:}  Baro. Eff.: {:}'.format(well_line['locationname'], drift, be))
                 pdf_pages.savefig(fig)
                 plt.close()
-            #except Exception as err:
-             #   printmes(err)
+            # except Exception as err:
+            #   printmes(err)
 
         if self.should_plot:
             pdf_pages.close()
@@ -2456,6 +2792,7 @@ class wellimport(object):
         last_date = self.man_enddate
         save_local = self.save_location
         quer = self.quer
+
         if first_date == '':
             first_date = None
         if last_date == '':
@@ -2464,26 +2801,31 @@ class wellimport(object):
         if quer == 'all stations':
             where_clause = None
         elif quer == 'wetland_piezometers':
-            where_clause = "WLNetworkName IN('Snake Valley Wetlands','Mills-Mona Wetlands')"
+            where_clause = """wlnetworkname IN('Snake Valley Wetlands','Mills-Mona Wetlands')"""
         elif quer == 'snake valley wells':
-            where_clause = "WLNetworkName IN('Snake Valley')"
+            where_clause = """wlnetworkname IN('Snake Valley')"""
         elif quer == 'hazards':
-            where_clause = 'Hazards'
+            where_clause = """wlnetworkname" IN('Hazards')"""
         else:
             where_clause = None
 
-        loc_table = "UGGP.UGGPADMIN.UGS_NGWMN_Monitoring_Locations"
-        loc_ids = [str(row[0]) for row in arcpy.da.SearchCursor(loc_table, 'AltLocationID', where_clause)]
+        if where_clause:
+            sql = 'SELECT altlocationid FROM ugs_ngwmn_monitoring_locations WHERE ' + where_clause
+        else:
+            sql = 'SELECT altlocationid FROM ugs_ngwmn_monitoring_locations'
+
+        loc_ids = list(pd.read_sql(sql, engine)['altlocationid'].values)
+
         gapdct = {}
 
         for site_number in loc_ids:
-            printmes(site_number)
+            print(site_number)
             try:
                 gapdct[site_number] = get_gap_data(int(site_number), enviro, gap_tol=0.5, first_date=first_date,
                                                    last_date=last_date,
-                                                   gw_reading_table="UGGP.UGGPADMIN.UGS_GW_reading")
+                                                   gw_reading_table="ugs_gw_reading")
             except AttributeError:
-                printmes("Error with {:}".format(site_number))
+                print("Error with {:}".format(site_number))
         gapdata = pd.concat(gapdct)
 
         gapdata.rename_axis(['LocationId', 'Datetime'], inplace=True)

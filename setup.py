@@ -30,5 +30,6 @@ setup(name='loggerloader',
                         "Numpy >= 0.6.0",
                         "Matplotlib >= 1.1",
                         "xlrd >= 0.5.4",
-                        "openpyxl >= 2.4.0"],
+                        "openpyxl >= 2.4.0",
+                        "sqlalchemy >= 1.1.0"],
       packages = find_packages(exclude=['contrib', 'docs', 'tests*']))
