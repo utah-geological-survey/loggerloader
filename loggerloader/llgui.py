@@ -88,6 +88,7 @@ class Feedback:
         self.frame_step3.grid(row=4, column=0, columnspan=3)
         ttk.Label(self.frame_step3, text="3. Align Baro and Well Data:").grid(row=0, column=0, columnspan=3)
         ttk.Label(self.frame_step3, text='Pref. Data Freq.').grid(row=1, column=0, columnspan=2)
+        # Boxes for data frequency
         self.freqint = ttk.Combobox(self.frame_step3, width=4, values=list(range(1,120)))
         self.freqint.grid(row=2,column=0)
         self.freqint.current(59)
@@ -97,6 +98,7 @@ class Feedback:
         self.alignpro = ttk.Button(self.frame_step3,text='Align Datasets',command=self.aligndata)
         self.alignpro.grid(row=2, column=2)
 
+        #-----------Manual Data-------------------------------------------------------------
         # Select Manual Table Interface
         self.frame_step4 = ttk.Frame(self.frame_content)
         self.frame_step4.grid(row=5, column=0, columnspan=3)
@@ -198,6 +200,7 @@ class Feedback:
         self.manlocid.grid(row=4, column=2)
 
         ttk.Label(self.manfileframe, text="Which locationid?").grid(row=5, column=1)
+        #self.real_locid = StringVar(self.manfileframe)
         self.reallocid = ttk.Combobox(self.manfileframe, width=15,
                                     values=['1001','1002'],
                                     postcommand=lambda: self.man_col_select_loc(self.reallocid))
@@ -246,6 +249,9 @@ class Feedback:
         self.wellstickup.grid(row=2,column=2)
         self.wellstickupunits.grid(row=2,column=3)
 
+        self.calc_elev = ttk.Button(self.frame_step6, text='Calculate Elevations', command=self.elevcalc)
+        self.calc_elev.grid(row=3,column=0,columnspan=3)
+
         # add tabs in the frame to the right
         self.notebook = ttk.Notebook(self.frame2)
         self.notebook.pack(fill=BOTH, expand=True)
@@ -255,6 +261,17 @@ class Feedback:
         #self.notebook.add(self.frame5, text='Plot Well Data')
         #self.notebook.select(1)
         #self.frame5.pack()
+
+    def elevcalc(self):
+        mstickup = self.wellstickup.get()
+        melev = self.wellgroundelev.get()
+        if self.wellstickupunits.get() == 'm':
+            mstickup = mstickup * 3.2808
+        elif self.wellgroundelevunits.get() == 'm':
+           melev = melev * 3.2808
+        self.manelevs = ll.get_man_gw_elevs(self.man_entry_df,mstickup, melev)
+        #self.transelevs = ll.get_trans_gw_elevations()
+        print(self.manelevs)
 
     def fix_drift(self):
         self.wellbarofixed, self.drift_info, mxdrft = ll.fix_drift(self.alignwellbaro,self.man_entry_df)
@@ -304,6 +321,8 @@ class Feedback:
                                                           self.man_meas2entry.get()],
                                               'locationid':[self.man_locid.get()]*2,
                                               'units':[self.manunits.get()]*2})
+            if self.manunits.get()=='m':
+                df['measureddtw'] = df['measureddtw']*3.28084
             self.man_entry_df = df.set_index(['readingdate'])
             print(self.man_entry_df)
         elif nbnum == 1:
@@ -311,6 +330,8 @@ class Feedback:
                                                      self.manmeas.get():'measureddtw',
                                                      self.manlocid.get():'locationid'})
             df['units']=self.manunits.get()
+            if self.manunits.get()=='m':
+                df['measureddtw'] = df['measureddtw']*3.28084
             df = df.set_index(['readingdate'])
             self.man_entry_df = df[['measureddtw','locationid','units']]
             self.man_entry_df = self.man_entry_df[self.man_entry_df['locationid']==int(self.reallocid.get())]
@@ -336,10 +357,16 @@ class Feedback:
 
     def man_col_select(self, cmbo):
         if 'mandata' in self.__dict__.keys():
-            cmbo['values'] = list(self.mandata.columns.values)
+            mancols = list(self.mandata.columns.values)
+            cmbo['values'] = mancols
+
+            for col in mancols:
+                if col in ['datetime', 'date', 'readingdate', 'Date']:
+                    self.mandatetime.current(mancols.index(col))
         else:
             messagebox.showinfo(title='Attention', message='Select a manual file!')
             self.opendiag(framename='Man Data')
+
 
     def man_col_select_loc(self, cmbo):
         if 'mandata' in self.__dict__.keys():

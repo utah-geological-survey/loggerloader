@@ -5,16 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="added gui">
-      <change afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/rSettings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/loggerloader/GeologicalSurvey.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/loggerloader/llgui.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/loggerloader/scratch2.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/loggerloader.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/loggerloader.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/loggerloader/loader.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/loader.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/setup.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/loggerloader/llgui.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/llgui.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -191,9 +183,6 @@
       <module name="loggerloader" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="C:\ProgramData\Anaconda3\python.exe" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/loggerloader" />
       <option name="IS_MODULE_SDK" value="false" />
@@ -284,9 +273,9 @@
     <list>
       <item itemvalue="Python.llgui" />
       <item itemvalue="Python.scratch2" />
-      <item itemvalue="Python tests.Doctest get_man_gw_elevs" />
       <item itemvalue="Python tests.Nosetests for test.testcalc_drift" />
       <item itemvalue="Python tests.Nosetests for test.testget_breakpoints" />
+      <item itemvalue="Python tests.Doctest get_man_gw_elevs" />
     </list>
     <recent_temporary>
       <list>
@@ -775,22 +764,22 @@
       <screen x="1920" y="1" width="1920" height="1050" />
     </state>
     <state x="2659" y="281" key="FileChooserDialogImpl/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@1920.1.1920.1050" timestamp="1580136790190" />
-    <state width="1348" height="227" key="GridCell.Tab.0.bottom" timestamp="1580613848259">
+    <state width="1348" height="227" key="GridCell.Tab.0.bottom" timestamp="1580687818899">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
-    <state width="1348" height="227" key="GridCell.Tab.0.bottom/0.40.1368.872@0.40.1368.872" timestamp="1580613848259" />
-    <state width="1348" height="227" key="GridCell.Tab.0.center" timestamp="1580613848259">
+    <state width="1348" height="227" key="GridCell.Tab.0.bottom/0.40.1368.872@0.40.1368.872" timestamp="1580687818899" />
+    <state width="1348" height="227" key="GridCell.Tab.0.center" timestamp="1580687818899">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
-    <state width="1348" height="227" key="GridCell.Tab.0.center/0.40.1368.872@0.40.1368.872" timestamp="1580613848259" />
-    <state width="1348" height="227" key="GridCell.Tab.0.left" timestamp="1580613848258">
+    <state width="1348" height="227" key="GridCell.Tab.0.center/0.40.1368.872@0.40.1368.872" timestamp="1580687818899" />
+    <state width="1348" height="227" key="GridCell.Tab.0.left" timestamp="1580687818894">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
-    <state width="1348" height="227" key="GridCell.Tab.0.left/0.40.1368.872@0.40.1368.872" timestamp="1580613848258" />
-    <state width="1348" height="227" key="GridCell.Tab.0.right" timestamp="1580613848259">
+    <state width="1348" height="227" key="GridCell.Tab.0.left/0.40.1368.872@0.40.1368.872" timestamp="1580687818894" />
+    <state width="1348" height="227" key="GridCell.Tab.0.right" timestamp="1580687818899">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
-    <state width="1348" height="227" key="GridCell.Tab.0.right/0.40.1368.872@0.40.1368.872" timestamp="1580613848259" />
+    <state width="1348" height="227" key="GridCell.Tab.0.right/0.40.1368.872@0.40.1368.872" timestamp="1580687818899" />
     <state x="397" y="193" width="937" height="564" key="MultipleFileMergeDialog" timestamp="1580684461164">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
@@ -806,16 +795,16 @@
     </state>
     <state x="552" y="247" key="Vcs.Push.Dialog.v2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580390777985" />
     <state x="393" y="245" key="Vcs.Push.Dialog.v2/0.40.1368.872@0.40.1368.872" timestamp="1580678337198" />
-    <state x="467" y="331" key="com.intellij.ide.util.TipDialog" timestamp="1580480606089">
+    <state x="467" y="331" key="com.intellij.ide.util.TipDialog" timestamp="1580688901598">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state x="656" y="350" key="com.intellij.ide.util.TipDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580427631577" />
     <state x="2576" y="351" key="com.intellij.ide.util.TipDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@1920.1.1920.1050" timestamp="1580135658528" />
-    <state x="467" y="331" key="com.intellij.ide.util.TipDialog/0.40.1368.872@0.40.1368.872" timestamp="1580480606089" />
-    <state x="492" y="395" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1580453234467">
+    <state x="467" y="331" key="com.intellij.ide.util.TipDialog/0.40.1368.872@0.40.1368.872" timestamp="1580688901598" />
+    <state x="492" y="395" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1580685111633">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
-    <state x="492" y="395" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.40.1368.872@0.40.1368.872" timestamp="1580453234467" />
+    <state x="492" y="395" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.40.1368.872@0.40.1368.872" timestamp="1580685111633" />
     <state x="428" y="269" key="git4idea.merge.GitMergeDialog" timestamp="1580683606466">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
