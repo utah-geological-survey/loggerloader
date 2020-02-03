@@ -360,13 +360,6 @@
       <workItem from="1580389627148" duration="26126000" />
       <workItem from="1580427628078" duration="1322000" />
     </task>
-    <task id="LOCAL-00161" summary="fix fix drift">
-      <created>1538519848792</created>
-      <option name="number" value="00161" />
-      <option name="presentableId" value="LOCAL-00161" />
-      <option name="project" value="LOCAL" />
-      <updated>1538519848792</updated>
-    </task>
     <task id="LOCAL-00162" summary="fix fix drift">
       <created>1538521184495</created>
       <option name="number" value="00162" />
@@ -703,7 +696,14 @@
       <option name="project" value="LOCAL" />
       <updated>1580678327626</updated>
     </task>
-    <option name="localTasksCounter" value="210" />
+    <task id="LOCAL-00210" summary="added gui">
+      <created>1580708036134</created>
+      <option name="number" value="00210" />
+      <option name="presentableId" value="LOCAL-00210" />
+      <option name="project" value="LOCAL" />
+      <updated>1580708036136</updated>
+    </task>
+    <option name="localTasksCounter" value="211" />
     <servers />
   </component>
   <component name="TodoView" selected-index="3">
@@ -755,11 +755,11 @@
       <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state x="447" y="280" key="#com.intellij.fileTypes.FileTypeChooser/0.40.1368.872@0.40.1368.872" timestamp="1580570213309" />
-    <state x="438" y="105" key="CommitChangelistDialog2" timestamp="1580678578310">
+    <state x="438" y="105" key="CommitChangelistDialog2" timestamp="1580708033591">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state x="615" y="120" key="CommitChangelistDialog2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580390769615" />
-    <state x="438" y="105" key="CommitChangelistDialog2/0.40.1368.872@0.40.1368.872" timestamp="1580678578310" />
+    <state x="438" y="105" key="CommitChangelistDialog2/0.40.1368.872@0.40.1368.872" timestamp="1580708033591" />
     <state x="2659" y="281" key="FileChooserDialogImpl" timestamp="1580136790190">
       <screen x="1920" y="1" width="1920" height="1050" />
     </state>
@@ -790,11 +790,11 @@
     <state x="465" y="57" key="SettingsEditor/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580390433263" />
     <state x="2385" y="58" key="SettingsEditor/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@1920.1.1920.1050" timestamp="1580136800577" />
     <state x="331" y="87" key="SettingsEditor/0.40.1368.872@0.40.1368.872" timestamp="1580481251969" />
-    <state x="393" y="245" key="Vcs.Push.Dialog.v2" timestamp="1580678337198">
+    <state x="393" y="245" key="Vcs.Push.Dialog.v2" timestamp="1580740797341">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state x="552" y="247" key="Vcs.Push.Dialog.v2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580390777985" />
-    <state x="393" y="245" key="Vcs.Push.Dialog.v2/0.40.1368.872@0.40.1368.872" timestamp="1580678337198" />
+    <state x="393" y="245" key="Vcs.Push.Dialog.v2/0.40.1368.872@0.40.1368.872" timestamp="1580740797341" />
     <state x="467" y="331" key="com.intellij.ide.util.TipDialog" timestamp="1580688901598">
       <screen x="0" y="40" width="1368" height="872" />
     </state>

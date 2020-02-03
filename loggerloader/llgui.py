@@ -270,7 +270,7 @@ class Feedback:
         elif self.wellgroundelevunits.get() == 'm':
            melev = melev * 3.2808
         self.manelevs = ll.get_man_gw_elevs(self.man_entry_df,mstickup, melev)
-        #self.transelevs = ll.get_trans_gw_elevations()
+        self.transelevs = ll.get_trans_gw_elevations()
         print(self.manelevs)
 
     def fix_drift(self):
@@ -290,7 +290,7 @@ class Feedback:
         pt = pandastable.Table(tableframe, dataframe=df,
                                showtoolbar=True, showstatusbar=True)
         pt.show()
-        self.make_graph(graphframe, framename=framename)
+        self.make_graph_frame(graphframe, framename=framename)
 
     def aligndata(self):
         self.alignwellbaro = ll.well_baro_merge(self.welldata, self.barodata, sampint=self.freqint.get())
@@ -306,7 +306,7 @@ class Feedback:
         pt = pandastable.Table(tableframe, dataframe=self.alignwellbaro.reset_index(),
                                showtoolbar=True, showstatusbar=True)
         pt.show()
-        self.make_graph(graphframe, framename=framename)
+        self.make_graph_frame(graphframe, framename=framename)
 
 
     def proc_man(self):
@@ -350,7 +350,7 @@ class Feedback:
             pt = pandastable.Table(tableframe, dataframe=self.man_entry_df.reset_index(),
                                    showtoolbar=True, showstatusbar=True)
             pt.show()
-            self.make_graph(graphframe, framename=framename, plotvar='measureddtw')
+            self.make_graph_frame(graphframe, framename=framename, plotvar='measureddtw')
 
     def combodateassign(self, cmbo):
         print(cmbo.get())
@@ -390,7 +390,7 @@ class Feedback:
         for widget in frame.winfo_children():
             widget.destroy()
 
-    def make_graph(self, frame, plotvar='Level', framename='Raw Well'):
+    def make_graph_frame(self, frame, plotvar='Level', framename='Raw Well'):
         # populate main graph tab
         # Create Tab Buttons
         #self.graph_button_frame1 = ttk.Frame(frame)
@@ -399,24 +399,23 @@ class Feedback:
         #self.button_right = Button(self.graph_button_frame1, text="Increase Slope >", command=self.increase)
         #self.button_right.pack(side="left")
         #self.graph_button_frame1.pack()
-
-        # Create Main Graph
+        #if framename not in('Raw Baro', 'Manual'):
         self.graph_frame1 = ttk.Frame(frame)
         self.graph_frame1.pack()
-
-        #if framename not in('Raw Baro', 'Manual'):
+        self.refbutton = Button(self.graph_frame1, text="Refresh Graph",
+                                command=lambda: self.canvas.draw())
         fig = Figure()
         ax = fig.add_subplot(111)
 
         if framename == 'Raw Baro':
             if 'barodata' in self.__dict__.keys():
-                df = self.barodata
-                ax.plot(df.index, df[plotvar])
+                self.barodata.redraw()
+                ax.plot(self.barodata.model.df.set_index(['readingdate']).index, self.barodata.model.df[plotvar])
                 ax.set_ylabel("Pressure")
         elif framename == 'Raw Well':
             if 'welldata' in self.__dict__.keys():
-                df = self.welldata
-                ax.plot(df.index, df[plotvar])
+                self.welldata.redraw()
+                ax.plot(self.welldata.model.df.index, self.welldata.model.df[plotvar])
                 ax.set_ylabel("Pressure")
         elif framename == 'Man Data':
             if 'man_entry_df' in self.__dict__.keys():
@@ -447,12 +446,12 @@ class Feedback:
         #self.line, = ax.plot(df.index, df[plotvar])
 
         ax.fmt_xdata = mdates.DateFormatter('%Y-%m-%d %H:%M')
-        canvas = FigureCanvasTkAgg(fig, master=self.graph_frame1)
-        toolbar = NavigationToolbar2Tk(canvas, self.graph_frame1)
+        self.canvas = FigureCanvasTkAgg(fig, master=self.graph_frame1)
+        toolbar = NavigationToolbar2Tk(self.canvas, self.graph_frame1)
         toolbar.update()
-        canvas.draw()
-        canvas.get_tk_widget().pack(side='top', fill='both', expand=1)
-        canvas.mpl_connect("key_press_event", self.on_key_press)
+        self.canvas.draw()
+        self.canvas.get_tk_widget().pack(side='top', fill='both', expand=1)
+        self.canvas.mpl_connect("key_press_event", self.on_key_press)
 
     def on_key_press(self, event):
         print("you pressed {}".format(event.key))
@@ -495,14 +494,14 @@ class Feedback:
                 panedframe.add(graphframe, weight=4)
                 df = ll.NewTransImp(filename).well.drop(['name'], axis=1)
                 if framename == 'Raw Well':
-                    self.welldata = df
+                    self.welldata = pandastable.Table(tableframe, dataframe=df.reset_index(), showtoolbar=True, showstatusbar=True)
                     self.well_string.set(filename)
+                    self.welldata.show()
                 elif framename == 'Raw Baro':
-                    self.barodata = df
+                    self.barodata = pandastable.Table(tableframe, dataframe=df.reset_index(), showtoolbar=True, showstatusbar=True)
                     self.baro_string.set(filename)
-                pt = pandastable.Table(tableframe, dataframe=df.reset_index(), showtoolbar=True, showstatusbar=True)
-                pt.show()
-                self.make_graph(graphframe)
+                    self.barodata.show()
+                self.make_graph_frame(graphframe)
             elif framename == 'Man Data':
                 #https://stackoverflow.com/questions/45357174/tkinter-drop-down-menu-from-excel
                 #TODO add excel sheet options to file selection
