@@ -1,6 +1,9 @@
-from matplotlib.backends.backend_tkagg import (
-    FigureCanvasTkAgg, NavigationToolbar2Tk)
+import matplotlib
+matplotlib.use("TkAgg")
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 # Implement the default Matplotlib key bindings.
+import matplotlib.animation as animation
+from matplotlib import style
 from matplotlib.backend_bases import key_press_handler
 from matplotlib.figure import Figure
 import matplotlib.dates as mdates
@@ -17,7 +20,7 @@ import pandastable
 from pandas.plotting import register_matplotlib_converters
 register_matplotlib_converters()
 
-
+style.use('ggplot')
 import loggerloader as ll
 
 class Feedback:
@@ -255,6 +258,7 @@ class Feedback:
         # add tabs in the frame to the right
         self.notebook = ttk.Notebook(self.frame2)
         self.notebook.pack(fill=BOTH, expand=True)
+        self.notelist = {}
         #self.frame4 = ttk.Frame(self.notebook)
         #self.frame5 = ttk.Frame(self.notebook)
         #self.notebook.add(self.frame4, text='Table')
@@ -484,8 +488,15 @@ class Feedback:
             pass
         else:
             if framename in ('Raw Well','Raw Baro'):
+                if framename in self.notelist.keys():
+                    self.notebook.forget(self.notelist[framename])
+                    self.notelist[framename] = 'old'
                 new_frame = ttk.Frame(self.notebook)
                 self.notebook.add(new_frame, text=framename)
+                for t in range(len(self.notebook.tabs())):
+                    self.notelist[self.notebook.tab(t)['text']] = t
+
+                print(self.notelist)
                 panedframe = ttk.Panedwindow(new_frame, orient=VERTICAL)
                 panedframe.pack(fill=BOTH, expand=True)
                 tableframe = ttk.Frame(panedframe, relief=SUNKEN)
@@ -502,6 +513,7 @@ class Feedback:
                     self.baro_string.set(filename)
                     self.barodata.show()
                 self.make_graph_frame(graphframe)
+
             elif framename == 'Man Data':
                 #https://stackoverflow.com/questions/45357174/tkinter-drop-down-menu-from-excel
                 #TODO add excel sheet options to file selection
@@ -511,6 +523,39 @@ class Feedback:
                     self.mandata = pd.read_excel(filename)
                 elif file_extension == '.csv':
                     self.mandata = pd.read_csv(filename)
+
+class graphpage(Frame):
+    def __init__(self, parent, controller):
+        Frame.__init__(self, parent)
+        label = Label(self, text='Graph')
+        label.pack(pady=10, padx=10)
+        fig = Figure(figsize=(5,5), dpi=200)
+        a = fig.add_subplot(111)
+        a.plot([1,2,3,5,6,8,14,20],[1,2,3,5,6,10,15,16])
+
+        canvas = FigureCanvasTkAgg(fig, self)
+        toolbar = NavigationToolbar2Tk(canvas, self)
+        toolbar.update()
+
+        canvas.show()
+        canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=True)
+        canvas._tkcanvas.pack(side=TOP, fill=BOTH, expand=True)
+
+
+def grpher():
+    fig = Figure(figsize=(5, 5), dpi=200)
+    ax = fig.add_subplot(111)
+    return ax
+
+def animate(i,df,plotvar):
+
+    ax.clear()
+    a.plot(df.index, df[plotvar])
+
+ani = animation.FuncAnimation(fig,animate,interval=5000)
+
+
+
 
 def main():
     root = Tk()
