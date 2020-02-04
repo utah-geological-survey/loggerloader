@@ -4,9 +4,7 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="update HeaderTable to be more modular">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="update HeaderTable to be more modular" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -268,14 +266,7 @@
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
       <workItem from="1580767491033" duration="7152000" />
-      <workItem from="1580823517124" duration="335000" />
-    </task>
-    <task id="LOCAL-00137" summary="Created PullOutsideBaro">
-      <created>1536154953711</created>
-      <option name="number" value="00137" />
-      <option name="presentableId" value="LOCAL-00137" />
-      <option name="project" value="LOCAL" />
-      <updated>1536154953711</updated>
+      <workItem from="1580823517124" duration="617000" />
     </task>
     <task id="LOCAL-00138" summary="Created PullOutsideBaro">
       <created>1536156125088</created>
@@ -613,7 +604,14 @@
       <option name="project" value="LOCAL" />
       <updated>1580775076293</updated>
     </task>
-    <option name="localTasksCounter" value="186" />
+    <task id="LOCAL-00186" summary="update HeaderTable to be more modular">
+      <created>1580824003032</created>
+      <option name="number" value="00186" />
+      <option name="presentableId" value="LOCAL-00186" />
+      <option name="project" value="LOCAL" />
+      <updated>1580824003032</updated>
+    </task>
+    <option name="localTasksCounter" value="187" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -661,6 +659,7 @@
     <option name="version" value="1" />
   </component>
   <component name="VcsManagerConfiguration">
+    <option name="CHECK_NEW_TODO" value="false" />
     <MESSAGE value="example file" />
     <MESSAGE value="updated how baro data is pulled; added function" />
     <MESSAGE value="added import baro data function" />
@@ -693,10 +692,10 @@
       <screen x="1920" y="1" width="1920" height="1050" />
     </state>
     <state x="2599" y="141" key="#llgui/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@1920.1.1920.1050" timestamp="1580767659733" />
-    <state x="615" y="120" key="CommitChangelistDialog2" timestamp="1580775070958">
+    <state x="615" y="120" key="CommitChangelistDialog2" timestamp="1580823999094">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state x="615" y="120" key="CommitChangelistDialog2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580775070958" />
+    <state x="615" y="120" key="CommitChangelistDialog2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580823999094" />
     <state width="935" height="274" key="GridCell.Tab.0.bottom" timestamp="1580775336225">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
@@ -717,18 +716,22 @@
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
     <state x="461" y="168" key="SettingsEditor/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580768975081" />
-    <state x="552" y="259" key="Vcs.Push.Dialog.v2" timestamp="1580775080237">
+    <state x="747" y="242" key="VCS.ChangeListViewerDialog" timestamp="1580824162576">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state x="552" y="259" key="Vcs.Push.Dialog.v2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580775080237" />
+    <state x="747" y="242" key="VCS.ChangeListViewerDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580824162576" />
+    <state x="552" y="259" key="Vcs.Push.Dialog.v2" timestamp="1580824011005">
+      <screen x="0" y="0" width="1920" height="1050" />
+    </state>
+    <state x="552" y="259" key="Vcs.Push.Dialog.v2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580824011005" />
     <state x="656" y="350" key="com.intellij.ide.util.TipDialog" timestamp="1580823518660">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
     <state x="656" y="350" key="com.intellij.ide.util.TipDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580823518660" />
-    <state x="769" y="443" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1580823851897">
+    <state x="769" y="443" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1580824134209">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state x="769" y="443" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580823851897" />
+    <state x="769" y="443" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580824134209" />
     <state x="2661" y="240" key="git4idea.branch.GitSmartOperationDialog" timestamp="1580767581627">
       <screen x="1920" y="1" width="1920" height="1050" />
     </state>
@@ -737,6 +740,10 @@
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
     <state x="746" y="317" key="git4idea.merge.GitMergeDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580823952332" />
+    <state x="755" y="426" key="git4idea.ui.GitStashDialog" timestamp="1580824118695">
+      <screen x="0" y="0" width="1920" height="1050" />
+    </state>
+    <state x="755" y="426" key="git4idea.ui.GitStashDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580824118695" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/loggerloader$llgui.coverage" NAME="llgui Coverage Results" MODIFIED="1580772302106" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
