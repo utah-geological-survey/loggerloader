@@ -234,7 +234,7 @@ class Feedback:
         # Fix Drift Button
         self.frame_step6 = ttk.Frame(self.frame_content)
         self.frame_step6.grid(row=7, column=0, columnspan=3)
-        ttk.Label(self.frame_step6,text='6. Align Elevation and Offset').grid(row=0,column=0, columnspan = 4)
+        ttk.Label(self.frame_step6, text='6. Align Elevation and Offset').grid(row=0,column=0, columnspan = 4)
         ttk.Label(self.frame_step6, text='Ground Elev.').grid(row=1, column=0)
         ttk.Label(self.frame_step6, text='Stickup').grid(row=1, column=2)
         ttk.Label(self.frame_step6, text='Elev. Units').grid(row=1, column=1)
@@ -265,6 +265,13 @@ class Feedback:
         #self.notebook.add(self.frame5, text='Plot Well Data')
         #self.notebook.select(1)
         #self.frame5.pack()
+
+    def animate(self, frame, fig, ax, framename):
+        if "welldata" in self.__dict__.keys():
+            self.welldata.redraw()
+            #self.welldata.update()
+        animation.FuncAnimation(fig, lambda: self.make_graph_frame(fig, ax, framename=framename), interval=1000)
+
 
     def elevcalc(self):
         mstickup = self.wellstickup.get()
@@ -394,7 +401,9 @@ class Feedback:
         for widget in frame.winfo_children():
             widget.destroy()
 
-    def make_graph_frame(self, frame, plotvar='Level', framename='Raw Well'):
+
+
+    def make_graph_frame(self, fig, ax, framename, plotvar='Level'):
         # populate main graph tab
         # Create Tab Buttons
         #self.graph_button_frame1 = ttk.Frame(frame)
@@ -404,22 +413,20 @@ class Feedback:
         #self.button_right.pack(side="left")
         #self.graph_button_frame1.pack()
         #if framename not in('Raw Baro', 'Manual'):
-        self.graph_frame1 = ttk.Frame(frame)
-        self.graph_frame1.pack()
-        self.refbutton = Button(self.graph_frame1, text="Refresh Graph",
-                                command=lambda: self.canvas.draw())
-        fig = Figure()
-        ax = fig.add_subplot(111)
 
+
+        ax.clear()
         if framename == 'Raw Baro':
             if 'barodata' in self.__dict__.keys():
                 self.barodata.redraw()
-                ax.plot(self.barodata.model.df.set_index(['readingdate']).index, self.barodata.model.df[plotvar])
+                self.barodata.update()
+                ax.plot(self.barodata.model.df.set_index(['DateTime']).index, self.barodata.model.df['Level'])
                 ax.set_ylabel("Pressure")
         elif framename == 'Raw Well':
             if 'welldata' in self.__dict__.keys():
                 self.welldata.redraw()
-                ax.plot(self.welldata.model.df.index, self.welldata.model.df[plotvar])
+                self.welldata.update()
+                ax.plot(self.welldata.model.df.set_index(['DateTime']).index, self.welldata.model.df['Level'])
                 ax.set_ylabel("Pressure")
         elif framename == 'Man Data':
             if 'man_entry_df' in self.__dict__.keys():
@@ -448,18 +455,17 @@ class Feedback:
 
 
         #self.line, = ax.plot(df.index, df[plotvar])
-
+        #ax.fmt_xdata = mdates.DateFormatter('%Y-%m-%d %H:%M')
         ax.fmt_xdata = mdates.DateFormatter('%Y-%m-%d %H:%M')
-        self.canvas = FigureCanvasTkAgg(fig, master=self.graph_frame1)
-        toolbar = NavigationToolbar2Tk(self.canvas, self.graph_frame1)
-        toolbar.update()
-        self.canvas.draw()
-        self.canvas.get_tk_widget().pack(side='top', fill='both', expand=1)
-        self.canvas.mpl_connect("key_press_event", self.on_key_press)
+        graphpage(self.graph_frame1, fig)
+        #self.canvas = FigureCanvasTkAgg(fig, master=self.graph_frame1)
+        #toolbar = NavigationToolbar2Tk(self.canvas, self.graph_frame1)
+        #toolbar.update()
+        #self.canvas.draw()
+        #self.canvas.get_tk_widget().pack(side='top', fill='both', expand=1)
+        #self.canvas.mpl_connect("key_press_event", self.on_key_press)
 
-    def on_key_press(self, event):
-        print("you pressed {}".format(event.key))
-        key_press_handler(event, self.canvas, self.toolbar)
+
 
     def decrease(self):
         x, y = self.line.get_data()
@@ -503,7 +509,15 @@ class Feedback:
                 graphframe = ttk.Frame(panedframe, relief=SUNKEN)
                 panedframe.add(tableframe, weight=1)
                 panedframe.add(graphframe, weight=4)
+                butframe = ttk.Frame(graphframe)
+                butframe.pack()
                 df = ll.NewTransImp(filename).well.drop(['name'], axis=1)
+                self.graph_frame1 = ttk.Frame(graphframe)
+
+                fig = Figure()
+                ax = fig.add_subplot(111)
+
+
                 if framename == 'Raw Well':
                     self.welldata = pandastable.Table(tableframe, dataframe=df.reset_index(), showtoolbar=True, showstatusbar=True)
                     self.well_string.set(filename)
@@ -512,8 +526,12 @@ class Feedback:
                     self.barodata = pandastable.Table(tableframe, dataframe=df.reset_index(), showtoolbar=True, showstatusbar=True)
                     self.baro_string.set(filename)
                     self.barodata.show()
-                self.make_graph_frame(graphframe)
+                self.make_graph_frame(fig,ax,framename=framename)
 
+                self.anigraph = ttk.Button(butframe, text="Refresh Graph",
+                                           command=self.make_graph_frame(fig, ax, framename=framename))
+                self.anigraph.pack()
+                self.graph_frame1.pack()
             elif framename == 'Man Data':
                 #https://stackoverflow.com/questions/45357174/tkinter-drop-down-menu-from-excel
                 #TODO add excel sheet options to file selection
@@ -524,35 +542,23 @@ class Feedback:
                 elif file_extension == '.csv':
                     self.mandata = pd.read_csv(filename)
 
+
+
 class graphpage(Frame):
-    def __init__(self, parent, controller):
+    def __init__(self, parent, fig):
         Frame.__init__(self, parent)
         label = Label(self, text='Graph')
         label.pack(pady=10, padx=10)
-        fig = Figure(figsize=(5,5), dpi=200)
-        a = fig.add_subplot(111)
-        a.plot([1,2,3,5,6,8,14,20],[1,2,3,5,6,10,15,16])
-
-        canvas = FigureCanvasTkAgg(fig, self)
-        toolbar = NavigationToolbar2Tk(canvas, self)
+        self.canvas = FigureCanvasTkAgg(fig, master=parent)
+        toolbar = NavigationToolbar2Tk(self.canvas, parent)
         toolbar.update()
+        self.canvas.draw()
+        self.canvas.get_tk_widget().pack(side='top', fill='both', expand=1)
+        self.canvas.mpl_connect("key_press_event", self.on_key_press)
 
-        canvas.show()
-        canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=True)
-        canvas._tkcanvas.pack(side=TOP, fill=BOTH, expand=True)
-
-
-def grpher():
-    fig = Figure(figsize=(5, 5), dpi=200)
-    ax = fig.add_subplot(111)
-    return ax
-
-def animate(i,df,plotvar):
-
-    ax.clear()
-    a.plot(df.index, df[plotvar])
-
-ani = animation.FuncAnimation(fig,animate,interval=5000)
+    def on_key_press(self, event):
+        print("you pressed {}".format(event.key))
+        key_press_handler(event, self.canvas, self.toolbar)
 
 
 
