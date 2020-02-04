@@ -3,6 +3,7 @@ matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 # Implement the default Matplotlib key bindings.
 import matplotlib.animation as animation
+import matplotlib.pyplot as plt
 from matplotlib import style
 from matplotlib.backend_bases import key_press_handler
 from matplotlib.figure import Figure
@@ -10,12 +11,15 @@ import matplotlib.dates as mdates
 import numpy as np
 import pandas as pd
 import os
+import glob
+
 from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
 from tkcalendar import Calendar, DateEntry
 import pandastable
+from pandastable import Table, TableModel, dialogs
 
 from pandas.plotting import register_matplotlib_converters
 register_matplotlib_converters()
@@ -61,6 +65,11 @@ class Feedback:
         self.panedwindow.add(self.frame1, weight=1)
         self.panedwindow.add(self.frame2, weight=4)
 
+        # add tabs in the frame to the right
+        self.notebook = ttk.Notebook(self.frame2)
+        self.notebook.pack(fill=BOTH, expand=True)
+        self.notelist = {}
+
         # Header image logo and Description seen by user
         self.frame_header = ttk.Frame(self.frame1)
         self.frame_header.pack(pady=5)
@@ -98,7 +107,9 @@ class Feedback:
         self.freqtype = ttk.Combobox(self.frame_step3, width=4, values=['M'])
         self.freqtype.grid(row=2, column=1)
         self.freqtype.current(0)
-        self.alignpro = ttk.Button(self.frame_step3,text='Align Datasets',command=self.aligndata)
+        self.alignpro = ttk.Button(self.frame_step3,
+                                   text='Align Datasets',
+                                   command=lambda: self.opendiag(framename='Well Baro'))
         self.alignpro.grid(row=2, column=2)
 
         #-----------Manual Data-------------------------------------------------------------
@@ -255,10 +266,6 @@ class Feedback:
         self.calc_elev = ttk.Button(self.frame_step6, text='Calculate Elevations', command=self.elevcalc)
         self.calc_elev.grid(row=3,column=0,columnspan=3)
 
-        # add tabs in the frame to the right
-        self.notebook = ttk.Notebook(self.frame2)
-        self.notebook.pack(fill=BOTH, expand=True)
-        self.notelist = {}
         #self.frame4 = ttk.Frame(self.notebook)
         #self.frame5 = ttk.Frame(self.notebook)
         #self.notebook.add(self.frame4, text='Table')
@@ -269,8 +276,9 @@ class Feedback:
     def animate(self, frame, fig, ax, framename):
         if "welldata" in self.__dict__.keys():
             self.welldata.redraw()
+
             #self.welldata.update()
-        animation.FuncAnimation(fig, lambda: self.make_graph_frame(fig, ax, framename=framename), interval=1000)
+            animation.FuncAnimation(fig, lambda: self.make_graph_frame(fig, ax, framename=framename), interval=1000)
 
 
     def elevcalc(self):
@@ -285,7 +293,8 @@ class Feedback:
         print(self.manelevs)
 
     def fix_drift(self):
-        self.wellbarofixed, self.drift_info, mxdrft = ll.fix_drift(self.alignwellbaro,self.man_entry_df)
+        self.wellbarofixed, self.drift_info, mxdrft = ll.fix_drift(self.alignwellbaro.model.df,
+                                                                   self.man_entry_df)
         self.max_drift.set(mxdrft)
         self.wellbarofixed = self.wellbarofixed[['datetime','barometer','corrwl','DTW_WL']]
         df = self.wellbarofixed
@@ -298,27 +307,13 @@ class Feedback:
         graphframe = ttk.Frame(panedframe, relief=SUNKEN)
         panedframe.add(tableframe, weight=1)
         panedframe.add(graphframe, weight=4)
-        pt = pandastable.Table(tableframe, dataframe=df,
+        pt = Table(tableframe, dataframe=df,
                                showtoolbar=True, showstatusbar=True)
         pt.show()
-        self.make_graph_frame(graphframe, framename=framename)
-
-    def aligndata(self):
-        self.alignwellbaro = ll.well_baro_merge(self.welldata, self.barodata, sampint=self.freqint.get())
-        framename = 'Well Baro'
-        new_frame = ttk.Frame(self.notebook)
-        self.notebook.add(new_frame, text=framename)
-        panedframe = ttk.Panedwindow(new_frame, orient=VERTICAL)
-        panedframe.pack(fill=BOTH, expand=True)
-        tableframe = ttk.Frame(panedframe, relief=SUNKEN)
-        graphframe = ttk.Frame(panedframe, relief=SUNKEN)
-        panedframe.add(tableframe, weight=1)
-        panedframe.add(graphframe, weight=4)
-        pt = pandastable.Table(tableframe, dataframe=self.alignwellbaro.reset_index(),
-                               showtoolbar=True, showstatusbar=True)
-        pt.show()
-        self.make_graph_frame(graphframe, framename=framename)
-
+        fig = Figure()
+        ax = fig.add_subplot(111)
+        self.graph_frame1 = ttk.Frame(graphframe)
+        self.make_graph_frame(fig, ax, framename=framename)
 
     def proc_man(self):
         nbnum = self.manbook.index(self.manbook.select())
@@ -332,7 +327,7 @@ class Feedback:
                                                           self.man_meas2entry.get()],
                                               'locationid':[self.man_locid.get()]*2,
                                               'units':[self.manunits.get()]*2})
-            if self.manunits.get()=='m':
+            if self.manunits.get() == 'm':
                 df['measureddtw'] = df['measureddtw']*3.28084
             self.man_entry_df = df.set_index(['readingdate'])
             print(self.man_entry_df)
@@ -358,10 +353,14 @@ class Feedback:
             graphframe = ttk.Frame(panedframe, relief=SUNKEN)
             panedframe.add(tableframe, weight=1)
             panedframe.add(graphframe, weight=4)
-            pt = pandastable.Table(tableframe, dataframe=self.man_entry_df.reset_index(),
+            pt = Table(tableframe, dataframe=self.man_entry_df.reset_index(),
                                    showtoolbar=True, showstatusbar=True)
             pt.show()
-            self.make_graph_frame(graphframe, framename=framename, plotvar='measureddtw')
+            self.graph_frame1 = ttk.Frame(graphframe)
+            fig = Figure()
+            ax = fig.add_subplot(111)
+
+            self.make_graph_frame(fig, ax, framename=framename, plotvar='measureddtw')
 
     def combodateassign(self, cmbo):
         print(cmbo.get())
@@ -403,7 +402,7 @@ class Feedback:
 
 
 
-    def make_graph_frame(self, fig, ax, framename, plotvar='Level'):
+    def make_graph_frame(self, fig, ax, framename='Raw Well', plotvar='Level'):
         # populate main graph tab
         # Create Tab Buttons
         #self.graph_button_frame1 = ttk.Frame(frame)
@@ -413,21 +412,32 @@ class Feedback:
         #self.button_right.pack(side="left")
         #self.graph_button_frame1.pack()
         #if framename not in('Raw Baro', 'Manual'):
+        #fig = Figure()
+        #ax = fig.add_subplot(111)
 
+        #plt.clf()
+        #plt.cla()
+        #ax.clear()
 
-        ax.clear()
         if framename == 'Raw Baro':
             if 'barodata' in self.__dict__.keys():
-                self.barodata.redraw()
-                self.barodata.update()
+                #self.barodata.redraw()
+                #self.barodata = self.barodata.
                 ax.plot(self.barodata.model.df.set_index(['DateTime']).index, self.barodata.model.df['Level'])
                 ax.set_ylabel("Pressure")
         elif framename == 'Raw Well':
             if 'welldata' in self.__dict__.keys():
-                self.welldata.redraw()
-                self.welldata.update()
-                ax.plot(self.welldata.model.df.set_index(['DateTime']).index, self.welldata.model.df['Level'])
-                ax.set_ylabel("Pressure")
+                pt = self.welldata
+                pt.redraw()
+                #pt.getPlotData().plot(ax=ax)
+
+                #print(pt.getPlotData())
+                #self.welldata.showPlotViewer(parent=self.graph_frame1)
+                #ax.set_ylabel(pt.model.df.columns[pt.getSelectedColumn()])
+                #ax.plot(self.welldata.model.df.set_index(['DateTime']).index, self.welldata.model.df['Level'])
+                #ax.set_ylabel("Pressure")
+                #ax.set_ylabel(self.welldata.model.df.columns[self.welldata.getSelectedColumn()])
+                print(self.welldata.getPlotData())
         elif framename == 'Man Data':
             if 'man_entry_df' in self.__dict__.keys():
                 df = self.man_entry_df
@@ -453,19 +463,17 @@ class Feedback:
                 ax.set_xlim(df1.first_valid_index()-pd.Timedelta('3 days'),
                             df1.last_valid_index()+pd.Timedelta('3 days'),)
 
-
+        #anim = animation.FuncAnimation(fig, self.welldata.getPlotData(), interval=1000, blit=True)
         #self.line, = ax.plot(df.index, df[plotvar])
         #ax.fmt_xdata = mdates.DateFormatter('%Y-%m-%d %H:%M')
         ax.fmt_xdata = mdates.DateFormatter('%Y-%m-%d %H:%M')
-        graphpage(self.graph_frame1, fig)
+        GraphPage(self.graph_frame1, fig)
         #self.canvas = FigureCanvasTkAgg(fig, master=self.graph_frame1)
         #toolbar = NavigationToolbar2Tk(self.canvas, self.graph_frame1)
         #toolbar.update()
         #self.canvas.draw()
         #self.canvas.get_tk_widget().pack(side='top', fill='both', expand=1)
         #self.canvas.mpl_connect("key_press_event", self.on_key_press)
-
-
 
     def decrease(self):
         x, y = self.line.get_data()
@@ -482,55 +490,83 @@ class Feedback:
         self.destroy()  # this is necessary on Windows to prevent
                     # Fatal Python Error: PyEval_RestoreThread: NULL tstate
 
-    def opendiag(self, framename='New'):
+    def on_key_press(self, event):
+        print("you pressed {}".format(event.key))
+        key_press_handler(event, self.canvas, self.toolbar)
+
+    def opendiag(self, framename='Raw Well'):
         if framename in ('Raw Well','Raw Baro'):
             ftypelist = (("Solinst xle","*.xle*"),("Solinst csv","*.csv"))
-        else:
+            filename = filedialog.askopenfilename(initialdir=self.currentdir, title="Select file", filetypes=ftypelist)
+            self.currentdir = os.path.dirname(filename)
+        elif framename in ('Man Data'):
             ftypelist = (("csv","*.csv*"),("xlsx","*.xlsx"),("xls",".xls"))
-        #if event:
-        filename = filedialog.askopenfilename(initialdir = self.currentdir, title = "Select file", filetypes = ftypelist)
-        self.currentdir = os.path.dirname(filename)
+            filename = filedialog.askopenfilename(initialdir=self.currentdir, title="Select file", filetypes=ftypelist)
+            self.currentdir = os.path.dirname(filename)
+        else:
+            filename = None
+
         if filename == '' or type(filename) == tuple:
             pass
         else:
-            if framename in ('Raw Well','Raw Baro'):
-                if framename in self.notelist.keys():
-                    self.notebook.forget(self.notelist[framename])
-                    self.notelist[framename] = 'old'
-                new_frame = ttk.Frame(self.notebook)
-                self.notebook.add(new_frame, text=framename)
-                for t in range(len(self.notebook.tabs())):
-                    self.notelist[self.notebook.tab(t)['text']] = t
+            if framename in self.notelist.keys():
+                self.notebook.forget(self.notelist[framename])
+                self.notelist[framename] = 'old'
+            new_frame = ttk.Frame(self.notebook)
+            self.notebook.add(new_frame, text=framename)
+            for t in range(len(self.notebook.tabs())):
+                self.notelist[self.notebook.tab(t)['text']] = t
+            self.notebook.select(t)
 
-                print(self.notelist)
+            if framename in ('Raw Well','Raw Baro','Well Baro'):
+
                 panedframe = ttk.Panedwindow(new_frame, orient=VERTICAL)
                 panedframe.pack(fill=BOTH, expand=True)
                 tableframe = ttk.Frame(panedframe, relief=SUNKEN)
                 graphframe = ttk.Frame(panedframe, relief=SUNKEN)
                 panedframe.add(tableframe, weight=1)
                 panedframe.add(graphframe, weight=4)
-                butframe = ttk.Frame(graphframe)
-                butframe.pack()
-                df = ll.NewTransImp(filename).well.drop(['name'], axis=1)
+                labframe = ttk.Frame(graphframe)
+                labframe.pack()
+                ttk.Label(labframe,text='Click on column of choice and then the Plot button!').pack()
+
                 self.graph_frame1 = ttk.Frame(graphframe)
 
-                fig = Figure()
-                ax = fig.add_subplot(111)
-
-
                 if framename == 'Raw Well':
-                    self.welldata = pandastable.Table(tableframe, dataframe=df.reset_index(), showtoolbar=True, showstatusbar=True)
+                    df = ll.NewTransImp(filename).well.drop(['name'], axis=1)
+                    self.welldata = Table(tableframe, dataframe=df, showtoolbar=True, showstatusbar=True)
                     self.well_string.set(filename)
                     self.welldata.show()
+                    self.welldata.showIndex()
+                    self.welldata.showPlotViewer(parent=self.graph_frame1)
+                    canvas = self.welldata.showPlotViewer(parent=self.graph_frame1).canvas
+                    ax = self.welldata.showPlotViewer(parent=self.graph_frame1)
+
+                    toolbar = NavigationToolbar2Tk(canvas, self.graph_frame1)
+                    toolbar.update()
+                    canvas.draw()
+                    canvas.get_tk_widget().pack(side='top', fill='both', expand=1)
+                    canvas.mpl_connect("key_press_event", self.on_key_press)
+
                 elif framename == 'Raw Baro':
-                    self.barodata = pandastable.Table(tableframe, dataframe=df.reset_index(), showtoolbar=True, showstatusbar=True)
+                    df = ll.NewTransImp(filename).well.drop(['name'], axis=1)
+                    self.barodata = Table(tableframe, dataframe=df, showtoolbar=True, showstatusbar=True)
                     self.baro_string.set(filename)
                     self.barodata.show()
-                self.make_graph_frame(fig,ax,framename=framename)
+                    self.welldata.showIndex()
+                elif framename == 'Well Baro':
+                    if 'welldata' in self.__dict__.keys():
+                        df = ll.well_baro_merge(self.welldata.model.df,
+                                                                self.barodata.model.df,
+                                                                sampint=self.freqint.get())
+                        self.alignwellbaro = Table(tableframe, dataframe=df.reset_index(),
+                                   showtoolbar=True, showstatusbar=True)
+                        self.alignwellbaro.show()
 
-                self.anigraph = ttk.Button(butframe, text="Refresh Graph",
-                                           command=self.make_graph_frame(fig, ax, framename=framename))
-                self.anigraph.pack()
+
+                #b = ttk.Button(labframe,text='Plot',
+                #               command=lambda: self.make_graph_frame(framename=framename))
+                #b.pack()
                 self.graph_frame1.pack()
             elif framename == 'Man Data':
                 #https://stackoverflow.com/questions/45357174/tkinter-drop-down-menu-from-excel
@@ -543,8 +579,7 @@ class Feedback:
                     self.mandata = pd.read_csv(filename)
 
 
-
-class graphpage(Frame):
+class GraphPage(Frame):
     def __init__(self, parent, fig):
         Frame.__init__(self, parent)
         label = Label(self, text='Graph')
@@ -559,7 +594,6 @@ class graphpage(Frame):
     def on_key_press(self, event):
         print("you pressed {}".format(event.key))
         key_press_handler(event, self.canvas, self.toolbar)
-
 
 
 

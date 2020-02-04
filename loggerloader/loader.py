@@ -1644,9 +1644,9 @@ def rollmeandiff(df1, p1, df2, p2, win):
             difference
     """
     win = win * 60 * 24
-    df1 = df1.resample('1Min').mean()
+    df1 = df1.resample('1T').mean()
     df1 = df1.interpolate(method='time')
-    df2 = df2.resample('1Min').mean()
+    df2 = df2.resample('1T').mean()
     df2 = df2.interpolate(method='time')
     df1['rm' + p1] = df1[p1].rolling(window=win, center=True).mean()
     df2['rm' + p2] = df2[p2].rolling(window=win, center=True).mean()
@@ -1735,12 +1735,12 @@ def hourly_resample(df, bse=0, minutes=60):
         see http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases
     """
 
-    df = df.resample('1Min').mean().interpolate(method='time', limit=90)
+    df = df.resample('1T').mean().interpolate(method='time', limit=90)
 
     if minutes == 60:
         sampfrq = '1H'
     else:
-        sampfrq = str(minutes) + 'Min'
+        sampfrq = str(minutes) + 'T'
 
     df = df.resample(sampfrq, closed='right', label='right', base=bse).asfreq()
     return df
@@ -1763,8 +1763,8 @@ def well_baro_merge(wellfile, barofile, barocolumn='Level', wellcolumn='Level', 
     """
 
     # resample data to make sample interval consistent
-    baro = hourly_resample(barofile, 0, sampint)
-    well = hourly_resample(wellfile, 0, sampint)
+    baro = hourly_resample(barofile, bse=0, minutes=sampint)
+    well = hourly_resample(wellfile, bse=0, minutes=sampint)
 
     # reassign `Level` to reduce ambiguity
     baro = baro.rename(columns={barocolumn: 'barometer'})
