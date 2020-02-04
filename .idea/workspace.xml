@@ -113,8 +113,9 @@
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$USER_HOME$/.conda/envs" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/loggerloader" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -161,7 +162,7 @@
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
-      <option name="SDK_HOME" value="C:\Users\paulinkenbrandt\AppData\Local\Continuum\anaconda3\envs\py37\python.exe" />
+      <option name="SDK_HOME" value="C:\Users\Hutto\Anaconda3\envs\loggerloader\python.exe" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/loggerloader" />
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
@@ -241,11 +242,11 @@
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Python.llgui" />
       <item itemvalue="Python tests.Nosetests for test.testcalc_slope_and_intercept" />
       <item itemvalue="Python tests.Nosetests for test.testget_breakpoints" />
       <item itemvalue="Python tests.Nosetests for test.testcalc_drift" />
       <item itemvalue="Python tests.Nosetests in test.py" />
-      <item itemvalue="Python.llgui" />
     </list>
     <recent_temporary>
       <list>
@@ -618,38 +619,6 @@
     <option name="localTasksCounter" value="185" />
     <servers />
   </component>
-  <component name="TestHistory">
-    <history-entry file="Nosetests_for_test_testcalc_slope_and_intercept - 2018.10.24 at 16h 01m 14s.xml">
-      <configuration name="Nosetests for test.testcalc_slope_and_intercept" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Nosetests_for_test_testget_breakpoints - 2018.10.24 at 16h 01m 46s.xml">
-      <configuration name="Nosetests for test.testget_breakpoints" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Nosetests_for_test_testcalc_drift - 2018.10.24 at 16h 06m 29s.xml">
-      <configuration name="Nosetests for test.testcalc_drift" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Nosetests_in_test_py - 2018.10.25 at 06h 50m 50s.xml">
-      <configuration name="Nosetests in test.py" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Nosetests_in_test_py - 2018.10.25 at 07h 26m 57s.xml">
-      <configuration name="Nosetests in test.py" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Nosetests_in_test_py - 2018.10.25 at 07h 27m 47s.xml">
-      <configuration name="Nosetests in test.py" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Nosetests_in_test_py - 2018.10.25 at 07h 28m 58s.xml">
-      <configuration name="Nosetests in test.py" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Nosetests_in_test_py - 2018.10.25 at 07h 29m 45s.xml">
-      <configuration name="Nosetests in test.py" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Nosetests_in_test_py - 2018.10.25 at 07h 30m 12s.xml">
-      <configuration name="Nosetests in test.py" configurationId="tests" />
-    </history-entry>
-    <history-entry file="Nosetests_in_test_py - 2018.10.25 at 07h 31m 35s.xml">
-      <configuration name="Nosetests in test.py" configurationId="tests" />
-    </history-entry>
-  </component>
   <component name="TodoView" selected-index="3">
     <todo-panel id="selected-file">
       <is-autoscroll-to-source value="true" />
@@ -691,37 +660,47 @@
     <option name="LAST_COMMIT_MESSAGE" value="update HeaderTable to be more modular" />
   </component>
   <component name="WindowStateProjectService">
+    <state x="140" y="132" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1580786966259">
+      <screen x="0" y="40" width="1368" height="872" />
+    </state>
+    <state x="140" y="132" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.40.1368.872@0.40.1368.872" timestamp="1580786966259" />
     <state x="2599" y="141" key="#llgui" timestamp="1580767659733">
       <screen x="1920" y="1" width="1920" height="1050" />
     </state>
     <state x="2599" y="141" key="#llgui/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@1920.1.1920.1050" timestamp="1580767659733" />
-    <state width="935" height="274" key="GridCell.Tab.0.bottom" timestamp="1580772302115">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state x="607" y="293" key="FileChooserDialogImpl" timestamp="1580786960691">
+      <screen x="0" y="40" width="1368" height="872" />
+    </state>
+    <state x="607" y="293" key="FileChooserDialogImpl/0.40.1368.872@0.40.1368.872" timestamp="1580786960691" />
+    <state width="1348" height="227" key="GridCell.Tab.0.bottom" timestamp="1580793128578">
+      <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state width="935" height="274" key="GridCell.Tab.0.bottom/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580772302115" />
-    <state width="935" height="274" key="GridCell.Tab.0.center" timestamp="1580772302115">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state width="1348" height="227" key="GridCell.Tab.0.bottom/0.40.1368.872@0.40.1368.872" timestamp="1580793128578" />
+    <state width="1348" height="227" key="GridCell.Tab.0.center" timestamp="1580793128577">
+      <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state width="935" height="274" key="GridCell.Tab.0.center/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580772302115" />
-    <state width="935" height="274" key="GridCell.Tab.0.left" timestamp="1580772302115">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state width="1348" height="227" key="GridCell.Tab.0.center/0.40.1368.872@0.40.1368.872" timestamp="1580793128577" />
+    <state width="1348" height="227" key="GridCell.Tab.0.left" timestamp="1580793128577">
+      <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state width="935" height="274" key="GridCell.Tab.0.left/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580772302115" />
-    <state width="935" height="274" key="GridCell.Tab.0.right" timestamp="1580772302115">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state width="1348" height="227" key="GridCell.Tab.0.left/0.40.1368.872@0.40.1368.872" timestamp="1580793128577" />
+    <state width="1348" height="227" key="GridCell.Tab.0.right" timestamp="1580793128578">
+      <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state width="935" height="274" key="GridCell.Tab.0.right/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580772302115" />
-    <state x="461" y="168" key="SettingsEditor" timestamp="1580768975081">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state width="1348" height="227" key="GridCell.Tab.0.right/0.40.1368.872@0.40.1368.872" timestamp="1580793128578" />
+    <state x="328" y="180" key="SettingsEditor" timestamp="1580786870424">
+      <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state x="461" y="168" key="SettingsEditor/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580768975081" />
+    <state x="328" y="180" key="SettingsEditor/0.40.1368.872@0.40.1368.872" timestamp="1580786870424" />
     <state x="2661" y="240" key="git4idea.branch.GitSmartOperationDialog" timestamp="1580767581627">
       <screen x="1920" y="1" width="1920" height="1050" />
     </state>
     <state x="2661" y="240" key="git4idea.branch.GitSmartOperationDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@1920.1.1920.1050" timestamp="1580767581627" />
-  </component>
-  <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/loggerloader$llgui.coverage" NAME="llgui Coverage Results" MODIFIED="1580772302106" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
   </component>
   <component name="masterDetails">
     <states>
