@@ -112,7 +112,7 @@ def get_breakpoints(manualfile, well, wl_field='corrwl'):
 
 
 def pull_closest_well_data(wellid, breakpoint1, conn_file_root, timedel=3,
-                           readtable='ugs_gw_reading', timezone=None):
+                           readtable='reading', timezone=None):
     """
     Finds date and depth to water in database that is closest to, but not greater than, the date entered (breakpoint1)
 
@@ -933,7 +933,7 @@ class PullOutsideBaro(object):
 
 
 def imp_one_well(well_file, baro_file, man_startdate, man_start_level, man_endate, man_end_level,
-                 conn_file_root, wellid, be=None, gw_reading_table="ugs_gw_reading", drift_tol=0.3, override=False):
+                 conn_file_root, wellid, be=None, gw_reading_table="reading", drift_tol=0.3, override=False):
     """Imports one well give raw barometer data and manual measurements
 
     Args:
@@ -1096,7 +1096,7 @@ def simp_imp_well(well_file, baro_out, wellid, manual, conn_file_root, stbl_elev
     return rowlist, impdf, man, be, drift
 
 
-def check_for_dups(df, wellid, conn_file_root, drift, drift_tol=0.3, gw_reading_table='ugs_gw_reading',
+def check_for_dups(df, wellid, conn_file_root, drift, drift_tol=0.3, gw_reading_table='reading',
                    tmzone=None):
     """Checks readings data against an existing database for duplication.
     QA/QC to reject data if it exceeds user-based threshhold
@@ -1286,7 +1286,7 @@ def upload_bp_data(df, site_number, enviro, return_df=True, overide=False, gw_re
 # -----------------------------------------------------------------------------------------------------------------------
 # The following modify and query an SDE database, assuming the user has a connection
 
-def find_extreme(site_number, gw_table="ugs_gw_reading", sort_by='readingdate', extma='max'):
+def find_extreme(site_number, gw_table="reading", sort_by='readingdate', extma='max'):
 
     if extma == 'max' or extma == 'DESC':
         lorder = 'DESC'
@@ -1302,7 +1302,7 @@ def find_extreme(site_number, gw_table="ugs_gw_reading", sort_by='readingdate', 
 
 
 def get_gap_data(site_number, enviro, gap_tol=0.5, first_date=None, last_date=None,
-                 gw_reading_table="ugs_gw_reading"):
+                 gw_reading_table="reading"):
     """Finds temporal gaps in regularly sampled data.
 
     Args:
@@ -1342,7 +1342,7 @@ def get_gap_data(site_number, enviro, gap_tol=0.5, first_date=None, last_date=No
 
 
 def get_location_data(site_numbers, enviro, first_date=None, last_date=None, limit=None,
-                      gw_reading_table="ugs_gw_reading"):
+                      gw_reading_table="reading"):
     """Retrieve location data based on a site number and database connection engine
 
     Args:
@@ -1351,7 +1351,7 @@ def get_location_data(site_numbers, enviro, first_date=None, last_date=None, lim
         first_date (datetime): first date of data of interest; defaults to 1-1-1900
         last_date (datetime): last date of data of interest; defaults to today
         limit (int): maximum number of records to return
-        gw_reading_table (str): table in database with data; defaults to `ugs_gw_reading`
+        gw_reading_table (str): table in database with data; defaults to `reading`
 
     Returns:
         readings (pd.DataFrame)
@@ -1449,7 +1449,7 @@ def table_to_pandas_dataframe(table, engine, field_names=None):
     return df
 
 
-def get_field_names(engine, table='ugs_gw_reading', table_schema='sde'):
+def get_field_names(engine, table='reading', table_schema='sde'):
     """Gets a list of columns in a table in a database
 
     Args:
@@ -2554,7 +2554,7 @@ class wellimport(object):
         baro.rename(columns={'Level': 'measuredlevel'}, inplace=True)
 
         df, man, be, drift = simp_imp_well(self.well_file, baro, int(iddict.get(self.wellid)), man, self.sde_conn,
-                                           stbl_elev=True, gw_reading_table="ugs_gw_reading",
+                                           stbl_elev=True, gw_reading_table="reading",
                                            drift_tol=self.tol,
                                            imp=self.should_import)
 
@@ -2823,7 +2823,7 @@ class wellimport(object):
             try:
                 gapdct[site_number] = get_gap_data(int(site_number), enviro, gap_tol=0.5, first_date=first_date,
                                                    last_date=last_date,
-                                                   gw_reading_table="ugs_gw_reading")
+                                                   gw_reading_table="reading")
             except AttributeError:
                 print("Error with {:}".format(site_number))
         gapdata = pd.concat(gapdct)
