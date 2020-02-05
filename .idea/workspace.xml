@@ -4,9 +4,8 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="improved gui graphing significantly">
+    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="streamlined variables">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/loggerloader/llgui.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/llgui.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -231,14 +230,8 @@
       <option name="presentableId" value="Default" />
       <updated>1500398986654</updated>
       <workItem from="1580767491033" duration="7152000" />
-      <workItem from="1580823517124" duration="27995000" />
-    </task>
-    <task id="LOCAL-00140" summary="fixing upload baro data">
-      <created>1536169012495</created>
-      <option name="number" value="00140" />
-      <option name="presentableId" value="LOCAL-00140" />
-      <option name="project" value="LOCAL" />
-      <updated>1536169012495</updated>
+      <workItem from="1580823517124" duration="28487000" />
+      <workItem from="1580910704401" duration="365000" />
     </task>
     <task id="LOCAL-00141" summary="fixing upload baro data">
       <created>1536169207607</created>
@@ -576,7 +569,14 @@
       <option name="project" value="LOCAL" />
       <updated>1580850767887</updated>
     </task>
-    <option name="localTasksCounter" value="189" />
+    <task id="LOCAL-00189" summary="streamlined variables">
+      <created>1580860829018</created>
+      <option name="number" value="00189" />
+      <option name="presentableId" value="LOCAL-00189" />
+      <option name="project" value="LOCAL" />
+      <updated>1580860829018</updated>
+    </task>
+    <option name="localTasksCounter" value="190" />
     <servers />
   </component>
   <component name="TodoView" selected-index="3">
@@ -593,7 +593,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="updated how baro data is pulled; added function" />
     <MESSAGE value="added import baro data function" />
     <MESSAGE value="reestablished package v0.3" />
     <MESSAGE value="added .lev function" />
@@ -618,7 +617,8 @@
     <MESSAGE value="update tests" />
     <MESSAGE value="update HeaderTable to be more modular" />
     <MESSAGE value="improved gui graphing significantly" />
-    <option name="LAST_COMMIT_MESSAGE" value="improved gui graphing significantly" />
+    <MESSAGE value="streamlined variables" />
+    <option name="LAST_COMMIT_MESSAGE" value="streamlined variables" />
   </component>
   <component name="WindowStateProjectService">
     <state x="414" y="181" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1580832635225">
@@ -629,26 +629,26 @@
       <screen x="1920" y="1" width="1920" height="1050" />
     </state>
     <state x="2599" y="141" key="#llgui/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@1920.1.1920.1050" timestamp="1580767659733" />
-    <state x="615" y="120" key="CommitChangelistDialog2" timestamp="1580850762428">
+    <state x="615" y="120" key="CommitChangelistDialog2" timestamp="1580860824305">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state x="615" y="120" key="CommitChangelistDialog2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580850762428" />
-    <state width="1192" height="274" key="GridCell.Tab.0.bottom" timestamp="1580860752940">
+    <state x="615" y="120" key="CommitChangelistDialog2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580860824305" />
+    <state width="1192" height="274" key="GridCell.Tab.0.bottom" timestamp="1580861123938">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state width="1192" height="274" key="GridCell.Tab.0.bottom/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580860752940" />
-    <state width="1192" height="274" key="GridCell.Tab.0.center" timestamp="1580860752940">
+    <state width="1192" height="274" key="GridCell.Tab.0.bottom/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580861123938" />
+    <state width="1192" height="274" key="GridCell.Tab.0.center" timestamp="1580861123938">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state width="1192" height="274" key="GridCell.Tab.0.center/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580860752940" />
-    <state width="1192" height="274" key="GridCell.Tab.0.left" timestamp="1580860752940">
+    <state width="1192" height="274" key="GridCell.Tab.0.center/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580861123938" />
+    <state width="1192" height="274" key="GridCell.Tab.0.left" timestamp="1580861123938">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state width="1192" height="274" key="GridCell.Tab.0.left/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580860752940" />
-    <state width="1192" height="274" key="GridCell.Tab.0.right" timestamp="1580860752940">
+    <state width="1192" height="274" key="GridCell.Tab.0.left/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580861123938" />
+    <state width="1192" height="274" key="GridCell.Tab.0.right" timestamp="1580861123938">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state width="1192" height="274" key="GridCell.Tab.0.right/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580860752940" />
+    <state width="1192" height="274" key="GridCell.Tab.0.right/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580861123938" />
     <state x="672" y="242" key="MultipleFileMergeDialog" timestamp="1580824218681">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
@@ -661,18 +661,18 @@
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
     <state x="747" y="242" key="VCS.ChangeListViewerDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580824162576" />
-    <state x="552" y="259" key="Vcs.Push.Dialog.v2" timestamp="1580850770606">
+    <state x="552" y="259" key="Vcs.Push.Dialog.v2" timestamp="1580860833806">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state x="552" y="259" key="Vcs.Push.Dialog.v2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580850770606" />
-    <state x="656" y="350" key="com.intellij.ide.util.TipDialog" timestamp="1580823518660">
+    <state x="552" y="259" key="Vcs.Push.Dialog.v2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580860833806" />
+    <state x="656" y="350" key="com.intellij.ide.util.TipDialog" timestamp="1580910705047">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state x="656" y="350" key="com.intellij.ide.util.TipDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580823518660" />
-    <state x="769" y="443" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1580824243341">
+    <state x="656" y="350" key="com.intellij.ide.util.TipDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580910705047" />
+    <state x="769" y="443" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1580910814086">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state x="769" y="443" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580824243341" />
+    <state x="769" y="443" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580910814086" />
     <state x="662" y="123" width="756" height="804" key="find.popup" timestamp="1580857567745">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
@@ -685,10 +685,10 @@
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
     <state x="746" y="317" key="git4idea.merge.GitMergeDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580823952332" />
-    <state x="755" y="426" key="git4idea.ui.GitStashDialog" timestamp="1580824118695">
+    <state x="755" y="426" key="git4idea.ui.GitStashDialog" timestamp="1580910999646">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state x="755" y="426" key="git4idea.ui.GitStashDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580824118695" />
+    <state x="755" y="426" key="git4idea.ui.GitStashDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580910999646" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/loggerloader$llgui.coverage" NAME="llgui Coverage Results" MODIFIED="1580860752934" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
