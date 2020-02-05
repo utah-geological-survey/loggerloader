@@ -13,7 +13,7 @@ import pandas as pd
 import os
 import glob
 
-from tkinter import *
+import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
@@ -27,53 +27,38 @@ register_matplotlib_converters()
 style.use('ggplot')
 import loggerloader as ll
 
+
+
 class Feedback:
 
     def __init__(self, master):
         # create main window and configure size and title
+        #tk.Tk.__init__(self, *args, **kwargs)
         master.geometry('1000x800')
         master.wm_title("Transducer Processing")
         self.root = master
 
         self.currentdir = os.path.expanduser('~')
 
-        # menu bars at the top of the main window
-        master.option_add('*tearOff', False)
-        menubar = Menu(master)
-        master.config(menu=menubar)
-        file = Menu(menubar)
-        edit = Menu(menubar)
-        help_ = Menu(menubar)
-        menubar.add_cascade(menu=file, label='File')
-        menubar.add_cascade(menu=edit, label='edit')
-        menubar.add_cascade(menu=help_, label='Help')
-        file.add_command(label='New', command=lambda: print('New File'))
-        file.add_separator()
-        file.add_command(label="Open...", command=lambda: print('Opening'))
-        file.add_command(label="Save", command=lambda: print('Save File'))
-        file.entryconfig('New', accelerator='Ctrl + N')
-        save = Menu(file)
-        file.add_cascade(menu=save, label='Save')
-        save.add_command(label='Save As', command=lambda: print('save as'))
-        save.add_command(label='Save All', command=lambda: print('saving'))
+        DropMenu(master)
 
         # Create side by side panel areas
-        self.panedwindow = ttk.Panedwindow(master, orient=HORIZONTAL)
-        self.panedwindow.pack(fill=BOTH, expand=True)
-        self.frame1 = ttk.Frame(self.panedwindow, width=150, height=400, relief=SUNKEN)
-        self.frame2 = ttk.Frame(self.panedwindow, width=400, height=400, relief=SUNKEN)
+        self.panedwindow = ttk.Panedwindow(master, orient='horizontal')
+        self.panedwindow.pack(fill='both', expand=True)
+        self.frame1 = ttk.Frame(self.panedwindow, width=150, height=400, relief='sunken')
+        self.frame2 = ttk.Frame(self.panedwindow, width=400, height=400, relief='sunken')
         self.panedwindow.add(self.frame1, weight=1)
         self.panedwindow.add(self.frame2, weight=4)
 
         # add tabs in the frame to the right
         self.notebook = ttk.Notebook(self.frame2)
-        self.notebook.pack(fill=BOTH, expand=True)
+        self.notebook.pack(fill='both', expand=True)
         self.notelist = {}
 
         # Header image logo and Description seen by user
         self.frame_header = ttk.Frame(self.frame1)
         self.frame_header.pack(pady=5)
-        self.logo = PhotoImage(file = "./GeologicalSurvey.png").subsample(10,10)
+        self.logo = tk.PhotoImage(file = "./GeologicalSurvey.png").subsample(10,10)
         ttk.Label(self.frame_header, image = self.logo).grid(row = 0, column = 0, rowspan=2)
         ttk.Label(self.frame_header, wraplength=300, text = "Processing transducer data").grid(row= 0, column=1)
 
@@ -81,35 +66,26 @@ class Feedback:
         self.frame_content = ttk.Frame(self.frame1)
         self.frame_content.pack()
 
-        # Select Well Table Interface
-        ttk.Label(self.frame_content, text= "1. Select Well Data:").grid(row=0, column=0, columnspan=3)
-        self.well_string = StringVar(self.frame_content, value='Double-Click for file')
-        self.well_entry = ttk.Entry(self.frame_content, textvariable=self.well_string, width=80, justify=LEFT)
-        self.well_entry.grid(row=1, column=0, columnspan=3)
-        self.well_entry.bind('<Double-ButtonRelease-1>', lambda fn: self.opendiag(framename='Raw Well'))
-
-        # Select Baro Table Interface
-        ttk.Label(self.frame_content, text="2. Select Barometric Data:").grid(row=2, column=0, columnspan=3)
-        self.baro_string = StringVar(self.frame_content, value='Double-Click for file')
-        self.baro_entry = ttk.Entry(self.frame_content, textvariable=self.baro_string, width=80, justify=LEFT)
-        self.baro_entry.grid(row=3, column=0, columnspan=3)
-        self.baro_entry.bind('<Double-ButtonRelease-1>', lambda fn: self.opendiag(framename='Raw Baro'))
+        self.datastr, self.data, self.entry = {}, {}, {}
+        # Select Well Table  and Baro Table
+        self.filefinders('well')
+        self.filefinders('baro')
 
         # Align Manual and Baro Data
-        self.frame_step3 = ttk.Frame(self.frame_content)
-        self.frame_step3.grid(row=4, column=0, columnspan=3)
-        ttk.Label(self.frame_step3, text="3. Align Baro and Well Data:").grid(row=0, column=0, columnspan=3)
-        ttk.Label(self.frame_step3, text='Pref. Data Freq.').grid(row=1, column=0, columnspan=2)
+        frame_step3 = ttk.Frame(self.frame_content)
+        frame_step3.grid(row=4, column=0, columnspan=3)
+        ttk.Label(frame_step3, text="3. Align Baro and Well Data:").grid(row=0, column=0, columnspan=3)
+        ttk.Label(frame_step3, text='Pref. Data Freq.').grid(row=1, column=0, columnspan=2)
         # Boxes for data frequency
-        self.freqint = ttk.Combobox(self.frame_step3, width=4, values=list(range(1,120)))
+        self.freqint = ttk.Combobox(frame_step3, width=4, values=list(range(1,120)))
         self.freqint.grid(row=2,column=0)
         self.freqint.current(59)
-        self.freqtype = ttk.Combobox(self.frame_step3, width=4, values=['M'])
+        self.freqtype = ttk.Combobox(frame_step3, width=4, values=['M'])
         self.freqtype.grid(row=2, column=1)
         self.freqtype.current(0)
-        self.alignpro = ttk.Button(self.frame_step3,
+        self.alignpro = ttk.Button(frame_step3,
                                    text='Align Datasets',
-                                   command=lambda: self.opendiag(framename='Well Baro'))
+                                   command=lambda: self.opendiag(key='well-baro'))
         self.alignpro.grid(row=2, column=2)
 
         #-----------Manual Data-------------------------------------------------------------
@@ -190,8 +166,8 @@ class Feedback:
         ttk.Label(self.manfileframe,
                   text="Good for matching bulk manual data").grid(row=1, column=0, columnspan=4)
 
-        self.man_string = StringVar(self.manfileframe, value='Double-Click for file')
-        self.man_entry = ttk.Entry(self.manfileframe, textvariable=self.man_string, width=80, justify=LEFT)
+        self.man_string = tk.StringVar(self.manfileframe, value='Double-Click for file')
+        self.man_entry = ttk.Entry(self.manfileframe, textvariable=self.man_string, width=80, justify='left')
         self.man_entry.grid(row=2, column=0, columnspan=4)
         self.man_entry.bind('<Double-ButtonRelease-1>', lambda fn: self.opendiag(framename='Man Data'))
 
@@ -234,7 +210,7 @@ class Feedback:
         self.frame_step5.grid(row=6, column=0, columnspan=3)
         ttk.Label(self.frame_step5, text='5. Fix Drift').grid(column=0,row=0,columnspan=3)
 
-        self.max_drift = StringVar(self.frame_step5,value="")
+        self.max_drift = tk.StringVar(self.frame_step5,value="")
         ttk.Button(self.frame_step5, text='Fix Drift',
                    command=self.fix_drift).grid(column=0,row=1,columnspan=1)
         ttk.Label(self.frame_step5, text='Drift = ').grid(row=1, column=1)
@@ -273,13 +249,15 @@ class Feedback:
         #self.notebook.select(1)
         #self.frame5.pack()
 
-    def animate(self, frame, fig, ax, framename):
-        if "welldata" in self.__dict__.keys():
-            self.welldata.redraw()
-
-            #self.welldata.update()
-            animation.FuncAnimation(fig, lambda: self.make_graph_frame(fig, ax, framename=framename), interval=1000)
-
+    def filefinders(self, key):
+        datasets = {"well": [0, "1. Select Well Data:"],
+                    "baro": [2, "2. Select Barometric Data:"]}
+        i = datasets[key][0]
+        ttk.Label(self.frame_content, text=datasets[key][1]).grid(row=i, column=0, columnspan=3)
+        self.datastr[key] = tk.StringVar(self.frame_content, value=f'Double-Click for {key} file')
+        self.entry[key] = ttk.Entry(self.frame_content, textvariable=self.datastr[key], width=80)
+        self.entry[key].grid(row=i + 1, column=0, columnspan=3)
+        self.entry[key].bind('<Double-ButtonRelease-1>', lambda k: self.opendiag(key))
 
     def elevcalc(self):
         mstickup = self.wellstickup.get()
@@ -289,7 +267,8 @@ class Feedback:
         elif self.wellgroundelevunits.get() == 'm':
            melev = melev * 3.2808
         self.manelevs = ll.get_man_gw_elevs(self.man_entry_df,mstickup, melev)
-        self.transelevs = ll.get_trans_gw_elevations()
+        self.transelevs = ll.get_trans_gw_elevations(self.wellbarofixed,mstickup,
+                                                     melev,self.reallocid.get())
         print(self.manelevs)
 
     def fix_drift(self):
@@ -301,10 +280,10 @@ class Feedback:
         framename = 'Fixed Drift'
         new_frame = ttk.Frame(self.notebook)
         self.notebook.add(new_frame, text=framename)
-        panedframe = ttk.Panedwindow(new_frame, orient=VERTICAL)
-        panedframe.pack(fill=BOTH, expand=True)
-        tableframe = ttk.Frame(panedframe, relief=SUNKEN)
-        graphframe = ttk.Frame(panedframe, relief=SUNKEN)
+        panedframe = ttk.Panedwindow(new_frame, orient='vertical')
+        panedframe.pack(fill='both', expand=True)
+        tableframe = ttk.Frame(panedframe, relief='sunken')
+        graphframe = ttk.Frame(panedframe, relief='sunken')
         panedframe.add(tableframe, weight=1)
         panedframe.add(graphframe, weight=4)
         pt = Table(tableframe, dataframe=df,
@@ -347,10 +326,10 @@ class Feedback:
             #TODO destroy framename by the same name
             new_frame = ttk.Frame(self.notebook)
             self.notebook.add(new_frame, text=framename)
-            panedframe = ttk.Panedwindow(new_frame, orient=VERTICAL)
-            panedframe.pack(fill=BOTH, expand=True)
-            tableframe = ttk.Frame(panedframe, relief=SUNKEN)
-            graphframe = ttk.Frame(panedframe, relief=SUNKEN)
+            panedframe = ttk.Panedwindow(new_frame, orient='vertical')
+            panedframe.pack(fill='both', expand=True)
+            tableframe = ttk.Frame(panedframe, relief='sunken')
+            graphframe = ttk.Frame(panedframe, relief='sunken')
             panedframe.add(tableframe, weight=1)
             panedframe.add(graphframe, weight=4)
             pt = Table(tableframe, dataframe=self.man_entry_df.reset_index(),
@@ -401,7 +380,6 @@ class Feedback:
             widget.destroy()
 
 
-
     def make_graph_frame(self, fig, ax, framename='Raw Well', plotvar='Level'):
         # populate main graph tab
         # Create Tab Buttons
@@ -419,26 +397,7 @@ class Feedback:
         #plt.cla()
         #ax.clear()
 
-        if framename == 'Raw Baro':
-            if 'barodata' in self.__dict__.keys():
-                #self.barodata.redraw()
-                #self.barodata = self.barodata.
-                ax.plot(self.barodata.model.df.set_index(['DateTime']).index, self.barodata.model.df['Level'])
-                ax.set_ylabel("Pressure")
-        elif framename == 'Raw Well':
-            if 'welldata' in self.__dict__.keys():
-                pt = self.welldata
-                pt.redraw()
-                #pt.getPlotData().plot(ax=ax)
-
-                #print(pt.getPlotData())
-                #self.welldata.showPlotViewer(parent=self.graph_frame1)
-                #ax.set_ylabel(pt.model.df.columns[pt.getSelectedColumn()])
-                #ax.plot(self.welldata.model.df.set_index(['DateTime']).index, self.welldata.model.df['Level'])
-                #ax.set_ylabel("Pressure")
-                #ax.set_ylabel(self.welldata.model.df.columns[self.welldata.getSelectedColumn()])
-                print(self.welldata.getPlotData())
-        elif framename == 'Man Data':
+        if framename == 'Man Data':
             if 'man_entry_df' in self.__dict__.keys():
                 df = self.man_entry_df
                 ax.scatter(df.index, df[plotvar])
@@ -463,17 +422,6 @@ class Feedback:
                 ax.set_xlim(df1.first_valid_index()-pd.Timedelta('3 days'),
                             df1.last_valid_index()+pd.Timedelta('3 days'),)
 
-        #anim = animation.FuncAnimation(fig, self.welldata.getPlotData(), interval=1000, blit=True)
-        #self.line, = ax.plot(df.index, df[plotvar])
-        #ax.fmt_xdata = mdates.DateFormatter('%Y-%m-%d %H:%M')
-        ax.fmt_xdata = mdates.DateFormatter('%Y-%m-%d %H:%M')
-        GraphPage(self.graph_frame1, fig)
-        #self.canvas = FigureCanvasTkAgg(fig, master=self.graph_frame1)
-        #toolbar = NavigationToolbar2Tk(self.canvas, self.graph_frame1)
-        #toolbar.update()
-        #self.canvas.draw()
-        #self.canvas.get_tk_widget().pack(side='top', fill='both', expand=1)
-        #self.canvas.mpl_connect("key_press_event", self.on_key_press)
 
     def decrease(self):
         x, y = self.line.get_data()
@@ -494,36 +442,48 @@ class Feedback:
         print("you pressed {}".format(event.key))
         key_press_handler(event, self.canvas, self.toolbar)
 
-    def opendiag(self, framename='Raw Well'):
-        if framename in ('Raw Well','Raw Baro'):
+    def noteadd(self):
+        print('no')
+
+
+
+    def opendiag(self, key):
+        if key in ('well','baro'):
             ftypelist = (("Solinst xle","*.xle*"),("Solinst csv","*.csv"))
-            filename = filedialog.askopenfilename(initialdir=self.currentdir, title="Select file", filetypes=ftypelist)
-            self.currentdir = os.path.dirname(filename)
-        elif framename in ('Man Data'):
+
+            self.datastr[key].set(filedialog.askopenfilename(initialdir=self.currentdir,
+                                                             title=f"Select {key} file",
+                                                             filetypes=ftypelist))
+            self.currentdir = os.path.dirname(self.datastr[key].get())
+
+        elif key == 'manual':
             ftypelist = (("csv","*.csv*"),("xlsx","*.xlsx"),("xls",".xls"))
-            filename = filedialog.askopenfilename(initialdir=self.currentdir, title="Select file", filetypes=ftypelist)
-            self.currentdir = os.path.dirname(filename)
+            self.datastr[key].set(filedialog.askopenfilename(initialdir=self.currentdir,
+                                                             title=f"Select {key} file",
+                                                             filetypes=ftypelist))
+            self.currentdir = os.path.dirname(self.datastr[key].get())
         else:
             filename = None
 
-        if filename == '' or type(filename) == tuple:
+        if self.datastr[key].get() == '' or type(self.datastr[key].get()) == tuple:
             pass
         else:
-            if framename in self.notelist.keys():
-                self.notebook.forget(self.notelist[framename])
-                self.notelist[framename] = 'old'
+            if key in self.notelist.keys():
+                self.notebook.forget(self.notelist[key])
+                self.notelist[key] = 'old'
             new_frame = ttk.Frame(self.notebook)
-            self.notebook.add(new_frame, text=framename)
+            self.notebook.add(new_frame, text=key)
             for t in range(len(self.notebook.tabs())):
                 self.notelist[self.notebook.tab(t)['text']] = t
             self.notebook.select(t)
 
-            if framename in ('Raw Well','Raw Baro','Well Baro'):
 
-                panedframe = ttk.Panedwindow(new_frame, orient=VERTICAL)
-                panedframe.pack(fill=BOTH, expand=True)
-                tableframe = ttk.Frame(panedframe, relief=SUNKEN)
-                graphframe = ttk.Frame(panedframe, relief=SUNKEN)
+            if key in ('well','baro','manual'):
+
+                panedframe = ttk.Panedwindow(new_frame, orient='vertical')
+                panedframe.pack(fill='both', expand=True)
+                tableframe = ttk.Frame(panedframe, relief='sunken')
+                graphframe = ttk.Frame(panedframe, relief='sunken')
                 panedframe.add(tableframe, weight=1)
                 panedframe.add(graphframe, weight=4)
                 labframe = ttk.Frame(graphframe)
@@ -532,43 +492,35 @@ class Feedback:
 
                 self.graph_frame1 = ttk.Frame(graphframe)
 
-                if framename == 'Raw Well':
-                    df = ll.NewTransImp(filename).well.drop(['name'], axis=1)
-                    self.welldata = Table(tableframe, dataframe=df, showtoolbar=True, showstatusbar=True)
-                    self.well_string.set(filename)
-                    self.welldata.show()
-                    self.welldata.showIndex()
-                    self.welldata.showPlotViewer(parent=self.graph_frame1)
-                    canvas = self.welldata.showPlotViewer(parent=self.graph_frame1).canvas
-                    ax = self.welldata.showPlotViewer(parent=self.graph_frame1)
-
+                if key == 'well':
+                    df = ll.NewTransImp(self.datastr[key].get()).well.drop(['name'], axis=1)
+                    self.data[key] = Table(tableframe, dataframe=df, showtoolbar=True, showstatusbar=True)
+                    self.data[key].show()
+                    self.data[key].showIndex()
+                    self.data[key].showPlotViewer(parent=self.graph_frame1)
+                    canvas = self.data[key].showPlotViewer(parent=self.graph_frame1).canvas
                     toolbar = NavigationToolbar2Tk(canvas, self.graph_frame1)
                     toolbar.update()
                     canvas.draw()
                     canvas.get_tk_widget().pack(side='top', fill='both', expand=1)
                     canvas.mpl_connect("key_press_event", self.on_key_press)
 
-                elif framename == 'Raw Baro':
-                    df = ll.NewTransImp(filename).well.drop(['name'], axis=1)
-                    self.barodata = Table(tableframe, dataframe=df, showtoolbar=True, showstatusbar=True)
-                    self.baro_string.set(filename)
-                    self.barodata.show()
-                    self.welldata.showIndex()
-                elif framename == 'Well Baro':
-                    if 'welldata' in self.__dict__.keys():
-                        df = ll.well_baro_merge(self.welldata.model.df,
-                                                                self.barodata.model.df,
-                                                                sampint=self.freqint.get())
+                elif key == 'baro':
+                    df = ll.NewTransImp(self.datastr[key].get()).well.drop(['name'], axis=1)
+                    self.data[key] = Table(tableframe, dataframe=df, showtoolbar=True, showstatusbar=True)
+                    self.data[key].show()
+                    self.data[key].showIndex()
+                elif key == 'well-baro':
+                    if 'well' in self.data.keys() and 'baro' in self.data.keys():
+                        df = ll.well_baro_merge(self.data['well'].model.df,
+                                                self.data['baro'].model.df,
+                                                sampint=self.freqint.get())
                         self.alignwellbaro = Table(tableframe, dataframe=df.reset_index(),
                                    showtoolbar=True, showstatusbar=True)
                         self.alignwellbaro.show()
 
-
-                #b = ttk.Button(labframe,text='Plot',
-                #               command=lambda: self.make_graph_frame(framename=framename))
-                #b.pack()
                 self.graph_frame1.pack()
-            elif framename == 'Man Data':
+            elif key == 'manual':
                 #https://stackoverflow.com/questions/45357174/tkinter-drop-down-menu-from-excel
                 #TODO add excel sheet options to file selection
                 filenm, file_extension = os.path.splitext(filename)
@@ -579,26 +531,31 @@ class Feedback:
                     self.mandata = pd.read_csv(filename)
 
 
-class GraphPage(Frame):
-    def __init__(self, parent, fig):
-        Frame.__init__(self, parent)
-        label = Label(self, text='Graph')
-        label.pack(pady=10, padx=10)
-        self.canvas = FigureCanvasTkAgg(fig, master=parent)
-        toolbar = NavigationToolbar2Tk(self.canvas, parent)
-        toolbar.update()
-        self.canvas.draw()
-        self.canvas.get_tk_widget().pack(side='top', fill='both', expand=1)
-        self.canvas.mpl_connect("key_press_event", self.on_key_press)
+class DropMenu(Feedback):
 
-    def on_key_press(self, event):
-        print("you pressed {}".format(event.key))
-        key_press_handler(event, self.canvas, self.toolbar)
-
-
+    def __init__(self, master):
+        # menu bars at the top of the main window
+        master.option_add('*tearOff', False)
+        menubar = tk.Menu(master)
+        master.config(menu=menubar)
+        file = tk.Menu(menubar)
+        edit = tk.Menu(menubar)
+        help_ = tk.Menu(menubar)
+        menubar.add_cascade(menu=file, label='File')
+        menubar.add_cascade(menu=edit, label='edit')
+        menubar.add_cascade(menu=help_, label='Help')
+        file.add_command(label='New', command=lambda: print('New File'))
+        file.add_separator()
+        file.add_command(label="Open...", command=lambda: print('Opening'))
+        file.add_command(label="Save", command=lambda: print('Save File'))
+        file.entryconfig('New', accelerator='Ctrl + N')
+        save = tk.Menu(file)
+        file.add_cascade(menu=save, label='Save')
+        save.add_command(label='Save As', command=lambda: print('save as'))
+        save.add_command(label='Save All', command=lambda: print('saving'))
 
 def main():
-    root = Tk()
+    root = tk.Tk()
     feedback = Feedback(root)
     root.mainloop()
 
