@@ -5,6 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="improved gui graphing significantly">
+      <change beforePath="$PROJECT_DIR$/.idea/loggerloader.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/loggerloader.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/loggerloader/llgui.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/llgui.py" afterDir="false" />
     </list>
@@ -121,7 +123,7 @@
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
-      <option name="SDK_HOME" value="C:\Users\paulinkenbrandt\AppData\Local\Continuum\anaconda3\envs\py37\python.exe" />
+      <option name="SDK_HOME" value="C:\Users\Hutto\Anaconda3\envs\loggerloader\python.exe" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/loggerloader" />
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
@@ -621,10 +623,11 @@
     <option name="LAST_COMMIT_MESSAGE" value="improved gui graphing significantly" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="414" y="181" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1580832635225">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state x="282" y="190" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1580865284833">
+      <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state x="414" y="181" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580832635225" />
+    <state x="282" y="190" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.40.1368.872@0.40.1368.872" timestamp="1580865284833" />
     <state x="2599" y="141" key="#llgui" timestamp="1580767659733">
       <screen x="1920" y="1" width="1920" height="1050" />
     </state>
@@ -633,30 +636,51 @@
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
     <state x="615" y="120" key="CommitChangelistDialog2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580850762428" />
-    <state width="1192" height="274" key="GridCell.Tab.0.bottom" timestamp="1580860752940">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state width="1348" height="281" key="GridCell.Tab.0.bottom" timestamp="1580875974534">
+      <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state width="1192" height="274" key="GridCell.Tab.0.bottom/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580860752940" />
-    <state width="1192" height="274" key="GridCell.Tab.0.center" timestamp="1580860752940">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state width="1348" height="281" key="GridCell.Tab.0.bottom/0.40.1368.872@0.40.1368.872" timestamp="1580875974534" />
+    <state width="1348" height="281" key="GridCell.Tab.0.center" timestamp="1580875974534">
+      <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state width="1192" height="274" key="GridCell.Tab.0.center/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580860752940" />
-    <state width="1192" height="274" key="GridCell.Tab.0.left" timestamp="1580860752940">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state width="1348" height="281" key="GridCell.Tab.0.center/0.40.1368.872@0.40.1368.872" timestamp="1580875974534" />
+    <state width="1348" height="281" key="GridCell.Tab.0.left" timestamp="1580875974534">
+      <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state width="1192" height="274" key="GridCell.Tab.0.left/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580860752940" />
-    <state width="1192" height="274" key="GridCell.Tab.0.right" timestamp="1580860752940">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state width="1348" height="281" key="GridCell.Tab.0.left/0.40.1368.872@0.40.1368.872" timestamp="1580875974534" />
+    <state width="1348" height="281" key="GridCell.Tab.0.right" timestamp="1580875974534">
+      <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state width="1192" height="274" key="GridCell.Tab.0.right/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580860752940" />
+    <state width="1348" height="281" key="GridCell.Tab.0.right/0.40.1368.872@0.40.1368.872" timestamp="1580875974534" />
+    <state width="1348" height="281" key="GridCell.Tab.1.bottom" timestamp="1580875974535">
+      <screen x="0" y="40" width="1368" height="872" />
+    </state>
+    <state width="1348" height="281" key="GridCell.Tab.1.bottom/0.40.1368.872@0.40.1368.872" timestamp="1580875974535" />
+    <state width="1348" height="281" key="GridCell.Tab.1.center" timestamp="1580875974534">
+      <screen x="0" y="40" width="1368" height="872" />
+    </state>
+    <state width="1348" height="281" key="GridCell.Tab.1.center/0.40.1368.872@0.40.1368.872" timestamp="1580875974534" />
+    <state width="1348" height="281" key="GridCell.Tab.1.left" timestamp="1580875974534">
+      <screen x="0" y="40" width="1368" height="872" />
+    </state>
+    <state width="1348" height="281" key="GridCell.Tab.1.left/0.40.1368.872@0.40.1368.872" timestamp="1580875974534" />
+    <state width="1348" height="281" key="GridCell.Tab.1.right" timestamp="1580875974534">
+      <screen x="0" y="40" width="1368" height="872" />
+    </state>
+    <state width="1348" height="281" key="GridCell.Tab.1.right/0.40.1368.872@0.40.1368.872" timestamp="1580875974534" />
     <state x="672" y="242" key="MultipleFileMergeDialog" timestamp="1580824218681">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
     <state x="672" y="242" key="MultipleFileMergeDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580824218681" />
-    <state x="461" y="168" key="SettingsEditor" timestamp="1580832923285">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state x="328" y="180" key="SettingsEditor" timestamp="1580862779671">
+      <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state x="461" y="168" key="SettingsEditor/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580832923285" />
+    <state x="328" y="180" key="SettingsEditor/0.40.1368.872@0.40.1368.872" timestamp="1580862779671" />
     <state x="747" y="242" key="VCS.ChangeListViewerDialog" timestamp="1580824162576">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
@@ -689,9 +713,10 @@
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
     <state x="755" y="426" key="git4idea.ui.GitStashDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580824118695" />
-  </component>
-  <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/loggerloader$llgui.coverage" NAME="llgui Coverage Results" MODIFIED="1580860752934" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
+    <state x="347" y="224" width="672" height="678" key="search.everywhere.popup" timestamp="1580862913324">
+      <screen x="0" y="40" width="1368" height="872" />
+    </state>
+    <state x="347" y="224" width="672" height="678" key="search.everywhere.popup/0.40.1368.872@0.40.1368.872" timestamp="1580862913324" />
   </component>
   <component name="masterDetails">
     <states>

@@ -66,96 +66,31 @@ class Feedback:
         self.frame_content = ttk.Frame(self.frame1)
         self.frame_content.pack()
 
-        self.datastr, self.data, self.entry = {}, {}, {}
+        self.datastr, self.data, self.datatable, self.entry = {}, {}, {}, {}
         # Select Well Table  and Baro Table
         self.filefinders('well')
         self.filefinders('baro')
 
-        # Align Manual and Baro Data
-        frame_step3 = ttk.Frame(self.frame_content)
-        frame_step3.grid(row=4, column=0, columnspan=3)
-        ttk.Label(frame_step3, text="3. Align Baro and Well Data:").grid(row=0, column=0, columnspan=3)
-        ttk.Label(frame_step3, text='Pref. Data Freq.').grid(row=1, column=0, columnspan=2)
-        # Boxes for data frequency
-        self.freqint = ttk.Combobox(frame_step3, width=4, values=list(range(1,120)))
-        self.freqint.grid(row=2,column=0)
-        self.freqint.current(59)
-        self.freqtype = ttk.Combobox(frame_step3, width=4, values=['M'])
-        self.freqtype.grid(row=2, column=1)
-        self.freqtype.current(0)
-        self.alignpro = ttk.Button(frame_step3,
-                                   text='Align Datasets',
-                                   command=lambda: self.opendiag(key='well-baro'))
-        self.alignpro.grid(row=2, column=2)
+        self.add_alignment_interface()
 
-        #-----------Manual Data-------------------------------------------------------------
-        # Select Manual Table Interface
-        self.frame_step4 = ttk.Frame(self.frame_content)
-        self.frame_step4.grid(row=5, column=0, columnspan=3)
-        ttk.Label(self.frame_step4, text="4. Select Manual Data:").grid(row=0, column=0, columnspan=3)
-        self.manbook = ttk.Notebook(self.frame_step4)
-        self.manbook.grid(row=1, column=0, columnspan=3)
-        self.manframe = ttk.Frame(self.manbook)
-        self.manfileframe = ttk.Frame(self.manbook)
-        self.manbook.add(self.manframe, text='Manual Entry')
-        self.manbook.add(self.manfileframe, text='Data Import')
+        self.add_manual_notepad()
         # validates time number inputs
-        measvalidation= (self.manframe.register(self.only_meas),'%P')
+        self.measvalidation = (self.manframe.register(self.only_meas),'%P')
 
-        # measure 1 manually input manual data ---------------------------------
-        # labels
-        ttk.Label(self.manframe, text="Date of Measure 1").grid(row=0, column=0)
-        ttk.Label(self.manframe, text="HH:MM").grid(row=0, column=1, columnspan=3, sticky='WENS')
-        ttk.Label(self.manframe, text="Measure 1").grid(row=0, column=4)
-        ttk.Label(self.manframe, text="Units").grid(row=0, column=5)
-        # date picker
-        self.man_date1entry = DateEntry(self.manframe, width=20, locale='en_US', date_pattern='MM/dd/yyyy')
-        self.man_date1entry.grid(row=1, column=0,padx=2)
-        # time picker
-        self.hour1 = ttk.Combobox(self.manframe, width=2, values=list([f'{i:02}' for i in range(0, 24)]),
-                                  state="readonly")
-        self.hour1.grid(row=1, column=1)
-        self.hour1.current(0)
-        ttk.Label(self.manframe, text=":").grid(row=1, column=2)
-        self.min1 = ttk.Combobox(self.manframe, width=2, values=list([f'{i:02}' for i in range(0, 60)]),
-                                 state="readonly")
-        self.min1.grid(row=1, column=3)
-        self.min1.current(0)
-        # measure
-        self.man_meas1entry = ttk.Entry(self.manframe, validate="key", validatecommand=measvalidation, width=10)
-        self.man_meas1entry.grid(row=1, column=4, padx=2)
+        self.man_date, self.man_hour, self.man_min, self.man_meas = {}, {}, {}, {}
+        # labels and date, time, and measure entry for manual measurements
+        self.date_hours_min(0) #1st manual measure
+        self.date_hours_min(1) #2nd manual measure
+
         # units
         self.manunits = ttk.Combobox(self.manframe, width=5, values=['ft','m'],state="readonly")
         self.manunits.grid(row=1, column=5, rowspan=3)
         self.manunits.current(0)
+
         # locid
         ttk.Label(self.manframe, text="Locationid").grid(row=0, column=6)
         self.man_locid = ttk.Entry(self.manframe, width=11)
         self.man_locid.grid(row=1, column=6, rowspan=3)
-
-        # measure 2 manually input manual data -----------------------------------
-        ttk.Label(self.manframe, text= "Date of Measure 2").grid(row=2, column=0)
-        ttk.Label(self.manframe, text="HH:MM").grid(row=2, column=1, columnspan=3, sticky='WENS')
-        ttk.Label(self.manframe, text="Measure 2").grid(row=2, column=4)
-
-        # date picker
-        self.man_date2entry = DateEntry(self.manframe, width=20, locale='en_US', date_pattern='MM/dd/yyyy')
-        self.man_date2entry.grid(row=3, column=0,padx=2)
-
-        # time picker
-        self.hour2 = ttk.Combobox(self.manframe, width=2, values=list([f'{i:02}' for i in range(0, 24)]),
-                                  state="readonly")
-        self.hour2.grid(row=3, column=1)
-        self.hour2.current(0)
-        ttk.Label(self.manframe, text=":").grid(row=3, column=2)
-        self.min2 = ttk.Combobox(self.manframe, width=2, values=list([f'{i:02}' for i in range(0, 60)]),
-                                 state="readonly")
-        self.min2.grid(row=3, column=3)
-        self.min2.current(0)
-
-        # measure
-        self.man_meas2entry = ttk.Entry(self.manframe, validate="key", validatecommand=measvalidation, width=10)
-        self.man_meas2entry.grid(row=3, column=4,padx=2)
 
         # Tab for entering manual data by file
         #TODO Auto align sheet fields to columns
@@ -169,7 +104,7 @@ class Feedback:
         self.man_string = tk.StringVar(self.manfileframe, value='Double-Click for file')
         self.man_entry = ttk.Entry(self.manfileframe, textvariable=self.man_string, width=80, justify='left')
         self.man_entry.grid(row=2, column=0, columnspan=4)
-        self.man_entry.bind('<Double-ButtonRelease-1>', lambda fn: self.opendiag(framename='Man Data'))
+        self.man_entry.bind('<Double-ButtonRelease-1>', lambda fn: self.mandiag(framename='Man Data'))
 
         ttk.Label(self.manfileframe,  text="Datetime").grid(row=3, column=0)
         self.mandatetime = ttk.Combobox(self.manfileframe, width=15,
@@ -205,18 +140,7 @@ class Feedback:
         ttk.Button(self.frame_step4, text='Process Manual Data',
                    command=self.proc_man).grid(column=0,row=2,columnspan=3)
 
-        # Fix Drift Button
-        self.frame_step5 = ttk.Frame(self.frame_content)
-        self.frame_step5.grid(row=6, column=0, columnspan=3)
-        ttk.Label(self.frame_step5, text='5. Fix Drift').grid(column=0,row=0,columnspan=3)
-
-        self.max_drift = tk.StringVar(self.frame_step5,value="")
-        ttk.Button(self.frame_step5, text='Fix Drift',
-                   command=self.fix_drift).grid(column=0,row=1,columnspan=1)
-        ttk.Label(self.frame_step5, text='Drift = ').grid(row=1, column=1)
-        ttk.Label(self.frame_step5, textvariable=self.max_drift).grid(row=1, column=2)
-        #self.locchk = ttk.Entry(self.frame_step5)
-        #self.locchk.grid(column=1,row=0)
+        self.fix_drift_interface()
 
         # Fix Drift Button
         self.frame_step6 = ttk.Frame(self.frame_content)
@@ -242,12 +166,41 @@ class Feedback:
         self.calc_elev = ttk.Button(self.frame_step6, text='Calculate Elevations', command=self.elevcalc)
         self.calc_elev.grid(row=3,column=0,columnspan=3)
 
-        #self.frame4 = ttk.Frame(self.notebook)
-        #self.frame5 = ttk.Frame(self.notebook)
-        #self.notebook.add(self.frame4, text='Table')
-        #self.notebook.add(self.frame5, text='Plot Well Data')
-        #self.notebook.select(1)
-        #self.frame5.pack()
+    def date_hours_min(self, i):
+        ttk.Label(self.manframe, text= f"Date of Measure {i+1}").grid(row=i, column=0)
+        ttk.Label(self.manframe, text="HH:MM").grid(row=i, column=1, columnspan=3, sticky='WENS')
+        ttk.Label(self.manframe, text="Measure 1").grid(row=i, column=4)
+        ttk.Label(self.manframe, text="Units").grid(row=i, column=5)
+        # date picker
+        self.man_date[i] = DateEntry(self.manframe, width=20, locale='en_US', date_pattern='MM/dd/yyyy')
+        self.man_date[i].grid(row=i+1, column=0,padx=2)
+        # time picker
+        self.man_hour[i] = ttk.Combobox(self.manframe, width=2, values=list([f'{i:02}' for i in range(0, 24)]),
+                                  state="readonly")
+        self.man_hour[i].grid(row=i+1, column=1)
+        self.man_hour[i].current(0)
+        ttk.Label(self.manframe, text=":").grid(row=i+1, column=2)
+        self.man_min[i] = ttk.Combobox(self.manframe, width=2,
+                                 values=list([f'{i:02}' for i in range(0, 60)]),
+                                 state="readonly")
+        self.man_min[i].grid(row=i+1, column=3)
+        self.man_min[i].current(0)
+        # measure
+        self.man_meas[i] = ttk.Entry(self.manframe, validate="key", validatecommand=self.measvalidation, width=10)
+        self.man_meas[i].grid(row=i+1, column=4, padx=2)
+
+    def add_manual_notepad(self):
+        #-----------Manual Data-------------------------------------------------------------
+        # Select Manual Table Interface
+        self.frame_step4 = ttk.Frame(self.frame_content)
+        self.frame_step4.grid(row=5, column=0, columnspan=3)
+        ttk.Label(self.frame_step4, text="4. Select Manual Data:").grid(row=0, column=0, columnspan=3)
+        self.manbook = ttk.Notebook(self.frame_step4)
+        self.manbook.grid(row=1, column=0, columnspan=3)
+        self.manframe = ttk.Frame(self.manbook)
+        self.manfileframe = ttk.Frame(self.manbook)
+        self.manbook.add(self.manframe, text='Manual Entry')
+        self.manbook.add(self.manfileframe, text='Data Import')
 
     def filefinders(self, key):
         datasets = {"well": [0, "1. Select Well Data:"],
@@ -257,7 +210,39 @@ class Feedback:
         self.datastr[key] = tk.StringVar(self.frame_content, value=f'Double-Click for {key} file')
         self.entry[key] = ttk.Entry(self.frame_content, textvariable=self.datastr[key], width=80)
         self.entry[key].grid(row=i + 1, column=0, columnspan=3)
-        self.entry[key].bind('<Double-ButtonRelease-1>', lambda k: self.opendiag(key))
+        self.entry[key].bind('<Double-ButtonRelease-1>', lambda k: self.wellbarodiag(key))
+
+    def fix_drift_interface(self):
+        # Fix Drift Button
+        self.frame_step5 = ttk.Frame(self.frame_content)
+        self.frame_step5.grid(row=6, column=0, columnspan=3)
+        ttk.Label(self.frame_step5, text='5. Fix Drift').grid(column=0,row=0,columnspan=3)
+
+        self.max_drift = tk.StringVar(self.frame_step5,value="")
+        ttk.Button(self.frame_step5, text='Fix Drift',
+                   command=self.fix_drift).grid(column=0,row=1,columnspan=1)
+        ttk.Label(self.frame_step5, text='Drift = ').grid(row=1, column=1)
+        ttk.Label(self.frame_step5, textvariable=self.max_drift).grid(row=1, column=2)
+        #self.locchk = ttk.Entry(self.frame_step5)
+        #self.locchk.grid(column=1,row=0)
+
+    def add_alignment_interface(self):
+        # Align Manual and Baro Data
+        frame_step3 = ttk.Frame(self.frame_content)
+        frame_step3.grid(row=4, column=0, columnspan=3)
+        ttk.Label(frame_step3, text="3. Align Baro and Well Data:").grid(row=0, column=0, columnspan=3)
+        ttk.Label(frame_step3, text='Pref. Data Freq.').grid(row=1, column=0, columnspan=2)
+        # Boxes for data frequency
+        self.freqint = ttk.Combobox(frame_step3, width=4, values=list(range(1,120)))
+        self.freqint.grid(row=2,column=0)
+        self.freqint.current(59)
+        self.freqtype = ttk.Combobox(frame_step3, width=4, values=['M'])
+        self.freqtype.grid(row=2, column=1)
+        self.freqtype.current(0)
+        self.alignpro = ttk.Button(frame_step3,
+                                   text='Align Datasets',
+                                   command=lambda: self.opendiag(key='well-baro'))
+        self.alignpro.grid(row=2, column=2)
 
     def elevcalc(self):
         mstickup = self.wellstickup.get()
@@ -354,8 +339,7 @@ class Feedback:
                     self.mandatetime.current(mancols.index(col))
         else:
             messagebox.showinfo(title='Attention', message='Select a manual file!')
-            self.opendiag(framename='Man Data')
-
+            self.mandiag('mandialog')
 
     def man_col_select_loc(self, cmbo):
         if 'mandata' in self.__dict__.keys():
@@ -364,7 +348,7 @@ class Feedback:
             cmbo['values'] = list([f'{loc:0.0f}' for loc in locids])
         else:
             messagebox.showinfo(title='Attention', message='Select a manual file!')
-            self.opendiag(framename='Man Data')
+            self.mandiag('manual')
 
     def only_meas(self, value_if_allowed):
         try:
@@ -375,27 +359,9 @@ class Feedback:
         return bool
 
 
-    def destroy_graph(self, frame):
-        for widget in frame.winfo_children():
-            widget.destroy()
-
-
     def make_graph_frame(self, fig, ax, framename='Raw Well', plotvar='Level'):
         # populate main graph tab
         # Create Tab Buttons
-        #self.graph_button_frame1 = ttk.Frame(frame)
-        #self.button_left = Button(self.graph_button_frame1, text="< Decrease Slope", command=self.decrease)
-        #self.button_left.pack(side="left")
-        #self.button_right = Button(self.graph_button_frame1, text="Increase Slope >", command=self.increase)
-        #self.button_right.pack(side="left")
-        #self.graph_button_frame1.pack()
-        #if framename not in('Raw Baro', 'Manual'):
-        #fig = Figure()
-        #ax = fig.add_subplot(111)
-
-        #plt.clf()
-        #plt.cla()
-        #ax.clear()
 
         if framename == 'Man Data':
             if 'man_entry_df' in self.__dict__.keys():
@@ -442,94 +408,84 @@ class Feedback:
         print("you pressed {}".format(event.key))
         key_press_handler(event, self.canvas, self.toolbar)
 
-    def noteadd(self):
-        print('no')
+    def note_tab_add(self, key):
+        if key in self.notelist.keys():
+            self.notebook.forget(self.notelist[key])
+            self.notelist[key] = 'old'
+        new_frame = ttk.Frame(self.notebook)
+        self.notebook.add(new_frame, text=key)
+        for t in range(len(self.notebook.tabs())):
+            self.notelist[self.notebook.tab(t)['text']] = t
+        self.notebook.select(t)
 
+        panedframe = ttk.Panedwindow(new_frame, orient='vertical')
+        panedframe.pack(fill='both', expand=True)
+        tableframe = ttk.Frame(panedframe, relief='sunken')
+        graphframe = ttk.Frame(panedframe, relief='sunken')
+        panedframe.add(tableframe, weight=1)
+        panedframe.add(graphframe, weight=4)
+        labframe = ttk.Frame(graphframe)
+        labframe.pack()
+        ttk.Label(labframe, text='Click on column of choice and then the Plot button!').pack()
+        return graphframe, tableframe
 
+    def add_graph_table(self, key, tableframe, graphframe):
+        self.graph_frame1 = ttk.Frame(graphframe)
+        self.datatable[key] = Table(tableframe, dataframe=self.data[key], showtoolbar=True, showstatusbar=True)
+        self.datatable[key].show()
+        self.datatable[key].showIndex()
+        self.datatable[key].update()
+        self.datatable[key].showPlotViewer(parent=self.graph_frame1)
+        canvas = self.datatable[key].showPlotViewer(parent=self.graph_frame1).canvas
+        toolbar = NavigationToolbar2Tk(canvas, self.graph_frame1)
+        toolbar.update()
+        canvas.draw()
+        canvas.get_tk_widget().pack(side='top', fill='both', expand=1)
+        canvas.mpl_connect("key_press_event", self.on_key_press)
 
-    def opendiag(self, key):
-        if key in ('well','baro'):
-            ftypelist = (("Solinst xle","*.xle*"),("Solinst csv","*.csv"))
+    def wellbarodiag(self, key):
 
-            self.datastr[key].set(filedialog.askopenfilename(initialdir=self.currentdir,
-                                                             title=f"Select {key} file",
-                                                             filetypes=ftypelist))
-            self.currentdir = os.path.dirname(self.datastr[key].get())
+        ftypelist = (("Solinst xle","*.xle*"),("Solinst csv","*.csv"))
 
-        elif key == 'manual':
-            ftypelist = (("csv","*.csv*"),("xlsx","*.xlsx"),("xls",".xls"))
-            self.datastr[key].set(filedialog.askopenfilename(initialdir=self.currentdir,
-                                                             title=f"Select {key} file",
-                                                             filetypes=ftypelist))
-            self.currentdir = os.path.dirname(self.datastr[key].get())
-        else:
-            filename = None
+        self.datastr[key].set(filedialog.askopenfilename(initialdir=self.currentdir,
+                                                         title=f"Select {key} file",
+                                                         filetypes=ftypelist))
+        self.currentdir = os.path.dirname(self.datastr[key].get())
 
+        # Action if cancel in file dialog is pressed
         if self.datastr[key].get() == '' or type(self.datastr[key].get()) == tuple:
             pass
         else:
-            if key in self.notelist.keys():
-                self.notebook.forget(self.notelist[key])
-                self.notelist[key] = 'old'
-            new_frame = ttk.Frame(self.notebook)
-            self.notebook.add(new_frame, text=key)
-            for t in range(len(self.notebook.tabs())):
-                self.notelist[self.notebook.tab(t)['text']] = t
-            self.notebook.select(t)
+            # add notepad tab
+            graphframe, tableframe = self.note_tab_add(key)
+
+            self.data[key] = ll.NewTransImp(self.datastr[key].get()).well.drop(['name'], axis=1)
+            # add graph and table to new tab
+            self.add_graph_table(key, tableframe, graphframe)
 
 
-            if key in ('well','baro','manual'):
+    def alignedplot(self):
+        if 'well' in self.data.keys() and 'baro' in self.data.keys():
+            df = ll.well_baro_merge(self.data['well'].model.df,
+                                    self.data['baro'].model.df,
+                                    sampint=self.freqint.get())
+            self.add_graph_table(df, key, tableframe)
 
-                panedframe = ttk.Panedwindow(new_frame, orient='vertical')
-                panedframe.pack(fill='both', expand=True)
-                tableframe = ttk.Frame(panedframe, relief='sunken')
-                graphframe = ttk.Frame(panedframe, relief='sunken')
-                panedframe.add(tableframe, weight=1)
-                panedframe.add(graphframe, weight=4)
-                labframe = ttk.Frame(graphframe)
-                labframe.pack()
-                ttk.Label(labframe,text='Click on column of choice and then the Plot button!').pack()
+    def mandiag(self, key):
+        ftypelist = (("csv", "*.csv*"), ("xlsx", "*.xlsx"), ("xls", ".xls"))
+        self.datastr[key].set(filedialog.askopenfilename(initialdir=self.currentdir,
+                                                             title=f"Select {key} file",
+                                                             filetypes=ftypelist))
+        self.currentdir = os.path.dirname(self.datastr[key].get())
 
-                self.graph_frame1 = ttk.Frame(graphframe)
-
-                if key == 'well':
-                    df = ll.NewTransImp(self.datastr[key].get()).well.drop(['name'], axis=1)
-                    self.data[key] = Table(tableframe, dataframe=df, showtoolbar=True, showstatusbar=True)
-                    self.data[key].show()
-                    self.data[key].showIndex()
-                    self.data[key].showPlotViewer(parent=self.graph_frame1)
-                    canvas = self.data[key].showPlotViewer(parent=self.graph_frame1).canvas
-                    toolbar = NavigationToolbar2Tk(canvas, self.graph_frame1)
-                    toolbar.update()
-                    canvas.draw()
-                    canvas.get_tk_widget().pack(side='top', fill='both', expand=1)
-                    canvas.mpl_connect("key_press_event", self.on_key_press)
-
-                elif key == 'baro':
-                    df = ll.NewTransImp(self.datastr[key].get()).well.drop(['name'], axis=1)
-                    self.data[key] = Table(tableframe, dataframe=df, showtoolbar=True, showstatusbar=True)
-                    self.data[key].show()
-                    self.data[key].showIndex()
-                elif key == 'well-baro':
-                    if 'well' in self.data.keys() and 'baro' in self.data.keys():
-                        df = ll.well_baro_merge(self.data['well'].model.df,
-                                                self.data['baro'].model.df,
-                                                sampint=self.freqint.get())
-                        self.alignwellbaro = Table(tableframe, dataframe=df.reset_index(),
-                                   showtoolbar=True, showstatusbar=True)
-                        self.alignwellbaro.show()
-
-                self.graph_frame1.pack()
-            elif key == 'manual':
-                #https://stackoverflow.com/questions/45357174/tkinter-drop-down-menu-from-excel
-                #TODO add excel sheet options to file selection
-                filenm, file_extension = os.path.splitext(filename)
-                self.man_string.set(filename)
-                if file_extension in ('.xls', '.xlsx'):
-                    self.mandata = pd.read_excel(filename)
-                elif file_extension == '.csv':
-                    self.mandata = pd.read_csv(filename)
-
+        #https://stackoverflow.com/questions/45357174/tkinter-drop-down-menu-from-excel
+        #TODO add excel sheet options to file selection
+        filenm, file_extension = os.path.splitext(self.datastr[key].get())
+        if file_extension in ('.xls', '.xlsx'):
+            self.data['manual'] = pd.read_excel(self.datastr[key].get())
+        elif file_extension == '.csv':
+            self.data['manual'] = pd.read_csv(self.datastr[key].get())
+        self.graph_frame1.pack()
 
 class DropMenu(Feedback):
 
