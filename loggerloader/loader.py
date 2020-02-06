@@ -684,7 +684,7 @@ def get_trans_gw_elevations(df, stickup, well_elev, site_number, level='Level', 
     """
 
     df['measuredlevel'] = df[level]
-    df['measureddtw'] = df[dtw] * 1
+    df['measureddtw'] = df[dtw] * -1 #changed 3/5/2020
 
     print([stickup, well_elev, site_number])
     if pd.isna(stickup):

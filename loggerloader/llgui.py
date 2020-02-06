@@ -112,19 +112,16 @@ Good for matching bulk manual data """
         self.man_entry.grid(row=2, column=0, columnspan=4)
         self.man_entry.bind('<Double-ButtonRelease-1>', self.mandiag)
 
+
         fillervals = ['datetime','meas','locid']
         self.combo, self.combo_choice = {}, {}
         combovals = {"Datetime":[3,0,15,fillervals,4,0],
                           "DTW":[3,1,15,fillervals,4,1],
                           "locationid":[3,2,15,fillervals,4,2],
-                          "Pick id":[2,1,15,[1001,1002],5,2]}
+                          "Pick id":[5,1,15,[1001,1002],5,2]}
 
-        for key,values in combovals.items():
-            ttk.Label(self.manfileframe, text=key).grid(row=values[0], column=values[1])
-            self.combo[key] = ttk.Combobox(self.manfileframe, width=values[2],
-                                        values=values[3],
-                                        postcommand=lambda: self.man_col_select(self.combo[key]))
-            self.combo[key].grid(row=values[4], column=values[5])
+        for key, vals in combovals.items():
+            self.man_combos(key, vals)
 
         ttk.Label(self.manfileframe, text="units").grid(row=3, column=3)
         self.manunits = ttk.Combobox(self.manfileframe, width=5,
@@ -168,6 +165,33 @@ Good for matching bulk manual data """
         b = ttk.Button(save_onewell_frame, text='Save csv', command=self.save_one_well)
         b.pack()
 
+    def man_combos(self, key, vals):
+        self.combo_choice[key] = tk.StringVar()
+        ttk.Label(self.manfileframe, text=key).grid(row=vals[0], column=vals[1])
+        self.combo[key] = ttk.Combobox(self.manfileframe, width=vals[2],
+                                       textvariable=self.combo_choice[key],
+                                       postcommand=lambda: self.man_col_select(self.combo[key]))
+        self.combo[key].grid(row=vals[4], column=vals[5])
+
+    def man_col_select(self, cmbo):
+        if 'manual' in self.data.keys():
+            mancols = list(self.data['manual'].columns.values)
+            if cmbo == self.combo['Pick id']:
+                locids = self.data['manual'][str(self.combo['locationid'].get())].unique()
+                # TODO this will cause problems later; change to handle multiple types
+                cmbo['values'] = list([f'{loc:0.0f}' for loc in locids])
+            else:
+                cmbo['values'] = mancols
+
+            for col in mancols:
+                # TODO move matching functions to happen with data import in mandiag
+                if col in ['datetime', 'date', 'readingdate', 'Date']:
+                    self.combo_choice["Datetime"].set('readingdate')
+                    self.combo["Datetime"].current(mancols.index(col))
+
+        else:
+            messagebox.showinfo(title='Attention', message='Select a manual file!')
+            self.mandiag(True)
 
     def date_hours_min(self, i):
         ttk.Label(self.manframe, text=f"Date of Measure {i + 1}").grid(row=i, column=0)
@@ -207,16 +231,17 @@ Good for matching bulk manual data """
         self.manbook.add(self.manfileframe, text='Data Import')
 
     def filefinders(self, key):
-        datasets = {"well": [0, "1. Select Well Data:"],
-                    "baro": [2, "2. Select Barometric Data:"]}
-        i = datasets[key][0]
+        datasets = {"well": "1. Select Well Data:",
+                    "baro": "2. Select Barometric Data:"}
         ttk.Separator(self.onewelltab, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
         filefinderframe = ttk.Frame(self.onewelltab)
-        ttk.Label(filefinderframe, text=datasets[key][1]).grid(row=i, column=0, columnspan=3)
+        ttk.Label(filefinderframe, text=datasets[key]).pack()
+        ttk.Label(filefinderframe, text='(Right click for refresh.)').pack()
         self.datastr[key] = tk.StringVar(filefinderframe, value=f'Double-Click for {key} file')
         self.entry[key] = ttk.Entry(filefinderframe, textvariable=self.datastr[key], width=80)
-        self.entry[key].grid(row=i + 1, column=0, columnspan=3)
+        self.entry[key].pack()
         self.entry[key].bind('<Double-ButtonRelease-1>', lambda k: self.wellbarodiag(key))
+        self.entry[key].bind('<3>', lambda k: self.wellbaroabb(key))
         filefinderframe.pack()
 
     def fix_drift_interface(self):
@@ -260,22 +285,26 @@ Good for matching bulk manual data """
         elif self.wellgroundelevunits.get() == 'm':
             melev = melev * 3.2808
         self.manelevs = ll.get_man_gw_elevs(self.datatable['manual'].model.df, mstickup, melev)
-        self.data[key] = ll.get_trans_gw_elevations(self.datatable['fixed-drift'].model.df, mstickup,
-                                                     melev, self.combo["Pick id"].get(), level='DTW_WL')
+        df = ll.get_trans_gw_elevations(self.datatable['fixed-drift'].model.df, mstickup,
+                                                     melev, self.combo["Pick id"].get(), level='corrwl', dtw='DTW_WL')
+        self.data[key] = df.set_index('readingdate')
         graphframe, tableframe = self.note_tab_add(key)
         self.add_graph_table(key, tableframe, graphframe)
         print(self.manelevs)
 
     def fix_drift(self):
         key = 'fixed-drift'
-        df, self.drift_info, mxdrft = ll.fix_drift(self.datatable['well-baro'].model.df,
-                                                   self.datatable['manual'].model.df,
-                                                   manmeas='dtwbelowcasing')
-        self.max_drift.set(mxdrft)
-        self.data[key] = df[['datetime', 'barometer', 'corrwl', 'DTW_WL']]
+        if 'well-baro' in self.datatable.keys():
+            df, self.drift_info, mxdrft = ll.fix_drift(self.datatable['well-baro'].model.df,
+                                                       self.datatable['manual'].model.df,
+                                                       manmeas='dtwbelowcasing')
+            self.max_drift.set(mxdrft)
+            self.data[key] = df[['datetime', 'barometer', 'corrwl', 'DTW_WL']]
 
-        graphframe, tableframe = self.note_tab_add(key)
-        self.add_graph_table(key, tableframe, graphframe)
+            graphframe, tableframe = self.note_tab_add(key)
+            self.add_graph_table(key, tableframe, graphframe)
+        else:
+            tk.messagebox.showinfo(title='Yo!',message='Align the data first!')
 
     def proc_man(self):
         nbnum = self.manbook.index(self.manbook.select())
@@ -315,27 +344,6 @@ Good for matching bulk manual data """
 
         graphframe, tableframe = self.note_tab_add(key)
         self.add_graph_table(key, tableframe, graphframe)
-
-    def man_col_select(self, cmbo):
-        if 'manual' in self.data.keys():
-            mancols = list(self.data['manual'].columns.values)
-            cmbo['values'] = mancols
-
-            for col in mancols:
-                if col in ['datetime', 'date', 'readingdate', 'Date']:
-                    self.combo["Datetime"].current(mancols.index(col))
-        else:
-            messagebox.showinfo(title='Attention', message='Select a manual file!')
-            self.mandiag(True)
-
-    def man_col_select_loc(self, cmbo):
-        if 'manual' in self.data.keys():
-            locids = self.data['manual'][str(self.combo['locationid'].get())].unique()
-            # TODO this will cause problems later; change to handle multiple types
-            cmbo['values'] = list([f'{loc:0.0f}' for loc in locids])
-        else:
-            messagebox.showinfo(title='Attention', message='Select a manual file!')
-            self.mandiag(True)
 
     def only_meas(self, value_if_allowed):
         try:
@@ -416,7 +424,9 @@ Good for matching bulk manual data """
         if key == 'well-baro':
             self.add_baro_axis(graph_frame1)
         elif key == 'fixed-drift':
-            self.add_manual_points(graph_frame1)
+            self.add_manual_points(key, graph_frame1)
+        elif key == 'wl-elev':
+            self.add_manual_points(key, graph_frame1)
         toolbar = NavigationToolbar2Tk(canvas, graph_frame1)
         toolbar.update()
         canvas.draw()
@@ -437,15 +447,35 @@ Good for matching bulk manual data """
         labs = [l.get_label() for l in lns]
         ax.legend(lns, labs, loc=0)
 
-    def add_manual_points(self, graph_frame1):
-        key = 'fixed-drift'
+    def add_manual_points(self, key, graph_frame1):
         ax = self.datatable[key].showPlotViewer(parent=graph_frame1).ax
-        ax.plot(self.datatable[key].model.df['DTW_WL'], color='green', label='unprocessed')
-        ax.scatter(self.datatable['manual'].model.df.index, self.datatable['manual'].model.df['dtwbelowcasing'])
-        ax.set_ylabel(f"Depth To Water {self.manunits.get()}")
+        if key == 'fixed-drift':
+            ax.plot(self.datatable[key].model.df['DTW_WL'], color='green', label='unprocessed')
+            ax.scatter(self.datatable['manual'].model.df.index, self.datatable['manual'].model.df['dtwbelowcasing'])
+            ax.set_ylabel(f"Depth to Water (ft)")
+        elif key == 'wl-elev':
+            ax.plot(self.datatable[key].model.df['waterelevation'], color='green', label='unprocessed')
+            ax.scatter(self.manelevs.index, self.manelevs['waterelevation'])
+            ax.set_ylabel(f"Water Elevation (ft)")
         ax.set_xlim(self.datatable['manual'].model.df.first_valid_index() - pd.Timedelta('3 days'),
                     self.datatable['manual'].model.df.last_valid_index() + pd.Timedelta('3 days'), )
 
+    def wellbaroabb(self, key):
+        if self.datastr[key].get() == '' or type(self.datastr[key].get()) == tuple or self.datastr[key].get() == f'Double-Click for {key} file':
+            pass
+        else:
+            if key in ('well','baro'):
+                self.data[key] = ll.NewTransImp(self.datastr[key].get()).well.drop(['name'], axis=1)
+            elif key == 'manual':
+                filenm, file_extension = os.path.splitext(self.datastr[key].get())
+                if file_extension in ('.xls', '.xlsx'):
+                    self.data['manual'] = pd.read_excel(self.datastr[key].get())
+                elif file_extension == '.csv':
+                    self.data['manual'] = pd.read_csv(self.datastr[key].get())
+            # add notepad tab
+            graphframe, tableframe = self.note_tab_add(key)
+            # add graph and table to new tab
+            self.add_graph_table(key, tableframe, graphframe)
 
     def wellbarodiag(self, key):
 
@@ -457,15 +487,7 @@ Good for matching bulk manual data """
         self.currentdir = os.path.dirname(self.datastr[key].get())
 
         # Action if cancel in file dialog is pressed
-        if self.datastr[key].get() == '' or type(self.datastr[key].get()) == tuple:
-            pass
-        else:
-            # add notepad tab
-            graphframe, tableframe = self.note_tab_add(key)
-
-            self.data[key] = ll.NewTransImp(self.datastr[key].get()).well.drop(['name'], axis=1)
-            # add graph and table to new tab
-            self.add_graph_table(key, tableframe, graphframe)
+        self.wellbaroabb(key)
 
     def alignedplot(self):
         """
@@ -512,11 +534,11 @@ Good for matching bulk manual data """
         menubar.add_cascade(menu=help_, label='Help')
         file.add_command(label='New', command=lambda: print('New File'))
         file.add_separator()
-        file.add_command(label="Open...", command=lambda: print('Opening'))
-        file.add_command(label="Save", command= self.save)
+        file.add_command(label="Open Config File...", command=self.open)
         file.entryconfig('New', accelerator='Ctrl + N')
         save = tk.Menu(file)
         file.add_cascade(menu=save, label='Save')
+        save.add_command(label="Save Well Config", command=self.save)
         save.add_command(label='Save As', command=lambda: print('save as'))
         save.add_command(label='Save All', command=lambda: print('saving'))
 
@@ -526,13 +548,30 @@ Good for matching bulk manual data """
             print('no')
             return
         else:
-
-            for key, value in self.datastr.items():
-                file.write(self.datastr[key].get()+"\n")
-            #file.write()
+            file.write("dic,name,value\n")
+            for key in self.datastr.keys():
+                file.write(f"datastr,{key},{self.datastr[key].get()}\n")
+            for key in self.combo.keys():
+                file.write(f"combo,{key},{self.combo[key].get()}\n")
+            file.write(f"man notebook,manual tab,{self.manbook.index(self.manbook.select())}")
             file.close()
             return
             #f = filedialog.asksaveasfile(mode='w', defaultextension=".tproc")
+
+    def open(self):
+        filename = filedialog.askopenfilename(filetypes=[('text','.txt')])
+        if filename is None:
+            return
+        else:
+            df = pd.read_csv(filename).set_index(['name'])
+            directs = df[df['dic']=='datastr']
+            for i in directs.index:
+                self.datastr[i].set(directs.loc[i,'value'])
+                self.wellbaroabb(i)
+            combs = df[df['dic']=='combo']
+            for i in combs.index:
+                self.combo_choice[i].set(combs.loc[i,'value'])
+            self.manbook.select(df.loc['manual tab','dic'])
 
     def save_one_well(self):
         filename = filedialog.asksaveasfilename(confirmoverwrite=True)
@@ -544,10 +583,6 @@ Good for matching bulk manual data """
 
             df.to_csv(filename)
             return
-
-
-
-
 
 def main():
     root = tk.Tk()
