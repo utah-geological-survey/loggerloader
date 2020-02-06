@@ -697,7 +697,7 @@ def get_trans_gw_elevations(df, stickup, well_elev, site_number, level='Level', 
     if pd.isna(well_elev):
         df['waterelevation'] = None
     else:
-        df['waterelevation'] = well_elev + df['dtwbelowgroundsurface']
+        df['waterelevation'] = well_elev + df['dtwbelowgroundsurface'] + stickup
 
     df['locationid'] = site_number
 

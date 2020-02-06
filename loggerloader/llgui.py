@@ -331,6 +331,7 @@ Good for matching bulk manual data """
             df['units'] = self.manunits.get()
             if self.manunits.get() == 'm':
                 df['dtwbelowcasing'] = df['dtwbelowcasing'] * 3.28084
+            df = df.reset_index()
             df['readingdate'] = df['readingdate'].apply(lambda x: pd.to_datetime(x, infer_datetime_format=True,
                                                                                  errors='ignore'))
             df['dtwbelowcasing'] = df['dtwbelowcasing'].apply(lambda x: pd.to_numeric(x, errors='coerce'))
@@ -541,6 +542,7 @@ Good for matching bulk manual data """
         save.add_command(label="Save Well Config", command=self.save)
         save.add_command(label='Save As', command=lambda: print('save as'))
         save.add_command(label='Save All', command=lambda: print('saving'))
+        file.add_command(label='Quit', command=self.root.destroy)
 
     def save(self):
         file = filedialog.asksaveasfile(mode="w", filetypes=[('text','.txt')], defaultextension=".txt")
