@@ -4,11 +4,8 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="improved gui graphing significantly">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="added file dialog actions; completed single-well process (ex. elev)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/loggerloader/llgui.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/llgui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/loggerloader/loader.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/loader.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -234,21 +231,8 @@
       <updated>1500398986654</updated>
       <workItem from="1580767491033" duration="7152000" />
       <workItem from="1580823517124" duration="27995000" />
-      <workItem from="1580911938398" duration="31099000" />
-    </task>
-    <task id="LOCAL-00141" summary="fixing upload baro data">
-      <created>1536169207607</created>
-      <option name="number" value="00141" />
-      <option name="presentableId" value="LOCAL-00141" />
-      <option name="project" value="LOCAL" />
-      <updated>1536169207607</updated>
-    </task>
-    <task id="LOCAL-00142" summary="fixing upload baro data">
-      <created>1536169933807</created>
-      <option name="number" value="00142" />
-      <option name="presentableId" value="LOCAL-00142" />
-      <option name="project" value="LOCAL" />
-      <updated>1536169933807</updated>
+      <workItem from="1580911938398" duration="31387000" />
+      <workItem from="1581019776053" duration="949000" />
     </task>
     <task id="LOCAL-00143" summary="fixing upload baro data">
       <created>1536170761009</created>
@@ -579,7 +563,21 @@
       <option name="project" value="LOCAL" />
       <updated>1580935923770</updated>
     </task>
-    <option name="localTasksCounter" value="190" />
+    <task id="LOCAL-00190" summary="added file dialog actions; completed single-well process (ex. elev)">
+      <created>1580950319758</created>
+      <option name="number" value="00190" />
+      <option name="presentableId" value="LOCAL-00190" />
+      <option name="project" value="LOCAL" />
+      <updated>1580950319758</updated>
+    </task>
+    <task id="LOCAL-00191" summary="added file dialog actions; completed single-well process (ex. elev)">
+      <created>1580950346254</created>
+      <option name="number" value="00191" />
+      <option name="presentableId" value="LOCAL-00191" />
+      <option name="project" value="LOCAL" />
+      <updated>1580950346254</updated>
+    </task>
+    <option name="localTasksCounter" value="192" />
     <servers />
   </component>
   <component name="TodoView" selected-index="3">
@@ -596,7 +594,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="added import baro data function" />
     <MESSAGE value="reestablished package v0.3" />
     <MESSAGE value="added .lev function" />
     <MESSAGE value="added .lev function format exception" />
@@ -621,7 +618,8 @@
     <MESSAGE value="update HeaderTable to be more modular" />
     <MESSAGE value="improved gui graphing significantly" />
     <MESSAGE value="Major refactorization, addition of batch tab and fixing many errors" />
-    <option name="LAST_COMMIT_MESSAGE" value="Major refactorization, addition of batch tab and fixing many errors" />
+    <MESSAGE value="added file dialog actions; completed single-well process (ex. elev)" />
+    <option name="LAST_COMMIT_MESSAGE" value="added file dialog actions; completed single-well process (ex. elev)" />
   </component>
   <component name="WindowStateProjectService">
     <state x="414" y="181" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1580912831396">
@@ -633,29 +631,29 @@
       <screen x="1920" y="1" width="1920" height="1050" />
     </state>
     <state x="2599" y="141" key="#llgui/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@1920.1.1920.1050" timestamp="1580767659733" />
-    <state x="615" y="120" key="CommitChangelistDialog2" timestamp="1580950316437">
+    <state x="615" y="120" key="CommitChangelistDialog2" timestamp="1581020997172">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state x="615" y="120" key="CommitChangelistDialog2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950316437" />
-    <state width="1695" height="274" key="GridCell.Tab.0.bottom" timestamp="1580950151604">
+    <state x="615" y="120" key="CommitChangelistDialog2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581020997172" />
+    <state width="1695" height="274" key="GridCell.Tab.0.bottom" timestamp="1580950397156">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state width="1695" height="274" key="GridCell.Tab.0.bottom/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950151604" />
+    <state width="1695" height="274" key="GridCell.Tab.0.bottom/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950397156" />
     <state width="1348" height="281" key="GridCell.Tab.0.bottom/0.40.1368.872@0.40.1368.872" timestamp="1580875974534" />
-    <state width="1695" height="274" key="GridCell.Tab.0.center" timestamp="1580950151604">
+    <state width="1695" height="274" key="GridCell.Tab.0.center" timestamp="1580950397156">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state width="1695" height="274" key="GridCell.Tab.0.center/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950151604" />
+    <state width="1695" height="274" key="GridCell.Tab.0.center/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950397156" />
     <state width="1348" height="281" key="GridCell.Tab.0.center/0.40.1368.872@0.40.1368.872" timestamp="1580875974534" />
-    <state width="1695" height="274" key="GridCell.Tab.0.left" timestamp="1580950151603">
+    <state width="1695" height="274" key="GridCell.Tab.0.left" timestamp="1580950397156">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state width="1695" height="274" key="GridCell.Tab.0.left/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950151603" />
+    <state width="1695" height="274" key="GridCell.Tab.0.left/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950397156" />
     <state width="1348" height="281" key="GridCell.Tab.0.left/0.40.1368.872@0.40.1368.872" timestamp="1580875974534" />
-    <state width="1695" height="274" key="GridCell.Tab.0.right" timestamp="1580950151604">
+    <state width="1695" height="274" key="GridCell.Tab.0.right" timestamp="1580950397156">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state width="1695" height="274" key="GridCell.Tab.0.right/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950151604" />
+    <state width="1695" height="274" key="GridCell.Tab.0.right/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950397156" />
     <state width="1348" height="281" key="GridCell.Tab.0.right/0.40.1368.872@0.40.1368.872" timestamp="1580875974534" />
     <state width="1348" height="281" key="GridCell.Tab.1.bottom" timestamp="1580875974535">
       <screen x="0" y="40" width="1368" height="872" />
@@ -686,18 +684,18 @@
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
     <state x="747" y="242" key="VCS.ChangeListViewerDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580824162576" />
-    <state x="552" y="259" key="Vcs.Push.Dialog.v2" timestamp="1580950322601">
+    <state x="552" y="259" key="Vcs.Push.Dialog.v2" timestamp="1580950360600">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state x="552" y="259" key="Vcs.Push.Dialog.v2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950322601" />
-    <state x="656" y="350" key="com.intellij.ide.util.TipDialog" timestamp="1580823518660">
+    <state x="552" y="259" key="Vcs.Push.Dialog.v2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950360600" />
+    <state x="656" y="350" key="com.intellij.ide.util.TipDialog" timestamp="1581019777899">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state x="656" y="350" key="com.intellij.ide.util.TipDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580823518660" />
-    <state x="769" y="443" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1580824243341">
+    <state x="656" y="350" key="com.intellij.ide.util.TipDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581019777899" />
+    <state x="769" y="443" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1581020969087">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state x="769" y="443" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580824243341" />
+    <state x="769" y="443" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581020969087" />
     <state x="662" y="123" width="756" height="804" key="find.popup" timestamp="1580857567745">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
