@@ -70,6 +70,7 @@ class Feedback:
         dirselectframe.pack()
 
         self.bulkdatastr, self.bulkdata, self.bulkdatatable, self.bulkcombo = {}, {}, {}, {}
+        self.locidmatch = {}
 
         well_info_frame = ttk.Frame(dirselectframe)
         well_info_frame.pack()
@@ -665,9 +666,11 @@ Good for matching bulk manual data """
             scrollbar = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
             scrollable_frame = ttk.Frame(canvas)
             if 'well-info-table' in self.bulkdatatable.keys():
-                self.locdict = self.bulkdatatable['well-info-table'].model.df['locationname'].to_dict()
-                self.namedict = {value: key for key, value in self.locdict.items()}
-                self.lowernames = [i.lower() for i in list(self.namedict.keys())]
+                df = self.bulkdatatable['well-info-table'].model.df
+                df['locationnamelwr'] = df['locationname'].apply(lambda x: x.lower(),1)
+                self.locdict = df['locationnamelwr'].to_dict()
+                self.namedict = {y:x for x,y in self.locdict.items()}
+                self.locnames = list(df['locationname'].unique())
             i = 0
             for file in glob.glob(self.bulkdatastr['trans-dir'].get() + '/*'):
 
@@ -677,10 +680,13 @@ Good for matching bulk manual data """
                 self.bulkcombo[filestr] = ttk.Combobox(scrollable_frame, textvariable=self.bulkdatastr[filestr])
                 self.bulkcombo[filestr].grid(row=i, column=1)
                 a = re.split('_|\s', filestr)[0]
-                self.bulkcombo[filestr]['values'] = list(self.namedict.keys())
-                if 'namedict' in self.__dict__.keys():
-                    if a.lower() in self.lowernames:
-                        self.bulkcombo[filestr].set(a)
+                self.bulkcombo[filestr]['values'] = self.locnames
+                if 'locdict' in self.__dict__.keys():
+                    if a.lower() in df['locationnamelwr'].unique():
+                        df = self.bulkdatatable['well-info-table'].model.df
+                        self.bulkcombo[filestr].set(df.loc[self.namedict[a.lower()],'locationname'])
+                        self.locidmatch[filestr] = self.namedict[a.lower()]
+
 
                 i += 1
             scrollable_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
