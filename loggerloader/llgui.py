@@ -69,7 +69,7 @@ class Feedback:
         dirselectframe = ttk.Frame(self.bulkwelltab)
         dirselectframe.pack()
 
-        self.bulkdatastr, self.bulkdata, self.bulkdatatable = {}, {}, {}
+        self.bulkdatastr, self.bulkdata, self.bulkdatatable, self.bulkcombo = {}, {}, {}, {}
 
         well_info_frame = ttk.Frame(dirselectframe)
         well_info_frame.pack()
@@ -78,15 +78,17 @@ class Feedback:
         self.bulkdatastr[key].set("../data_files/ugs_ngwmn_monitoring_locations.csv")
         df = pd.read_csv(self.bulkdatastr[key].get())
         df = df.reset_index()
-        df = df[df['altlocationid'].notnull()].set_index(['altlocationid'])
+        df = df[df['altlocationid'].notnull()]
+        df['altlocationid'] = df['altlocationid'].apply(lambda x: int(x), 1)
+        df = df.set_index(['altlocationid'])
         self.bulkdata[key] = df
         ttk.Label(well_info_frame, text='Input well info file (must be csv)').grid(row=0, column=0, columnspan=3)
         ttk.Label(well_info_frame, text='must have altlocationid, locationname, stickup, barologgertype, and verticalmeasure').grid(row=1,column=0,columnspan=3)
         e = ttk.Entry(well_info_frame, textvariable=self.bulkdatastr[key], width=80)
-        e.grid(row=1,column=0,columnspan=2)
+        e.grid(row=2,column=0,columnspan=2)
         e.bind('<Double-ButtonRelease-1>', lambda f: self.open_file(well_info_frame))
         b = ttk.Button(well_info_frame, text='Process Well Info File', command=self.add_well_info_table)
-        b.grid(row=1,column=2)
+        b.grid(row=2,column=2)
 
         ttk.Separator(dirselectframe, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
         filefinderframe = ttk.Frame(dirselectframe)
@@ -94,14 +96,12 @@ class Feedback:
 
         key = 'trans-dir'
         self.bulkdatastr[key] = tk.StringVar(filefinderframe, value=f'Double-Click for transducer file directory')
-        e = ttk.Entry(filefinderframe, textvariable=self.bulkdatastr[key], width=80)
-        e.pack()
-        e.bind('<Double-ButtonRelease-1>', lambda f: self.grab_dir(dirselectframe))
+        self.filefnd = ttk.Entry(filefinderframe, textvariable=self.bulkdatastr[key], width=80)
+        self.filefnd.pack()
+        self.filefnd.bind('<Double-ButtonRelease-1>', lambda f: self.grab_dir(dirselectframe))
         #self.entry[key].bind('<3>', lambda k: self.wellbaroabb(key))
         filefinderframe.pack()
         ttk.Separator(dirselectframe, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
-
-
 
         # Header image logo and Description seen by user
         self.frame_header = ttk.Frame(self.onewelltab)
@@ -633,7 +633,9 @@ Good for matching bulk manual data """
             self.bulkdatastr[key].set(filedialog.askopenfilename(initialdir=self.currentdir, title="Select well info file"))
             self.currentdir = os.path.dirname(self.bulkdatastr[key].get())
             df = pd.read_csv(self.bulkdatastr[key].get())
-            df = df[df['altlocationid'].notnull()].set_index(['altlocationid'])
+            df = df[df['altlocationid'].notnull()]
+            df['altlocationid'] = df['altlocationid'].apply(lambda x: int(x),1)
+            df = df.set_index(['altlocationid'])
             self.bulkdata[key] = df
 
     def add_well_info_table(self):
@@ -646,7 +648,7 @@ Good for matching bulk manual data """
 
     def grab_dir(self, master):
         key = 'trans-dir'
-        if self.bulkdatastr[key].get() == '' or type(self.bulkdatastr[key].get()) == tuple or self.bulkdatastr[key].get() == f'Double-Click for {key} file':
+        if self.bulkdatastr[key].get() == '' or type(self.bulkdatastr[key].get()) == tuple:
             pass
         else:
             filefoundframe = ttk.Frame(master)
@@ -656,26 +658,37 @@ Good for matching bulk manual data """
             # https://stackoverflow.com/questions/45357174/tkinter-drop-down-menu-from-excel
             # TODO add excel sheet options to file selection
             filenm, file_extension = os.path.splitext(self.bulkdatastr[key].get())
-            ttk.Label(filefoundframe, text='Match id with list of files.').grid(row=0, column=0)
-            canvas = tk.Canvas(filefoundframe)
-
-            scroll_frame = ttk.Frame(canvas)
-            sb = ttk.Scrollbar(filefoundframe, orient=tk.VERTICAL, command=canvas.yview)
-
+            ttk.Label(filefoundframe, text='Match id with list of files.').grid(row=0,column=0,columnspan=2)
+            #https://blog.tecladocode.com/tkinter-scrollable-frames/
+            container = ttk.Frame(filefoundframe)
+            canvas = tk.Canvas(container)
+            scrollbar = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
+            scrollable_frame = ttk.Frame(canvas)
+            if 'well-info-table' in self.bulkdatatable.keys():
+                self.locdict = self.bulkdatatable['well-info-table'].model.df['locationname'].to_dict()
+                self.namedict = {value: key for key, value in self.locdict.items()}
+                self.lowernames = [i.lower() for i in list(self.namedict.keys())]
             i = 0
             for file in glob.glob(self.bulkdatastr['trans-dir'].get() + '/*'):
 
                 filestr = ll.getfilename(file)
-                ttk.Label(scroll_frame, text=filestr).grid(row=i, column=0)
-                self.bulkdatastr[filestr] = tk.StringVar(scroll_frame)
-                e = ttk.Combobox(scroll_frame, textvariable=self.bulkdatastr[filestr])
-                e.grid(row=i, column=1)
-                i += 1
-            scroll_frame.pack()#(expand=True, fill=tk.BOTH)
-            canvas.grid(row=1, column=0)
-            sb.grid(row=1, column=1, sticky='ns')
-            canvas.configure(yscrollcommand=sb.set)
+                ttk.Label(scrollable_frame, text=filestr).grid(row=i, column=0)
+                self.bulkdatastr[filestr] = tk.StringVar(scrollable_frame)
+                self.bulkcombo[filestr] = ttk.Combobox(scrollable_frame, textvariable=self.bulkdatastr[filestr])
+                self.bulkcombo[filestr].grid(row=i, column=1)
+                a = re.split('_|\s', filestr)[0]
+                self.bulkcombo[filestr]['values'] = list(self.namedict.keys())
+                if 'namedict' in self.__dict__.keys():
+                    if a.lower() in self.lowernames:
+                        self.bulkcombo[filestr].set(a)
 
+                i += 1
+            scrollable_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+            canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+            canvas.configure(yscrollcommand=scrollbar.set)
+            container.grid(row=1,column=0,columnspan=2)
+            canvas.pack(side="left", fill="both", expand=True)
+            scrollbar.pack(side="right", fill="y")
             filefoundframe.pack()
 
 

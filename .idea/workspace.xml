@@ -5,12 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="improved gui graphing significantly">
-      <change beforePath="$PROJECT_DIR$/.idea/loggerloader.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/loggerloader.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/loggerloader/llgui.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/llgui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/loggerloader/loader.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/loader.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -222,7 +218,7 @@
     </recent_temporary>
   </component>
   <component name="StructureViewFactory">
-    <option name="ACTIVE_ACTIONS" value=",SHOW_INHERITED,ALPHA_COMPARATOR,SHOW_FIELDS" />
+    <option name="ACTIVE_ACTIONS" value=",SHOW_INHERITED,ALPHA_COMPARATOR" />
   </component>
   <component name="SvnConfiguration">
     <configuration />
@@ -237,13 +233,6 @@
       <workItem from="1580767491033" duration="7152000" />
       <workItem from="1580823517124" duration="27995000" />
       <workItem from="1580911938398" duration="31099000" />
-    </task>
-    <task id="LOCAL-00141" summary="fixing upload baro data">
-      <created>1536169207607</created>
-      <option name="number" value="00141" />
-      <option name="presentableId" value="LOCAL-00141" />
-      <option name="project" value="LOCAL" />
-      <updated>1536169207607</updated>
     </task>
     <task id="LOCAL-00142" summary="fixing upload baro data">
       <created>1536169933807</created>
@@ -581,7 +570,14 @@
       <option name="project" value="LOCAL" />
       <updated>1580935923770</updated>
     </task>
-    <option name="localTasksCounter" value="190" />
+    <task id="LOCAL-00190" summary="improved gui graphing significantly">
+      <created>1580966376333</created>
+      <option name="number" value="00190" />
+      <option name="presentableId" value="LOCAL-00190" />
+      <option name="project" value="LOCAL" />
+      <updated>1580966376334</updated>
+    </task>
+    <option name="localTasksCounter" value="191" />
     <servers />
   </component>
   <component name="TodoView" selected-index="3">
@@ -621,9 +617,9 @@
     <MESSAGE value="single well functions" />
     <MESSAGE value="update tests" />
     <MESSAGE value="update HeaderTable to be more modular" />
-    <MESSAGE value="improved gui graphing significantly" />
     <MESSAGE value="Major refactorization, addition of batch tab and fixing many errors" />
-    <option name="LAST_COMMIT_MESSAGE" value="Major refactorization, addition of batch tab and fixing many errors" />
+    <MESSAGE value="improved gui graphing significantly" />
+    <option name="LAST_COMMIT_MESSAGE" value="improved gui graphing significantly" />
   </component>
   <component name="WindowStateProjectService">
     <state x="282" y="190" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1580960703216">
@@ -635,30 +631,31 @@
       <screen x="1920" y="1" width="1920" height="1050" />
     </state>
     <state x="2599" y="141" key="#llgui/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@1920.1.1920.1050" timestamp="1580767659733" />
-    <state x="615" y="120" key="CommitChangelistDialog2" timestamp="1580950316437">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state x="438" y="105" key="CommitChangelistDialog2" timestamp="1580966375491">
+      <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state x="615" y="120" key="CommitChangelistDialog2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950316437" />
-    <state width="1348" height="227" key="GridCell.Tab.0.bottom" timestamp="1580965075471">
+    <state x="438" y="105" key="CommitChangelistDialog2/0.40.1368.872@0.40.1368.872" timestamp="1580966375491" />
+    <state width="952" height="227" key="GridCell.Tab.0.bottom" timestamp="1581054217567">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state width="1695" height="274" key="GridCell.Tab.0.bottom/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950151604" />
-    <state width="1348" height="227" key="GridCell.Tab.0.bottom/0.40.1368.872@0.40.1368.872" timestamp="1580965075471" />
-    <state width="1348" height="227" key="GridCell.Tab.0.center" timestamp="1580965075462">
+    <state width="952" height="227" key="GridCell.Tab.0.bottom/0.40.1368.872@0.40.1368.872" timestamp="1581054217567" />
+    <state width="952" height="227" key="GridCell.Tab.0.center" timestamp="1581054217566">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state width="1695" height="274" key="GridCell.Tab.0.center/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950151604" />
-    <state width="1348" height="227" key="GridCell.Tab.0.center/0.40.1368.872@0.40.1368.872" timestamp="1580965075462" />
-    <state width="1348" height="227" key="GridCell.Tab.0.left" timestamp="1580965075446">
+    <state width="952" height="227" key="GridCell.Tab.0.center/0.40.1368.872@0.40.1368.872" timestamp="1581054217566" />
+    <state width="952" height="227" key="GridCell.Tab.0.left" timestamp="1581054217566">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state width="1695" height="274" key="GridCell.Tab.0.left/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950151603" />
-    <state width="1348" height="227" key="GridCell.Tab.0.left/0.40.1368.872@0.40.1368.872" timestamp="1580965075445" />
-    <state width="1348" height="227" key="GridCell.Tab.0.right" timestamp="1580965075466">
+    <state width="952" height="227" key="GridCell.Tab.0.left/0.40.1368.872@0.40.1368.872" timestamp="1581054217566" />
+    <state width="952" height="227" key="GridCell.Tab.0.right" timestamp="1581054217567">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state width="1695" height="274" key="GridCell.Tab.0.right/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950151604" />
-    <state width="1348" height="227" key="GridCell.Tab.0.right/0.40.1368.872@0.40.1368.872" timestamp="1580965075465" />
+    <state width="952" height="227" key="GridCell.Tab.0.right/0.40.1368.872@0.40.1368.872" timestamp="1581054217567" />
     <state width="1348" height="281" key="GridCell.Tab.1.bottom" timestamp="1580875974535">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
@@ -688,18 +685,21 @@
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
     <state x="747" y="242" key="VCS.ChangeListViewerDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580824162576" />
-    <state x="552" y="259" key="Vcs.Push.Dialog.v2" timestamp="1580950322601">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state x="393" y="255" key="Vcs.Push.Dialog.v2" timestamp="1580966383124">
+      <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state x="552" y="259" key="Vcs.Push.Dialog.v2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950322601" />
-    <state x="656" y="350" key="com.intellij.ide.util.TipDialog" timestamp="1580823518660">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state x="393" y="255" key="Vcs.Push.Dialog.v2/0.40.1368.872@0.40.1368.872" timestamp="1580966383124" />
+    <state x="467" y="331" key="com.intellij.ide.util.TipDialog" timestamp="1581047871680">
+      <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state x="656" y="350" key="com.intellij.ide.util.TipDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580823518660" />
-    <state x="769" y="443" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1580824243341">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state x="467" y="331" key="com.intellij.ide.util.TipDialog/0.40.1368.872@0.40.1368.872" timestamp="1581047871680" />
+    <state x="548" y="408" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1581047950489">
+      <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state x="769" y="443" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580824243341" />
+    <state x="548" y="408" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.40.1368.872@0.40.1368.872" timestamp="1581047950489" />
     <state x="662" y="123" width="756" height="804" key="find.popup" timestamp="1580857567745">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
