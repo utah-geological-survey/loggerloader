@@ -12,6 +12,7 @@ import matplotlib.dates as mdates
 import numpy as np
 import pandas as pd
 import os
+import re
 import glob
 
 import tkinter as tk
@@ -64,10 +65,48 @@ class Feedback:
         self.processing_notebook.add(self.onewelltab, text='Single-Well Process')
         self.processing_notebook.add(self.bulkwelltab, text='Bulk Well Process')
 
+        # BulkUploader(self.bulkwelltab)
+        dirselectframe = ttk.Frame(self.bulkwelltab)
+        dirselectframe.pack()
+
+        self.bulkdatastr, self.bulkdata, self.bulkdatatable = {}, {}, {}
+
+        well_info_frame = ttk.Frame(dirselectframe)
+        well_info_frame.pack()
+        key = 'well-info-table'
+        self.bulkdatastr[key] = tk.StringVar(well_info_frame)
+        self.bulkdatastr[key].set("../data_files/ugs_ngwmn_monitoring_locations.csv")
+        df = pd.read_csv(self.bulkdatastr[key].get())
+        df = df.reset_index()
+        df = df[df['altlocationid'].notnull()].set_index(['altlocationid'])
+        self.bulkdata[key] = df
+        ttk.Label(well_info_frame, text='Input well info file (must be csv)').grid(row=0, column=0, columnspan=3)
+        ttk.Label(well_info_frame, text='must have altlocationid, locationname, stickup, barologgertype, and verticalmeasure').grid(row=1,column=0,columnspan=3)
+        e = ttk.Entry(well_info_frame, textvariable=self.bulkdatastr[key], width=80)
+        e.grid(row=1,column=0,columnspan=2)
+        e.bind('<Double-ButtonRelease-1>', lambda f: self.open_file(well_info_frame))
+        b = ttk.Button(well_info_frame, text='Process Well Info File', command=self.add_well_info_table)
+        b.grid(row=1,column=2)
+
+        ttk.Separator(dirselectframe, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
+        filefinderframe = ttk.Frame(dirselectframe)
+        ttk.Label(filefinderframe, text='Pick directory with relevant well files.').pack()
+
+        key = 'trans-dir'
+        self.bulkdatastr[key] = tk.StringVar(filefinderframe, value=f'Double-Click for transducer file directory')
+        e = ttk.Entry(filefinderframe, textvariable=self.bulkdatastr[key], width=80)
+        e.pack()
+        e.bind('<Double-ButtonRelease-1>', lambda f: self.grab_dir(dirselectframe))
+        #self.entry[key].bind('<3>', lambda k: self.wellbaroabb(key))
+        filefinderframe.pack()
+        ttk.Separator(dirselectframe, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
+
+
+
         # Header image logo and Description seen by user
         self.frame_header = ttk.Frame(self.onewelltab)
         self.frame_header.pack(pady=5)
-        self.logo = tk.PhotoImage(file="./GeologicalSurvey.png").subsample(10, 10)
+        self.logo = tk.PhotoImage(file="../data_files/GeologicalSurvey.png").subsample(10, 10)
         ttk.Label(self.frame_header, image=self.logo).grid(row=0, column=0, rowspan=2)
         ttk.Label(self.frame_header, wraplength=300, text="Processing transducer data").grid(row=0, column=1)
 
@@ -136,19 +175,19 @@ Good for matching bulk manual data """
 
         # Elevation Correction Interface
         ttk.Separator(self.onewelltab, orient=tk.HORIZONTAL).pack(fill=tk.X)
-        self.frame_step6 = ttk.Frame(self.onewelltab)
-        self.frame_step6.pack()
-        ttk.Label(self.frame_step6, text='6. Align Elevation and Offset').grid(row=1, column=0, columnspan=4)
-        ttk.Label(self.frame_step6, text='Ground Elev.').grid(row=2, column=0)
-        ttk.Label(self.frame_step6, text='Stickup').grid(row=2, column=2)
-        ttk.Label(self.frame_step6, text='Elev. Units').grid(row=2, column=1)
-        ttk.Label(self.frame_step6, text='Stickup Units').grid(row=2, column=3)
-        self.wellgroundelev = ttk.Entry(self.frame_step6, width=6)
-        self.wellgroundelevunits = ttk.Combobox(self.frame_step6, width=5,
+        frame_step6 = ttk.Frame(self.onewelltab)
+        frame_step6.pack()
+        ttk.Label(frame_step6, text='6. Align Elevation and Offset').grid(row=1, column=0, columnspan=4)
+        ttk.Label(frame_step6, text='Ground Elev.').grid(row=2, column=0)
+        ttk.Label(frame_step6, text='Stickup').grid(row=2, column=2)
+        ttk.Label(frame_step6, text='Elev. Units').grid(row=2, column=1)
+        ttk.Label(frame_step6, text='Stickup Units').grid(row=2, column=3)
+        self.wellgroundelev = ttk.Entry(frame_step6, width=6)
+        self.wellgroundelevunits = ttk.Combobox(frame_step6, width=5,
                                                 values=['ft', 'm'], state="readonly")
         self.wellgroundelevunits.current(0)
-        self.wellstickup = ttk.Entry(self.frame_step6, width=4)
-        self.wellstickupunits = ttk.Combobox(self.frame_step6, width=5,
+        self.wellstickup = ttk.Entry(frame_step6, width=4)
+        self.wellstickupunits = ttk.Combobox(frame_step6, width=5,
                                              values=['ft', 'm'], state="readonly")
         self.wellstickupunits.current(0)
         self.wellgroundelev.grid(row=3, column=0)
@@ -156,7 +195,7 @@ Good for matching bulk manual data """
         self.wellstickup.grid(row=3, column=2)
         self.wellstickupunits.grid(row=3, column=3)
 
-        b = ttk.Button(self.frame_step6, text='Calculate Elevations', command=self.elevcalc)
+        b = ttk.Button(frame_step6, text='Calculate Elevations', command=self.elevcalc)
         b.grid(row=4, column=0, columnspan=4,pady=5)
 
         ttk.Separator(self.onewelltab, orient=tk.HORIZONTAL).pack(fill=tk.X)
@@ -373,7 +412,7 @@ Good for matching bulk manual data """
         print("you pressed {}".format(event.key))
         key_press_handler(event, self.canvas, self.toolbar)
 
-    def note_tab_add(self, key):
+    def note_tab_add(self, key, tabw=1, grph=4):
         """
 
         Args:
@@ -585,6 +624,65 @@ Good for matching bulk manual data """
 
             df.to_csv(filename)
             return
+
+    def open_file(self, master):
+        key = 'well-info-table'
+        if self.bulkdatastr[key].get() == '' or type(self.bulkdatastr[key].get()) == tuple or self.bulkdatastr[key].get() == f'Double-Click for {key} file':
+            pass
+        else:
+            self.bulkdatastr[key].set(filedialog.askopenfilename(initialdir=self.currentdir, title="Select well info file"))
+            self.currentdir = os.path.dirname(self.bulkdatastr[key].get())
+            df = pd.read_csv(self.bulkdatastr[key].get())
+            df = df[df['altlocationid'].notnull()].set_index(['altlocationid'])
+            self.bulkdata[key] = df
+
+    def add_well_info_table(self):
+        key = 'well-info-table'
+        graphframe, tableframe = self.note_tab_add(key, tabw=5, grph=1)
+        self.bulkdatatable[key] = Table(tableframe, dataframe=self.bulkdata[key], showtoolbar=True, showstatusbar=True)
+        self.bulkdatatable[key].show()
+        self.bulkdatatable[key].showIndex()
+        self.bulkdatatable[key].update()
+
+    def grab_dir(self, master):
+        key = 'trans-dir'
+        if self.bulkdatastr[key].get() == '' or type(self.bulkdatastr[key].get()) == tuple or self.bulkdatastr[key].get() == f'Double-Click for {key} file':
+            pass
+        else:
+            filefoundframe = ttk.Frame(master)
+            self.bulkdatastr[key].set(filedialog.askdirectory(initialdir=self.currentdir,
+                                                          title="Select transducer directory"))
+            self.currentdir = os.path.dirname(self.bulkdatastr[key].get())
+            # https://stackoverflow.com/questions/45357174/tkinter-drop-down-menu-from-excel
+            # TODO add excel sheet options to file selection
+            filenm, file_extension = os.path.splitext(self.bulkdatastr[key].get())
+            ttk.Label(filefoundframe, text='Match id with list of files.').grid(row=0, column=0)
+            canvas = tk.Canvas(filefoundframe)
+
+            scroll_frame = ttk.Frame(canvas)
+            sb = ttk.Scrollbar(filefoundframe, orient=tk.VERTICAL, command=canvas.yview)
+
+            i = 0
+            for file in glob.glob(self.bulkdatastr['trans-dir'].get() + '/*'):
+
+                filestr = ll.getfilename(file)
+                ttk.Label(scroll_frame, text=filestr).grid(row=i, column=0)
+                self.bulkdatastr[filestr] = tk.StringVar(scroll_frame)
+                e = ttk.Combobox(scroll_frame, textvariable=self.bulkdatastr[filestr])
+                e.grid(row=i, column=1)
+                i += 1
+            scroll_frame.pack()#(expand=True, fill=tk.BOTH)
+            canvas.grid(row=1, column=0)
+            sb.grid(row=1, column=1, sticky='ns')
+            canvas.configure(yscrollcommand=sb.set)
+
+            filefoundframe.pack()
+
+
+    def nameparser(self, filestr):
+        a = re.split('_|-|\s',filestr)[0]
+
+
 
 def main():
     root = tk.Tk()
