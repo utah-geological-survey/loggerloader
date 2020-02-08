@@ -4,7 +4,7 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="added file_info_table button; needs progress bar and locid fix">
+    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="added todos">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/loggerloader/llgui.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/llgui.py" afterDir="false" />
     </list>
@@ -235,13 +235,6 @@
       <workItem from="1580767491033" duration="7152000" />
       <workItem from="1580823517124" duration="27995000" />
       <workItem from="1580911938398" duration="31099000" />
-    </task>
-    <task id="LOCAL-00146" summary="added hourly resample to baro">
-      <created>1536182485984</created>
-      <option name="number" value="00146" />
-      <option name="presentableId" value="LOCAL-00146" />
-      <option name="project" value="LOCAL" />
-      <updated>1536182485984</updated>
     </task>
     <task id="LOCAL-00147" summary="docstring cleanup; modified NewWellImp name; changed fix_drift variables">
       <created>1536596757480</created>
@@ -579,7 +572,14 @@
       <option name="project" value="LOCAL" />
       <updated>1581139326934</updated>
     </task>
-    <option name="localTasksCounter" value="195" />
+    <task id="LOCAL-00195" summary="added todos">
+      <created>1581140004918</created>
+      <option name="number" value="00195" />
+      <option name="presentableId" value="LOCAL-00195" />
+      <option name="project" value="LOCAL" />
+      <updated>1581140004920</updated>
+    </task>
+    <option name="localTasksCounter" value="196" />
     <servers />
   </component>
   <component name="TodoView" selected-index="3">
@@ -596,7 +596,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="added .lev function" />
     <MESSAGE value="added .lev function format exception" />
     <MESSAGE value="major overhaul on fix_drift" />
     <MESSAGE value="fix some documentation" />
@@ -621,7 +620,8 @@
     <MESSAGE value="improved gui graphing significantly" />
     <MESSAGE value="added batchupload option" />
     <MESSAGE value="added file_info_table button; needs progress bar and locid fix" />
-    <option name="LAST_COMMIT_MESSAGE" value="added file_info_table button; needs progress bar and locid fix" />
+    <MESSAGE value="added todos" />
+    <option name="LAST_COMMIT_MESSAGE" value="added todos" />
   </component>
   <component name="WindowStateProjectService">
     <state x="282" y="190" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1580960703216">
@@ -633,31 +633,31 @@
       <screen x="1920" y="1" width="1920" height="1050" />
     </state>
     <state x="2599" y="141" key="#llgui/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@1920.1.1920.1050" timestamp="1580767659733" />
-    <state x="37" y="105" key="CommitChangelistDialog2" timestamp="1581139324227">
+    <state x="37" y="105" key="CommitChangelistDialog2" timestamp="1581140003626">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state x="615" y="120" key="CommitChangelistDialog2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950316437" />
-    <state x="37" y="105" key="CommitChangelistDialog2/0.40.1368.872@0.40.1368.872" timestamp="1581139324227" />
-    <state width="952" height="228" key="GridCell.Tab.0.bottom" timestamp="1581139010769">
+    <state x="37" y="105" key="CommitChangelistDialog2/0.40.1368.872@0.40.1368.872" timestamp="1581140003626" />
+    <state width="952" height="228" key="GridCell.Tab.0.bottom" timestamp="1581173191171">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state width="1695" height="274" key="GridCell.Tab.0.bottom/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950151604" />
-    <state width="952" height="228" key="GridCell.Tab.0.bottom/0.40.1368.872@0.40.1368.872" timestamp="1581139010769" />
-    <state width="952" height="228" key="GridCell.Tab.0.center" timestamp="1581139010769">
+    <state width="952" height="228" key="GridCell.Tab.0.bottom/0.40.1368.872@0.40.1368.872" timestamp="1581173191171" />
+    <state width="952" height="228" key="GridCell.Tab.0.center" timestamp="1581173191171">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state width="1695" height="274" key="GridCell.Tab.0.center/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950151604" />
-    <state width="952" height="228" key="GridCell.Tab.0.center/0.40.1368.872@0.40.1368.872" timestamp="1581139010769" />
-    <state width="952" height="228" key="GridCell.Tab.0.left" timestamp="1581139010767">
+    <state width="952" height="228" key="GridCell.Tab.0.center/0.40.1368.872@0.40.1368.872" timestamp="1581173191171" />
+    <state width="952" height="228" key="GridCell.Tab.0.left" timestamp="1581173191170">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state width="1695" height="274" key="GridCell.Tab.0.left/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950151603" />
-    <state width="952" height="228" key="GridCell.Tab.0.left/0.40.1368.872@0.40.1368.872" timestamp="1581139010767" />
-    <state width="952" height="228" key="GridCell.Tab.0.right" timestamp="1581139010769">
+    <state width="952" height="228" key="GridCell.Tab.0.left/0.40.1368.872@0.40.1368.872" timestamp="1581173191170" />
+    <state width="952" height="228" key="GridCell.Tab.0.right" timestamp="1581173191171">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state width="1695" height="274" key="GridCell.Tab.0.right/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950151604" />
-    <state width="952" height="228" key="GridCell.Tab.0.right/0.40.1368.872@0.40.1368.872" timestamp="1581139010769" />
+    <state width="952" height="228" key="GridCell.Tab.0.right/0.40.1368.872@0.40.1368.872" timestamp="1581173191171" />
     <state width="1348" height="281" key="GridCell.Tab.1.bottom" timestamp="1580875974535">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
@@ -687,11 +687,11 @@
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
     <state x="747" y="242" key="VCS.ChangeListViewerDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580824162576" />
-    <state x="393" y="255" key="Vcs.Push.Dialog.v2" timestamp="1581139569524">
+    <state x="393" y="255" key="Vcs.Push.Dialog.v2" timestamp="1581140007493">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state x="552" y="259" key="Vcs.Push.Dialog.v2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950322601" />
-    <state x="393" y="255" key="Vcs.Push.Dialog.v2/0.40.1368.872@0.40.1368.872" timestamp="1581139569524" />
+    <state x="393" y="255" key="Vcs.Push.Dialog.v2/0.40.1368.872@0.40.1368.872" timestamp="1581140007493" />
     <state x="467" y="331" key="com.intellij.ide.util.TipDialog" timestamp="1581047871680">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
