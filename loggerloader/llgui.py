@@ -116,7 +116,11 @@ class Feedback:
 
         applymatchframe = ttk.Frame(dirselectframe)
         applymatchframe.pack()
-        b = tk.Button(applymatchframe, text='Click when done matching files to well names')
+        self.inputforheadertable = {}
+
+        b = tk.Button(applymatchframe,
+                      text='Click when done matching files to well names',
+                      command=self.make_file_info_table)
         b.pack()
         ttk.Separator(dirselectframe, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
 
@@ -220,6 +224,17 @@ Good for matching bulk manual data """
         save_onewell_frame.pack()
         b = ttk.Button(save_onewell_frame, text='Save csv', command=self.save_one_well)
         b.pack()
+
+    def make_file_info_table(self):
+        key = 'file-info-table'
+        df = ll.HeaderTable(self.bulkdatastr['trans-dir'].get(), self.inputforheadertable).file_summary_table()
+        graphframe, tableframe = self.note_tab_add(key, tabw=4, grph=1)
+        # add graph and table to new tab
+        #self.add_graph_table(key, tableframe, graphframe)
+        self.datatable[key] = Table(tableframe, dataframe=df, showtoolbar=True, showstatusbar=True)
+        self.datatable[key].show()
+        self.datatable[key].showIndex()
+        self.datatable[key].update()
 
     def man_combos(self, key, vals):
         self.combo_choice[key] = tk.StringVar()
@@ -702,7 +717,7 @@ Good for matching bulk manual data """
             ttk.Label(master, text='Match id with list of files.').grid(row=0,column=0,columnspan=3)
             ttk.Label(master, text='Filename').grid(row=1, column=0)
             ttk.Label(master, text='Match Name').grid(row=1, column=1)
-            ttk.Label(master, text='   Well ID').grid(row=1, column=2)
+            ttk.Label(master, text='Well ID').grid(row=1, column=2)
             #https://blog.tecladocode.com/tkinter-scrollable-frames/
             container = ttk.Frame(master)
             canvas = tk.Canvas(container)
@@ -759,7 +774,7 @@ Good for matching bulk manual data """
                 self.welldict['ctmx'] = 75
             i = 0
             for file in glob.glob(self.bulkdatastr['trans-dir'].get() + '/*'):
-
+                filew_ext = os.path.basename(file)
                 filestr = ll.getfilename(file)
                 a = re.split('_|\s', filestr)[0].lower()
                 ttk.Label(scrollable_frame, text=filestr).grid(row=i, column=0)
@@ -775,7 +790,7 @@ Good for matching bulk manual data """
                         self.bulktransfilestr[filestr].set(self.locnamedict[a])
                         self.bulkcombo[filestr].set(self.locnamedict[a])
                         self.locidmatch[filestr].set(self.welldict[a])
-
+                        self.inputforheadertable[filew_ext] =  self.welldict[a]
                         self.bulkcombo[filestr].bind("<<ComboboxSelected>>", lambda e: print(self.bulkcombo[filestr]))
 
                                                      #self.locidmatch[filestr].set(self.locnametoid[self.bulkcombo[filestr].get()]))

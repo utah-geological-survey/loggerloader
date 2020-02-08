@@ -4,9 +4,10 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="improved gui graphing significantly">
+    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="added batchupload option">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/loggerloader/llgui.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/llgui.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/loggerloader/loader.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/loader.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -218,7 +219,7 @@
     </recent_temporary>
   </component>
   <component name="StructureViewFactory">
-    <option name="ACTIVE_ACTIONS" value=",SHOW_INHERITED,ALPHA_COMPARATOR" />
+    <option name="ACTIVE_ACTIONS" value=",SHOW_INHERITED,ALPHA_COMPARATOR,SHOW_FIELDS" />
   </component>
   <component name="SvnConfiguration">
     <configuration />
@@ -233,13 +234,6 @@
       <workItem from="1580767491033" duration="7152000" />
       <workItem from="1580823517124" duration="27995000" />
       <workItem from="1580911938398" duration="31099000" />
-    </task>
-    <task id="LOCAL-00144" summary="fixing upload baro data">
-      <created>1536172701438</created>
-      <option name="number" value="00144" />
-      <option name="presentableId" value="LOCAL-00144" />
-      <option name="project" value="LOCAL" />
-      <updated>1536172701438</updated>
     </task>
     <task id="LOCAL-00145" summary="added hourly resample to baro">
       <created>1536180310872</created>
@@ -577,7 +571,14 @@
       <option name="project" value="LOCAL" />
       <updated>1581056397916</updated>
     </task>
-    <option name="localTasksCounter" value="193" />
+    <task id="LOCAL-00193" summary="added batchupload option">
+      <created>1581109940730</created>
+      <option name="number" value="00193" />
+      <option name="presentableId" value="LOCAL-00193" />
+      <option name="project" value="LOCAL" />
+      <updated>1581109940733</updated>
+    </task>
+    <option name="localTasksCounter" value="194" />
     <servers />
   </component>
   <component name="TodoView" selected-index="3">
@@ -594,7 +595,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="added import baro data function" />
     <MESSAGE value="reestablished package v0.3" />
     <MESSAGE value="added .lev function" />
     <MESSAGE value="added .lev function format exception" />
@@ -619,7 +619,8 @@
     <MESSAGE value="update HeaderTable to be more modular" />
     <MESSAGE value="Major refactorization, addition of batch tab and fixing many errors" />
     <MESSAGE value="improved gui graphing significantly" />
-    <option name="LAST_COMMIT_MESSAGE" value="improved gui graphing significantly" />
+    <MESSAGE value="added batchupload option" />
+    <option name="LAST_COMMIT_MESSAGE" value="added batchupload option" />
   </component>
   <component name="WindowStateProjectService">
     <state x="282" y="190" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1580960703216">
@@ -631,31 +632,31 @@
       <screen x="1920" y="1" width="1920" height="1050" />
     </state>
     <state x="2599" y="141" key="#llgui/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@1920.1.1920.1050" timestamp="1580767659733" />
-    <state x="438" y="105" key="CommitChangelistDialog2" timestamp="1581056395835">
+    <state x="37" y="105" key="CommitChangelistDialog2" timestamp="1581109939492">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state x="615" y="120" key="CommitChangelistDialog2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950316437" />
-    <state x="438" y="105" key="CommitChangelistDialog2/0.40.1368.872@0.40.1368.872" timestamp="1581056395835" />
-    <state width="952" height="227" key="GridCell.Tab.0.bottom" timestamp="1581108838819">
+    <state x="37" y="105" key="CommitChangelistDialog2/0.40.1368.872@0.40.1368.872" timestamp="1581109939492" />
+    <state width="952" height="228" key="GridCell.Tab.0.bottom" timestamp="1581139010769">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state width="1695" height="274" key="GridCell.Tab.0.bottom/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950151604" />
-    <state width="952" height="227" key="GridCell.Tab.0.bottom/0.40.1368.872@0.40.1368.872" timestamp="1581108838819" />
-    <state width="952" height="227" key="GridCell.Tab.0.center" timestamp="1581108838818">
+    <state width="952" height="228" key="GridCell.Tab.0.bottom/0.40.1368.872@0.40.1368.872" timestamp="1581139010769" />
+    <state width="952" height="228" key="GridCell.Tab.0.center" timestamp="1581139010769">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state width="1695" height="274" key="GridCell.Tab.0.center/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950151604" />
-    <state width="952" height="227" key="GridCell.Tab.0.center/0.40.1368.872@0.40.1368.872" timestamp="1581108838818" />
-    <state width="952" height="227" key="GridCell.Tab.0.left" timestamp="1581108838818">
+    <state width="952" height="228" key="GridCell.Tab.0.center/0.40.1368.872@0.40.1368.872" timestamp="1581139010769" />
+    <state width="952" height="228" key="GridCell.Tab.0.left" timestamp="1581139010767">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state width="1695" height="274" key="GridCell.Tab.0.left/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950151603" />
-    <state width="952" height="227" key="GridCell.Tab.0.left/0.40.1368.872@0.40.1368.872" timestamp="1581108838818" />
-    <state width="952" height="227" key="GridCell.Tab.0.right" timestamp="1581108838818">
+    <state width="952" height="228" key="GridCell.Tab.0.left/0.40.1368.872@0.40.1368.872" timestamp="1581139010767" />
+    <state width="952" height="228" key="GridCell.Tab.0.right" timestamp="1581139010769">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state width="1695" height="274" key="GridCell.Tab.0.right/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950151604" />
-    <state width="952" height="227" key="GridCell.Tab.0.right/0.40.1368.872@0.40.1368.872" timestamp="1581108838818" />
+    <state width="952" height="228" key="GridCell.Tab.0.right/0.40.1368.872@0.40.1368.872" timestamp="1581139010769" />
     <state width="1348" height="281" key="GridCell.Tab.1.bottom" timestamp="1580875974535">
       <screen x="0" y="40" width="1368" height="872" />
     </state>

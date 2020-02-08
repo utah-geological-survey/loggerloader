@@ -2232,8 +2232,9 @@ class HeaderTable(object):
         else:
             self.workspace = folder
 
-        self.loc_table = pull_well_table(conn_file_root)
-        print("Copying sites table!")
+        if conn_file_root:
+            self.loc_table = pull_well_table(conn_file_root)
+            print("Copying sites table!")
 
     def get_ftype(self, x):
         if x[1] == 'Solinst':
