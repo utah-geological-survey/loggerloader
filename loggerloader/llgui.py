@@ -117,7 +117,7 @@ class Feedback:
         applymatchframe = ttk.Frame(dirselectframe)
         applymatchframe.pack()
         self.inputforheadertable = {}
-
+        #TODO make statusbar appear during processing
         b = tk.Button(applymatchframe,
                       text='Click when done matching files to well names',
                       command=self.make_file_info_table)
@@ -701,6 +701,18 @@ Good for matching bulk manual data """
         self.bulkdatatable[key].update()
 
     def grab_dir(self, master):
+        """grabs directory containing transducer files and inputs filenames into a scrollable canvas with comboboxes to
+        match up well names with locationids.
+
+        Args:
+            master:
+
+        Returns:
+        Dictionary of matches between files and locationids
+        TODO make this work for wetlands and wri files (combobox?)
+        TODO fix locationid update on new combo selection
+        #https://stackoverflow.com/questions/28736028/python-tkinter-reference-in-comboboxes-created-in-for-loop
+        """
         key = 'trans-dir'
 
 
