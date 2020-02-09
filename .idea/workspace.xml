@@ -4,7 +4,8 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="added todos">
+    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="worked on progressbar">
+      <change afterPath="$PROJECT_DIR$/data_files/compiled_raw_barometers.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/loggerloader/llgui.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/llgui.py" afterDir="false" />
     </list>
@@ -73,7 +74,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$USER_HOME$/.conda/envs" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/data_files" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -85,13 +86,14 @@
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="G:\My Drive\Python\Pycharm\loggerloader\test" />
-    </key>
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Hutto\PycharmProjects\loggerloader\loggerloader\data_files" />
       <recent name="E:\My Drive\Python\Pycharm\loggerloader\test" />
       <recent name="G:\My Drive\Python\Pycharm\loggerloader\test" />
       <recent name="C:\Users\PAULINKENBRANDT\Documents\GitHub\loggerloader" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="G:\My Drive\Python\Pycharm\loggerloader\test" />
     </key>
   </component>
   <component name="RunManager" selected="Python.llgui">
@@ -202,9 +204,9 @@
     </configuration>
     <list>
       <item itemvalue="Python.llgui" />
+      <item itemvalue="Python tests.Nosetests for test.testcalc_drift" />
       <item itemvalue="Python tests.Nosetests for test.testcalc_slope_and_intercept" />
       <item itemvalue="Python tests.Nosetests for test.testget_breakpoints" />
-      <item itemvalue="Python tests.Nosetests for test.testcalc_drift" />
       <item itemvalue="Python tests.Nosetests in test.py" />
     </list>
     <recent_temporary>
@@ -235,13 +237,6 @@
       <workItem from="1580767491033" duration="7152000" />
       <workItem from="1580823517124" duration="27995000" />
       <workItem from="1580911938398" duration="31099000" />
-    </task>
-    <task id="LOCAL-00147" summary="docstring cleanup; modified NewWellImp name; changed fix_drift variables">
-      <created>1536596757480</created>
-      <option name="number" value="00147" />
-      <option name="presentableId" value="LOCAL-00147" />
-      <option name="project" value="LOCAL" />
-      <updated>1536596757480</updated>
     </task>
     <task id="LOCAL-00148" summary="docstring cleanup; modified NewWellImp name; changed fix_drift variables">
       <created>1537188768763</created>
@@ -579,7 +574,14 @@
       <option name="project" value="LOCAL" />
       <updated>1581140004920</updated>
     </task>
-    <option name="localTasksCounter" value="196" />
+    <task id="LOCAL-00196" summary="worked on progressbar">
+      <created>1581173290110</created>
+      <option name="number" value="00196" />
+      <option name="presentableId" value="LOCAL-00196" />
+      <option name="project" value="LOCAL" />
+      <updated>1581173290112</updated>
+    </task>
+    <option name="localTasksCounter" value="197" />
     <servers />
   </component>
   <component name="TodoView" selected-index="3">
@@ -596,7 +598,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="added .lev function format exception" />
     <MESSAGE value="major overhaul on fix_drift" />
     <MESSAGE value="fix some documentation" />
     <MESSAGE value="suppress pandas copy warning" />
@@ -621,7 +622,8 @@
     <MESSAGE value="added batchupload option" />
     <MESSAGE value="added file_info_table button; needs progress bar and locid fix" />
     <MESSAGE value="added todos" />
-    <option name="LAST_COMMIT_MESSAGE" value="added todos" />
+    <MESSAGE value="worked on progressbar" />
+    <option name="LAST_COMMIT_MESSAGE" value="worked on progressbar" />
   </component>
   <component name="WindowStateProjectService">
     <state x="282" y="190" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1580960703216">
@@ -633,31 +635,31 @@
       <screen x="1920" y="1" width="1920" height="1050" />
     </state>
     <state x="2599" y="141" key="#llgui/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@1920.1.1920.1050" timestamp="1580767659733" />
-    <state x="37" y="105" key="CommitChangelistDialog2" timestamp="1581140003626">
+    <state x="329" y="59" key="CommitChangelistDialog2" timestamp="1581275839374">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state x="615" y="120" key="CommitChangelistDialog2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950316437" />
-    <state x="37" y="105" key="CommitChangelistDialog2/0.40.1368.872@0.40.1368.872" timestamp="1581140003626" />
-    <state width="952" height="228" key="GridCell.Tab.0.bottom" timestamp="1581173191171">
+    <state x="329" y="59" key="CommitChangelistDialog2/0.40.1368.872@0.40.1368.872" timestamp="1581275839374" />
+    <state width="950" height="228" key="GridCell.Tab.0.bottom" timestamp="1581274277472">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state width="1695" height="274" key="GridCell.Tab.0.bottom/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950151604" />
-    <state width="952" height="228" key="GridCell.Tab.0.bottom/0.40.1368.872@0.40.1368.872" timestamp="1581173191171" />
-    <state width="952" height="228" key="GridCell.Tab.0.center" timestamp="1581173191171">
+    <state width="950" height="228" key="GridCell.Tab.0.bottom/0.40.1368.872@0.40.1368.872" timestamp="1581274277472" />
+    <state width="950" height="228" key="GridCell.Tab.0.center" timestamp="1581274277471">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state width="1695" height="274" key="GridCell.Tab.0.center/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950151604" />
-    <state width="952" height="228" key="GridCell.Tab.0.center/0.40.1368.872@0.40.1368.872" timestamp="1581173191171" />
-    <state width="952" height="228" key="GridCell.Tab.0.left" timestamp="1581173191170">
+    <state width="950" height="228" key="GridCell.Tab.0.center/0.40.1368.872@0.40.1368.872" timestamp="1581274277471" />
+    <state width="950" height="228" key="GridCell.Tab.0.left" timestamp="1581274277471">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state width="1695" height="274" key="GridCell.Tab.0.left/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950151603" />
-    <state width="952" height="228" key="GridCell.Tab.0.left/0.40.1368.872@0.40.1368.872" timestamp="1581173191170" />
-    <state width="952" height="228" key="GridCell.Tab.0.right" timestamp="1581173191171">
+    <state width="950" height="228" key="GridCell.Tab.0.left/0.40.1368.872@0.40.1368.872" timestamp="1581274277471" />
+    <state width="950" height="228" key="GridCell.Tab.0.right" timestamp="1581274277471">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state width="1695" height="274" key="GridCell.Tab.0.right/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950151604" />
-    <state width="952" height="228" key="GridCell.Tab.0.right/0.40.1368.872@0.40.1368.872" timestamp="1581173191171" />
+    <state width="950" height="228" key="GridCell.Tab.0.right/0.40.1368.872@0.40.1368.872" timestamp="1581274277471" />
     <state width="1348" height="281" key="GridCell.Tab.1.bottom" timestamp="1580875974535">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
@@ -687,16 +689,16 @@
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
     <state x="747" y="242" key="VCS.ChangeListViewerDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580824162576" />
-    <state x="393" y="255" key="Vcs.Push.Dialog.v2" timestamp="1581140007493">
+    <state x="393" y="255" key="Vcs.Push.Dialog.v2" timestamp="1581173292055">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state x="552" y="259" key="Vcs.Push.Dialog.v2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950322601" />
-    <state x="393" y="255" key="Vcs.Push.Dialog.v2/0.40.1368.872@0.40.1368.872" timestamp="1581140007493" />
-    <state x="467" y="331" key="com.intellij.ide.util.TipDialog" timestamp="1581047871680">
+    <state x="393" y="255" key="Vcs.Push.Dialog.v2/0.40.1368.872@0.40.1368.872" timestamp="1581173292055" />
+    <state x="467" y="331" key="com.intellij.ide.util.TipDialog" timestamp="1581258290809">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state x="656" y="350" key="com.intellij.ide.util.TipDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580823518660" />
-    <state x="467" y="331" key="com.intellij.ide.util.TipDialog/0.40.1368.872@0.40.1368.872" timestamp="1581047871680" />
+    <state x="467" y="331" key="com.intellij.ide.util.TipDialog/0.40.1368.872@0.40.1368.872" timestamp="1581258290809" />
     <state x="548" y="408" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1581047950489">
       <screen x="0" y="40" width="1368" height="872" />
     </state>

@@ -119,8 +119,6 @@ class Feedback:
         self.inputforheadertable = {}
         #TODO make statusbar appear during processing
 
-
-
         b = tk.Button(applymatchframe,
                       text='Click when done matching files to well names',
                       command=lambda: self.make_file_info_table(applymatchframe))
@@ -230,19 +228,26 @@ Good for matching bulk manual data """
         b.pack()
 
     def make_file_info_table(self, master):
-        self.pg = ttk.Progressbar(master, orient=tk.HORIZONTAL, mode='indeterminate',length=200)
-        self.pg.pack()
-        self.pg.start()
+        popup = tk.Toplevel()
+        popup.transient(tk.TOP)
+        tk.Label(popup, text="Examining Directory...").pack()
+        pg = ttk.Progressbar(popup, orient=tk.HORIZONTAL, mode='indeterminate', length=200)
+        pg.pack()
+
+        pg.start()
         key = 'file-info-table'
-        df = ll.HeaderTable(self.bulkdatastr['trans-dir'].get(), self.inputforheadertable).file_summary_table()
-        graphframe, tableframe = self.note_tab_add(key, tabw=4, grph=1)
-        # add graph and table to new tab
-        #self.add_graph_table(key, tableframe, graphframe)
-        self.pg.stop()
-        self.datatable[key] = Table(tableframe, dataframe=df, showtoolbar=True, showstatusbar=True)
-        self.datatable[key].show()
-        self.datatable[key].showIndex()
-        self.datatable[key].update()
+        try:
+            df = ll.HeaderTable(self.bulkdatastr['trans-dir'].get(), self.inputforheadertable).file_summary_table()
+            graphframe, tableframe = self.note_tab_add(key, tabw=4, grph=1)
+            # add graph and table to new tab
+            #self.add_graph_table(key, tableframe, graphframe)
+            self.datatable[key] = Table(tableframe, dataframe=df, showtoolbar=True, showstatusbar=True)
+            self.datatable[key].show()
+            self.datatable[key].showIndex()
+            self.datatable[key].update()
+        finally:
+            pg.stop()
+            popup.destroy()
 
     def man_combos(self, key, vals):
         self.combo_choice[key] = tk.StringVar()
