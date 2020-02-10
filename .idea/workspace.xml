@@ -4,9 +4,7 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="improved gui graphing significantly">
-      <change beforePath="$PROJECT_DIR$/.idea/loggerloader.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/loggerloader.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="worked on progressbar">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -87,7 +85,7 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="G:\My Drive\Python\Pycharm\loggerloader\data_files" />
+      <recent name="C:\Users\Hutto\PycharmProjects\loggerloader\loggerloader\data_files" />
       <recent name="E:\My Drive\Python\Pycharm\loggerloader\test" />
       <recent name="G:\My Drive\Python\Pycharm\loggerloader\test" />
       <recent name="C:\Users\PAULINKENBRANDT\Documents\GitHub\loggerloader" />
@@ -123,7 +121,7 @@
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
-      <option name="SDK_HOME" value="C:\Users\paulinkenbrandt\AppData\Local\Continuum\anaconda3\envs\py37\python.exe" />
+      <option name="SDK_HOME" value="C:\Users\Hutto\Anaconda3\envs\loggerloader\python.exe" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/loggerloader" />
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
@@ -204,9 +202,9 @@
     </configuration>
     <list>
       <item itemvalue="Python.llgui" />
+      <item itemvalue="Python tests.Nosetests for test.testcalc_drift" />
       <item itemvalue="Python tests.Nosetests for test.testcalc_slope_and_intercept" />
       <item itemvalue="Python tests.Nosetests for test.testget_breakpoints" />
-      <item itemvalue="Python tests.Nosetests for test.testcalc_drift" />
       <item itemvalue="Python tests.Nosetests in test.py" />
     </list>
     <recent_temporary>
@@ -220,7 +218,9 @@
     </recent_temporary>
   </component>
   <component name="StructureViewFactory">
-    <option name="ACTIVE_ACTIONS" value=",ALPHA_COMPARATOR" />
+    <option name="AUTOSCROLL_MODE" value="false" />
+    <option name="AUTOSCROLL_FROM_SOURCE" value="true" />
+    <option name="ACTIVE_ACTIONS" value=",SHOW_FIELDS,SHOW_INHERITED" />
   </component>
   <component name="SvnConfiguration">
     <configuration />
@@ -235,57 +235,6 @@
       <workItem from="1580767491033" duration="7152000" />
       <workItem from="1580823517124" duration="27995000" />
       <workItem from="1580911938398" duration="31099000" />
-      <workItem from="1581021138805" duration="9857000" />
-      <workItem from="1581342891875" duration="242000" />
-    </task>
-    <task id="LOCAL-00142" summary="fixing upload baro data">
-      <created>1536169933807</created>
-      <option name="number" value="00142" />
-      <option name="presentableId" value="LOCAL-00142" />
-      <option name="project" value="LOCAL" />
-      <updated>1536169933807</updated>
-    </task>
-    <task id="LOCAL-00143" summary="fixing upload baro data">
-      <created>1536170761009</created>
-      <option name="number" value="00143" />
-      <option name="presentableId" value="LOCAL-00143" />
-      <option name="project" value="LOCAL" />
-      <updated>1536170761009</updated>
-    </task>
-    <task id="LOCAL-00144" summary="fixing upload baro data">
-      <created>1536172701438</created>
-      <option name="number" value="00144" />
-      <option name="presentableId" value="LOCAL-00144" />
-      <option name="project" value="LOCAL" />
-      <updated>1536172701438</updated>
-    </task>
-    <task id="LOCAL-00145" summary="added hourly resample to baro">
-      <created>1536180310872</created>
-      <option name="number" value="00145" />
-      <option name="presentableId" value="LOCAL-00145" />
-      <option name="project" value="LOCAL" />
-      <updated>1536180310872</updated>
-    </task>
-    <task id="LOCAL-00146" summary="added hourly resample to baro">
-      <created>1536182485984</created>
-      <option name="number" value="00146" />
-      <option name="presentableId" value="LOCAL-00146" />
-      <option name="project" value="LOCAL" />
-      <updated>1536182485984</updated>
-    </task>
-    <task id="LOCAL-00147" summary="docstring cleanup; modified NewWellImp name; changed fix_drift variables">
-      <created>1536596757480</created>
-      <option name="number" value="00147" />
-      <option name="presentableId" value="LOCAL-00147" />
-      <option name="project" value="LOCAL" />
-      <updated>1536596757480</updated>
-    </task>
-    <task id="LOCAL-00148" summary="docstring cleanup; modified NewWellImp name; changed fix_drift variables">
-      <created>1537188768763</created>
-      <option name="number" value="00148" />
-      <option name="presentableId" value="LOCAL-00148" />
-      <option name="project" value="LOCAL" />
-      <updated>1537188768763</updated>
     </task>
     <task id="LOCAL-00149" summary="table_to_pandas_dataframe_fast">
       <created>1538089464747</created>
@@ -574,14 +523,63 @@
       <option name="project" value="LOCAL" />
       <updated>1580935923770</updated>
     </task>
-    <task id="LOCAL-00190" summary="added bulk uploader gui; working on scroll">
-      <created>1581033868340</created>
+    <task id="LOCAL-00190" summary="improved gui graphing significantly">
+      <created>1580966376333</created>
       <option name="number" value="00190" />
       <option name="presentableId" value="LOCAL-00190" />
       <option name="project" value="LOCAL" />
-      <updated>1581033868340</updated>
+      <updated>1580966376334</updated>
     </task>
-    <option name="localTasksCounter" value="191" />
+    <task id="LOCAL-00191" summary="improved gui graphing significantly">
+      <created>1581054347183</created>
+      <option name="number" value="00191" />
+      <option name="presentableId" value="LOCAL-00191" />
+      <option name="project" value="LOCAL" />
+      <updated>1581054347187</updated>
+    </task>
+    <task id="LOCAL-00192" summary="improved gui graphing significantly">
+      <created>1581056397913</created>
+      <option name="number" value="00192" />
+      <option name="presentableId" value="LOCAL-00192" />
+      <option name="project" value="LOCAL" />
+      <updated>1581056397916</updated>
+    </task>
+    <task id="LOCAL-00193" summary="added batchupload option">
+      <created>1581109940730</created>
+      <option name="number" value="00193" />
+      <option name="presentableId" value="LOCAL-00193" />
+      <option name="project" value="LOCAL" />
+      <updated>1581109940733</updated>
+    </task>
+    <task id="LOCAL-00194" summary="added file_info_table button; needs progress bar and locid fix">
+      <created>1581139326932</created>
+      <option name="number" value="00194" />
+      <option name="presentableId" value="LOCAL-00194" />
+      <option name="project" value="LOCAL" />
+      <updated>1581139326934</updated>
+    </task>
+    <task id="LOCAL-00195" summary="added todos">
+      <created>1581140004918</created>
+      <option name="number" value="00195" />
+      <option name="presentableId" value="LOCAL-00195" />
+      <option name="project" value="LOCAL" />
+      <updated>1581140004920</updated>
+    </task>
+    <task id="LOCAL-00196" summary="worked on progressbar">
+      <created>1581173290110</created>
+      <option name="number" value="00196" />
+      <option name="presentableId" value="LOCAL-00196" />
+      <option name="project" value="LOCAL" />
+      <updated>1581173290112</updated>
+    </task>
+    <task id="LOCAL-00197" summary="worked on progressbar">
+      <created>1581275856033</created>
+      <option name="number" value="00197" />
+      <option name="presentableId" value="LOCAL-00197" />
+      <option name="project" value="LOCAL" />
+      <updated>1581275856041</updated>
+    </task>
+    <option name="localTasksCounter" value="198" />
     <servers />
   </component>
   <component name="TodoView" selected-index="3">
@@ -598,9 +596,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="reestablished package v0.3" />
-    <MESSAGE value="added .lev function" />
-    <MESSAGE value="added .lev function format exception" />
     <MESSAGE value="major overhaul on fix_drift" />
     <MESSAGE value="fix some documentation" />
     <MESSAGE value="suppress pandas copy warning" />
@@ -620,45 +615,49 @@
     <MESSAGE value="single well functions" />
     <MESSAGE value="update tests" />
     <MESSAGE value="update HeaderTable to be more modular" />
-    <MESSAGE value="improved gui graphing significantly" />
     <MESSAGE value="Major refactorization, addition of batch tab and fixing many errors" />
-    <MESSAGE value="added bulk uploader gui; working on scroll" />
-    <option name="LAST_COMMIT_MESSAGE" value="added bulk uploader gui; working on scroll" />
+    <MESSAGE value="improved gui graphing significantly" />
+    <MESSAGE value="added batchupload option" />
+    <MESSAGE value="added file_info_table button; needs progress bar and locid fix" />
+    <MESSAGE value="added todos" />
+    <MESSAGE value="worked on progressbar" />
+    <option name="LAST_COMMIT_MESSAGE" value="worked on progressbar" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="414" y="181" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1581023194194">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state x="282" y="190" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1580960703216">
+      <screen x="0" y="40" width="1368" height="872" />
     </state>
-    <state x="414" y="181" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581023194194" />
+    <state x="414" y="181" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580912831396" />
     <state x="282" y="190" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.40.1368.872@0.40.1368.872" timestamp="1580960703216" />
     <state x="2599" y="141" key="#llgui" timestamp="1580767659733">
       <screen x="1920" y="1" width="1920" height="1050" />
     </state>
     <state x="2599" y="141" key="#llgui/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@1920.1.1920.1050" timestamp="1580767659733" />
-    <state x="615" y="120" key="CommitChangelistDialog2" timestamp="1581033863979">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state x="329" y="59" key="CommitChangelistDialog2" timestamp="1581275839374">
+      <screen x="0" y="40" width="1368" height="872" />
     </state>
-    <state x="615" y="120" key="CommitChangelistDialog2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581033863979" />
-    <state width="1693" height="274" key="GridCell.Tab.0.bottom" timestamp="1581033904848">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state x="615" y="120" key="CommitChangelistDialog2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950316437" />
+    <state x="329" y="59" key="CommitChangelistDialog2/0.40.1368.872@0.40.1368.872" timestamp="1581275839374" />
+    <state width="950" height="228" key="GridCell.Tab.0.bottom" timestamp="1581301940759">
+      <screen x="0" y="40" width="1368" height="872" />
     </state>
-    <state width="1693" height="274" key="GridCell.Tab.0.bottom/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581033904848" />
-    <state width="1348" height="227" key="GridCell.Tab.0.bottom/0.40.1368.872@0.40.1368.872" timestamp="1580965075471" />
-    <state width="1693" height="274" key="GridCell.Tab.0.center" timestamp="1581033904848">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state width="1695" height="274" key="GridCell.Tab.0.bottom/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950151604" />
+    <state width="950" height="228" key="GridCell.Tab.0.bottom/0.40.1368.872@0.40.1368.872" timestamp="1581301940759" />
+    <state width="950" height="228" key="GridCell.Tab.0.center" timestamp="1581301940758">
+      <screen x="0" y="40" width="1368" height="872" />
     </state>
-    <state width="1693" height="274" key="GridCell.Tab.0.center/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581033904848" />
-    <state width="1348" height="227" key="GridCell.Tab.0.center/0.40.1368.872@0.40.1368.872" timestamp="1580965075462" />
-    <state width="1693" height="274" key="GridCell.Tab.0.left" timestamp="1581033904848">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state width="1695" height="274" key="GridCell.Tab.0.center/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950151604" />
+    <state width="950" height="228" key="GridCell.Tab.0.center/0.40.1368.872@0.40.1368.872" timestamp="1581301940758" />
+    <state width="950" height="228" key="GridCell.Tab.0.left" timestamp="1581301940758">
+      <screen x="0" y="40" width="1368" height="872" />
     </state>
-    <state width="1693" height="274" key="GridCell.Tab.0.left/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581033904848" />
-    <state width="1348" height="227" key="GridCell.Tab.0.left/0.40.1368.872@0.40.1368.872" timestamp="1580965075445" />
-    <state width="1693" height="274" key="GridCell.Tab.0.right" timestamp="1581033904848">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state width="1695" height="274" key="GridCell.Tab.0.left/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950151603" />
+    <state width="950" height="228" key="GridCell.Tab.0.left/0.40.1368.872@0.40.1368.872" timestamp="1581301940758" />
+    <state width="950" height="228" key="GridCell.Tab.0.right" timestamp="1581301940759">
+      <screen x="0" y="40" width="1368" height="872" />
     </state>
-    <state width="1693" height="274" key="GridCell.Tab.0.right/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581033904848" />
-    <state width="1348" height="227" key="GridCell.Tab.0.right/0.40.1368.872@0.40.1368.872" timestamp="1580965075465" />
+    <state width="1695" height="274" key="GridCell.Tab.0.right/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950151604" />
+    <state width="950" height="228" key="GridCell.Tab.0.right/0.40.1368.872@0.40.1368.872" timestamp="1581301940759" />
     <state width="1348" height="281" key="GridCell.Tab.1.bottom" timestamp="1580875974535">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
@@ -679,27 +678,30 @@
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
     <state x="672" y="242" key="MultipleFileMergeDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580824218681" />
-    <state x="461" y="168" key="SettingsEditor" timestamp="1581021214840">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state x="328" y="180" key="SettingsEditor" timestamp="1580960678720">
+      <screen x="0" y="40" width="1368" height="872" />
     </state>
-    <state x="461" y="168" key="SettingsEditor/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581021214840" />
+    <state x="461" y="168" key="SettingsEditor/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580911952102" />
     <state x="328" y="180" key="SettingsEditor/0.40.1368.872@0.40.1368.872" timestamp="1580960678720" />
     <state x="747" y="242" key="VCS.ChangeListViewerDialog" timestamp="1580824162576">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
     <state x="747" y="242" key="VCS.ChangeListViewerDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580824162576" />
-    <state x="552" y="259" key="Vcs.Push.Dialog.v2" timestamp="1581033877695">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state x="393" y="255" key="Vcs.Push.Dialog.v2" timestamp="1581281401499">
+      <screen x="0" y="40" width="1368" height="872" />
     </state>
-    <state x="552" y="259" key="Vcs.Push.Dialog.v2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581033877695" />
-    <state x="656" y="350" key="com.intellij.ide.util.TipDialog" timestamp="1581342892973">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state x="552" y="259" key="Vcs.Push.Dialog.v2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950322601" />
+    <state x="393" y="255" key="Vcs.Push.Dialog.v2/0.40.1368.872@0.40.1368.872" timestamp="1581281401499" />
+    <state x="467" y="331" key="com.intellij.ide.util.TipDialog" timestamp="1581310131201">
+      <screen x="0" y="40" width="1368" height="872" />
     </state>
-    <state x="656" y="350" key="com.intellij.ide.util.TipDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581342892973" />
-    <state x="769" y="443" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1581343103793">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state x="656" y="350" key="com.intellij.ide.util.TipDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580823518660" />
+    <state x="467" y="331" key="com.intellij.ide.util.TipDialog/0.40.1368.872@0.40.1368.872" timestamp="1581310131201" />
+    <state x="548" y="408" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1581047950489">
+      <screen x="0" y="40" width="1368" height="872" />
     </state>
-    <state x="769" y="443" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581343103793" />
+    <state x="769" y="443" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580824243341" />
+    <state x="548" y="408" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.40.1368.872@0.40.1368.872" timestamp="1581047950489" />
     <state x="662" y="123" width="756" height="804" key="find.popup" timestamp="1580857567745">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
@@ -716,13 +718,10 @@
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
     <state x="755" y="426" key="git4idea.ui.GitStashDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580824118695" />
-    <state x="347" y="224" width="672" height="678" key="search.everywhere.popup" timestamp="1580862913324">
+    <state x="349" y="226" width="672" height="678" key="search.everywhere.popup" timestamp="1581098388530">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
-    <state x="347" y="224" width="672" height="678" key="search.everywhere.popup/0.40.1368.872@0.40.1368.872" timestamp="1580862913324" />
-  </component>
-  <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/loggerloader$llgui.coverage" NAME="llgui Coverage Results" MODIFIED="1581033793797" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
+    <state x="349" y="226" width="672" height="678" key="search.everywhere.popup/0.40.1368.872@0.40.1368.872" timestamp="1581098388530" />
   </component>
   <component name="masterDetails">
     <states>
