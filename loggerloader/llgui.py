@@ -70,54 +70,34 @@ class Feedback:
         dirselectframe = ttk.Frame(self.bulkwelltab)
         dirselectframe.pack()
 
-        self.bulkdatastr, self.bulkdata, self.bulkdatatable, self.bulkcombo = {}, {}, {}, {}
+        self.datastr, self.data, self.datatable, self.combo = {}, {}, {}, {}
+        self.entry = {}
         self.locidmatch = {}
-        self.bulktransfilestr = {} #dictionary to store trans file names
+        self.bulktransfilestr = {}  # dictionary to store trans file names
 
-        # select file for well-info-table
-        well_info_frame = ttk.Frame(dirselectframe)
-        well_info_frame.pack()
-        key = 'well-info-table'
-        self.bulkdatastr[key] = tk.StringVar(well_info_frame)
-        self.bulkdatastr[key].set("../data_files/ugs_ngwmn_monitoring_locations.csv")
-        df = pd.read_csv(self.bulkdatastr[key].get())
-        df = df.reset_index()
-        df = df[df['altlocationid'].notnull()]
-        df['altlocationid'] = df['altlocationid'].apply(lambda x: int(x), 1)
-        df = df.set_index(['altlocationid'])
-        self.bulkdata[key] = df
-        ttk.Label(well_info_frame, text='Input well info file (must be csv)').grid(row=0, column=0, columnspan=3)
-        #ttk.Label(well_info_frame, text='must have altlocationid, locationname, stickup, barologgertype, and verticalmeasure').grid(row=1,column=0,columnspan=3)
-        e = ttk.Entry(well_info_frame, textvariable=self.bulkdatastr[key], width=80)
-        e.grid(row=1,column=0,columnspan=2)
-        e.bind('<Double-ButtonRelease-1>', lambda f: self.open_file(well_info_frame))
-        b = ttk.Button(well_info_frame, text='Process Well Info File', command=self.add_well_info_table)
-        b.grid(row=1,column=2)
+        self.make_well_info_frame(dirselectframe)
 
         ttk.Separator(dirselectframe, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
-
         # pick directory with transducer files and populate a scrollable window with combobox selections
         filefinderframe = ttk.Frame(dirselectframe)
         filefinderframe.pack()
-        ttk.Label(filefinderframe, text='Pick directory with relevant well files.').pack()
-        key = 'trans-dir'
-        self.bulkdatastr[key] = tk.StringVar(filefinderframe, value=f'Double-Click for transducer file directory')
-        self.filefnd = ttk.Entry(filefinderframe, textvariable=self.bulkdatastr[key], width=80)
-        self.filefnd.pack()
+        ttk.Label(filefinderframe, text='Pick directory with relevant well files.').grid(column=0, row=0,columnspan=3)
+        self.datastr['trans-dir'] = tk.StringVar(filefinderframe, value=f'Double-Click for transducer file directory')
+        filefnd = ttk.Entry(filefinderframe, textvariable=self.datastr['trans-dir'], width=80)
+        filefnd.grid(column=0,row=1,columnspan=2)
+        self.combo['data_source'] = ttk.Combobox(filefinderframe,
+                                                 values=['Snake Valley Wells','Wetlands Piezos','WRI','Other'])
+        self.combo['data_source'].grid(column=3, row=1)
         filefoundframe = ttk.Frame(dirselectframe)
-        self.filefnd.bind('<Double-ButtonRelease-1>', lambda f: self.grab_dir(filefoundframe))
-        #self.entry[key].bind('<3>', lambda k: self.wellbaroabb(key))
-
-
+        filefnd.bind('<Double-ButtonRelease-1>', lambda f: self.grab_trans_dir(filefoundframe))
         filefoundframe.pack()
 
-        #filefinderframe.pack()
         ttk.Separator(dirselectframe, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
 
         applymatchframe = ttk.Frame(dirselectframe)
         applymatchframe.pack()
         self.inputforheadertable = {}
-        #TODO make statusbar appear during processing
+        # TODO make statusbar appear during processing
 
         b = tk.Button(applymatchframe,
                       text='Click when done matching files to well names',
@@ -135,8 +115,6 @@ class Feedback:
         ttk.Label(self.frame_header, wraplength=300, text="Processing transducer data").grid(row=0, column=1)
 
         # Data Entry Frame
-        # initiate dictionaries to hold data by key
-        self.datastr, self.data, self.datatable, self.entry = {}, {}, {}, {}
 
         self.filefinders('well')  # Select and import well data
         self.filefinders('baro')  # Select and import baro data
@@ -174,13 +152,12 @@ Good for matching bulk manual data """
         self.man_entry.grid(row=2, column=0, columnspan=4)
         self.man_entry.bind('<Double-ButtonRelease-1>', self.mandiag)
 
-
-        fillervals = ['datetime','meas','locid']
+        fillervals = ['datetime', 'meas', 'locid']
         self.combo, self.combo_choice = {}, {}
-        combovals = {"Datetime":[3,0,15,fillervals,4,0],
-                          "DTW":[3,1,15,fillervals,4,1],
-                          "locationid":[3,2,15,fillervals,4,2],
-                          "Pick id":[5,1,15,[1001,1002],5,2]}
+        combovals = {"Datetime": [3, 0, 15, fillervals, 4, 0],
+                     "DTW": [3, 1, 15, fillervals, 4, 1],
+                     "locationid": [3, 2, 15, fillervals, 4, 2],
+                     "Pick id": [5, 1, 15, [1001, 1002], 5, 2]}
 
         for key, vals in combovals.items():
             self.man_combos(key, vals)
@@ -196,36 +173,34 @@ Good for matching bulk manual data """
 
         self.fix_drift_interface()  # Fix Drift Button
 
-        # Elevation Correction Interface
-        ttk.Separator(self.onewelltab, orient=tk.HORIZONTAL).pack(fill=tk.X)
-        frame_step6 = ttk.Frame(self.onewelltab)
-        frame_step6.pack()
-        ttk.Label(frame_step6, text='6. Align Elevation and Offset').grid(row=1, column=0, columnspan=4)
-        ttk.Label(frame_step6, text='Ground Elev.').grid(row=2, column=0)
-        ttk.Label(frame_step6, text='Stickup').grid(row=2, column=2)
-        ttk.Label(frame_step6, text='Elev. Units').grid(row=2, column=1)
-        ttk.Label(frame_step6, text='Stickup Units').grid(row=2, column=3)
-        self.wellgroundelev = ttk.Entry(frame_step6, width=6)
-        self.wellgroundelevunits = ttk.Combobox(frame_step6, width=5,
-                                                values=['ft', 'm'], state="readonly")
-        self.wellgroundelevunits.current(0)
-        self.wellstickup = ttk.Entry(frame_step6, width=4)
-        self.wellstickupunits = ttk.Combobox(frame_step6, width=5,
-                                             values=['ft', 'm'], state="readonly")
-        self.wellstickupunits.current(0)
-        self.wellgroundelev.grid(row=3, column=0)
-        self.wellgroundelevunits.grid(row=3, column=1)
-        self.wellstickup.grid(row=3, column=2)
-        self.wellstickupunits.grid(row=3, column=3)
-
-        b = ttk.Button(frame_step6, text='Calculate Elevations', command=self.elevcalc)
-        b.grid(row=4, column=0, columnspan=4,pady=5)
+        self.add_elevation_interface(self.onewelltab)
 
         ttk.Separator(self.onewelltab, orient=tk.HORIZONTAL).pack(fill=tk.X)
         save_onewell_frame = ttk.Frame(self.onewelltab)
         save_onewell_frame.pack()
         b = ttk.Button(save_onewell_frame, text='Save csv', command=self.save_one_well)
         b.pack()
+
+    def make_well_info_frame(self, master):
+        # select file for well-info-table
+        well_info_frame = ttk.Frame(master)
+        well_info_frame.pack()
+        key = 'well-info-table'
+        self.datastr[key] = tk.StringVar(well_info_frame)
+        self.datastr[key].set("../data_files/ugs_ngwmn_monitoring_locations.csv")
+        df = pd.read_csv(self.datastr[key].get())
+        df = df.reset_index()
+        df = df[df['altlocationid'].notnull()]
+        df['altlocationid'] = df['altlocationid'].apply(lambda x: int(x), 1)
+        df = df.set_index(['altlocationid'])
+        self.data[key] = df
+        ttk.Label(well_info_frame, text='Input well info file (must be csv)').grid(row=0, column=0, columnspan=3)
+        # ttk.Label(well_info_frame, text='must have altlocationid, locationname, stickup, barologgertype, and verticalmeasure').grid(row=1,column=0,columnspan=3)
+        e = ttk.Entry(well_info_frame, textvariable=self.datastr[key], width=80)
+        e.grid(row=1, column=0, columnspan=2)
+        e.bind('<Double-ButtonRelease-1>', lambda f: self.open_file(well_info_frame))
+        b = ttk.Button(well_info_frame, text='Process Well Info File', command=self.add_well_info_table)
+        b.grid(row=1, column=2)
 
     def make_file_info_table(self, master):
         popup = tk.Toplevel()
@@ -237,10 +212,10 @@ Good for matching bulk manual data """
         pg.start()
         key = 'file-info-table'
         try:
-            df = ll.HeaderTable(self.bulkdatastr['trans-dir'].get(), self.inputforheadertable).file_summary_table()
+            df = ll.HeaderTable(self.datastr['trans-dir'].get(), self.inputforheadertable).file_summary_table()
             graphframe, tableframe = self.note_tab_add(key, tabw=4, grph=1)
             # add graph and table to new tab
-            #self.add_graph_table(key, tableframe, graphframe)
+            # self.add_graph_table(key, tableframe, graphframe)
             self.datatable[key] = Table(tableframe, dataframe=df, showtoolbar=True, showstatusbar=True)
             self.datatable[key].show()
             self.datatable[key].showIndex()
@@ -360,6 +335,33 @@ Good for matching bulk manual data """
                        command=self.alignedplot)
         b.grid(row=2, column=2)
 
+    def add_elevation_interface(self, master):
+        #
+        # Elevation Correction Interface
+        ttk.Separator(master, orient=tk.HORIZONTAL).pack(fill=tk.X)
+        frame_step6 = ttk.Frame(master)
+        frame_step6.pack()
+        ttk.Label(frame_step6, text='6. Align Elevation and Offset').grid(row=1, column=0, columnspan=4)
+        ttk.Label(frame_step6, text='Ground Elev.').grid(row=2, column=0)
+        ttk.Label(frame_step6, text='Stickup').grid(row=2, column=2)
+        ttk.Label(frame_step6, text='Elev. Units').grid(row=2, column=1)
+        ttk.Label(frame_step6, text='Stickup Units').grid(row=2, column=3)
+        self.wellgroundelev = ttk.Entry(frame_step6, width=6)
+        self.wellgroundelevunits = ttk.Combobox(frame_step6, width=5,
+                                                values=['ft', 'm'], state="readonly")
+        self.wellgroundelevunits.current(0)
+        self.wellstickup = ttk.Entry(frame_step6, width=4)
+        self.wellstickupunits = ttk.Combobox(frame_step6, width=5,
+                                             values=['ft', 'm'], state="readonly")
+        self.wellstickupunits.current(0)
+        self.wellgroundelev.grid(row=3, column=0)
+        self.wellgroundelevunits.grid(row=3, column=1)
+        self.wellstickup.grid(row=3, column=2)
+        self.wellstickupunits.grid(row=3, column=3)
+
+        b = ttk.Button(frame_step6, text='Calculate Elevations', command=self.elevcalc)
+        b.grid(row=4, column=0, columnspan=4, pady=5)
+
     def elevcalc(self):
         key = 'wl-elev'
         mstickup = float(self.wellstickup.get())
@@ -370,7 +372,7 @@ Good for matching bulk manual data """
             melev = melev * 3.2808
         self.manelevs = ll.get_man_gw_elevs(self.datatable['manual'].model.df, mstickup, melev)
         df = ll.get_trans_gw_elevations(self.datatable['fixed-drift'].model.df, mstickup,
-                                                     melev, self.combo["Pick id"].get(), level='corrwl', dtw='DTW_WL')
+                                        melev, self.combo["Pick id"].get(), level='corrwl', dtw='DTW_WL')
         self.data[key] = df.set_index('readingdate')
         graphframe, tableframe = self.note_tab_add(key)
         self.add_graph_table(key, tableframe, graphframe)
@@ -388,7 +390,7 @@ Good for matching bulk manual data """
             graphframe, tableframe = self.note_tab_add(key)
             self.add_graph_table(key, tableframe, graphframe)
         else:
-            tk.messagebox.showinfo(title='Yo!',message='Align the data first!')
+            tk.messagebox.showinfo(title='Yo!', message='Align the data first!')
 
     def proc_man(self):
         nbnum = self.manbook.index(self.manbook.select())
@@ -401,7 +403,7 @@ Good for matching bulk manual data """
 
             df = pd.DataFrame({'readingdate': [self.man_datetime[0], self.man_datetime[2]],
                                'dtwbelowcasing': [float(self.man_meas[0].get()),
-                                               float(self.man_meas[2].get())],
+                                                  float(self.man_meas[2].get())],
                                'locationid': [self.man_locid.get()] * 2,
                                'units': [self.manunits.get()] * 2})
             if self.manunits.get() == 'm':
@@ -422,10 +424,9 @@ Good for matching bulk manual data """
             df = df.set_index(['readingdate'])
             df = df[['dtwbelowcasing', 'locationid', 'units']]
             if 'well' in self.datatable.keys():
-                df = df[df.index > self.datatable['well'].model.df.first_valid_index()-pd.DateOffset(days=8)]
+                df = df[df.index > self.datatable['well'].model.df.first_valid_index() - pd.DateOffset(days=8)]
 
             self.data[key] = df[df['locationid'] == int(self.combo['Pick id'].get())]
-
 
         graphframe, tableframe = self.note_tab_add(key)
         self.add_graph_table(key, tableframe, graphframe)
@@ -546,10 +547,11 @@ Good for matching bulk manual data """
                     self.datatable['manual'].model.df.last_valid_index() + pd.Timedelta('3 days'), )
 
     def wellbaroabb(self, key):
-        if self.datastr[key].get() == '' or type(self.datastr[key].get()) == tuple or self.datastr[key].get() == f'Double-Click for {key} file':
+        if self.datastr[key].get() == '' or type(self.datastr[key].get()) == tuple or self.datastr[
+            key].get() == f'Double-Click for {key} file':
             pass
         else:
-            if key in ('well','baro'):
+            if key in ('well', 'baro'):
                 self.data[key] = ll.NewTransImp(self.datastr[key].get()).well.drop(['name'], axis=1)
             elif key == 'manual':
                 filenm, file_extension = os.path.splitext(self.datastr[key].get())
@@ -606,59 +608,6 @@ Good for matching bulk manual data """
                 self.data['manual'] = pd.read_csv(self.datastr[key].get())
             # self.graph_frame1.pack()
 
-    def dropmenu(self, master):
-        # menu bars at the top of the main window
-        master.option_add('*tearOff', False)
-        menubar = tk.Menu(master)
-        master.config(menu=menubar)
-        file = tk.Menu(menubar)
-        edit = tk.Menu(menubar)
-        help_ = tk.Menu(menubar)
-        menubar.add_cascade(menu=file, label='File')
-        menubar.add_cascade(menu=edit, label='Edit')
-        menubar.add_cascade(menu=help_, label='Help')
-        file.add_command(label='New', command=lambda: print('New File'))
-        file.add_separator()
-        file.add_command(label="Open Config File...", command=self.open)
-        file.entryconfig('New', accelerator='Ctrl + N')
-        save = tk.Menu(file)
-        file.add_cascade(menu=save, label='Save')
-        save.add_command(label="Save Well Config", command=self.save)
-        save.add_command(label='Save As', command=lambda: print('save as'))
-        save.add_command(label='Save All', command=lambda: print('saving'))
-        file.add_command(label='Quit', command=self.root.destroy)
-
-    def save(self):
-        file = filedialog.asksaveasfile(mode="w", filetypes=[('text','.txt')], defaultextension=".txt")
-        if file is None:
-            print('no')
-            return
-        else:
-            file.write("dic,name,value\n")
-            for key in self.datastr.keys():
-                file.write(f"datastr,{key},{self.datastr[key].get()}\n")
-            for key in self.combo.keys():
-                file.write(f"combo,{key},{self.combo[key].get()}\n")
-            file.write(f"man notebook,manual tab,{self.manbook.index(self.manbook.select())}")
-            file.close()
-            return
-            #f = filedialog.asksaveasfile(mode='w', defaultextension=".tproc")
-
-    def open(self):
-        filename = filedialog.askopenfilename(filetypes=[('text','.txt')])
-        if filename is None:
-            return
-        else:
-            df = pd.read_csv(filename).set_index(['name'])
-            directs = df[df['dic']=='datastr']
-            for i in directs.index:
-                self.datastr[i].set(directs.loc[i,'value'])
-                self.wellbaroabb(i)
-            combs = df[df['dic']=='combo']
-            for i in combs.index:
-                self.combo_choice[i].set(combs.loc[i,'value'])
-            self.manbook.select(df.loc['manual tab','dic'])
-
     def save_one_well(self):
         filename = filedialog.asksaveasfilename(confirmoverwrite=True)
         if filename is None:
@@ -684,21 +633,22 @@ Good for matching bulk manual data """
         key = 'well-info-table'
 
         try:
-            self.bulkdatastr[key].set(filedialog.askopenfilename(initialdir=self.currentdir, title="Select well info file"))
-            if self.bulkdatastr[key].get() == '' or type(self.bulkdatastr[key].get()) == tuple or \
-                    self.bulkdatastr[key].get() == 'Double-Click for transducer file directory':
+            self.datastr[key].set(filedialog.askopenfilename(initialdir=self.currentdir, title="Select well info file"))
+            if self.datastr[key].get() == '' or type(self.datastr[key].get()) == tuple or \
+                    self.datastr[key].get() == 'Double-Click for transducer file directory':
                 pass
             else:
-                self.currentdir = os.path.dirname(self.bulkdatastr[key].get())
-                df = pd.read_csv(self.bulkdatastr[key].get())
+                self.currentdir = os.path.dirname(self.datastr[key].get())
+                df = pd.read_csv(self.datastr[key].get())
                 df = df[df['altlocationid'].notnull()]
-                df['altlocationid'] = df['altlocationid'].apply(lambda x: int(x),1)
+                df['altlocationid'] = df['altlocationid'].apply(lambda x: int(x), 1)
                 df = df.set_index(['altlocationid']).sort_index()
-                self.bulkdata[key] = df
+                self.data[key] = df
         except KeyError:
-            tk.messagebox.showerror(title='Need to rename columns',message="""This table needs fields with labels
+            tk.messagebox.showerror(title='Need to rename columns', message="""This table needs fields with labels
             'altlocationid','stickup','locationname','verticalmeasure','barologgertype'.  They do not have to be
             in order.""")
+
     def add_well_info_table(self):
         """Creates well-info-table tab and table frame for bulk data uploads; this table is used to match filenames to
         locationids and is used to get elevation and stickup in bulk data
@@ -708,10 +658,10 @@ Good for matching bulk manual data """
         """
         key = 'well-info-table'
         graphframe, tableframe = self.note_tab_add(key, tabw=5, grph=1)
-        self.bulkdatatable[key] = Table(tableframe, dataframe=self.bulkdata[key], showtoolbar=True, showstatusbar=True)
-        self.bulkdatatable[key].show()
-        self.bulkdatatable[key].showIndex()
-        self.bulkdatatable[key].update()
+        self.datatable[key] = Table(tableframe, dataframe=self.data[key], showtoolbar=True, showstatusbar=True)
+        self.datatable[key].show()
+        self.datatable[key].showIndex()
+        self.datatable[key].update()
 
     def grab_dir(self, master):
         """grabs directory containing transducer files and inputs filenames into a scrollable canvas with comboboxes to
@@ -728,33 +678,32 @@ Good for matching bulk manual data """
         """
         key = 'trans-dir'
 
-
-        self.bulkdatastr[key].set(filedialog.askdirectory(initialdir=self.currentdir,
-                                                          title="Select transducer directory"))
-        if self.bulkdatastr[key].get() == '' or type(self.bulkdatastr[key].get()) == tuple or \
-                self.bulkdatastr[key].get() == 'Double-Click for transducer file directory':
+        self.datastr[key].set(filedialog.askdirectory(initialdir=self.currentdir,
+                                                      title="Select transducer directory"))
+        if self.datastr[key].get() == '' or type(self.datastr[key].get()) == tuple or \
+                self.datastr[key].get() == 'Double-Click for transducer file directory':
             pass
         else:
-            self.currentdir = os.path.dirname(self.bulkdatastr[key].get())
+            self.currentdir = os.path.dirname(self.datastr[key].get())
             # https://stackoverflow.com/questions/45357174/tkinter-drop-down-menu-from-excel
             # TODO add excel sheet options to file selection
-            filenm, file_extension = os.path.splitext(self.bulkdatastr[key].get())
-            ttk.Label(master, text='Match id with list of files.').grid(row=0,column=0,columnspan=3)
+            filenm, file_extension = os.path.splitext(self.datastr[key].get())
+            ttk.Label(master, text='Match id with list of files.').grid(row=0, column=0, columnspan=3)
             ttk.Label(master, text='Filename').grid(row=1, column=0)
             ttk.Label(master, text='Match Name').grid(row=1, column=1)
             ttk.Label(master, text='Well ID').grid(row=1, column=2)
-            #https://blog.tecladocode.com/tkinter-scrollable-frames/
+            # https://blog.tecladocode.com/tkinter-scrollable-frames/
             container = ttk.Frame(master)
             canvas = tk.Canvas(container)
             scrollbar = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
             scrollable_frame = ttk.Frame(canvas)
-            if 'well-info-table' in self.bulkdatatable.keys():
-                df = self.bulkdatatable['well-info-table'].model.df
-                df['locationnamelwr'] = df['locationname'].apply(lambda x: x.lower(),1)
+            if 'well-info-table' in self.datatable.keys():
+                df = self.datatable['well-info-table'].model.df
+                df['locationnamelwr'] = df['locationname'].apply(lambda x: x.lower(), 1)
                 self.locdict = df['locationnamelwr'].to_dict()
-                self.welldict = {y:x for x,y in self.locdict.items()}
-                self.locnamedict = dict(zip(df['locationnamelwr'].values,df['locationname'].values))
-                self.locnametoid = dict(zip(df['locationname'].values,df.index.values))
+                self.welldict = {y: x for x, y in self.locdict.items()}
+                self.locnamedict = dict(zip(df['locationnamelwr'].values, df['locationname'].values))
+                self.locnametoid = dict(zip(df['locationname'].values, df.index.values))
                 self.welldict['eskdalemx'] = 73
                 self.welldict['eskmx'] = 73
                 self.welldict['edmx'] = 73
@@ -798,34 +747,34 @@ Good for matching bulk manual data """
                 self.welldict['centraltulemx'] = 75
                 self.welldict['ctmx'] = 75
             i = 0
-            for file in glob.glob(self.bulkdatastr['trans-dir'].get() + '/*'):
+            for file in glob.glob(self.datastr['trans-dir'].get() + '/*'):
                 filew_ext = os.path.basename(file)
                 filestr = ll.getfilename(file)
                 a = re.split('_|\s', filestr)[0].lower()
                 ttk.Label(scrollable_frame, text=filestr).grid(row=i, column=0)
                 self.locidmatch[filestr] = tk.StringVar(scrollable_frame)
                 self.bulktransfilestr[filestr] = tk.StringVar(scrollable_frame)
-                self.bulkcombo[filestr] = ttk.Combobox(scrollable_frame)
-                self.bulkcombo[filestr].grid(row=i, column=1)
-                e = ttk.Entry(scrollable_frame, textvariable = self.locidmatch[filestr], width=6)
+                self.combo[filestr] = ttk.Combobox(scrollable_frame)
+                self.combo[filestr].grid(row=i, column=1)
+                e = ttk.Entry(scrollable_frame, textvariable=self.locidmatch[filestr], width=6)
                 e.grid(row=i, column=2)
-                self.bulkcombo[filestr]['values'] = list(df['locationname'].unique())
+                self.combo[filestr]['values'] = list(df['locationname'].unique())
                 if 'locdict' in self.__dict__.keys():
                     if a in self.locnamedict.keys():
                         self.bulktransfilestr[filestr].set(self.locnamedict[a])
-                        self.bulkcombo[filestr].set(self.locnamedict[a])
+                        self.combo[filestr].set(self.locnamedict[a])
                         self.locidmatch[filestr].set(self.welldict[a])
-                        self.inputforheadertable[filew_ext] =  self.welldict[a]
-                        self.bulkcombo[filestr].bind("<<ComboboxSelected>>", lambda e: print(self.bulkcombo[filestr]))
+                        self.inputforheadertable[filew_ext] = self.welldict[a]
+                        self.combo[filestr].bind("<<ComboboxSelected>>", lambda e: print(self.combo[filestr]))
 
-                                                     #self.locidmatch[filestr].set(self.locnametoid[self.bulkcombo[filestr].get()]))
+                        # self.locidmatch[filestr].set(self.locnametoid[self.combo[filestr].get()]))
                 i += 1
-            #self.filefnd.bind('<Double-ButtonRelease-1>', lambda f: self.grab_dir(dirselectframe))
+            # self.filefnd.bind('<Double-ButtonRelease-1>', lambda f: self.grab_dir(dirselectframe))
 
             scrollable_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
             canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
             canvas.configure(yscrollcommand=scrollbar.set)
-            container.grid(row=2,column=0,columnspan=3)
+            container.grid(row=2, column=0, columnspan=3)
             canvas.pack(side="left", fill="both", expand=True)
             scrollbar.pack(side="right", fill="y")
 
@@ -833,8 +782,68 @@ Good for matching bulk manual data """
         print(event.widget['text'])
 
     def nameparser(self, filestr):
-        a = re.split('_|-|\s',filestr)[0]
+        a = re.split('_|-|\s', filestr)[0]
 
+    def dropmenu(self, master):
+        # menu bars at the top of the main window
+        self.root = master
+        master.option_add('*tearOff', False)
+        menubar = tk.Menu(master)
+        master.config(menu=menubar)
+        file = tk.Menu(menubar)
+        edit = tk.Menu(menubar)
+        help_ = tk.Menu(menubar)
+        menubar.add_cascade(menu=file, label='File')
+        menubar.add_cascade(menu=edit, label='Edit')
+        menubar.add_cascade(menu=help_, label='Help')
+        file.add_command(label='New', command=lambda: print('New File'))
+        file.add_separator()
+        file.add_command(label="Open Config File...", command=self.open)
+        file.entryconfig('New', accelerator='Ctrl + N')
+        save = tk.Menu(file)
+        file.add_cascade(menu=save, label='Save')
+        save.add_command(label="Save Well Config", command=self.save)
+        save.add_command(label='Save As', command=lambda: print('save as'))
+        save.add_command(label='Save All', command=lambda: print('saving'))
+        file.add_command(label='Quit', command=self.root.destroy)
+        self.save_obj = {}
+
+    def save(self):
+        file = filedialog.asksaveasfile(mode="w", filetypes=[('text', '.txt')], defaultextension=".txt")
+        if file is None:
+            print('No File Selected')
+            return
+        else:
+            file.write("name, key, value\n")
+            for key, value in self.datastr.items():
+                file.write(f"datastr,{key},{value}\n")
+            for key, value in self.combo.items():
+                file.write(f"combo, {key},{value}\n")
+            for key, value in self.tabstate.items():
+                file.write(f"tabstate, {key},{value}\n")
+            file.close()
+            return
+
+    def open(self):
+        filename = filedialog.askopenfilename(filetypes=[('text', '.txt')])
+        if filename is None:
+            return
+        else:
+            df = pd.read_csv(filename)
+            df[['name', 'key', 'value']].apply(lambda x: self.select_type(x), 1)
+
+    def select_type(self, x):
+        name = x[0]
+        key = x[1]
+        obj = x[2]
+        if name == 'datastr':
+            self.datastr[key] = obj
+        elif name == 'combo':
+            self.combo[key] = obj
+        elif name == 'tabstate':
+            self.tabstate[key] = obj
+        else:
+            pass
 
 
 def main():

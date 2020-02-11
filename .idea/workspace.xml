@@ -6,6 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="worked on progressbar">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/loggerloader/llgui.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/llgui.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/loggerloader/loader.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/loader.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -65,6 +67,9 @@
   </component>
   <component name="ProjectId" id="1XJc9x5wmUR250n122YRhkgntvh" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectReloadState">
+    <option name="STATE" value="1" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showExcludedFiles" value="true" />
@@ -121,7 +126,7 @@
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
-      <option name="SDK_HOME" value="C:\Users\Hutto\Anaconda3\envs\loggerloader\python.exe" />
+      <option name="SDK_HOME" value="C:\Users\paulinkenbrandt\AppData\Local\Continuum\anaconda3\envs\py37\python.exe" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/loggerloader" />
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
@@ -235,6 +240,7 @@
       <workItem from="1580767491033" duration="7152000" />
       <workItem from="1580823517124" duration="27995000" />
       <workItem from="1580911938398" duration="31099000" />
+      <workItem from="1581343212148" duration="14535000" />
     </task>
     <task id="LOCAL-00149" summary="table_to_pandas_dataframe_fast">
       <created>1538089464747</created>
@@ -624,10 +630,10 @@
     <option name="LAST_COMMIT_MESSAGE" value="worked on progressbar" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="282" y="190" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1580960703216">
-      <screen x="0" y="40" width="1368" height="872" />
+    <state x="414" y="181" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1581347080985">
+      <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state x="414" y="181" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580912831396" />
+    <state x="414" y="181" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581347080985" />
     <state x="282" y="190" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.40.1368.872@0.40.1368.872" timestamp="1580960703216" />
     <state x="2599" y="141" key="#llgui" timestamp="1580767659733">
       <screen x="1920" y="1" width="1920" height="1050" />
@@ -638,25 +644,25 @@
     </state>
     <state x="615" y="120" key="CommitChangelistDialog2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950316437" />
     <state x="329" y="59" key="CommitChangelistDialog2/0.40.1368.872@0.40.1368.872" timestamp="1581275839374" />
-    <state width="950" height="228" key="GridCell.Tab.0.bottom" timestamp="1581301940759">
-      <screen x="0" y="40" width="1368" height="872" />
+    <state width="1692" height="274" key="GridCell.Tab.0.bottom" timestamp="1581378712610">
+      <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state width="1695" height="274" key="GridCell.Tab.0.bottom/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950151604" />
+    <state width="1692" height="274" key="GridCell.Tab.0.bottom/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581378712610" />
     <state width="950" height="228" key="GridCell.Tab.0.bottom/0.40.1368.872@0.40.1368.872" timestamp="1581301940759" />
-    <state width="950" height="228" key="GridCell.Tab.0.center" timestamp="1581301940758">
-      <screen x="0" y="40" width="1368" height="872" />
+    <state width="1692" height="274" key="GridCell.Tab.0.center" timestamp="1581378712609">
+      <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state width="1695" height="274" key="GridCell.Tab.0.center/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950151604" />
+    <state width="1692" height="274" key="GridCell.Tab.0.center/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581378712609" />
     <state width="950" height="228" key="GridCell.Tab.0.center/0.40.1368.872@0.40.1368.872" timestamp="1581301940758" />
-    <state width="950" height="228" key="GridCell.Tab.0.left" timestamp="1581301940758">
-      <screen x="0" y="40" width="1368" height="872" />
+    <state width="1692" height="274" key="GridCell.Tab.0.left" timestamp="1581378712609">
+      <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state width="1695" height="274" key="GridCell.Tab.0.left/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950151603" />
+    <state width="1692" height="274" key="GridCell.Tab.0.left/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581378712609" />
     <state width="950" height="228" key="GridCell.Tab.0.left/0.40.1368.872@0.40.1368.872" timestamp="1581301940758" />
-    <state width="950" height="228" key="GridCell.Tab.0.right" timestamp="1581301940759">
-      <screen x="0" y="40" width="1368" height="872" />
+    <state width="1692" height="274" key="GridCell.Tab.0.right" timestamp="1581378712610">
+      <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state width="1695" height="274" key="GridCell.Tab.0.right/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950151604" />
+    <state width="1692" height="274" key="GridCell.Tab.0.right/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581378712610" />
     <state width="950" height="228" key="GridCell.Tab.0.right/0.40.1368.872@0.40.1368.872" timestamp="1581301940759" />
     <state width="1348" height="281" key="GridCell.Tab.1.bottom" timestamp="1580875974535">
       <screen x="0" y="40" width="1368" height="872" />
@@ -722,6 +728,9 @@
       <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state x="349" y="226" width="672" height="678" key="search.everywhere.popup/0.40.1368.872@0.40.1368.872" timestamp="1581098388530" />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/loggerloader$llgui.coverage" NAME="llgui Coverage Results" MODIFIED="1581378712599" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
   </component>
   <component name="masterDetails">
     <states>

@@ -2286,6 +2286,15 @@ class HeaderTable(object):
 
         return well_table
 
+    def xle_csv_filelist(self):
+        exts = ('//*.xle', '//*.csv')  # the tuple of file types
+        files_grabbed = []
+        for ext in exts:
+            files_grabbed.extend(glob.glob(self.folder + ext))
+        for file in files_grabbed:
+            basename = os.path.basename(self.folder + file)
+            extname = os.path.splitext(self.folder + file)
+
     def xle_head_table(self):
         """Creates a Pandas DataFrame containing header information from all xle files in a folder
 
