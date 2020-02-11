@@ -101,7 +101,7 @@ class Feedback:
 
         b = tk.Button(applymatchframe,
                       text='Click when done matching files to well names',
-                      command=lambda: self.make_file_info_table(applymatchframe))
+                      command=lambda: self.make_file_info_table(master))
         b.pack()
 
         ttk.Separator(dirselectframe, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
@@ -204,25 +204,39 @@ Good for matching bulk manual data """
 
     def make_file_info_table(self, master):
         popup = tk.Toplevel()
-        popup.transient(tk.TOP)
+        popup.geometry("400x100+100+100")
         tk.Label(popup, text="Examining Directory...").pack()
-        pg = ttk.Progressbar(popup, orient=tk.HORIZONTAL, mode='indeterminate', length=200)
+        pg = ttk.Progressbar(popup, orient=tk.HORIZONTAL, mode='determinate', length=200)
         pg.pack()
 
-        pg.start()
         key = 'file-info-table'
-        try:
-            df = ll.HeaderTable(self.datastr['trans-dir'].get(), self.inputforheadertable).file_summary_table()
-            graphframe, tableframe = self.note_tab_add(key, tabw=4, grph=1)
-            # add graph and table to new tab
-            # self.add_graph_table(key, tableframe, graphframe)
-            self.datatable[key] = Table(tableframe, dataframe=df, showtoolbar=True, showstatusbar=True)
-            self.datatable[key].show()
-            self.datatable[key].showIndex()
-            self.datatable[key].update()
-        finally:
-            pg.stop()
-            popup.destroy()
+
+        ht = ll.HeaderTable(self.datastr['trans-dir'].get())
+        filelist = ht.xle_csv_filelist()
+        pg.config(maximum=len(filelist))
+        fild = {}
+        for file in filelist:
+            popup.update()
+            file_extension = os.path.splitext(file)[1]
+
+            if file_extension == '.xle':
+                fild[file] = ht.xle_head(file)
+            elif file_extension == '.csv':
+                fild[file] = ht.csv_head(file)
+
+            pg.step()
+
+        df = pd.DataFrame.from_dict(fild, orient='index')
+
+        graphframe, tableframe = self.note_tab_add(key, tabw=4, grph=1)
+        # add graph and table to new tab
+        # self.add_graph_table(key, tableframe, graphframe)
+        self.datatable[key] = Table(tableframe, dataframe=df, showtoolbar=True, showstatusbar=True)
+        self.datatable[key].show()
+        self.datatable[key].showIndex()
+        self.datatable[key].update()
+
+        popup.destroy()
 
     def man_combos(self, key, vals):
         self.combo_choice[key] = tk.StringVar()
@@ -663,7 +677,7 @@ Good for matching bulk manual data """
         self.datatable[key].showIndex()
         self.datatable[key].update()
 
-    def grab_dir(self, master):
+    def grab_trans_dir(self, master):
         """grabs directory containing transducer files and inputs filenames into a scrollable canvas with comboboxes to
         match up well names with locationids.
 
