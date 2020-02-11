@@ -81,13 +81,19 @@ class Feedback:
         # pick directory with transducer files and populate a scrollable window with combobox selections
         filefinderframe = ttk.Frame(dirselectframe)
         filefinderframe.pack()
-        ttk.Label(filefinderframe, text='Pick directory with relevant well files.').grid(column=0, row=0,columnspan=3)
+        ttk.Label(filefinderframe, text='2. Pick directory with relevant well files.').grid(column=0, row=0, columnspan=2)
+        ttk.Label(filefinderframe, text='Sampling Network').grid(column=2, row=0, columnspan=1)
+
         self.datastr['trans-dir'] = tk.StringVar(filefinderframe, value=f'Double-Click for transducer file directory')
         filefnd = ttk.Entry(filefinderframe, textvariable=self.datastr['trans-dir'], width=80)
-        filefnd.grid(column=0,row=1,columnspan=2)
-        self.combo['data_source'] = ttk.Combobox(filefinderframe,
+        filefnd.grid(column=0, row=1, columnspan=2)
+
+        self.combo_source = ttk.Combobox(filefinderframe,
                                                  values=['Snake Valley Wells','Wetlands Piezos','WRI','Other'])
-        self.combo['data_source'].grid(column=3, row=1)
+        self.combo_source.grid(column=2, row=1)
+        self.combo_source.current(0)
+        self.combo_source.bind("<<ComboboxSelected>>", lambda event: print(self.combo_source.get()))
+
         filefoundframe = ttk.Frame(dirselectframe)
         filefnd.bind('<Double-ButtonRelease-1>', lambda f: self.grab_trans_dir(filefoundframe))
         filefoundframe.pack()
@@ -194,7 +200,7 @@ Good for matching bulk manual data """
         df['altlocationid'] = df['altlocationid'].apply(lambda x: int(x), 1)
         df = df.set_index(['altlocationid'])
         self.data[key] = df
-        ttk.Label(well_info_frame, text='Input well info file (must be csv)').grid(row=0, column=0, columnspan=3)
+        ttk.Label(well_info_frame, text='1. Input well info file (must be csv)').grid(row=0, column=0, columnspan=3)
         # ttk.Label(well_info_frame, text='must have altlocationid, locationname, stickup, barologgertype, and verticalmeasure').grid(row=1,column=0,columnspan=3)
         e = ttk.Entry(well_info_frame, textvariable=self.datastr[key], width=80)
         e.grid(row=1, column=0, columnspan=2)
@@ -227,7 +233,7 @@ Good for matching bulk manual data """
             pg.step()
 
         df = pd.DataFrame.from_dict(fild, orient='index')
-
+        df = df.reset_index().set_index('file_name')
         graphframe, tableframe = self.note_tab_add(key, tabw=4, grph=1)
         # add graph and table to new tab
         # self.add_graph_table(key, tableframe, graphframe)
@@ -702,7 +708,7 @@ Good for matching bulk manual data """
             # https://stackoverflow.com/questions/45357174/tkinter-drop-down-menu-from-excel
             # TODO add excel sheet options to file selection
             filenm, file_extension = os.path.splitext(self.datastr[key].get())
-            ttk.Label(master, text='Match id with list of files.').grid(row=0, column=0, columnspan=3)
+            ttk.Label(master, text='3. Match id with list of files.').grid(row=0, column=0, columnspan=3)
             ttk.Label(master, text='Filename').grid(row=1, column=0)
             ttk.Label(master, text='Match Name').grid(row=1, column=1)
             ttk.Label(master, text='Well ID').grid(row=1, column=2)
@@ -713,58 +719,50 @@ Good for matching bulk manual data """
             scrollable_frame = ttk.Frame(canvas)
             if 'well-info-table' in self.datatable.keys():
                 df = self.datatable['well-info-table'].model.df
-                df['locationnamelwr'] = df['locationname'].apply(lambda x: x.lower(), 1)
+                if self.combo['data_source'].get() == 'Snake Valley Wells':
+                    df['locationnamelwr'] = df['locationname'].apply(lambda x: x.lower(), 1)
+                elif self.combo['data_source'].get() == 'Wetlands Piezos':
+                    df['locationnamelwr'] = df['locationname'].apply(lambda x: x.lower().replace('p',''), 1)
+                else:
+                    df['locationnamelwr'] = df['locationname'].apply(lambda x: x.lower(), 1)
                 self.locdict = df['locationnamelwr'].to_dict()
                 self.welldict = {y: x for x, y in self.locdict.items()}
                 self.locnamedict = dict(zip(df['locationnamelwr'].values, df['locationname'].values))
                 self.locnametoid = dict(zip(df['locationname'].values, df.index.values))
-                self.welldict['eskdalemx'] = 73
-                self.welldict['eskmx'] = 73
-                self.welldict['edmx'] = 73
-                self.locnamedict['eskdalemx'] = 'Eskdale MX'
-                self.locnamedict['eskmx'] = 'Eskdale MX'
-                self.locnamedict['edmx'] = 'Eskdale MX'
-                self.welldict['tsmx'] = 69
-                self.locnamedict['tsmx'] = 'Twin Springs MX'
-                self.welldict['snakevnmx'] = 70
-                self.welldict['svnmx'] = 70
-                self.locnamedict['svnmx'] = 'Snake Valley North MX'
-                self.locnamedict['snakevnmx'] = 'Snake Valley North MX'
-                self.welldict['snakevsmx'] = 71
-                self.welldict['svsmx'] = 71
-                self.locnamedict['svsmx'] = 'Snake Valley South MX'
-                self.locnamedict['snakevsmx'] = 'Snake Valley South MX'
-                self.welldict['coyoteknollsmx'] = 46
-                self.welldict['cksmx'] = 46
-                self.welldict['ckmx'] = 46
-                self.locnamedict['coyoteknollsmx'] = 'Coyote Knolls MX'
-                self.locnamedict['cksmx'] = 'Coyote Knolls MX'
-                self.locnamedict['ckmx'] = 'Coyote Knolls MX'
-                self.welldict['sg23a'] = 72
-                self.welldict['pw03baro'] = 9003
-                self.locnamedict['pw03baro'] = 'PW03 Baro'
-                self.welldict['pw10baro'] = 9027
-                self.locnamedict['pw10baro'] = 'PW10 Baro'
-                self.welldict['pw19baro'] = 9049
-                self.locnamedict['pw19baro'] = 'PW19 Baro'
-                self.welldict['sg27a'] = 68
-                self.locnamedict['sg27a'] = 'SG27'
-                self.welldict['pw15a'] = 39
-                self.locnamedict['pw15a'] = 'AG15'
-                self.welldict['callao'] = 136
-                self.locnamedict['callao'] = 'Callao C119'
-                self.welldict['ctvmx'] = 75
-                self.locnamedict['ctvmx'] = 'Central Tule MX'
-                self.welldict['centraltulemx'] = 75
-                self.locnamedict['centraltulemx'] = 'Central Tule MX'
-                self.welldict['pw20a'] = 51
-                self.welldict['centraltulemx'] = 75
-                self.welldict['ctmx'] = 75
+
+            syndict = {73: ['Eskdale MX', ['eskmx', 'eskdalemx', 'edmx']],
+                       69: ['Twin Springs MX', ['tsmx', 'twinmx','twin','twin springs mx']],
+                       70: ['Snake Valley North MX', ['svnmx', 'snakevnmx', 'northmx']],
+                       71: ['Snake Valley South MX', ['svsmx', 'snakevsmx', 'southmx']],
+                       46: ['Coyote Knolls MX', ['cksmx', 'ckmx', 'coyoteknollsmx','pw17mx']],
+                       72: ['Needle Point 23a', ['needle', 'sg23a', 'needpnt']],
+                       74: ['Shell-Baker',['shell','shellbaker']],
+                       9003: ['PW03 Baro', ['pw03baro']],
+                       9027: ['PW10 Baro', ['pw10baro']],
+                       9049: ['PW19 Baro', ['pw19baro']],
+                       68: ['SG27', ['sg27a']],
+                       39: ['AG15', ['pw15', 'ag15','pw15a','ag15a']],
+                       136: ['Callao C119', ['callao','callaoag']],
+                       75: ['Central Tule MX', ['ctvmx', 'centraltulemx', 'ctulemx', 'ctmx']],
+                       51: ['PW20', ['pw20a']]}
+
+            for key, value in syndict.items():
+                for syn in value[1]:
+                    self.welldict[syn] = key
+                    self.locnamedict[syn] = value[0]
             i = 0
             for file in glob.glob(self.datastr['trans-dir'].get() + '/*'):
                 filew_ext = os.path.basename(file)
                 filestr = ll.getfilename(file)
-                a = re.split('_|\s', filestr)[0].lower()
+                if self.combo['data_source'].get() == 'Snake Valley Wells':
+                    a = re.split('_|\s', filestr)[0].lower()
+                elif self.combo['data_source'].get() == 'Wetlands Piezos':
+                    try:
+                        a = filestr.split('-')[1].split('_')[0].lower()
+                    except:
+                        a = filestr.lower()
+                else:
+                    a = filestr.lower()
                 ttk.Label(scrollable_frame, text=filestr).grid(row=i, column=0)
                 self.locidmatch[filestr] = tk.StringVar(scrollable_frame)
                 self.bulktransfilestr[filestr] = tk.StringVar(scrollable_frame)
@@ -779,9 +777,9 @@ Good for matching bulk manual data """
                         self.combo[filestr].set(self.locnamedict[a])
                         self.locidmatch[filestr].set(self.welldict[a])
                         self.inputforheadertable[filew_ext] = self.welldict[a]
-                        self.combo[filestr].bind("<<ComboboxSelected>>", lambda e: print(self.combo[filestr]))
+                        self.combo[filestr].bind("<<ComboboxSelected>>",
+                                                 lambda event, filestr=filestr: self.locidmatch[filestr].set(self.locnametoid[self.combo[filestr].get()]))
 
-                        # self.locidmatch[filestr].set(self.locnametoid[self.combo[filestr].get()]))
                 i += 1
             # self.filefnd.bind('<Double-ButtonRelease-1>', lambda f: self.grab_dir(dirselectframe))
 
