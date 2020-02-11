@@ -81,20 +81,19 @@ class Feedback:
         # pick directory with transducer files and populate a scrollable window with combobox selections
         filefinderframe = ttk.Frame(dirselectframe)
         filefinderframe.pack()
-        ttk.Label(filefinderframe, text='2. Pick directory with relevant well files.').grid(column=0, row=0, columnspan=2)
-        ttk.Label(filefinderframe, text='Sampling Network').grid(column=2, row=0, columnspan=1)
+        ttk.Label(filefinderframe, text='3. Pick directory with relevant well files.').grid(column=1, row=0, columnspan=2)
+        ttk.Label(filefinderframe, text='2. Pick Sampling Network').grid(column=0, row=0, columnspan=1)
 
         self.datastr['trans-dir'] = tk.StringVar(filefinderframe, value=f'Double-Click for transducer file directory')
         filefnd = ttk.Entry(filefinderframe, textvariable=self.datastr['trans-dir'], width=80)
-        filefnd.grid(column=0, row=1, columnspan=2)
+        filefnd.grid(column=1, row=1, columnspan=2)
 
         self.combo_source = ttk.Combobox(filefinderframe,
                                                  values=['Snake Valley Wells','Wetlands Piezos','WRI','Other'])
-        self.combo_source.grid(column=2, row=1)
+        self.combo_source.grid(column=0, row=1)
         self.combo_source.current(0)
-        self.combo_source.bind("<<ComboboxSelected>>", lambda event: print(self.combo_source.get()))
-
         filefoundframe = ttk.Frame(dirselectframe)
+        self.combo_source.bind("<<ComboboxSelected>>", lambda f: self.grab_trans_dir(filefoundframe))
         filefnd.bind('<Double-ButtonRelease-1>', lambda f: self.grab_trans_dir(filefoundframe))
         filefoundframe.pack()
 
@@ -103,7 +102,7 @@ class Feedback:
         applymatchframe = ttk.Frame(dirselectframe)
         applymatchframe.pack()
         self.inputforheadertable = {}
-        # TODO make statusbar appear during processing
+
 
         b = tk.Button(applymatchframe,
                       text='Click when done matching files to well names',
@@ -233,7 +232,11 @@ Good for matching bulk manual data """
             pg.step()
 
         df = pd.DataFrame.from_dict(fild, orient='index')
-        df = df.reset_index().set_index('file_name')
+        df['locationid'] = df['file_name'].apply(lambda x: f"{self.locnametoid.get(self.combo.get(x,None).get(),None)}",1)
+        df['measuring_medium'] = df[['Model_number','Location','locationid']].apply(lambda x: self.detect_baro(x),1)
+        df = df.reset_index().set_index('file_name').rename(columns={'index':'full_file_path'})
+        #print(filestr, self.locidmatch[filestr].get(),self.locnametoid[self.combo[filestr].get()])
+
         graphframe, tableframe = self.note_tab_add(key, tabw=4, grph=1)
         # add graph and table to new tab
         # self.add_graph_table(key, tableframe, graphframe)
@@ -242,7 +245,15 @@ Good for matching bulk manual data """
         self.datatable[key].showIndex()
         self.datatable[key].update()
 
+
+
         popup.destroy()
+
+    def detect_baro(self, x):
+        if x[0] == "M1.5" or 'baro' in x[1] or x[2] in ('9003','9049','9024','9025','9027','9063','9070','9066'):
+            return "air"
+        else:
+            return "water"
 
     def man_combos(self, key, vals):
         self.combo_choice[key] = tk.StringVar()
@@ -692,8 +703,7 @@ Good for matching bulk manual data """
 
         Returns:
         Dictionary of matches between files and locationids
-        TODO make this work for wetlands and wri files (combobox?)
-        TODO fix locationid update on new combo selection
+        TODO make this work for and wri files
         #https://stackoverflow.com/questions/28736028/python-tkinter-reference-in-comboboxes-created-in-for-loop
         """
         key = 'trans-dir'
@@ -716,13 +726,14 @@ Good for matching bulk manual data """
             container = ttk.Frame(master)
             canvas = tk.Canvas(container)
             scrollbar = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
+            scrollbarx = ttk.Scrollbar(container, orient="horizontal", command=canvas.xview)
             scrollable_frame = ttk.Frame(canvas)
             if 'well-info-table' in self.datatable.keys():
                 df = self.datatable['well-info-table'].model.df
-                if self.combo['data_source'].get() == 'Snake Valley Wells':
+                if self.combo_source.get() == 'Snake Valley Wells':
                     df['locationnamelwr'] = df['locationname'].apply(lambda x: x.lower(), 1)
-                elif self.combo['data_source'].get() == 'Wetlands Piezos':
-                    df['locationnamelwr'] = df['locationname'].apply(lambda x: x.lower().replace('p',''), 1)
+                elif self.combo_source.get() == 'Wetlands Piezos':
+                    df['locationnamelwr'] = df.index.map(str)
                 else:
                     df['locationnamelwr'] = df['locationname'].apply(lambda x: x.lower(), 1)
                 self.locdict = df['locationnamelwr'].to_dict()
@@ -754,47 +765,49 @@ Good for matching bulk manual data """
             for file in glob.glob(self.datastr['trans-dir'].get() + '/*'):
                 filew_ext = os.path.basename(file)
                 filestr = ll.getfilename(file)
-                if self.combo['data_source'].get() == 'Snake Valley Wells':
+                if self.combo_source.get() == 'Snake Valley Wells':
                     a = re.split('_|\s', filestr)[0].lower()
-                elif self.combo['data_source'].get() == 'Wetlands Piezos':
+                elif self.combo_source.get() == 'Wetlands Piezos':
                     try:
-                        a = filestr.split('-')[1].split('_')[0].lower()
+                        a = filestr.replace('-_','-').split('-')[1].split('_')[0].lower()
                     except:
                         a = filestr.lower()
                 else:
                     a = filestr.lower()
-                ttk.Label(scrollable_frame, text=filestr).grid(row=i, column=0)
+                ttk.Label(scrollable_frame, text=filestr, width=30).grid(row=i, column=0)
                 self.locidmatch[filestr] = tk.StringVar(scrollable_frame)
                 self.bulktransfilestr[filestr] = tk.StringVar(scrollable_frame)
                 self.combo[filestr] = ttk.Combobox(scrollable_frame)
                 self.combo[filestr].grid(row=i, column=1)
                 e = ttk.Entry(scrollable_frame, textvariable=self.locidmatch[filestr], width=6)
                 e.grid(row=i, column=2)
-                self.combo[filestr]['values'] = list(df['locationname'].unique())
+                self.combo[filestr]['values'] = list(df.sort_values(['locationname'])['locationname'].unique())
                 if 'locdict' in self.__dict__.keys():
                     if a in self.locnamedict.keys():
                         self.bulktransfilestr[filestr].set(self.locnamedict[a])
                         self.combo[filestr].set(self.locnamedict[a])
                         self.locidmatch[filestr].set(self.welldict[a])
                         self.inputforheadertable[filew_ext] = self.welldict[a]
-                        self.combo[filestr].bind("<<ComboboxSelected>>",
-                                                 lambda event, filestr=filestr: self.locidmatch[filestr].set(self.locnametoid[self.combo[filestr].get()]))
+                    self.combo[filestr].bind("<<ComboboxSelected>>",
+                                                 lambda event, filestr=filestr: self.update_location_dicts(filestr))
+
 
                 i += 1
             # self.filefnd.bind('<Double-ButtonRelease-1>', lambda f: self.grab_dir(dirselectframe))
 
             scrollable_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+            #scrollable_frame.pack(fill='both',side='left')
             canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-            canvas.configure(yscrollcommand=scrollbar.set)
+
+            canvas.configure(yscrollcommand=scrollbar.set,xscrollcommand=scrollbarx.set)
             container.grid(row=2, column=0, columnspan=3)
             canvas.pack(side="left", fill="both", expand=True)
             scrollbar.pack(side="right", fill="y")
+            scrollbarx.pack(side="bottom",fill="x")
 
-    def test_print(self, event):
-        print(event.widget['text'])
+    def update_location_dicts(self, filestr):
+        self.locidmatch[filestr].set(self.locnametoid[self.combo[filestr].get()])
 
-    def nameparser(self, filestr):
-        a = re.split('_|-|\s', filestr)[0]
 
     def dropmenu(self, master):
         # menu bars at the top of the main window

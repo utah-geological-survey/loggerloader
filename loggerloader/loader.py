@@ -2302,7 +2302,7 @@ class HeaderTable(object):
         """
         # open text file
         df1 = {}
-        df1['file_name'] = os.path.basename(file)
+        df1['file_name'] = getfilename(file)
         with io.open(file, 'r', encoding="ISO-8859-1") as f:
             contents = f.read()
             tree = eletree.fromstring(contents)
@@ -2323,7 +2323,7 @@ class HeaderTable(object):
     def csv_head(self, file):
         cfile = {}
         try:
-            cfile['file_name'] = os.path.basename(file)
+            cfile['file_name'] = getfilename(file)
             csvdata = NewTransImp(file).well.sort_index()
             if "Volts" in csvdata.columns:
                 cfile['Battery_level'] = int(
