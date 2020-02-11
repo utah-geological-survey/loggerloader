@@ -2205,6 +2205,9 @@ def compile_end_beg_dates(infile):
     return df
 
 
+import xml.etree.ElementTree as eletree
+
+
 class HeaderTable(object):
     def __init__(self, folder, filedict=None, filelist=None, workspace=None,
                  conn_file_root=None,
@@ -2247,29 +2250,18 @@ class HeaderTable(object):
 
     def file_summary_table(self):
         # create temp directory and populate it with relevant files
-        file_extension = []
-
+        self.filelist = self.xle_csv_filelist()
+        fild = {}
         for file in self.filelist:
-            file_extension.append(os.path.splitext(file)[1])
+            file_extension = os.path.splitext(file)[1]
 
-        if '.xle' in file_extension and '.csv' in file_extension:
-            xles = self.xle_head_table()
-            print('xles examined')
-            csvs = self.csv_info_table()
-            print('csvs examined')
-            file_info_table = pd.concat([xles, csvs[0]])
-        elif '.xle' in file_extension:
-            xles = self.xle_head_table()
-            print('xles examined')
-            file_info_table = xles
-        elif '.csv' in file_extension:
-            csvs = self.csv_info_table()
-            print('csvs examined')
-            file_info_table = csvs[0]
+            if file_extension == '.xle':
+                fild[file] = self.xle_head(file)
+            elif file_extension == '.csv':
+                fild[file] = self.csv_head(file)
 
-        # combine header table with the sde table
-        file_info_table['wellname'] = file_info_table[['fileroot', 'trans type']].apply(lambda x: self.get_ftype(x), 1)
-        return file_info_table
+        df = pd.DataFrame.from_dict(fild, orient='index')
+        return df
 
     def make_well_table(self):
         file_info_table = self.file_summary_table()
@@ -2290,12 +2282,16 @@ class HeaderTable(object):
         exts = ('//*.xle', '//*.csv')  # the tuple of file types
         files_grabbed = []
         for ext in exts:
-            files_grabbed.extend(glob.glob(self.folder + ext))
-        for file in files_grabbed:
-            basename = os.path.basename(self.folder + file)
-            extname = os.path.splitext(self.folder + file)
+            files_grabbed += (glob.glob(self.folder + ext))
+        return files_grabbed
 
-    def xle_head_table(self):
+    def parse_filename(self, file):
+        filename, file_extension = os.path.splitext(file)
+        basefilename = os.path.basename(file)
+        df1['fileroot'] = self.folder
+        df1['full_filepath']
+
+    def xle_head(self, file):
         """Creates a Pandas DataFrame containing header information from all xle files in a folder
 
         Returns:
@@ -2305,59 +2301,45 @@ class HeaderTable(object):
             >>> xle_head_table('C:/folder_with_xles/')
         """
         # open text file
-        df = {}
-        for infile in glob.glob(self.folder + "//*.xle", recursive=True):
-            basename = os.path.basename(self.folder + infile)
-            with io.open(infile, 'r', encoding="ISO-8859-1") as f:
-                contents = f.read()
-                tree = eletree.fromstring(contents)
+        df1 = {}
+        df1['file_name'] = os.path.basename(file)
+        with io.open(file, 'r', encoding="ISO-8859-1") as f:
+            contents = f.read()
+            tree = eletree.fromstring(contents)
 
-            df1 = {}
             for child in tree[1]:
                 df1[child.tag] = child.text
 
             for child in tree[2]:
                 df1[child.tag] = child.text
 
-            df1['last_reading_date'] = tree[-1][-1][0].text
-            df[basename[:-4]] = df1
-        allwells = pd.DataFrame(df).T
-        allwells.index.name = 'filename'
-        allwells['trans type'] = 'Solinst'
-        allwells['fileroot'] = allwells.index
-        allwells['full_filepath'] = allwells['fileroot'].apply(lambda x: self.folder + "/" + x + '.xle', 1)
-        return allwells
+        df1['trans type'] = 'Solinst'
+        xledata = NewTransImp(file).well.sort_index()
+        df1['beginning'] = xledata.first_valid_index()
+        df1['end'] = xledata.last_valid_index()
+        # df = pd.DataFrame.from_dict(df1, orient='index').T
+        return df1
 
-    def csv_info_table(self):
-        csv = {}
-        files = [f for f in os.listdir(self.folder) if os.path.isfile(os.path.join(self.folder, f))]
-        field_names = ['filename', 'Start_time', 'Stop_time']
-        df = pd.DataFrame(columns=field_names)
-        for file in files:
-            fileparts = os.path.basename(file).split('.')
-            filetype = fileparts[1]
-            basename = fileparts[0]
-            if filetype == 'csv':
-                try:
-                    cfile = {}
-                    csv[basename] = NewTransImp(os.path.join(self.folder, file))
-                    cfile['Battery_level'] = int(round(csv[basename].loc[csv[basename]. \
-                                                       index[-1], 'Volts'] / csv[basename]. \
-                                                       loc[csv[basename].index[0], 'Volts'] * 100, 0))
-                    cfile['Sample_rate'] = (csv[basename].index[1] - csv[basename].index[0]).seconds * 100
-                    cfile['filename'] = basename
-                    cfile['fileroot'] = basename
-                    cfile['full_filepath'] = os.path.join(self.folder, file)
-                    cfile['Start_time'] = csv[basename].first_valid_index()
-                    cfile['Stop_time'] = csv[basename].last_valid_index()
-                    cfile['last_reading_date'] = csv[basename].last_valid_index()
-                    cfile['Location'] = ' '.join(basename.split(' ')[:-1])
-                    cfile['trans type'] = 'Global Water'
-                    df = df.append(cfile, ignore_index=True)
-                except:
-                    pass
-        df.set_index('filename', inplace=True)
-        return df, csv
+    def csv_head(self, file):
+        cfile = {}
+        try:
+            cfile['file_name'] = os.path.basename(file)
+            csvdata = NewTransImp(file).well.sort_index()
+            if "Volts" in csvdata.columns:
+                cfile['Battery_level'] = int(
+                    round(csvdata.loc[csvdata.index[-1], 'Volts'] / csvdata.loc[csvdata.index[0], 'Volts'] * 100, 0))
+            cfile['Sample_rate'] = (csvdata.index[1] - csvdata.index[0]).seconds * 100
+            # cfile['filename'] = file
+            cfile['beginning'] = csvdata.first_valid_index()
+            cfile['end'] = csvdata.last_valid_index()
+            # cfile['last_reading_date'] = csvdata.last_valid_index()
+            cfile['Location'] = ' '.join(cfile['file_name'].split(' ')[:-1])
+            cfile['trans type'] = 'Global Water'
+            cfile['Num_log'] = len(csvdata)
+            # df = pd.DataFrame.from_dict(cfile, orient='index').T
+        except KeyError:
+            pass
+        return cfile
 
 
 def getwellid(infile, wellinfo):

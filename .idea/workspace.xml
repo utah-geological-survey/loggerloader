@@ -4,8 +4,12 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="added datatype combobox">
+    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="worked on progressbar">
+      <change beforePath="$PROJECT_DIR$/.idea/loggerloader.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/loggerloader.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/loggerloader/llgui.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/llgui.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/loggerloader/loader.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/loader.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -124,7 +128,7 @@
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
-      <option name="SDK_HOME" value="C:\Users\paulinkenbrandt\AppData\Local\Continuum\anaconda3\envs\py37\python.exe" />
+      <option name="SDK_HOME" value="C:\Users\Hutto\Anaconda3\envs\loggerloader\python.exe" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/loggerloader" />
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
@@ -238,8 +242,21 @@
       <workItem from="1580767491033" duration="7152000" />
       <workItem from="1580823517124" duration="27995000" />
       <workItem from="1580911938398" duration="31099000" />
-      <workItem from="1581343212148" duration="14610000" />
-      <workItem from="1581427921189" duration="373000" />
+      <workItem from="1581343212148" duration="14535000" />
+    </task>
+    <task id="LOCAL-00149" summary="table_to_pandas_dataframe_fast">
+      <created>1538089464747</created>
+      <option name="number" value="00149" />
+      <option name="presentableId" value="LOCAL-00149" />
+      <option name="project" value="LOCAL" />
+      <updated>1538089464748</updated>
+    </task>
+    <task id="LOCAL-00150" summary="table_to_pandas_dataframe_fast">
+      <created>1538401751966</created>
+      <option name="number" value="00150" />
+      <option name="presentableId" value="LOCAL-00150" />
+      <option name="project" value="LOCAL" />
+      <updated>1538401751967</updated>
     </task>
     <task id="LOCAL-00151" summary="fix drift errors">
       <created>1538406974718</created>
@@ -570,21 +587,7 @@
       <option name="project" value="LOCAL" />
       <updated>1581275856041</updated>
     </task>
-    <task id="LOCAL-00198" summary="added datatype combobox">
-      <created>1581382302848</created>
-      <option name="number" value="00198" />
-      <option name="presentableId" value="LOCAL-00198" />
-      <option name="project" value="LOCAL" />
-      <updated>1581382302848</updated>
-    </task>
-    <task id="LOCAL-00199" summary="added datatype combobox">
-      <created>1581428024393</created>
-      <option name="number" value="00199" />
-      <option name="presentableId" value="LOCAL-00199" />
-      <option name="project" value="LOCAL" />
-      <updated>1581428024393</updated>
-    </task>
-    <option name="localTasksCounter" value="200" />
+    <option name="localTasksCounter" value="198" />
     <servers />
   </component>
   <component name="TodoView" selected-index="3">
@@ -601,6 +604,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_NEW_TODO" value="false" />
+    <MESSAGE value="major overhaul on fix_drift" />
     <MESSAGE value="fix some documentation" />
     <MESSAGE value="suppress pandas copy warning" />
     <MESSAGE value="Complete Refactor" />
@@ -625,44 +629,43 @@
     <MESSAGE value="added file_info_table button; needs progress bar and locid fix" />
     <MESSAGE value="added todos" />
     <MESSAGE value="worked on progressbar" />
-    <MESSAGE value="added datatype combobox" />
-    <option name="LAST_COMMIT_MESSAGE" value="added datatype combobox" />
+    <option name="LAST_COMMIT_MESSAGE" value="worked on progressbar" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="414" y="181" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1581347080985">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state x="282" y="190" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1581398937030">
+      <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state x="414" y="181" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581347080985" />
-    <state x="282" y="190" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.40.1368.872@0.40.1368.872" timestamp="1580960703216" />
+    <state x="282" y="190" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.40.1368.872@0.40.1368.872" timestamp="1581398937030" />
     <state x="2599" y="141" key="#llgui" timestamp="1580767659733">
       <screen x="1920" y="1" width="1920" height="1050" />
     </state>
     <state x="2599" y="141" key="#llgui/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@1920.1.1920.1050" timestamp="1580767659733" />
-    <state x="615" y="120" key="CommitChangelistDialog2" timestamp="1581428021203">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state x="329" y="59" key="CommitChangelistDialog2" timestamp="1581275839374">
+      <screen x="0" y="40" width="1368" height="872" />
     </state>
-    <state x="615" y="120" key="CommitChangelistDialog2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581428021203" />
+    <state x="615" y="120" key="CommitChangelistDialog2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950316437" />
     <state x="329" y="59" key="CommitChangelistDialog2/0.40.1368.872@0.40.1368.872" timestamp="1581275839374" />
-    <state width="1692" height="274" key="GridCell.Tab.0.bottom" timestamp="1581382358725">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state width="949" height="228" key="GridCell.Tab.0.bottom" timestamp="1581399637067">
+      <screen x="0" y="40" width="1368" height="872" />
     </state>
-    <state width="1692" height="274" key="GridCell.Tab.0.bottom/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581382358725" />
-    <state width="950" height="228" key="GridCell.Tab.0.bottom/0.40.1368.872@0.40.1368.872" timestamp="1581301940759" />
-    <state width="1692" height="274" key="GridCell.Tab.0.center" timestamp="1581382358725">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state width="1692" height="274" key="GridCell.Tab.0.bottom/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581378712610" />
+    <state width="949" height="228" key="GridCell.Tab.0.bottom/0.40.1368.872@0.40.1368.872" timestamp="1581399637067" />
+    <state width="949" height="228" key="GridCell.Tab.0.center" timestamp="1581399637066">
+      <screen x="0" y="40" width="1368" height="872" />
     </state>
-    <state width="1692" height="274" key="GridCell.Tab.0.center/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581382358725" />
-    <state width="950" height="228" key="GridCell.Tab.0.center/0.40.1368.872@0.40.1368.872" timestamp="1581301940758" />
-    <state width="1692" height="274" key="GridCell.Tab.0.left" timestamp="1581382358725">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state width="1692" height="274" key="GridCell.Tab.0.center/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581378712609" />
+    <state width="949" height="228" key="GridCell.Tab.0.center/0.40.1368.872@0.40.1368.872" timestamp="1581399637066" />
+    <state width="949" height="228" key="GridCell.Tab.0.left" timestamp="1581399637064">
+      <screen x="0" y="40" width="1368" height="872" />
     </state>
-    <state width="1692" height="274" key="GridCell.Tab.0.left/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581382358725" />
-    <state width="950" height="228" key="GridCell.Tab.0.left/0.40.1368.872@0.40.1368.872" timestamp="1581301940758" />
-    <state width="1692" height="274" key="GridCell.Tab.0.right" timestamp="1581382358725">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state width="1692" height="274" key="GridCell.Tab.0.left/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581378712609" />
+    <state width="949" height="228" key="GridCell.Tab.0.left/0.40.1368.872@0.40.1368.872" timestamp="1581399637064" />
+    <state width="949" height="228" key="GridCell.Tab.0.right" timestamp="1581399637066">
+      <screen x="0" y="40" width="1368" height="872" />
     </state>
-    <state width="1692" height="274" key="GridCell.Tab.0.right/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581382358725" />
-    <state width="950" height="228" key="GridCell.Tab.0.right/0.40.1368.872@0.40.1368.872" timestamp="1581301940759" />
+    <state width="1692" height="274" key="GridCell.Tab.0.right/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581378712610" />
+    <state width="949" height="228" key="GridCell.Tab.0.right/0.40.1368.872@0.40.1368.872" timestamp="1581399637066" />
     <state width="1348" height="281" key="GridCell.Tab.1.bottom" timestamp="1580875974535">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
@@ -683,29 +686,29 @@
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
     <state x="672" y="242" key="MultipleFileMergeDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580824218681" />
-    <state x="328" y="180" key="SettingsEditor" timestamp="1580960678720">
+    <state x="328" y="180" key="SettingsEditor" timestamp="1581398902442">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state x="461" y="168" key="SettingsEditor/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580911952102" />
-    <state x="328" y="180" key="SettingsEditor/0.40.1368.872@0.40.1368.872" timestamp="1580960678720" />
+    <state x="328" y="180" key="SettingsEditor/0.40.1368.872@0.40.1368.872" timestamp="1581398902442" />
     <state x="747" y="242" key="VCS.ChangeListViewerDialog" timestamp="1580824162576">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
     <state x="747" y="242" key="VCS.ChangeListViewerDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580824162576" />
-    <state x="552" y="259" key="Vcs.Push.Dialog.v2" timestamp="1581382309067">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state x="393" y="255" key="Vcs.Push.Dialog.v2" timestamp="1581281401499">
+      <screen x="0" y="40" width="1368" height="872" />
     </state>
-    <state x="552" y="259" key="Vcs.Push.Dialog.v2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581382309067" />
+    <state x="552" y="259" key="Vcs.Push.Dialog.v2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580950322601" />
     <state x="393" y="255" key="Vcs.Push.Dialog.v2/0.40.1368.872@0.40.1368.872" timestamp="1581281401499" />
-    <state x="656" y="350" key="com.intellij.ide.util.TipDialog" timestamp="1581427949828">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state x="467" y="331" key="com.intellij.ide.util.TipDialog" timestamp="1581310131201">
+      <screen x="0" y="40" width="1368" height="872" />
     </state>
-    <state x="656" y="350" key="com.intellij.ide.util.TipDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581427949828" />
+    <state x="656" y="350" key="com.intellij.ide.util.TipDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580823518660" />
     <state x="467" y="331" key="com.intellij.ide.util.TipDialog/0.40.1368.872@0.40.1368.872" timestamp="1581310131201" />
-    <state x="769" y="443" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1581428293977">
-      <screen x="0" y="0" width="1920" height="1050" />
+    <state x="548" y="408" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1581047950489">
+      <screen x="0" y="40" width="1368" height="872" />
     </state>
-    <state x="769" y="443" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581428293977" />
+    <state x="769" y="443" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580824243341" />
     <state x="548" y="408" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.40.1368.872@0.40.1368.872" timestamp="1581047950489" />
     <state x="662" y="123" width="756" height="804" key="find.popup" timestamp="1580857567745">
       <screen x="0" y="0" width="1920" height="1050" />
@@ -727,9 +730,6 @@
       <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state x="349" y="226" width="672" height="678" key="search.everywhere.popup/0.40.1368.872@0.40.1368.872" timestamp="1581098388530" />
-  </component>
-  <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/loggerloader$llgui.coverage" NAME="llgui Coverage Results" MODIFIED="1581378712599" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
   </component>
   <component name="masterDetails">
     <states>
