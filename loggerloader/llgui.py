@@ -236,6 +236,12 @@ Good for matching bulk manual data """
         df['measuring_medium'] = df[['Model_number','Location','locationid']].apply(lambda x: self.detect_baro(x),1)
         df = df.reset_index().set_index('file_name').rename(columns={'index':'full_file_path'})
         #print(filestr, self.locidmatch[filestr].get(),self.locnametoid[self.combo[filestr].get()])
+        baro = df[df['measuring_medium'] == 'air'].reset_index().set_index(['full_file_path'])
+        bdf ={}
+        for b in baro.index():
+            bdf[baro.loc[b,'locationid']] = ll.NewTransImp(b).well
+
+        self.data['bulk-baro'] = pd.concat(bdf)
 
         graphframe, tableframe = self.note_tab_add(key, tabw=4, grph=1)
         # add graph and table to new tab
