@@ -59,7 +59,7 @@
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
-    <option name="UPDATE_TYPE" value="MERGE" />
+    <option name="UPDATE_TYPE" value="REBASE" />
   </component>
   <component name="ProjectId" id="1XJc9x5wmUR250n122YRhkgntvh" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
@@ -237,14 +237,7 @@
       <workItem from="1580823517124" duration="27995000" />
       <workItem from="1580911938398" duration="31099000" />
       <workItem from="1581343212148" duration="14535000" />
-      <workItem from="1581428351991" duration="26597000" />
-    </task>
-    <task id="LOCAL-00154" summary="fix drift errors">
-      <created>1538421953153</created>
-      <option name="number" value="00154" />
-      <option name="presentableId" value="LOCAL-00154" />
-      <option name="project" value="LOCAL" />
-      <updated>1538421953153</updated>
+      <workItem from="1581428351991" duration="27659000" />
     </task>
     <task id="LOCAL-00155" summary="fix drift errors">
       <created>1538432332322</created>
@@ -582,7 +575,14 @@
       <option name="project" value="LOCAL" />
       <updated>1581513031227</updated>
     </task>
-    <option name="localTasksCounter" value="203" />
+    <task id="LOCAL-00203" summary="fixed matching, added combo for type">
+      <created>1581513327656</created>
+      <option name="number" value="00203" />
+      <option name="presentableId" value="LOCAL-00203" />
+      <option name="project" value="LOCAL" />
+      <updated>1581513327656</updated>
+    </task>
+    <option name="localTasksCounter" value="204" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -627,30 +627,34 @@
       <screen x="1920" y="1" width="1920" height="1050" />
     </state>
     <state x="2599" y="141" key="#llgui/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@1920.1.1920.1050" timestamp="1580767659733" />
-    <state x="615" y="120" key="CommitChangelistDialog2" timestamp="1581513144444">
+    <state x="615" y="120" width="1137" height="809" key="CommitChangelistDialog2" timestamp="1581513324541">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state x="615" y="120" key="CommitChangelistDialog2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581513144444" />
+    <state x="615" y="120" width="1137" height="809" key="CommitChangelistDialog2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581513324541" />
     <state x="329" y="59" key="CommitChangelistDialog2/0.40.1368.872@0.40.1368.872" timestamp="1581275839374" />
-    <state width="1221" height="274" key="GridCell.Tab.0.bottom" timestamp="1581513071273">
+    <state x="184" y="93" key="DiffContextDialog" timestamp="1581513360083">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state width="1221" height="274" key="GridCell.Tab.0.bottom/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581513071273" />
+    <state x="184" y="93" key="DiffContextDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581513360083" />
+    <state width="1221" height="274" key="GridCell.Tab.0.bottom" timestamp="1581514965208">
+      <screen x="0" y="0" width="1920" height="1050" />
+    </state>
+    <state width="1221" height="274" key="GridCell.Tab.0.bottom/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581514965208" />
     <state width="949" height="228" key="GridCell.Tab.0.bottom/0.40.1368.872@0.40.1368.872" timestamp="1581399637067" />
-    <state width="1221" height="274" key="GridCell.Tab.0.center" timestamp="1581513071273">
+    <state width="1221" height="274" key="GridCell.Tab.0.center" timestamp="1581514965208">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state width="1221" height="274" key="GridCell.Tab.0.center/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581513071273" />
+    <state width="1221" height="274" key="GridCell.Tab.0.center/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581514965208" />
     <state width="949" height="228" key="GridCell.Tab.0.center/0.40.1368.872@0.40.1368.872" timestamp="1581399637066" />
-    <state width="1221" height="274" key="GridCell.Tab.0.left" timestamp="1581513071273">
+    <state width="1221" height="274" key="GridCell.Tab.0.left" timestamp="1581514965208">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state width="1221" height="274" key="GridCell.Tab.0.left/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581513071273" />
+    <state width="1221" height="274" key="GridCell.Tab.0.left/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581514965208" />
     <state width="949" height="228" key="GridCell.Tab.0.left/0.40.1368.872@0.40.1368.872" timestamp="1581399637064" />
-    <state width="1221" height="274" key="GridCell.Tab.0.right" timestamp="1581513071273">
+    <state width="1221" height="274" key="GridCell.Tab.0.right" timestamp="1581514965208">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state width="1221" height="274" key="GridCell.Tab.0.right/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581513071273" />
+    <state width="1221" height="274" key="GridCell.Tab.0.right/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581514965208" />
     <state width="949" height="228" key="GridCell.Tab.0.right/0.40.1368.872@0.40.1368.872" timestamp="1581399637066" />
     <state width="1348" height="281" key="GridCell.Tab.1.bottom" timestamp="1580875974535">
       <screen x="0" y="40" width="1368" height="872" />
@@ -681,20 +685,20 @@
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
     <state x="747" y="242" key="VCS.ChangeListViewerDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580824162576" />
-    <state x="552" y="259" key="Vcs.Push.Dialog.v2" timestamp="1581512908595">
+    <state x="552" y="259" key="Vcs.Push.Dialog.v2" timestamp="1581513371194">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state x="552" y="259" key="Vcs.Push.Dialog.v2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581512908595" />
+    <state x="552" y="259" key="Vcs.Push.Dialog.v2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581513371194" />
     <state x="393" y="255" key="Vcs.Push.Dialog.v2/0.40.1368.872@0.40.1368.872" timestamp="1581281401499" />
     <state x="467" y="331" key="com.intellij.ide.util.TipDialog" timestamp="1581310131201">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state x="656" y="350" key="com.intellij.ide.util.TipDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580823518660" />
     <state x="467" y="331" key="com.intellij.ide.util.TipDialog/0.40.1368.872@0.40.1368.872" timestamp="1581310131201" />
-    <state x="769" y="443" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1581513000979">
+    <state x="769" y="443" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1581514911384">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state x="769" y="443" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581513000979" />
+    <state x="769" y="443" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581514911384" />
     <state x="548" y="408" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.40.1368.872@0.40.1368.872" timestamp="1581047950489" />
     <state x="662" y="123" width="756" height="804" key="find.popup" timestamp="1580857567745">
       <screen x="0" y="0" width="1920" height="1050" />
@@ -704,10 +708,10 @@
       <screen x="1920" y="1" width="1920" height="1050" />
     </state>
     <state x="2661" y="240" key="git4idea.branch.GitSmartOperationDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@1920.1.1920.1050" timestamp="1580767581627" />
-    <state x="746" y="317" key="git4idea.merge.GitMergeDialog" timestamp="1580823952332">
+    <state x="746" y="317" width="698" height="415" key="git4idea.merge.GitMergeDialog" timestamp="1581513564674">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state x="746" y="317" key="git4idea.merge.GitMergeDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580823952332" />
+    <state x="746" y="317" width="698" height="415" key="git4idea.merge.GitMergeDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581513564674" />
     <state x="755" y="426" key="git4idea.ui.GitStashDialog" timestamp="1580824118695">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
@@ -718,7 +722,7 @@
     <state x="349" y="226" width="672" height="678" key="search.everywhere.popup/0.40.1368.872@0.40.1368.872" timestamp="1581098388530" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/loggerloader$llgui.coverage" NAME="llgui Coverage Results" MODIFIED="1581463277614" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
+    <SUITE FILE_PATH="coverage/loggerloader$llgui.coverage" NAME="llgui Coverage Results" MODIFIED="1581514965199" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/loggerloader" />
   </component>
   <component name="masterDetails">
     <states>
