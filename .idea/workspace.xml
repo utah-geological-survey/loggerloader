@@ -4,10 +4,8 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="worked on progressbar">
+    <list default="true" id="942113ab-44c1-4804-b5bf-0ab6b64dc1f3" name="Default" comment="fixed matching, added combo for type">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/loggerloader/llgui.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/llgui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/loggerloader/loader.py" beforeDir="false" afterPath="$PROJECT_DIR$/loggerloader/loader.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -241,14 +239,7 @@
       <workItem from="1580823517124" duration="27995000" />
       <workItem from="1580911938398" duration="31099000" />
       <workItem from="1581343212148" duration="14535000" />
-      <workItem from="1581428351991" duration="25669000" />
-    </task>
-    <task id="LOCAL-00150" summary="table_to_pandas_dataframe_fast">
-      <created>1538401751966</created>
-      <option name="number" value="00150" />
-      <option name="presentableId" value="LOCAL-00150" />
-      <option name="project" value="LOCAL" />
-      <updated>1538401751967</updated>
+      <workItem from="1581428351991" duration="26339000" />
     </task>
     <task id="LOCAL-00151" summary="fix drift errors">
       <created>1538406974718</created>
@@ -586,7 +577,14 @@
       <option name="project" value="LOCAL" />
       <updated>1581440177560</updated>
     </task>
-    <option name="localTasksCounter" value="199" />
+    <task id="LOCAL-00199" summary="fixed matching, added combo for type">
+      <created>1581463401432</created>
+      <option name="number" value="00199" />
+      <option name="presentableId" value="LOCAL-00199" />
+      <option name="project" value="LOCAL" />
+      <updated>1581463401432</updated>
+    </task>
+    <option name="localTasksCounter" value="200" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -594,7 +592,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="major overhaul on fix_drift" />
     <MESSAGE value="fix some documentation" />
     <MESSAGE value="suppress pandas copy warning" />
     <MESSAGE value="Complete Refactor" />
@@ -619,7 +616,8 @@
     <MESSAGE value="added file_info_table button; needs progress bar and locid fix" />
     <MESSAGE value="added todos" />
     <MESSAGE value="worked on progressbar" />
-    <option name="LAST_COMMIT_MESSAGE" value="worked on progressbar" />
+    <MESSAGE value="fixed matching, added combo for type" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed matching, added combo for type" />
   </component>
   <component name="WindowStateProjectService">
     <state x="414" y="181" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1581428394155">
@@ -631,10 +629,10 @@
       <screen x="1920" y="1" width="1920" height="1050" />
     </state>
     <state x="2599" y="141" key="#llgui/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@1920.1.1920.1050" timestamp="1580767659733" />
-    <state x="615" y="120" key="CommitChangelistDialog2" timestamp="1581440172358">
+    <state x="615" y="120" key="CommitChangelistDialog2" timestamp="1581463396992">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state x="615" y="120" key="CommitChangelistDialog2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581440172358" />
+    <state x="615" y="120" key="CommitChangelistDialog2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581463396992" />
     <state x="329" y="59" key="CommitChangelistDialog2/0.40.1368.872@0.40.1368.872" timestamp="1581275839374" />
     <state width="1688" height="274" key="GridCell.Tab.0.bottom" timestamp="1581463277624">
       <screen x="0" y="0" width="1920" height="1050" />
@@ -685,20 +683,20 @@
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
     <state x="747" y="242" key="VCS.ChangeListViewerDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580824162576" />
-    <state x="552" y="259" key="Vcs.Push.Dialog.v2" timestamp="1581446077240">
+    <state x="552" y="259" key="Vcs.Push.Dialog.v2" timestamp="1581463405242">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state x="552" y="259" key="Vcs.Push.Dialog.v2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581446077240" />
+    <state x="552" y="259" key="Vcs.Push.Dialog.v2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581463405242" />
     <state x="393" y="255" key="Vcs.Push.Dialog.v2/0.40.1368.872@0.40.1368.872" timestamp="1581281401499" />
     <state x="467" y="331" key="com.intellij.ide.util.TipDialog" timestamp="1581310131201">
       <screen x="0" y="40" width="1368" height="872" />
     </state>
     <state x="656" y="350" key="com.intellij.ide.util.TipDialog/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580823518660" />
     <state x="467" y="331" key="com.intellij.ide.util.TipDialog/0.40.1368.872@0.40.1368.872" timestamp="1581310131201" />
-    <state x="548" y="408" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1581047950489">
-      <screen x="0" y="40" width="1368" height="872" />
+    <state x="769" y="443" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1581512876559">
+      <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state x="769" y="443" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1580824243341" />
+    <state x="769" y="443" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1920.1050/1920.1.1920.1050/-1600.35.1538.1024@0.0.1920.1050" timestamp="1581512876559" />
     <state x="548" y="408" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.40.1368.872@0.40.1368.872" timestamp="1581047950489" />
     <state x="662" y="123" width="756" height="804" key="find.popup" timestamp="1580857567745">
       <screen x="0" y="0" width="1920" height="1050" />
