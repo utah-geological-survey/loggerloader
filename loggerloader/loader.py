@@ -208,16 +208,15 @@ def calc_slope_and_intercept(first_man, first_man_julian_date, last_man, last_ma
     Examples:
 
         >>> calc_slope_and_intercept(0,0,5,5,1,1,6,6)
-        (0.0, 1, 1.0, 1.0, 0)
+        (0.0, 1, 1.0, 1.0)
 
         >>> calc_slope_and_intercept(0,0,5,5,7,0,0,7)
-        (-2.0, 7, 1.0, -1.0, -12)
+        (-2.0, 7, 1.0, -1.0)
     """
     slope_man = 0
     slope_trans = 0
     first_offset = 0
     last_offset = 0
-    drift = 0.00001
 
     if first_man is None:
         try:
