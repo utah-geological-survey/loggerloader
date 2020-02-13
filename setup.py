@@ -3,9 +3,9 @@ import sys
 import os
 from setuptools import setup, find_packages
 
-if not sys.version_info[0] in [2,3]:
+if not sys.version_info[0] in [3]:
     print('Sorry, loggerloader not supported in your Python version')
-    print('  Supported versions: 2 and 3')
+    print('  Supported versions: 3')
     print('  Your version of Python: {}'.format(sys.version_info[0]))
     sys.exit(1)  # return non-zero value for failure
 
@@ -21,15 +21,10 @@ except:
 setup(name='loggerloader',
       description = 'Interface with xle and lev (Solinst) and csv (Global Water) files',
       long_description = long_description,
-      version = '0.4.3',
+      version = '0.5.0',
       author = 'Paul Inkenbrandt',
       author_email = 'paulinkenbrandt@utah.gov',
       url = 'https://github.com/utah-geological-survey/loggerloader',
       license = 'LICENSE.txt',
-      install_requires=["Pandas >= 0.20.0",
-                        "Numpy >= 0.6.0",
-                        "Matplotlib >= 1.1",
-                        "xlrd >= 0.5.4",
-                        "openpyxl >= 2.4.0",
-                        "sqlalchemy >= 1.1.0"],
+      install_requires='requirements.txt',
       packages = find_packages(exclude=['contrib', 'docs', 'tests*']))

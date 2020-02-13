@@ -1,16 +1,13 @@
 import matplotlib
 
 matplotlib.use("TkAgg")
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
 # Implement the default Matplotlib key bindings.
-import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 from matplotlib import style
 from matplotlib.backend_bases import key_press_handler
 from matplotlib.backends.backend_pdf import PdfPages
-from matplotlib.figure import Figure
-import matplotlib.dates as mdates
-import numpy as np
+
 import pandas as pd
 import os
 import re
@@ -20,17 +17,15 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
-from tkcalendar import Calendar, DateEntry
-import pandastable
-from pandastable import Table, TableModel, dialogs
+from tkcalendar import DateEntry
+
+from pandastable import Table
 
 from pandas.plotting import register_matplotlib_converters
-
 register_matplotlib_converters()
 
 style.use('ggplot')
 import loggerloader as ll
-
 
 class Feedback:
 

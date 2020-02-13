@@ -383,14 +383,10 @@ class MultTransducerImport(object):
                 if not parameters[11].altered:
                     try:
                         import sys
-                        connection_filepath = "G:/My Drive/Python/Pycharm/loggerloader/loggerloader/"
+                        connection_filepath = "/loggerloader/"
                         sys.path.append(connection_filepath)
-                        try:
-                            import config
-                        except:
-                            import loggerloader.config
-
-                        parameters[11].values = config.token
+                        config = "6189e6d5e1015c2645ds61256646" # token is out of date
+                        parameters[11].values = config
                     except:
                         parameters[11].values = None
 

@@ -1,4 +1,4 @@
-from __future__ import absolute_import, division, print_function, unicode_literals
+#from __future__ import absolute_import, division, print_function, unicode_literals
 
 import io
 import os
@@ -6,21 +6,15 @@ import glob
 import re
 import sqlalchemy
 import pytz
-
 from urllib.request import urlopen
-
 import json
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.ticker as tick
 import datetime
-
 from shutil import copyfile
-import xml.etree.ElementTree as eletree
-
 from pylab import rcParams
 
 rcParams['figure.figsize'] = 15, 10
@@ -29,7 +23,6 @@ try:
     pd.options.mode.chained_assignment = None
 except AttributeError:
     pass
-
 
 import importlib.util
 
@@ -52,7 +45,6 @@ class Color:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
     END = '\033[0m'
-
 
 # -----------------------------------------------------------------------------------------------------------------------
 # These functions align relative transducer reading to manual data
@@ -769,12 +761,8 @@ class PullOutsideBaro(object):
                 import sys
                 connection_filepath = "G:/My Drive/Python/Pycharm/loggerloader/loggerloader/"
                 sys.path.append(connection_filepath)
-                try:
-                    import config
-                except ImportError:
-                    import loggerloader.config
-
-                self.token = config.token
+                config = "6189e6d5e1015c2645ds61256646" # token is out of date
+                self.token = config
             except:
                 print("""No api token.  Please visit https://synopticlabs.org/api/guides/?getstarted to get one.\n
                       Your can create a file called config.py and write `token= 'your api token'` on the first line of the file.""")
@@ -2275,7 +2263,6 @@ class HeaderTable(object):
         well_table.dropna(subset=['wellname'], inplace=True)
         well_table.to_csv(self.folder + '/file_info_table.csv')
         print("Header Table with well information created at {:}/file_info_table.csv".format(self.folder))
-
         return well_table
 
     def xle_csv_filelist(self):
@@ -2285,11 +2272,6 @@ class HeaderTable(object):
             files_grabbed += (glob.glob(self.folder + ext))
         return files_grabbed
 
-    def parse_filename(self, file):
-        filename, file_extension = os.path.splitext(file)
-        basefilename = os.path.basename(file)
-        df1['fileroot'] = self.folder
-        df1['full_filepath']
 
     def xle_head(self, file):
         """Creates a Pandas DataFrame containing header information from all xle files in a folder
