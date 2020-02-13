@@ -1,4 +1,5 @@
 ![Coolness](https://img.shields.io/badge/Coolness-very-brightgreen.svg)
+[![Build Status](https://travis-ci.com/utah-geological-survey/loggerloader.svg?branch=master)](https://travis-ci.com/utah-geological-survey/loggerloader)
 
 # loggerloader
 
