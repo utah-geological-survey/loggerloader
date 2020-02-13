@@ -26,12 +26,18 @@ except AttributeError:
 
 import importlib.util
 
-spec = importlib.util.spec_from_file_location("dbconnect", "G:/My Drive/Python/dbconnect.py")
-dbconnect = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(dbconnect)
-engine = dbconnect.postconn()
-connection = dbconnect.sqlconnect()
+try:
+    spec = importlib.util.spec_from_file_location("dbconnect", "G:/My Drive/Python/dbconnect.py")
+    dbconnect = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(dbconnect)
+    engine = dbconnect.postconn_ugs()
+except FileNotFoundError:
+    def postconn_ugs(pw='PASSWORD', host='nrwugspgressp', user='USER_NAME_HERE', port='5432', db='ugsgwp'):
+        return create_engine("postgresql+psycopg2://{:}:{:}@{:}:{:}/{:}".format(user, pw, host, port, db),
+                             pool_recycle=3600)
 
+    from sqlalchemy import create_engine
+    engine = postconn_ugs()
 
 class Color:
     """ https://stackoverflow.com/questions/8924173/how-do-i-print-bold-text-in-python"""
