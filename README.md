@@ -1,3 +1,4 @@
+![Coolness](https://img.shields.io/badge/Coolness-very-brightgreen.svg)
 
 # loggerloader
 
