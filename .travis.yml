@@ -12,6 +12,8 @@ before_install:
 
 env:
   - DEPS="numpy matplotlib pandas"
+    TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+    TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
 
 install:
   - pip install codecov
@@ -24,10 +26,3 @@ script:
 
 after_success:
   - codecov
-
-deploy:
-  provider: pypi
-  distributions: sdist
-  user: "paulinkenbrandt"
-  password:
-    secure: "TtR3oPiYSSb3/eUny7/jcZAnLhfpZs+52N/ieKekL7bCJc+N7EK2ViktOE0c3uoA3dqjC+AnP4VUcpISCvmvQx7D2l1udMhBwxg+/08/6b+Gb4leuNgEZ+gdRVRHvHHTaTwLRk4dRhOpfXnf8L7W4ZPCOjc+3jZSvObqDcbN5uW1fcpb4zNwhYEFf/seWsNXw8EBTZ4CgDvaBKexHAifrT53BmhWULs+ImmUqryzxdJFneq8lvkbnJFRnqsy8B2aLC7Ev+JfNiIVDSvYZAB9M614iKaBkPscful242UOc0mZBj4IoQMxBt9oduyoztJqTdhos/VHpB0PGtek/FL5EukRtUqkjgWf9h0Abp6zpxYTjOxlQpb0lNmKSHmz8+RbNUJ9WtGu4ybQip4nqSuWZ/Df1EGdZ6ndlVobmHyP172vxSUE619wf4zFAu3PqjCNDs9QApLtd7RnEcwt9kPnTH+TRXM/w6xjltKMHN4Y9dqses3I6AjlcSEB48XehBTuW7tOH0sd5ytHeqBC2/RWQHaiZFm042kgeK+m0A0P0dgcOx6KnDhkHyeNoc1Qh05CnuFSMMr1dQXyu3UaHqdJdEilbSxalWuFf4ISwjBrCIJgI8RFmEfdWbV1z8kqCgqvB5K5q3JUfh0wGtKVpMv6jA9edK+p6FQayvuSK0TPZOs="
