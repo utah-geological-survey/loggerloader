@@ -45,4 +45,5 @@ def testcalc_drift():
                             "data": [i * 0.1 + 2 for i in range(0, 101)]})
     df.set_index('date', inplace=True)
     df['julian'] = df.index.to_julian_date()
-    assert calc_drift(df, 'data', 'gooddata', 0.05, 1)['gooddata'][-1] == 6.0
+    drift_df, drift = calc_drift(df, 'data', 'gooddata', 0.05, 1)
+    assert drift_df['gooddata'][-1] == 6.0
