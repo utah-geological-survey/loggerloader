@@ -25,15 +25,15 @@ def testget_breakpoints():
     assert get_breakpoints(man_df,df,'data')[1] ==np.datetime64('1999-01-31T00:00:00.000000000')
 
 def test_new_xle_imp():
-    xle = './loggerloader/test/20160919_LittleHobble.xle'
+    xle = 'test/pw10a 20171208.xle'
     xle_df = NewTransImp(xle).well
     assert len(xle_df) > 0
 
 def test_well_baro_merge():
-    xle = "./test/ag13c 2016-08-02.xle"
+    xle = 'test/pw10a 20171208.xle'
     xle_df = NewTransImp(xle).well
-    barofile = "./test/baro.csv"
-    baro = pd.read_csv(barofile,index_col=0, parse_dates=True)
+    barofile = 'test/pw10baro 20171208.xle'
+    baro = NewTransImp(barofile).well
     baro['Level'] = baro['pw03']
     assert len(well_baro_merge(xle_df, baro, sampint=60)) > 10
 
