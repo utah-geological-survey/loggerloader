@@ -676,10 +676,22 @@ def get_trans_gw_elevations(df, stickup, well_elev, site_number, level='Level', 
 
     Returns:
         processed df with necessary field names for import
+
+    Examples:
+        >>> dts = pd.date_range('1/1/2019','1/15/2019',freq='1H')
+        >>> dec = np.sin(np.linspace(0,20,len(dts)))-10
+        >>> fake_trans = {'dates':dts, 'DTW_WL':dec}
+        >>> trans_df = pd.DataFrame(fake_trans)
+        >>> trans_df.set_index('dates',inplace=True)
+        >>> stickup = 1.5
+        >>> well_elevation = 4050.5
+        >>> trns = get_trans_gw_elevs(trans_df, stickup, well_elevation, 1000)
+        >>> man.loc['6/11/1991','waterelevation']
+        4035.0
     """
 
     df['measuredlevel'] = df[level]
-    df['measureddtw'] = df[dtw] * -1 #changed 3/5/2020
+    df['measureddtw'] = df[dtw] * -1 #changed 3/5/2020; pressure to dtw
 
     print([stickup, well_elev, site_number])
     if pd.isna(stickup):

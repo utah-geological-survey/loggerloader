@@ -35,7 +35,10 @@ class Feedback:
         master.geometry('1400x800')
         master.wm_title("Transducer Processing")
         self.root = master
-
+        try:
+            self.root.iconbitmap(r'G:\My Drive\Python\Pycharm\loggerloader\data_files\icon.ico')
+        except:
+            pass
         self.currentdir = os.path.expanduser('~')
 
         self.dropmenu(master)
@@ -72,8 +75,11 @@ class Feedback:
         # Header image logo and Description seen by user
         self.frame_header = ttk.Frame(self.onewelltab)
         self.frame_header.pack(pady=5)
-        self.logo = tk.PhotoImage(file="../data_files/GeologicalSurvey.png").subsample(10, 10)
-        ttk.Label(self.frame_header, image=self.logo).grid(row=0, column=0, rowspan=2)
+        try:
+            self.logo = tk.PhotoImage(file="G:/My Drive/Python/Pycharm/loggerloader/data_files/GeologicalSurvey.png").subsample(10, 10)
+            ttk.Label(self.frame_header, image=self.logo).grid(row=0, column=0, rowspan=2)
+        except:
+            pass
         ttk.Label(self.frame_header, wraplength=300, text="Processing transducer data").grid(row=0, column=1)
 
         # Data Entry Frame
@@ -255,7 +261,6 @@ class Feedback:
             elif index == 0:
                 print("0")
 
-
     def make_well_info_frame(self, master):
         # select file for well-info-table
         well_info_frame = ttk.Frame(master)
@@ -263,13 +268,7 @@ class Feedback:
         key = 'well-info-table'
         self.datastr[key] = tk.StringVar(well_info_frame)
         self.datastr[key].set("../data_files/ugs_ngwmn_monitoring_locations.csv")
-        df = pd.read_csv(self.datastr[key].get())
-        df = df.reset_index()
-        df = df[df['altlocationid'].notnull()]
-        #df['altlocationid'] = df['altlocationid'].apply(lambda x: int(x), 1)
-        df['altlocationid'] = df['altlocationid'].apply(lambda x: f"{x:.0f}", 1)
-        df = df.set_index(['altlocationid'])
-        self.data[key] = df
+
         ttk.Label(well_info_frame, text='1. Input well info file (must be csv)').grid(row=0, column=0, columnspan=3)
         # ttk.Label(well_info_frame, text='must have altlocationid, locationname, stickup, barologgertype, and verticalmeasure').grid(row=1,column=0,columnspan=3)
         e = ttk.Entry(well_info_frame, textvariable=self.datastr[key], width=80)
@@ -557,6 +556,12 @@ class Feedback:
                     title = info.loc[i, 'locationname']
                     plt.plot(df.index, df['waterelevation'])
                     plt.scatter(mandf.index,mandf['waterelevation'])
+
+                    plt.ylabel('Water Level Elevation', color='blue')
+                    plt.ylim(min(df['waterelevation']), max(df['waterelevation']))
+                    plt.xlim(df.first_valid_index() - pd.Timedelta(days=3),
+                             df.last_valid_index() + pd.Timedelta(days=3))
+
                     plt.title(title)
                     pdf.savefig()
                     plt.close()
@@ -882,7 +887,7 @@ class Feedback:
             elif file_extension == '.csv':
                 self.data['manual'] = pd.read_csv(self.datastr[key].get())
             # self.graph_frame1.pack()
-            if self.datastr[key] != '':
+            if self.datastr[key].get() != '' and self.datastr[key].get() != 'Double-Click for manual file':
                 mancols = list(self.data['manual'].columns.values)
                 for col in mancols:
                     if col.lower() in ['datetime', 'date', 'readingdate']:
@@ -894,6 +899,8 @@ class Feedback:
                         self.combo_choice["DTW"].set(col)
                     elif col.lower() in ['locationid','locid','id','location_id','lid']:
                         self.combo_choice['locationid'].set(col)
+            else:
+                self.datastr[key].set('Double-Click for manual file')
 
 
     def save_one_well(self):
@@ -945,6 +952,15 @@ class Feedback:
 
         """
         key = 'well-info-table'
+
+        #df = pd.read_csv(self.datastr[key].get())
+        #df = df.reset_index()
+        #df = df[df['altlocationid'].notnull()]
+        # df['altlocationid'] = df['altlocationid'].apply(lambda x: int(x), 1)
+        #df['altlocationid'] = df['altlocationid'].apply(lambda x: f"{x:.0f}", 1)
+        #df = df.set_index(['altlocationid'])
+        #self.data[key] = df
+
         graphframe, tableframe = self.note_tab_add(key, tabw=5, grph=1)
         self.datatable[key] = Table(tableframe, dataframe=self.data[key], showtoolbar=True, showstatusbar=True)
         self.datatable[key].show()
@@ -1112,7 +1128,7 @@ class Feedback:
 
     def open(self):
         filename = filedialog.askopenfilename(filetypes=[('text', '.txt')])
-        if filename is None:
+        if filename is None or filename == '':
             return
         else:
             df = pd.read_csv(filename)
