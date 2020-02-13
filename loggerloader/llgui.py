@@ -7,6 +7,7 @@ import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 from matplotlib import style
 from matplotlib.backend_bases import key_press_handler
+from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.figure import Figure
 import matplotlib.dates as mdates
 import numpy as np
@@ -36,13 +37,19 @@ class Feedback:
     def __init__(self, master):
         # create main window and configure size and title
         # tk.Tk.__init__(self, *args, **kwargs)
-        master.geometry('1000x800')
+        master.geometry('1400x800')
         master.wm_title("Transducer Processing")
         self.root = master
 
         self.currentdir = os.path.expanduser('~')
 
         self.dropmenu(master)
+
+        self.datastr, self.data, self.datatable, self.combo = {}, {}, {}, {}
+        self.entry = {}
+        self.locidmatch = {}
+        self.bulktransfilestr = {}  # dictionary to store trans file names
+
 
         # Create side by side panel areas
         self.panedwindow = ttk.Panedwindow(master, orient='horizontal')
@@ -64,52 +71,7 @@ class Feedback:
         self.bulkwelltab = ttk.Frame(self.processing_notebook)
         self.processing_notebook.add(self.onewelltab, text='Single-Well Process')
         self.processing_notebook.add(self.bulkwelltab, text='Bulk Well Process')
-
-        # BULK UPLOAD TAB of left side of application -------------------------------------------------------
-        # BulkUploader(self.bulkwelltab)
-        dirselectframe = ttk.Frame(self.bulkwelltab)
-        dirselectframe.pack()
-
-        self.datastr, self.data, self.datatable, self.combo = {}, {}, {}, {}
-        self.entry = {}
-        self.locidmatch = {}
-        self.bulktransfilestr = {}  # dictionary to store trans file names
-
-        self.make_well_info_frame(dirselectframe)
-
-        ttk.Separator(dirselectframe, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
-        # pick directory with transducer files and populate a scrollable window with combobox selections
-        filefinderframe = ttk.Frame(dirselectframe)
-        filefinderframe.pack()
-        ttk.Label(filefinderframe, text='3. Pick directory with relevant well files.').grid(column=1, row=0, columnspan=2)
-        ttk.Label(filefinderframe, text='2. Pick Sampling Network').grid(column=0, row=0, columnspan=1)
-
-        self.datastr['trans-dir'] = tk.StringVar(filefinderframe, value=f'Double-Click for transducer file directory')
-        filefnd = ttk.Entry(filefinderframe, textvariable=self.datastr['trans-dir'], width=80)
-        filefnd.grid(column=1, row=1, columnspan=2)
-
-        self.combo_source = ttk.Combobox(filefinderframe,
-                                                 values=['Snake Valley Wells','Wetlands Piezos','WRI','Other'])
-        self.combo_source.grid(column=0, row=1)
-        self.combo_source.current(0)
-        filefoundframe = ttk.Frame(dirselectframe)
-        self.combo_source.bind("<<ComboboxSelected>>", lambda f: self.grab_trans_dir(filefoundframe))
-        filefnd.bind('<Double-ButtonRelease-1>', lambda f: self.grab_trans_dir(filefoundframe))
-        filefoundframe.pack()
-
-        ttk.Separator(dirselectframe, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
-
-        applymatchframe = ttk.Frame(dirselectframe)
-        applymatchframe.pack()
-        self.inputforheadertable = {}
-
-
-        b = tk.Button(applymatchframe,
-                      text='Click when done matching files to well names',
-                      command=lambda: self.make_file_info_table(master))
-        b.pack()
-
-        ttk.Separator(dirselectframe, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
+        self.processing_notebook.bind("<<NotebookTabChanged>>", self.tab_update)
 
         # SINGLE WELL PROCESSING TAB for left side of application ---------------------------------------------
         # Header image logo and Description seen by user
@@ -148,30 +110,8 @@ class Feedback:
 
         # Tab for entering manual data by file
         # TODO Auto align sheet fields to columns
-        manfileframetext = """File with manual data must have datetime, reading, and locationid fields
-Good for matching bulk manual data """
+        self.man_file_frame(self.manfileframe)
 
-        ttk.Label(self.manfileframe, text=manfileframetext).grid(row=0, column=0, columnspan=4)
-        self.datastr['manual'] = tk.StringVar(self.manfileframe, value='Double-Click for manual file')
-        self.man_entry = ttk.Entry(self.manfileframe, textvariable=self.datastr['manual'], width=80, justify='left')
-        self.man_entry.grid(row=2, column=0, columnspan=4)
-        self.man_entry.bind('<Double-ButtonRelease-1>', self.mandiag)
-
-        fillervals = ['datetime', 'meas', 'locid']
-        self.combo, self.combo_choice = {}, {}
-        combovals = {"Datetime": [3, 0, 15, fillervals, 4, 0],
-                     "DTW": [3, 1, 15, fillervals, 4, 1],
-                     "locationid": [3, 2, 15, fillervals, 4, 2],
-                     "Pick id": [5, 1, 15, [1001, 1002], 5, 2]}
-
-        for key, vals in combovals.items():
-            self.man_combos(key, vals)
-
-        ttk.Label(self.manfileframe, text="units").grid(row=3, column=3)
-        self.manunits = ttk.Combobox(self.manfileframe, width=5,
-                                     values=['ft', 'm'], state="readonly")
-        self.manunits.grid(row=4, column=3)
-        self.manunits.current(0)
 
         b = ttk.Button(self.frame_step4, text='Process Manual Data', command=self.proc_man)
         b.grid(column=0, row=2, columnspan=3)
@@ -186,6 +126,141 @@ Good for matching bulk manual data """
         b = ttk.Button(save_onewell_frame, text='Save csv', command=self.save_one_well)
         b.pack()
 
+        # BULK UPLOAD TAB of left side of application -------------------------------------------------------
+        # BulkUploader(self.bulkwelltab)
+        dirselectframe = ttk.Frame(self.bulkwelltab)
+        dirselectframe.pack()
+
+        self.make_well_info_frame(dirselectframe)
+
+        ttk.Separator(dirselectframe, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
+        # pick directory with transducer files and populate a scrollable window with combobox selections
+        filefinderframe = ttk.Frame(dirselectframe)
+        filefinderframe.pack()
+        ttk.Label(filefinderframe, text='3. Pick directory with relevant well files.').grid(column=1, row=0, columnspan=2)
+        ttk.Label(filefinderframe, text='2. Pick Sampling Network').grid(column=0, row=0, columnspan=1)
+
+        self.datastr['trans-dir'] = tk.StringVar(filefinderframe, value=f'Double-Click for transducer file directory')
+        self.filefnd = ttk.Entry(filefinderframe, textvariable=self.datastr['trans-dir'], width=80, state='disabled')
+        self.filefnd.grid(column=1, row=1, columnspan=2)
+
+        self.combo_source = ttk.Combobox(filefinderframe, values=['Snake Valley Wells','Wetlands Piezos','WRI','Other'],
+                                         state='disabled')
+        self.combo_source.grid(column=0, row=1)
+        self.combo_source.current(0)
+
+        filefoundframe = ttk.Frame(dirselectframe)
+        self.combo_source.bind("<<ComboboxSelected>>", lambda f: self.grab_trans_dir(filefoundframe))
+        self.filefnd.bind('<Double-ButtonRelease-1>', lambda f: self.grab_trans_dir(filefoundframe))
+        filefoundframe.pack()
+
+        ttk.Separator(dirselectframe, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
+
+        applymatchframe = ttk.Frame(dirselectframe)
+        applymatchframe.pack()
+        self.inputforheadertable = {}
+
+        self.bulk_match_button = tk.Button(applymatchframe,
+                      text='5. Click when done matching files to well names',
+                      command=lambda: self.make_file_info_table(master),state='disabled')
+        self.bulk_match_button.pack()
+
+        ttk.Separator(dirselectframe, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
+
+        bulk_align_frame = ttk.Frame(dirselectframe)
+        bulk_align_frame.pack()
+        self.align_bulk_wb_button = tk.Button(bulk_align_frame,
+                                              text='6. Align Well-Baro Data',
+                                              command= self.align_well_baro_bulk,
+                                              state='disabled')
+        self.align_bulk_wb_button.grid(row=0,column=0)
+
+        self.export_align = tk.IntVar()
+        self.export_align_check = tk.Checkbutton(bulk_align_frame,
+                                                 text="Export Aligned Data?",
+                                                 variable=self.export_align,
+                                                 state='disabled')
+        self.export_align_check.grid(row=0,column=1)
+        self.export_align_check.deselect()
+
+        ttk.Separator(dirselectframe, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
+        ttk.Label(dirselectframe, text='7. Import Manual Data').pack()
+        #self.manfileframe(dirselectframe).pack()
+        self.bulk_manfileframe = ttk.Frame(dirselectframe)
+        self.bulk_manfileframe.pack()
+        self.man_file_frame(self.bulk_manfileframe)
+
+        b = ttk.Button(self.bulk_manfileframe, text='Process Manual Data', command=self.proc_man_bulk)
+        b.grid(column=1, row=5, columnspan=2)
+
+        ttk.Separator(dirselectframe, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
+        bulk_drift_frame = ttk.Frame(dirselectframe)
+        bulk_drift_frame.pack()
+        b = ttk.Button(bulk_drift_frame, text='8. Fix Drift', command=self.bulk_fix_drift)
+        b.grid(column=0, row=0, columnspan=1, rowspan=2)
+
+        self.export_drift = tk.IntVar()
+        self.export_drift_check = tk.Checkbutton(bulk_drift_frame,
+                                                 text="Export Drift Data?",
+                                                 variable=self.export_drift,
+                                                 state='disabled')
+        self.export_drift_check.grid(row=0, column=1, sticky=tk.W)
+        self.export_drift_check.select()
+
+        self.export_drift_graph = tk.IntVar()
+        self.export_drift_graph_check = tk.Checkbutton(bulk_drift_frame,
+                                                 text="Graph Data?",
+                                                 variable=self.export_drift_graph,
+                                                 state='disabled')
+        self.export_drift_graph_check.grid(row=1, column=1, sticky=tk.W)
+        self.export_drift_graph_check.select()
+
+        ttk.Label(bulk_drift_frame,text='Max Allowed Drift (ft)').grid(row=0, column=2)
+        self.max_allowed_drift = tk.DoubleVar(bulk_drift_frame, value=0.3)
+        ent = ttk.Entry(bulk_drift_frame,textvariable=self.max_allowed_drift,width=10)
+        ent.grid(row=1, column=2)
+
+    def man_file_frame(self, master):
+        #self.manfileframe = ttk.Frame(master)
+        manfileframetext = """File with manual data must have datetime, reading, and locationid fields"""
+
+        ttk.Label(master, text=manfileframetext).grid(row=0, column=0, columnspan=4)
+        self.datastr['manual'] = tk.StringVar(master, value='Double-Click for manual file')
+        self.man_entry = ttk.Entry(master, textvariable=self.datastr['manual'], width=80, justify='left')
+        self.man_entry.grid(row=2, column=0, columnspan=4)
+        self.man_entry.bind('<Double-ButtonRelease-1>', self.mandiag)
+
+        fillervals = ['readingdate', 'dtwbelowcasing', 'locid']
+        self.combo, self.combo_choice, self.combo_label = {}, {}, {}
+        self.combovals = {"Datetime": [3, 0, 15, fillervals, 4, 0],
+                     "DTW": [3, 1, 15, fillervals, 4, 1],
+                     "locationid": [3, 2, 15, fillervals, 4, 2],
+                     "Pick id": [5, 1, 15, [1001, 1002], 5, 2]}
+        for key, vals in self.combovals.items():
+            self.man_combos(key, vals, master)
+
+
+        if self.processing_notebook.index(self.processing_notebook.select()) == 1:
+            print('bulk')
+            self.combo["Pick id"]["state"] = "disabled"
+            self.combo["Pick id"].grid_forget()
+
+        ttk.Label(master, text="units").grid(row=3, column=3)
+        self.manunits = ttk.Combobox(master, width=5,
+                                     values=['ft', 'm'], state="readonly")
+        self.manunits.grid(row=4, column=3)
+        self.manunits.current(0)
+
+    def tab_update(self, event):
+        index = event.widget.index('current')
+        if 'combo_label' in self.__dict__:
+            if index == 1:
+                self.combo_label["Pick id"].grid_forget()
+                self.combo["Pick id"].grid_forget()
+            elif index == 0:
+                print("0")
+
+
     def make_well_info_frame(self, master):
         # select file for well-info-table
         well_info_frame = ttk.Frame(master)
@@ -196,7 +271,8 @@ Good for matching bulk manual data """
         df = pd.read_csv(self.datastr[key].get())
         df = df.reset_index()
         df = df[df['altlocationid'].notnull()]
-        df['altlocationid'] = df['altlocationid'].apply(lambda x: int(x), 1)
+        #df['altlocationid'] = df['altlocationid'].apply(lambda x: int(x), 1)
+        df['altlocationid'] = df['altlocationid'].apply(lambda x: f"{x:.0f}", 1)
         df = df.set_index(['altlocationid'])
         self.data[key] = df
         ttk.Label(well_info_frame, text='1. Input well info file (must be csv)').grid(row=0, column=0, columnspan=3)
@@ -209,7 +285,7 @@ Good for matching bulk manual data """
 
     def make_file_info_table(self, master):
         popup = tk.Toplevel()
-        popup.geometry("400x100+100+100")
+        popup.geometry("400x100+200+200")
         tk.Label(popup, text="Examining Directory...").pack()
         pg = ttk.Progressbar(popup, orient=tk.HORIZONTAL, mode='determinate', length=200)
         pg.pack()
@@ -220,28 +296,28 @@ Good for matching bulk manual data """
         filelist = ht.xle_csv_filelist()
         pg.config(maximum=len(filelist))
         fild = {}
+        wdf = {}
+        sv = tk.StringVar(popup,value='')
+        ttk.Label(popup, textvariable=sv).pack()
         for file in filelist:
             popup.update()
             file_extension = os.path.splitext(file)[1]
-
+            base = os.path.basename(file)
             if file_extension == '.xle':
-                fild[file] = ht.xle_head(file)
+                fild[file], df = ht.xle_head(file)
             elif file_extension == '.csv':
-                fild[file] = ht.csv_head(file)
-
+                fild[file], df = ht.csv_head(file)
+            fild[file]['locationid'] = f"{self.locnametoid.get(self.combo.get(fild[file]['file_name'], None).get(), None)}"
+            wdf[fild[file]['locationid']] = df.sort_index()
+            sv.set(base)
             pg.step()
 
+        self.data['bulk-well'] = pd.concat(wdf).sort_index()
+        # concatinate file info
         df = pd.DataFrame.from_dict(fild, orient='index')
-        df['locationid'] = df['file_name'].apply(lambda x: f"{self.locnametoid.get(self.combo.get(x,None).get(),None)}",1)
+        #df['locationid'] = df['file_name'].apply(lambda x: f"{self.locnametoid.get(self.combo.get(x,None).get(),None)}",1)
         df['measuring_medium'] = df[['Model_number','Location','locationid']].apply(lambda x: self.detect_baro(x),1)
-        df = df.reset_index().set_index('file_name').rename(columns={'index':'full_file_path'})
-        #print(filestr, self.locidmatch[filestr].get(),self.locnametoid[self.combo[filestr].get()])
-        baro = df[df['measuring_medium'] == 'air'].reset_index().set_index(['full_file_path'])
-        bdf ={}
-        for b in baro.index():
-            bdf[baro.loc[b,'locationid']] = ll.NewTransImp(b).well
-
-        self.data['bulk-baro'] = pd.concat(bdf)
+        df = df.reset_index().set_index('file_name').rename(columns={'index': 'full_file_path'})
 
         graphframe, tableframe = self.note_tab_add(key, tabw=4, grph=1)
         # add graph and table to new tab
@@ -250,8 +326,9 @@ Good for matching bulk manual data """
         self.datatable[key].show()
         self.datatable[key].showIndex()
         self.datatable[key].update()
-
-
+        self.align_bulk_wb_button['state'] = 'normal'
+        self.export_align_check['state'] = 'normal'
+        #self.bulk_data_file_button['state'] = 'normal'
 
         popup.destroy()
 
@@ -261,10 +338,11 @@ Good for matching bulk manual data """
         else:
             return "water"
 
-    def man_combos(self, key, vals):
+    def man_combos(self, key, vals, master):
         self.combo_choice[key] = tk.StringVar()
-        ttk.Label(self.manfileframe, text=key).grid(row=vals[0], column=vals[1])
-        self.combo[key] = ttk.Combobox(self.manfileframe, width=vals[2],
+        self.combo_label[key] = ttk.Label(master, text=key)
+        self.combo_label[key].grid(row=vals[0], column=vals[1])
+        self.combo[key] = ttk.Combobox(master, width=vals[2],
                                        textvariable=self.combo_choice[key],
                                        postcommand=lambda: self.man_col_select(self.combo[key]))
         self.combo[key].grid(row=vals[4], column=vals[5])
@@ -278,12 +356,6 @@ Good for matching bulk manual data """
                 cmbo['values'] = list([f'{loc:0.0f}' for loc in locids])
             else:
                 cmbo['values'] = mancols
-
-            for col in mancols:
-                # TODO move matching functions to happen with data import in mandiag
-                if col in ['datetime', 'date', 'readingdate', 'Date']:
-                    self.combo_choice["Datetime"].set('readingdate')
-                    self.combo["Datetime"].current(mancols.index(col))
 
         else:
             messagebox.showinfo(title='Attention', message='Select a manual file!')
@@ -429,6 +501,74 @@ Good for matching bulk manual data """
         else:
             tk.messagebox.showinfo(title='Yo!', message='Align the data first!')
 
+    def bulk_fix_drift(self):
+        popup = tk.Toplevel()
+        popup.geometry("400x100+200+200")
+        tk.Label(popup, text="Fixing Drift...").pack()
+        pg = ttk.Progressbar(popup, orient=tk.HORIZONTAL, mode='determinate', length=200)
+        pg.pack()
+        bulkdrift = {}
+        drift_info = {}
+        info = self.datatable['well-info-table'].model.df
+        pg.config(maximum=len(self.data['bulk-well-baro'].index.get_level_values(0).unique()))
+        sv = tk.StringVar(popup, value='')
+        ttk.Label(popup, textvariable=sv).pack()
+        for i in self.data['bulk-well-baro'].index.get_level_values(0).unique():
+            popup.update()
+            df, dfrinf, max_drift = ll.fix_drift(self.data['bulk-well-baro'].loc[i], self.datatable['manual'].model.df.loc[i],
+                         manmeas = 'dtwbelowcasing')
+            drift_info[i] = dfrinf.reset_index()
+            mstickup = info.loc[i, 'stickup']
+            melev = info.loc[i, 'verticalmeasure']
+            name = info.loc[i, 'locationname']
+            if max_drift > self.max_allowed_drift.get():
+                ttk.Label(popup, text=f'{name} drift too high at {max_drift}!').pack()
+                pass
+
+            else:
+                bulkdrift[i] = ll.get_trans_gw_elevations(df, mstickup,  melev, site_number = i, level='corrwl', dtw='DTW_WL')
+            sv.set(f"{name} has a max drift of {max_drift}")
+            pg.step()
+
+        self.data['bulk-fix-drift'] = pd.concat(bulkdrift)
+        key = 'drift-info'
+        self.data[key] = pd.concat(drift_info)
+        graphframe, tableframe = self.note_tab_add(key)
+        self.datatable[key] = Table(tableframe, dataframe=self.data[key], showtoolbar=True, showstatusbar=True)
+        self.datatable[key].show()
+        self.datatable[key].showIndex()
+        self.datatable[key].update()
+        popup.destroy()
+        if self.export_drift.get() == 1:
+            file = filedialog.asksaveasfilename(filetypes=[('csv', '.csv')], defaultextension=".csv")
+            self.data['bulk-fix-drift'].to_csv(file)
+
+        if self.export_drift_graph.get() == 1:
+            pdffile = filedialog.asksaveasfilename(filetypes=[('pdf', '.pdf')], defaultextension=".pdf")
+            with PdfPages(pdffile) as pdf:
+                popup = tk.Toplevel()
+                popup.geometry("500x500+200+200")
+                tk.Label(popup, text="Graphing Data...").pack()
+                pg = ttk.Progressbar(popup, orient=tk.HORIZONTAL, mode='determinate', length=200)
+                pg.pack()
+                pg.config(maximum=len(self.data['bulk-fix-drift'].index.get_level_values(0)))
+                sv = tk.StringVar(popup, value='')
+                ttk.Label(popup, textvariable=sv).pack()
+                for ind in self.data['bulk-fix-drift'].index.get_level_values(0):
+                    popup.update()
+                    plt.figure(figsize=(5,5))
+                    df = self.data['bulk-fix-drift'].loc[ind]
+                    mandf = self.datatable['manual'].model.df.loc[ind]
+                    title = info.loc[i, 'locationname']
+                    plt.plot(df.index, df['waterelevation'])
+                    plt.scatter(mandf.index,mandf['waterelevation'])
+                    plt.title(title)
+                    pdf.savefig()
+                    plt.close()
+                    sv.set()
+                    pg.step()
+                popup.destroy()
+
     def proc_man(self):
         nbnum = self.manbook.index(self.manbook.select())
         key = 'manual'
@@ -467,6 +607,53 @@ Good for matching bulk manual data """
 
         graphframe, tableframe = self.note_tab_add(key)
         self.add_graph_table(key, tableframe, graphframe)
+
+    def proc_man_bulk(self):
+        # TODO Speed up this function
+        key = 'manual'
+        df = self.data[key].rename(columns={self.combo['Datetime'].get(): 'readingdate',
+                                            self.combo['DTW'].get(): 'dtwbelowcasing',
+                                            self.combo['locationid'].get(): 'locationid'})
+        df['units'] = self.manunits.get()
+        if self.manunits.get() == 'm':
+            df['dtwbelowcasing'] = df['dtwbelowcasing'] * 3.28084
+        df = df.reset_index()
+        df['readingdate'] = df['readingdate'].apply(lambda x: pd.to_datetime(x, infer_datetime_format=True,
+                                                                             errors='ignore'))
+        df['dtwbelowcasing'] = df['dtwbelowcasing'].apply(lambda x: pd.to_numeric(x, errors='coerce'))
+        df = df.set_index(['locationid','readingdate'])
+        df = df[['dtwbelowcasing']]
+
+        info = self.datatable['well-info-table'].model.df
+        melevd = {}
+        popup = tk.Toplevel()
+        popup.geometry("400x100+200+200")
+        tk.Label(popup, text="Examining Directory...").pack()
+        pg = ttk.Progressbar(popup, orient=tk.HORIZONTAL, mode='determinate', length=200)
+        pg.pack()
+        pg.config(maximum=len(df.index.get_level_values(0)))
+        sv = tk.StringVar(popup,value='')
+        ttk.Label(popup, textvariable=sv).pack()
+
+        for ind in df.index.get_level_values(0):
+            popup.update()
+            ind = f"{ind:.0f}"
+            if ind in info.index:
+                mstickup = info.loc[ind,'stickup']
+                melev = info.loc[ind,'verticalmeasure']
+                name = info.loc[ind, 'locationname']
+                melevd[ind] = ll.get_man_gw_elevs(df.loc[int(ind)], mstickup, melev)
+            else:
+                print(f"{ind} not in index")
+            sv.set(f"{name} at {melev} ft and {mstickup} ft stickup")
+            pg.step()
+        popup.destroy()
+        df = pd.concat(melevd)
+        self.data[key] = df
+        graphframe, tableframe = self.note_tab_add(key)
+        self.add_graph_table(key, tableframe, graphframe)
+        self.export_drift_graph_check['state'] = 'normal'
+        self.export_drift_check['state'] = 'normal'
 
     def only_meas(self, value_if_allowed):
         try:
@@ -550,12 +737,25 @@ Good for matching bulk manual data """
             self.add_manual_points(key, graph_frame1)
         elif key == 'wl-elev':
             self.add_manual_points(key, graph_frame1)
+        elif key == 'bulk-baro':
+            self.plot_bulk_baro(graph_frame1)
         toolbar = NavigationToolbar2Tk(canvas, graph_frame1)
         toolbar.update()
         canvas.draw()
         canvas.get_tk_widget().pack(side='top', fill='both', expand=1)
         canvas.mpl_connect("key_press_event", self.on_key_press)
         graph_frame1.pack()
+
+    def plot_bulk_baro(self, graph_frame1):
+        key = 'bulk-baro'
+        ax = self.datatable[key].showPlotViewer(parent=graph_frame1).ax
+        for wellid in self.datatable[key].model.df.index.get_level_values(0).unique():
+            ax.plot(self.datatable[key].model.df.loc[wellid,'Level'], label=wellid)
+
+        ax.set_ylabel('well levels', color='blue')
+
+        ax.legend()
+
 
     def add_baro_axis(self, graph_frame1):
         key = 'well-baro'
@@ -627,6 +827,49 @@ Good for matching bulk manual data """
             graphframe, tableframe = self.note_tab_add(key)
             self.add_graph_table(key, tableframe, graphframe)
 
+    def align_well_baro_bulk(self):
+        if 'bulk-well' in self.data.keys():
+            files = self.datatable['file-info-table'].model.df
+            info = self.datatable['well-info-table'].model.df
+            wellids = self.data['bulk-well'].index.get_level_values(0).unique()
+            mergedf = {}
+            popup = tk.Toplevel()
+            popup.geometry("400x100+200+200")
+            tk.Label(popup, text="Aligning datasets...").pack()
+            pg = ttk.Progressbar(popup, orient=tk.HORIZONTAL, mode='determinate', length=200)
+            pg.pack()
+            pg.config(maximum=len(wellids))
+            sv = tk.StringVar(popup, value='')
+            ttk.Label(popup, textvariable=sv).pack()
+
+            for wellid in wellids:
+                popup.update()
+                if wellid is not None and wellid != 'None':
+                    if info.loc[wellid,'barologgertype'] != "None" and info.loc[wellid,'barologgertype'] != "":
+                        baroid = f"{info.loc[wellid,'barologgertype']:.0f}"
+                        medium = files[files['locationid']==wellid]['measuring_medium'].values[0]
+                        name = info.loc[wellid, "locationname"]
+                        print(baroid)
+                        if baroid in files['locationid'].unique() and medium == 'water':
+                            mergedf[wellid] = ll.well_baro_merge(self.data['bulk-well'].loc[wellid],
+                                                                 self.data['bulk-well'].loc[baroid])
+
+                else:
+                    print(f'no baroid for well {wellid}')
+                    name = 'No Name'
+
+                sv.set(f"aligning {name} = {wellid}")
+                pg.step()
+            popup.destroy()
+            df = pd.concat(mergedf)
+            df = df[['Level','Temperature','barometer','dbp','dwl','corrwl']]
+            self.data['bulk-well-baro'] = df
+
+            if self.export_align.get() == 1:
+                file = filedialog.asksaveasfilename(filetypes=[('csv', '.csv')], defaultextension=".csv")
+                self.data['bulk-well-baro'].to_csv(file)
+
+
     def mandiag(self, event):
         if event:
             key = 'manual'
@@ -644,6 +887,19 @@ Good for matching bulk manual data """
             elif file_extension == '.csv':
                 self.data['manual'] = pd.read_csv(self.datastr[key].get())
             # self.graph_frame1.pack()
+            if self.datastr[key] != '':
+                mancols = list(self.data['manual'].columns.values)
+                for col in mancols:
+                    if col.lower() in ['datetime', 'date', 'readingdate']:
+                        self.combo_choice["Datetime"].set(col)
+                        #self.combo["Datetime"].current(mancols.index(col))
+                    elif col.lower() in ['dtw','waterlevel','depthtowater','water_level',
+                                         'level','depth_to_water','water_depth','depth',
+                                         'dtwbelowcasing','dtw_below_casing']:
+                        self.combo_choice["DTW"].set(col)
+                    elif col.lower() in ['locationid','locid','id','location_id','lid']:
+                        self.combo_choice['locationid'].set(col)
+
 
     def save_one_well(self):
         filename = filedialog.asksaveasfilename(confirmoverwrite=True)
@@ -700,6 +956,9 @@ Good for matching bulk manual data """
         self.datatable[key].showIndex()
         self.datatable[key].update()
 
+        self.filefnd['state'] = 'normal'
+        self.combo_source['state'] = 'normal'
+
     def grab_trans_dir(self, master):
         """grabs directory containing transducer files and inputs filenames into a scrollable canvas with comboboxes to
         match up well names with locationids.
@@ -720,14 +979,15 @@ Good for matching bulk manual data """
                 self.datastr[key].get() == 'Double-Click for transducer file directory':
             pass
         else:
+            ttk.Separator(master, orient=tk.HORIZONTAL).grid(row=0, column=0, columnspan=3, sticky='ew',pady=5)
             self.currentdir = os.path.dirname(self.datastr[key].get())
             # https://stackoverflow.com/questions/45357174/tkinter-drop-down-menu-from-excel
             # TODO add excel sheet options to file selection
             filenm, file_extension = os.path.splitext(self.datastr[key].get())
-            ttk.Label(master, text='3. Match id with list of files.').grid(row=0, column=0, columnspan=3)
-            ttk.Label(master, text='Filename').grid(row=1, column=0)
-            ttk.Label(master, text='Match Name').grid(row=1, column=1)
-            ttk.Label(master, text='Well ID').grid(row=1, column=2)
+            ttk.Label(master, text='4. Match id with list of files.').grid(row=1, column=0, columnspan=3)
+            ttk.Label(master, text='Filename').grid(row=2, column=0)
+            ttk.Label(master, text='Match Name').grid(row=2, column=1)
+            ttk.Label(master, text='Well ID').grid(row=2, column=2, sticky=tk.W)
             # https://blog.tecladocode.com/tkinter-scrollable-frames/
             container = ttk.Frame(master)
             canvas = tk.Canvas(container)
@@ -800,13 +1060,13 @@ Good for matching bulk manual data """
 
                 i += 1
             # self.filefnd.bind('<Double-ButtonRelease-1>', lambda f: self.grab_dir(dirselectframe))
-
+            self.bulk_match_button["state"] = "normal"
             scrollable_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
             #scrollable_frame.pack(fill='both',side='left')
             canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
 
             canvas.configure(yscrollcommand=scrollbar.set,xscrollcommand=scrollbarx.set)
-            container.grid(row=2, column=0, columnspan=3)
+            container.grid(row=3, column=0, columnspan=3)
             canvas.pack(side="left", fill="both", expand=True)
             scrollbar.pack(side="right", fill="y")
             scrollbarx.pack(side="bottom",fill="x")

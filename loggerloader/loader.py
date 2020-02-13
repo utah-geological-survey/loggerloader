@@ -2256,9 +2256,9 @@ class HeaderTable(object):
             file_extension = os.path.splitext(file)[1]
 
             if file_extension == '.xle':
-                fild[file] = self.xle_head(file)
+                fild[file], = self.xle_head(file)
             elif file_extension == '.csv':
-                fild[file] = self.csv_head(file)
+                fild[file], = self.csv_head(file)
 
         df = pd.DataFrame.from_dict(fild, orient='index')
         return df
@@ -2318,7 +2318,7 @@ class HeaderTable(object):
         df1['beginning'] = xledata.first_valid_index()
         df1['end'] = xledata.last_valid_index()
         # df = pd.DataFrame.from_dict(df1, orient='index').T
-        return df1
+        return df1, xledata
 
     def csv_head(self, file):
         cfile = {}
@@ -2339,7 +2339,7 @@ class HeaderTable(object):
             # df = pd.DataFrame.from_dict(cfile, orient='index').T
         except KeyError:
             pass
-        return cfile
+        return cfile, csvdata
 
 
 def getwellid(infile, wellinfo):
