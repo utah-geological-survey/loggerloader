@@ -182,6 +182,122 @@ def pull_closest_well_data(wellid, breakpoint1, conn_file_root, timedel=3,
     return levdt, lev
 
 
+class ElevateWater(object):
+    def __init__(self, df, elevation, stickup, pressure_field='DTW_WL',
+                 dtw_field='dtwbelowcasing', wtr_elev_field='waterelevation'):
+        """treats both manual and transducer data; easiest to calculate manual elevations first
+        and do fix-drift class on raw well pressure
+
+        Args:
+            df: pandas dataframe containing water elevation data
+            elevation: ground elevation at wellsite
+            stickup: stickup of casing above ground surface
+            pressure_field: field in df (if transducer data) that contains pressure
+            dtw_field: field in df that denotes depth to water (should start positive for below ground)
+            wtr_elev_field: field to store groundwater elevation in
+
+        Notes:
+            increase in pressure = increase in water elevation;
+            increase in pressure = decrease in depth to water;
+            increase in depth to water = decrease in water elevation;
+
+        Examples:
+            >>> manual = {'dates':['6/11/1991','2/1/1999','8/5/2001','7/14/2000','8/19/2002','4/2/2005'], 'dtwbelowcasing':[1,10,14,52,10,8]}
+            >>> df = pd.DataFrame(manual)
+            >>> ew = ElevateWater(df, 4000, 1)
+            >>> ew.stickup
+            1
+            >>> ew.elevation
+            4000
+        """
+
+        self.input_data = df
+        self.elevation = elevation
+        self.stickup = stickup
+        self.pressure_field = pressure_field
+        self.dtw_field = dtw_field
+        self.wtr_elev_field = wtr_elev_field
+
+    def make_dtw(self):
+        """pressure is feet of water above transducer; to make depth to water pressure must be inverse
+
+        Returns: negative pressure
+
+        Examples:
+            >>> pdata = {'dates':['6/11/1991','2/1/1999','8/5/2001','7/14/2000','8/19/2002','4/2/2005'], 'pressure':[1,10,14,52,10,8]}
+            >>> df = pd.DataFrame(manual)
+            >>> ew = ElevateWater(df, 4000, 1, pressure_field='pressure')
+            >>> ew.make_dtw()
+            >>> ew.input_data['dtwbelowcasing'][1]
+            -10
+        """
+        self.input_data[self.dtw_field] = -1 * self.input_data[self.pressure_field]
+        self.negative_dtw()
+
+    def negative_dtw(self):
+        """depth to water is feet below ground surface, which is opposite in direction of elevation and stickup
+
+        Returns: depth to water in feet relative to measure point (casing top); negative is down
+
+        Examples
+            >>> pdata = {'dates':['6/11/1991','2/1/1999','8/5/2001','7/14/2000','8/19/2002','4/2/2005'], 'dtw':[1,10,14,52,10,8]}
+            >>> df = pd.DataFrame(manual)
+            >>> ew = ElevateWater(df, 4000, 1, dtw_field='dtw')
+            >>> ew.negative_dtw()
+            >>> ew.input_data['dtw'][1]
+            -10
+        """
+        self.input_data[self.dtw_field] *= -1
+
+    def stickup_adjust(self):
+        """adds stickup to depth to water to account for riser height above surface
+
+        Returns:
+            depth to water relative to ground surface; negative is down
+
+            >>> pdata = {'dates':['6/11/1991','2/1/1999','8/5/2001','7/14/2000','8/19/2002','4/2/2005'], 'dtw':[1,10,14,52,10,8]}
+            >>> df = pd.DataFrame(manual)
+            >>> ew = ElevateWater(df, 4000, 1, dtw_field='dtw')
+            >>> ew.negative_dtw()
+            >>> ew.stickup_adjust()
+            >>> ew.input_data['dtw'][1]
+            -9
+
+        """
+        self.input_data[self.dtw_field] += self.stickup
+
+    def dtw_below_ground(self):
+        """
+        Returns:
+            depth to water relative to ground surface; negative is down
+
+            >>> pdata = {'dates':['6/11/1991','2/1/1999','8/5/2001','7/14/2000','8/19/2002','4/2/2005'], 'dtw':[1,10,14,52,10,8]}
+            >>> df = pd.DataFrame(manual)
+            >>> ew = ElevateWater(df, 4000, 1, dtw_field='dtw')
+            >>> ew.dtw_below_ground()
+            >>> ew.input_data['dtw'][1]
+            -9
+        """
+        self.negative_dtw()
+        self.stickup_adjust()
+
+    def elevation_adjust(self):
+        """adds ground elevation to depth to water to calculate water elevation"""
+        self.input_data[self.wtr_elev_field] = self.input_data[self.dtw_field] + self.elevation
+
+    def transducer_dtw(self):
+        """transducers start with pressure above transducer (increase presure = decrease dtw);
+        then make dtw negative for feet relative to ground; then add elevation"""
+        self.make_dtw()
+        self.negative_dtw()
+        return self.input_data()
+
+    def manual_elevation(self):
+        self.dtw_below_ground()
+        self.elevation_adjust()
+        return self.input_data()
+
+
 def calc_slope_and_intercept(first_man, first_man_julian_date, last_man, last_man_julian_date, first_trans,
                              first_trans_julian_date,
                              last_trans, last_trans_julian_date):
