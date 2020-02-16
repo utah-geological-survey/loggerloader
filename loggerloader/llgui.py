@@ -671,9 +671,10 @@ class Feedback:
                 name = info.loc[ind, 'locationname']
                 df.loc[int(ind)]['waterelevation'] = df.loc[int(ind)]['dtwbelowcasing'] + mstickup + melev
                 melevd[ind] = df.loc[int(ind)]
+                sv.set(f"{name} at {melev} ft and {mstickup} ft stickup")
             else:
                 print(f"{ind} not in index")
-            sv.set(f"{name} at {melev} ft and {mstickup} ft stickup")
+
             pg.step()
         popup.destroy()
         df = pd.concat(melevd)
@@ -873,10 +874,10 @@ class Feedback:
             for wellid in wellids:
                 popup.update()
                 if wellid is not None and wellid != 'None':
-                    if info.loc[wellid,'barologgertype'] != "None" and info.loc[wellid,'barologgertype'] != "":
-                        baroid = f"{info.loc[wellid,'barologgertype']:.0f}"
+                    if info.loc[int(wellid),'barologgertype'] != "None" and info.loc[int(wellid),'barologgertype'] != "":
+                        baroid = f"{info.loc[int(wellid),'barologgertype']:.0f}"
                         medium = files[files['locationid']==wellid]['measuring_medium'].values[0]
-                        name = info.loc[wellid, "locationname"]
+                        name = info.loc[int(wellid), "locationname"]
                         print(baroid)
                         if baroid in files['locationid'].unique() and medium == 'water':
                             mergedf[wellid] = ll.well_baro_merge(self.data['bulk-well'].loc[wellid],
