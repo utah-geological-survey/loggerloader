@@ -54,8 +54,8 @@ class Feedback:
         self.panedwindow.pack(fill='both', expand=True)
         self.process_frame = ttk.Frame(self.panedwindow, width=150, height=400, relief='sunken')
         self.frame2 = ttk.Frame(self.panedwindow, width=400, height=400, relief='sunken')
-        self.panedwindow.add(self.process_frame, weight=1)
-        self.panedwindow.add(self.frame2, weight=4)
+        self.panedwindow.add(self.process_frame, weight=2)
+        self.panedwindow.add(self.frame2, weight=3)
 
         # add tabs in the frame to the right
         self.notebook = ttk.Notebook(self.frame2)
@@ -96,12 +96,18 @@ class Feedback:
 
         self.man_date, self.man_hour, self.man_min, self.man_meas, self.man_datetime = {}, {}, {}, {}, {}
         # labels and date, time, and measure entry for manual measurements
+        ttk.Label(self.manframe, text="Date of Measure").grid(row=0, column=1)
+        ttk.Label(self.manframe, text="HH").grid(row=0, column=2, columnspan=1, sticky='WENS')
+        ttk.Label(self.manframe, text=":").grid(row=0, column=3, columnspan=1, sticky='WENS')
+        ttk.Label(self.manframe, text="MM").grid(row=0, column=4, columnspan=1, sticky='WENS')
+        ttk.Label(self.manframe, text="Measure").grid(row=0, column=5)
+        ttk.Label(self.manframe, text="Units").grid(row=0, column=6)
         self.date_hours_min(0)  # 1st manual measure
-        self.date_hours_min(2)  # 2nd manual measure
+        self.date_hours_min(1)  # 2nd manual measure
 
         # units
         self.manunits = ttk.Combobox(self.manframe, width=5, values=['ft', 'm'], state="readonly")
-        self.manunits.grid(row=1, column=5, rowspan=3)
+        self.manunits.grid(row=1, column=6, rowspan=3)
         self.manunits.current(0)
 
         # locid
@@ -356,27 +362,24 @@ class Feedback:
             self.mandiag(True)
 
     def date_hours_min(self, i):
-        ttk.Label(self.manframe, text=f"Date of Measure {i + 1}").grid(row=i, column=0)
-        ttk.Label(self.manframe, text="HH:MM").grid(row=i, column=1, columnspan=3, sticky='WENS')
-        ttk.Label(self.manframe, text="Measure 1").grid(row=i, column=4)
-        ttk.Label(self.manframe, text="Units").grid(row=i, column=5)
+        ttk.Label(self.manframe,text=str(i+1)).grid(row=i+1,column=0)
         # date picker
         self.man_date[i] = DateEntry(self.manframe, width=20, locale='en_US', date_pattern='MM/dd/yyyy')
-        self.man_date[i].grid(row=i + 1, column=0, padx=2)
+        self.man_date[i].grid(row=i + 1, column=1, padx=2)
         # time picker
         self.man_hour[i] = ttk.Combobox(self.manframe, width=2, values=list([f'{i:02}' for i in range(0, 24)]),
                                         state="readonly")
-        self.man_hour[i].grid(row=i + 1, column=1)
+        self.man_hour[i].grid(row=i + 1, column=2)
         self.man_hour[i].current(0)
-        ttk.Label(self.manframe, text=":").grid(row=i + 1, column=2)
+        ttk.Label(self.manframe, text=":").grid(row=i + 1, column=3)
         self.man_min[i] = ttk.Combobox(self.manframe, width=2,
                                        values=list([f'{i:02}' for i in range(0, 60)]),
                                        state="readonly")
-        self.man_min[i].grid(row=i + 1, column=3)
+        self.man_min[i].grid(row=i + 1, column=4)
         self.man_min[i].current(0)
         # measure
         self.man_meas[i] = ttk.Entry(self.manframe, validate="key", validatecommand=self.measvalidation, width=10)
-        self.man_meas[i].grid(row=i + 1, column=4, padx=2)
+        self.man_meas[i].grid(row=i + 1, column=5, padx=2)
 
     def add_manual_notepad(self):
         # -----------Manual Data-------------------------------------------------------------
@@ -473,10 +476,18 @@ class Feedback:
             mstickup = mstickup * 3.2808
         elif self.wellgroundelevunits.get() == 'm':
             melev = melev * 3.2808
-        self.manelevs = ll.get_man_gw_elevs(self.datatable['manual'].model.df, mstickup, melev)
-        df = ll.get_trans_gw_elevations(self.datatable['fixed-drift'].model.df, mstickup,
-                                        melev, self.combo["Pick id"].get(), level='corrwl', dtw='DTW_WL')
-        self.data[key] = df.set_index('readingdate')
+        # TODO Replace these with ElevateWater class
+        #wlevels = ll.ElevateWater(self.datatable['manual'].model.df, melev, mstickup)
+        #self.manelevs = wlevels.manual_elevation()
+        df = self.datatable['fixed-drift'].model.df
+        #wlevels = ll.ElevateWater(self.datatable['fixed-drift'].model.df, melev, mstickup)
+
+        self.datatable['manual'].model.df['waterelevation'] = self.datatable['manual'].model.df['dtwbelowcasing'] + mstickup + melev
+        self.datatable['manual'].update()
+        self.manelevs = self.datatable['manual'].model.df
+        df['waterelevation'] = self.datatable['fixed-drift'].model.df['DTW_WL'] + mstickup + melev
+
+        self.data[key] = df
         graphframe, tableframe = self.note_tab_add(key)
         self.add_graph_table(key, tableframe, graphframe)
         print(self.manelevs)
@@ -484,11 +495,19 @@ class Feedback:
     def fix_drift(self):
         key = 'fixed-drift'
         if 'well-baro' in self.datatable.keys():
-            df, self.drift_info, mxdrft = ll.fix_drift(self.datatable['well-baro'].model.df,
-                                                       self.datatable['manual'].model.df,
-                                                       manmeas='dtwbelowcasing')
+            self.datatable['manual'].model.df['dtwbelowcasing'] = self.datatable['manual'].model.df['dtwbelowcasing']*-1
+            self.datatable['manual'].update()
+            df, self.drift_info, mxdrft = ll.Drifting(self.datatable['manual'].model.df,
+                                                      self.datatable['well-baro'].model.df,
+                                                      drifting_field='corrwl',
+                                                      man_field='dtwbelowcasing',
+                                                      output_field='DTW_WL').process_drift()
+            #df, self.drift_info, mxdrft = ll.fix_drift(self.datatable['well-baro'].model.df,
+            #                                           self.datatable['manual'].model.df,
+            #                                           manmeas='dtwbelowcasing')
             self.max_drift.set(mxdrft)
-            self.data[key] = df[['datetime', 'barometer', 'corrwl', 'DTW_WL']]
+
+            self.data[key] = df[['barometer', 'corrwl', 'DTW_WL']]
 
             graphframe, tableframe = self.note_tab_add(key)
             self.add_graph_table(key, tableframe, graphframe)
@@ -507,10 +526,17 @@ class Feedback:
         pg.config(maximum=len(self.data['bulk-well-baro'].index.get_level_values(0).unique()))
         sv = tk.StringVar(popup, value='')
         ttk.Label(popup, textvariable=sv).pack()
+        #self.datatable['manual'].model.df['dtwbelowcasing'] = self.datatable['manual'].model.df['dtwbelowcasing'] *-1
         for i in self.data['bulk-well-baro'].index.get_level_values(0).unique():
             popup.update()
-            df, dfrinf, max_drift = ll.fix_drift(self.data['bulk-well-baro'].loc[i], self.datatable['manual'].model.df.loc[i],
-                         manmeas = 'dtwbelowcasing')
+
+            df, dfrinf, max_drift = ll.Drifting(self.datatable['manual'].model.df.loc[i],
+                                                self.data['bulk-well-baro'].loc[i],
+                                                drifting_field='corrwl',
+                                                man_field='dtwbelowcasing',
+                                                output_field='DTW_WL').process_drift()
+            #df, dfrinf, max_drift = ll.fix_drift(self.data['bulk-well-baro'].loc[i], self.datatable['manual'].model.df.loc[i],
+            #             manmeas = 'dtwbelowcasing')
             drift_info[i] = dfrinf.reset_index()
             mstickup = info.loc[i, 'stickup']
             melev = info.loc[i, 'verticalmeasure']
@@ -520,7 +546,8 @@ class Feedback:
                 pass
 
             else:
-                bulkdrift[i] = ll.get_trans_gw_elevations(df, mstickup,  melev, site_number = i, level='corrwl', dtw='DTW_WL')
+                bulkdrift[i] = df['DTW_WL'] + mstickup + melev
+                #bulkdrift[i] = ll.get_trans_gw_elevations(df, mstickup,  melev, site_number = i, level='corrwl', dtw='DTW_WL')
             sv.set(f"{name} has a max drift of {max_drift}")
             pg.step()
 
@@ -573,14 +600,14 @@ class Feedback:
         nbnum = self.manbook.index(self.manbook.select())
         key = 'manual'
         if nbnum == 0:
-            for i in [0, 2]:
+            for i in [0,1]:
                 self.man_datetime[i] = pd.to_datetime(
                     f'{self.man_date[i].get()} {self.man_hour[i].get()}:{self.man_min[i].get()}',
                     format='%m/%d/%Y %H:%M')
 
-            df = pd.DataFrame({'readingdate': [self.man_datetime[0], self.man_datetime[2]],
+            df = pd.DataFrame({'readingdate': [self.man_datetime[0], self.man_datetime[1]],
                                'dtwbelowcasing': [float(self.man_meas[0].get()),
-                                                  float(self.man_meas[2].get())],
+                                                  float(self.man_meas[1].get())],
                                'locationid': [self.man_locid.get()] * 2,
                                'units': [self.manunits.get()] * 2})
             if self.manunits.get() == 'm':
@@ -620,7 +647,7 @@ class Feedback:
         df = df.reset_index()
         df['readingdate'] = df['readingdate'].apply(lambda x: pd.to_datetime(x, infer_datetime_format=True,
                                                                              errors='ignore'))
-        df['dtwbelowcasing'] = df['dtwbelowcasing'].apply(lambda x: pd.to_numeric(x, errors='coerce'))
+        df['dtwbelowcasing'] = df['dtwbelowcasing'].apply(lambda x: -1*pd.to_numeric(x, errors='coerce'))
         df = df.set_index(['locationid','readingdate'])
         df = df[['dtwbelowcasing']]
 
@@ -642,7 +669,8 @@ class Feedback:
                 mstickup = info.loc[ind,'stickup']
                 melev = info.loc[ind,'verticalmeasure']
                 name = info.loc[ind, 'locationname']
-                melevd[ind] = ll.get_man_gw_elevs(df.loc[int(ind)], mstickup, melev)
+                df.loc[int(ind)]['waterelevation'] = df.loc[int(ind)]['dtwbelowcasing'] + mstickup + melev
+                melevd[ind] = df.loc[int(ind)]
             else:
                 print(f"{ind} not in index")
             sv.set(f"{name} at {melev} ft and {mstickup} ft stickup")
@@ -778,7 +806,7 @@ class Feedback:
             ax.set_ylabel(f"Depth to Water (ft)")
         elif key == 'wl-elev':
             ax.plot(self.datatable[key].model.df['waterelevation'], color='green', label='unprocessed')
-            ax.scatter(self.manelevs.index, self.manelevs['waterelevation'])
+            ax.scatter(self.datatable['manual'].model.df.index, self.datatable['manual'].model.df['waterelevation'])
             ax.set_ylabel(f"Water Elevation (ft)")
         ax.set_xlim(self.datatable['manual'].model.df.first_valid_index() - pd.Timedelta('3 days'),
                     self.datatable['manual'].model.df.last_valid_index() + pd.Timedelta('3 days'), )
