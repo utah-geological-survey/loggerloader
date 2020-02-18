@@ -630,7 +630,7 @@ class Drifting(object):
         df['driftcorrection'] = df['datechange'].apply(lambda x: x * self.slope[i], 1)
         df['driftcorrwoffset'] = df['driftcorrection'] + self.intercept[i]
         df[self.output_field] = df[self.drifting_field] - df['driftcorrwoffset']
-        df = df.drop(['driftcorrection', 'datechange'], axis=1)
+        df = df.drop(['datechange'], axis=1)
         self.bracketedwls[i] = df
 
         return df, self.drift[i]

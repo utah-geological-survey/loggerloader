@@ -606,8 +606,15 @@ class Feedback:
         self.datatable[key].update()
         popup.destroy()
         if self.export_drift.get() == 1:
+            df = self.data['bulk-fix-drift']
+            df.index.name = 'locationid'
+            df = df.reset_index()
+            df = df.rename(columns={'DateTime':'readingdate','Level':'measuredlevel','Temperature':'temperature',
+                                    'DTW_WL':'measureddtw'})
+            df = df[['locationid','readingdate','measuredlevel','temperature',
+                     'measureddtw','driftcorrection','waterelevation']]
             file = filedialog.asksaveasfilename(filetypes=[('csv', '.csv')], defaultextension=".csv")
-            self.data['bulk-fix-drift'].to_csv(file)
+            df.to_csv(file)
 
         if self.export_drift_graph.get() == 1:
             pdffile = filedialog.asksaveasfilename(filetypes=[('pdf', '.pdf')], defaultextension=".pdf")
@@ -617,35 +624,37 @@ class Feedback:
                 tk.Label(popup, text="Graphing Data...").pack()
                 pg = ttk.Progressbar(popup, orient=tk.HORIZONTAL, mode='determinate', length=200)
                 pg.pack()
-                pg.config(maximum=len(self.data['bulk-fix-drift'].index.get_level_values(0)))
-
+                pg.config(maximum=len(self.data['bulk-fix-drift'].index.get_level_values(0).unique()))
+                fig = plt.figure(figsize=(5, 5))
+                canvas = FigureCanvasTkAgg(fig, master=popup)
                 for ind in self.data['bulk-fix-drift'].index.get_level_values(0).unique():
                     popup.update()
-                    fig = plt.figure(figsize=(5, 5))
-                    canvas = FigureCanvasTkAgg(fig, master=popup)
-                    ax = fig.add_subplot(111)
-                    fig.canvas.draw()
-                    df = self.data['bulk-fix-drift'].loc[ind]
-                    df = df.dropna(subset=['waterelevation'])
+                    if pd.notnull(ind):
 
-                    mandf = self.datatable['manual'].model.df.loc[ind]
-                    mandf = mandf.dropna(subset=['waterelevation'])
+                        ax = fig.add_subplot(111)
+                        fig.canvas.draw()
+                        df = self.data['bulk-fix-drift'].loc[ind]
+                        df = df.dropna(subset=['waterelevation'])
 
-                    if len(df) > 0 and len(mandf) > 0:
-                        title = info.loc[ind, 'locationname']
-                        ax.plot(df.index, df['waterelevation'],color='blue')
-                        ax.scatter(mandf.index, mandf['waterelevation'],color='red')
+                        mandf = self.datatable['manual'].model.df.loc[ind]
+                        mandf = mandf.dropna(subset=['waterelevation'])
 
-                        ax.set_ylabel('Water Level Elevation')
-                        ax.set_ylim(min(df['waterelevation'])-0.1, max(df['waterelevation'])+0.1)
-                        ax.set_xlim(df.first_valid_index() - pd.Timedelta(days=3),
-                                 df.last_valid_index() + pd.Timedelta(days=3))
-                        canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
-                        canvas.draw()
-                        plt.title(title)
-                        pdf.savefig(fig)
-                    plt.close()
-                    fig.delaxes(ax)
+                        if len(df) > 0 and len(mandf) > 0:
+                            title = info.loc[int(ind), 'locationname']
+                            ax.plot(df.index, df['waterelevation'],color='blue')
+                            ax.scatter(mandf.index, mandf['waterelevation'],color='red')
+
+                            ax.set_ylabel('Water Level Elevation')
+                            ax.set_ylim(min(df['waterelevation'])-0.1, max(df['waterelevation'])+0.1)
+                            ax.set_xlim(df.first_valid_index() - pd.Timedelta(days=3),
+                                     df.last_valid_index() + pd.Timedelta(days=3))
+                            #ax.tick_params(axis='x', labelrotation=45)
+                            canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+                            canvas.draw()
+                            plt.title(title)
+                            pdf.savefig(fig)
+                        plt.close()
+                        fig.delaxes(ax)
                     pg.step()
                 popup.destroy()
 
