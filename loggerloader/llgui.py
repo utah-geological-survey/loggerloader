@@ -1,7 +1,7 @@
 import matplotlib
 
 matplotlib.use("TkAgg")
-from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
+from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk, FigureCanvasTkAgg
 # Implement the default Matplotlib key bindings.
 import matplotlib.pyplot as plt
 from matplotlib import style
@@ -74,18 +74,19 @@ class Feedback:
 
         # SINGLE WELL PROCESSING TAB for left side of application ---------------------------------------------
         # Header image logo and Description seen by user
-        self.frame_header = ttk.Frame(self.onewelltab)
-        self.frame_header.pack(pady=5)
+        frame_header = ttk.Frame(self.onewelltab)
+        frame_header.pack(pady=5)
+        # Included because some attachments fail when packaging code
         try:
             self.logo = tk.PhotoImage(
                 file="G:/My Drive/Python/Pycharm/loggerloader/data_files/GeologicalSurvey.png").subsample(10, 10)
-            ttk.Label(self.frame_header, image=self.logo).grid(row=0, column=0, rowspan=2)
+            ttk.Label(frame_header, image=self.logo).grid(row=0, column=0, rowspan=2)
         except:
             pass
-        ttk.Label(self.frame_header, wraplength=300, text="Processing transducer data").grid(row=0, column=1)
+        ttk.Label(frame_header, wraplength=150,
+                  text=" Utah Geological Survey Scripts for Processing transducer data").grid(row=0, column=1)
 
         # Data Entry Frame
-
         self.filefinders('well')  # Select and import well data
         self.filefinders('baro')  # Select and import baro data
 
@@ -203,8 +204,9 @@ class Feedback:
         self.bulk_manfileframe.pack()
         self.man_file_frame(self.bulk_manfileframe)
 
-        b = ttk.Button(self.bulk_manfileframe, text='Process Manual Data', command=self.proc_man_bulk)
-        b.grid(column=1, row=5, columnspan=2)
+        self.proc_man_bulk_button = ttk.Button(self.bulk_manfileframe, text='Process Manual Data', command=self.proc_man_bulk)
+        self.proc_man_bulk_button.grid(column=1, row=5, columnspan=2)
+        self.proc_man_bulk_button['state'] = 'disabled'
 
         ttk.Separator(dirselectframe, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
         bulk_drift_frame = ttk.Frame(dirselectframe)
@@ -233,7 +235,7 @@ class Feedback:
         ent = ttk.Entry(bulk_drift_frame, textvariable=self.max_allowed_drift, width=10)
         ent.grid(row=1, column=2)
 
-    def man_file_frame(self, master, key = 'manual'):
+    def man_file_frame(self, master, key='manual'):
         # self.manfileframe = ttk.Frame(master)
 
         manfileframetext = """File with manual data must have datetime, reading, and locationid fields"""
@@ -241,6 +243,7 @@ class Feedback:
         ttk.Label(master, text=manfileframetext).grid(row=0, column=0, columnspan=4)
         self.datastr[key] = tk.StringVar(master)
         self.datastr[key].set('G:/Shared drives/UGS_Groundwater/Projects/Transducers/manmeas.csv')
+
         man_entry = ttk.Entry(master, textvariable=self.datastr[key], width=80, justify='left')
         man_entry.grid(row=2, column=0, columnspan=4)
         man_entry.bind('<Double-ButtonRelease-1>', self.mandiag)
@@ -251,8 +254,9 @@ class Feedback:
                           "DTW": [3, 1, 15, fillervals, 4, 1],
                           "locationid": [3, 2, 15, fillervals, 4, 2],
                           "Pick id": [5, 1, 15, [1001, 1002], 5, 2]}
-        for key, vals in self.combovals.items():
-            self.man_combos(key, vals, master)
+
+        for ky, vals in self.combovals.items():
+            self.man_combos(ky, vals, master)
 
         if self.processing_notebook.index(self.processing_notebook.select()) == 1:
             print('bulk')
@@ -264,6 +268,23 @@ class Feedback:
                                      values=['ft', 'm'], state="readonly")
         self.manunits.grid(row=4, column=3)
         self.manunits.current(0)
+
+        # Populates Comboboxes with default file on G drive; if different drive, then passes
+        try:
+            self.data[key] = pd.read_csv(self.datastr[key].get())
+            mancols = list(self.data[key].columns.values)
+            for col in mancols:
+                if col.lower() in ['datetime', 'date', 'readingdate']:
+                    self.combo_choice["Datetime"].set(col)
+                    # self.combo["Datetime"].current(mancols.index(col))
+                elif col.lower() in ['dtw', 'waterlevel', 'depthtowater', 'water_level',
+                                     'level', 'depth_to_water', 'water_depth', 'depth',
+                                     'dtwbelowcasing', 'dtw_below_casing']:
+                    self.combo_choice["DTW"].set(col)
+                elif col.lower() in ['locationid', 'locid', 'id', 'location_id', 'lid']:
+                    self.combo_choice['locationid'].set(col)
+        except FileNotFoundError:
+            pass
 
     def tab_update(self, event):
         index = event.widget.index('current')
@@ -349,6 +370,7 @@ class Feedback:
             return "water"
 
     def man_combos(self, lab, vals, master):
+        """Generates Comboboxes for the manual file input sections"""
         self.combo_choice[lab] = tk.StringVar()
         self.combo_label[lab] = ttk.Label(master, text=lab)
         self.combo_label[lab].grid(row=vals[0], column=vals[1])
@@ -531,7 +553,7 @@ class Feedback:
 
     def bulk_fix_drift(self):
         popup = tk.Toplevel()
-        popup.geometry("400x100+200+200")
+        popup.geometry("400x400+200+200")
         tk.Label(popup, text="Fixing Drift...").pack()
         pg = ttk.Progressbar(popup, orient=tk.HORIZONTAL, mode='determinate', length=200)
         pg.pack()
@@ -552,16 +574,13 @@ class Feedback:
 
                 mandf = self.datatable['manual'].model.df.loc[int(i)]
                 wellbaro = self.data['bulk-well-baro'].loc[int(i)]
-                mandf.to_csv(f"G:/Shared drives/UGS_Groundwater/Projects/Transducers/Raw_Data/mandf-{i}.csv")
-                wellbaro.to_csv(f"G:/Shared drives/UGS_Groundwater/Projects/Transducers/Raw_Data/wellbaro-{i}.csv")
 
                 df, dfrinf, max_drift = ll.Drifting(mandf,
                                                     wellbaro,
                                                     drifting_field='corrwl',
                                                     man_field='dtwbelowcasing',
                                                     output_field='DTW_WL').process_drift()
-                # df, dfrinf, max_drift = ll.fix_drift(self.data['bulk-well-baro'].loc[i], self.datatable['manual'].model.df.loc[i],
-                #             manmeas = 'dtwbelowcasing')
+
                 drift_info[i] = dfrinf.reset_index()
                 mstickup = info.loc[i, 'stickup']
                 melev = info.loc[i, 'verticalmeasure']
@@ -571,7 +590,8 @@ class Feedback:
                     pass
 
                 else:
-                    bulkdrift[i] = df['DTW_WL'] + mstickup + melev
+                    df['waterelevation'] = df['DTW_WL'] + mstickup + melev
+                    bulkdrift[i] = df
                     # bulkdrift[i] = ll.get_trans_gw_elevations(df, mstickup,  melev, site_number = i, level='corrwl', dtw='DTW_WL')
                 sv.set(f"{name} has a max drift of {max_drift}")
             pg.step()
@@ -598,26 +618,34 @@ class Feedback:
                 pg = ttk.Progressbar(popup, orient=tk.HORIZONTAL, mode='determinate', length=200)
                 pg.pack()
                 pg.config(maximum=len(self.data['bulk-fix-drift'].index.get_level_values(0)))
-                sv = tk.StringVar(popup, value='')
-                ttk.Label(popup, textvariable=sv).pack()
-                for ind in self.data['bulk-fix-drift'].index.get_level_values(0):
+
+                for ind in self.data['bulk-fix-drift'].index.get_level_values(0).unique():
                     popup.update()
-                    plt.figure(figsize=(5, 5))
+                    fig = plt.figure(figsize=(5, 5))
+                    canvas = FigureCanvasTkAgg(fig, master=popup)
+                    ax = fig.add_subplot(111)
+                    fig.canvas.draw()
                     df = self.data['bulk-fix-drift'].loc[ind]
+                    df = df.dropna(subset=['waterelevation'])
+
                     mandf = self.datatable['manual'].model.df.loc[ind]
-                    title = info.loc[i, 'locationname']
-                    plt.plot(df.index, df['waterelevation'])
-                    plt.scatter(mandf.index, mandf['waterelevation'])
+                    mandf = mandf.dropna(subset=['waterelevation'])
 
-                    plt.ylabel('Water Level Elevation', color='blue')
-                    plt.ylim(min(df['waterelevation']), max(df['waterelevation']))
-                    plt.xlim(df.first_valid_index() - pd.Timedelta(days=3),
-                             df.last_valid_index() + pd.Timedelta(days=3))
+                    if len(df) > 0 and len(mandf) > 0:
+                        title = info.loc[ind, 'locationname']
+                        ax.plot(df.index, df['waterelevation'],color='blue')
+                        ax.scatter(mandf.index, mandf['waterelevation'],color='red')
 
-                    plt.title(title)
-                    pdf.savefig()
+                        ax.set_ylabel('Water Level Elevation')
+                        ax.set_ylim(min(df['waterelevation'])-0.1, max(df['waterelevation'])+0.1)
+                        ax.set_xlim(df.first_valid_index() - pd.Timedelta(days=3),
+                                 df.last_valid_index() + pd.Timedelta(days=3))
+                        canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+                        canvas.draw()
+                        plt.title(title)
+                        pdf.savefig(fig)
                     plt.close()
-                    sv.set()
+                    fig.delaxes(ax)
                     pg.step()
                 popup.destroy()
 
@@ -660,59 +688,48 @@ class Feedback:
         graphframe, tableframe = self.note_tab_add(key)
         self.add_graph_table(key, tableframe, graphframe)
 
-    def proc_man_bulk(self):
-        # TODO Speed up this function
-        key = 'manual'
-        df = self.data[key].rename(columns={self.combo['Datetime'].get(): 'readingdate',
-                                            self.combo['DTW'].get(): 'dtwbelowcasing',
-                                            self.combo['locationid'].get(): 'locationid'})
-        df['units'] = self.manunits.get()
-        if self.manunits.get() == 'm':
-            df['dtwbelowcasing'] = df['dtwbelowcasing'] * 3.28084
-        df = df.reset_index()
-        df['readingdate'] = df['readingdate'].apply(lambda x: pd.to_datetime(x, infer_datetime_format=True,
-                                                                             errors='ignore'))
-        df['dtwbelowcasing'] = df['dtwbelowcasing'].apply(lambda x: -1 * pd.to_numeric(x, errors='coerce'))
-        #df = df.set_index(['locationid', 'readingdate'])
-        #df = df['dtwbelowcasing']
-        info = self.datatable['well-info-table'].model.df
-        df = df[df['locationid'].isin(info.index)]
-        df['waterelevation'] = df[['locationid','dtwbelowcasing']].apply(lambda x: x[1]+ info.loc[x[0], 'stickup']+info.loc[x[0], 'verticalmeasure'],1)
-        df = df.set_index(['locationid', 'readingdate'])
-        #melevd = {}
-        #popup = tk.Toplevel()
-        #popup.geometry("400x100+200+200")
-        #tk.Label(popup, text="Examining Directory...").pack()
-        #pg = ttk.Progressbar(popup, orient=tk.HORIZONTAL, mode='determinate', length=200)
-        #pg.pack()
-        #pg.config(maximum=len(df.index.get_level_values(0)))
-        #sv = tk.StringVar(popup, value='')
-        #ttk.Label(popup, textvariable=sv).pack()
+    def bulk_wlelev(self, x, inf, pg, pop):
+        pop.update()
+        wl = x[1] + inf.loc[x[0], 'stickup'] + inf.loc[x[0], 'verticalmeasure']
+        pg.step()
+        return wl
 
-        #for ind in df.index.get_level_values(0):
-        #    popup.update()
-        #    if pd.notnull(ind):
-        #        ind = int(ind)
-        #        if ind in info.index:
-        #            mstickup = info.loc[ind, 'stickup']
-        #            melev = info.loc[ind, 'verticalmeasure']
-        #            name = info.loc[ind, 'locationname']
-        #            df.loc[ind]['waterelevation'] = df.loc[ind]['dtwbelowcasing'] + mstickup + melev
-        #            melevd[ind] = df.loc[ind]
-        #            sv.set(f"{name} at {melev} ft and {mstickup} ft stickup")
-        #        else:
-        #            print(f"{ind} not in index")
-        #    pg.step()
-        #popup.destroy()
-        #df = pd.concat(melevd, names= 'locationid')
-        #df = df.reset_index()
-        #df = df.set_index(['locationid', 'readingdate'])
-        self.data[key] = df
-        graphframe, tableframe = self.note_tab_add(key)
-        self.add_graph_table(key, tableframe, graphframe)
-        self.export_drift_graph_check['state'] = 'normal'
-        self.export_drift_check['state'] = 'normal'
-        self.bfdb['state'] = 'normal'
+    def proc_man_bulk(self, key='manual'):
+        try:
+            df = self.data[key].rename(columns={self.combo['Datetime'].get(): 'readingdate',
+                                                self.combo['DTW'].get(): 'dtwbelowcasing',
+                                                self.combo['locationid'].get(): 'locationid'})
+            df['units'] = self.manunits.get()
+            if self.manunits.get() == 'm':
+                df['dtwbelowcasing'] = df['dtwbelowcasing'] * 3.28084
+            df = df.reset_index()
+            df['readingdate'] = df['readingdate'].apply(lambda x: pd.to_datetime(x, infer_datetime_format=True,
+                                                                                 errors='ignore'))
+            df['dtwbelowcasing'] = df['dtwbelowcasing'].apply(lambda x: -1 * pd.to_numeric(x, errors='coerce'))
+            # df = df.set_index(['locationid', 'readingdate'])
+            # df = df['dtwbelowcasing']
+            info = self.datatable['well-info-table'].model.df
+            df = df[df['locationid'].isin(info.index)]
+
+            popup = tk.Toplevel()
+            popup.geometry("400x100+200+200")
+            tk.Label(popup, text="Calculating manual elevations...").pack()
+            pg = ttk.Progressbar(popup, orient=tk.HORIZONTAL, mode='determinate', length=200)
+            pg.pack()
+            pg.config(maximum=len(df.index.get_level_values(0)))
+
+            df['waterelevation'] = df[['locationid', 'dtwbelowcasing']].apply(lambda x: self.bulk_wlelev(x, info, pg, popup), 1)
+            df = df.set_index(['locationid', 'readingdate'])
+
+            popup.destroy()
+            self.data[key] = df
+            graphframe, tableframe = self.note_tab_add(key)
+            self.add_graph_table(key, tableframe, graphframe)
+            self.export_drift_graph_check['state'] = 'normal'
+            self.export_drift_check['state'] = 'normal'
+            self.bfdb['state'] = 'normal'
+        except KeyError:
+            tk.messagebox.showerror(title='Process Well Info Table First', message="Process Well Info Table First")
 
     def only_meas(self, value_if_allowed):
         try:
@@ -862,7 +879,6 @@ class Feedback:
     def wellbarodiag(self, key):
 
         ftypelist = (("Solinst xle", "*.xle*"), ("Solinst csv", "*.csv"))
-
         self.datastr[key].set(filedialog.askopenfilename(initialdir=self.currentdir,
                                                          title=f"Select {key} file",
                                                          filetypes=ftypelist))
@@ -902,7 +918,7 @@ class Feedback:
 
             for wellid in wellids:
                 popup.update()
-                if wellid is not None and wellid != 'None':
+                if wellid is not None and pd.notna(wellid) and pd.notnull(wellid):
                     if info.loc[int(wellid), 'barologgertype'] != "None" and info.loc[
                         int(wellid), 'barologgertype'] != "":
                         baroid = pd.to_numeric(info.loc[int(wellid), 'barologgertype'],
@@ -912,7 +928,7 @@ class Feedback:
 
                         if baroid in files['locationid'].unique() and medium == 'water':
                             mergedf[int(wellid)] = ll.well_baro_merge(self.data['bulk-well'].loc[int(wellid)],
-                                                                 self.data['bulk-well'].loc[int(baroid)])
+                                                                      self.data['bulk-well'].loc[int(baroid)])
                 else:
                     print(f'no baroid for well {wellid}')
                     name = 'No Name'
@@ -923,8 +939,8 @@ class Feedback:
             df = pd.concat(mergedf, names=['locationid'])
 
             df = df.reset_index()
-            df['DateTime'] = pd.to_datetime(df['DateTime'],errors='coerce')
-            df = df.set_index(['locationid','DateTime'])
+            df['DateTime'] = pd.to_datetime(df['DateTime'], errors='coerce')
+            df = df.set_index(['locationid', 'DateTime'])
             df = df[['Level', 'Temperature', 'barometer', 'dbp', 'dwl', 'corrwl']]
             self.data['bulk-well-baro'] = df
 
@@ -1015,9 +1031,10 @@ class Feedback:
         self.currentdir = os.path.dirname(self.datastr[key].get())
         df = pd.read_csv(self.datastr[key].get())
         df = df[df['altlocationid'].notnull()]
-        df['altlocationid'] = df['altlocationid'].apply(lambda x: pd.to_numeric(x,downcast='integer',errors='coerce'), 1)
+        df['altlocationid'] = df['altlocationid'].apply(lambda x: pd.to_numeric(x, downcast='integer', errors='coerce'),
+                                                        1)
         df = df.set_index(['altlocationid']).sort_index()
-        #df.index = df.index.astype('int64')
+        # df.index = df.index.astype('int64')
         self.data[key] = df
 
         graphframe, tableframe = self.note_tab_add(key, tabw=5, grph=1)
@@ -1028,6 +1045,7 @@ class Feedback:
 
         self.filefnd['state'] = 'normal'
         self.combo_source['state'] = 'normal'
+        self.proc_man_bulk_button['state'] = 'normal'
 
     def grab_trans_dir(self, master):
         """grabs directory containing transducer files and inputs filenames into a scrollable canvas with comboboxes to
