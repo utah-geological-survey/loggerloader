@@ -418,15 +418,15 @@ class Drifting(object):
         for i in range(len(self.breakpoints) - 1):
             # self.bracketed_wls(i)
             self.beginning_end(i)
-
-            if self.trim_end:
-                self.bracketedwls[i] = dataendclean(self.bracketedwls[i], self.drifting_field, jumptol=0.5)
-            self.endpoint_import(i)
-            self.endpoint_status(i)
-            self.slope_intercept(i)
-            self.drift_add(i)
-            self.drift_data(i)
-            self.drift_print(i)
+            if len(self.bracketedwls[i])>0:
+                if self.trim_end:
+                    self.bracketedwls[i] = dataendclean(self.bracketedwls[i], self.drifting_field, jumptol=0.5)
+                self.endpoint_import(i)
+                self.endpoint_status(i)
+                self.slope_intercept(i)
+                self.drift_add(i)
+                self.drift_data(i)
+                self.drift_print(i)
         self.combine_brackets()
         self.drift_summary()
         return self.wellbarofixed, self.drift_sum_table, self.max_drift
@@ -436,23 +436,28 @@ class Drifting(object):
             (self.transducer_df.index >= self.breakpoints[i]) & (self.transducer_df.index <= self.breakpoints[i + 1])]
         df = df.dropna(subset=[self.drifting_field])
         df = df.sort_index()
+        print(i)
+        print(df)
+        if len(df) > 0:
+            self.manual_df['datetime'] = self.manual_df.index
 
-        self.manual_df['datetime'] = self.manual_df.index
+            self.first_man_julian_date[i] = self.fcl(self.manual_df['julian'], self.breakpoints[i])
+            self.last_man_julian_date[i] = self.fcl(self.manual_df['julian'], self.breakpoints[i + 1])
+            self.first_man_date[i] = self.fcl(self.manual_df['datetime'], self.breakpoints[i])
+            self.last_man_date[i] = self.fcl(self.manual_df['datetime'], self.breakpoints[i + 1])
+            self.first_man[i] = self.fcl(self.manual_df[self.man_field], self.breakpoints[i])  # first manual measurement
+            self.last_man[i] = self.fcl(self.manual_df[self.man_field], self.breakpoints[i + 1])  # last manual measurement
 
-        self.first_man_julian_date[i] = self.fcl(self.manual_df['julian'], self.breakpoints[i])
-        self.last_man_julian_date[i] = self.fcl(self.manual_df['julian'], self.breakpoints[i + 1])
-        self.first_man_date[i] = self.fcl(self.manual_df['datetime'], self.breakpoints[i])
-        self.last_man_date[i] = self.fcl(self.manual_df['datetime'], self.breakpoints[i + 1])
-        self.first_man[i] = self.fcl(self.manual_df[self.man_field], self.breakpoints[i])  # first manual measurement
-        self.last_man[i] = self.fcl(self.manual_df[self.man_field], self.breakpoints[i + 1])  # last manual measurement
-
-        self.first_trans[i] = df.loc[df.first_valid_index(), self.drifting_field]
-        self.last_trans[i] = df.loc[df.last_valid_index(), self.drifting_field]
-        self.first_trans_julian_date[i] = df.loc[df.first_valid_index(), 'julian']
-        self.last_trans_julian_date[i] = df.loc[df.last_valid_index(), 'julian']
-        self.first_trans_date[i] = df.first_valid_index()
-        self.last_trans_date[i] = df.last_valid_index()
-        self.bracketedwls[i] = df
+            self.first_trans[i] = df.loc[df.first_valid_index(), self.drifting_field]
+            self.last_trans[i] = df.loc[df.last_valid_index(), self.drifting_field]
+            self.first_trans_julian_date[i] = df.loc[df.first_valid_index(), 'julian']
+            self.last_trans_julian_date[i] = df.loc[df.last_valid_index(), 'julian']
+            self.first_trans_date[i] = df.first_valid_index()
+            self.last_trans_date[i] = df.last_valid_index()
+            self.bracketedwls[i] = df
+        else:
+            self.bracketedwls[i] = df
+            pass
 
     @staticmethod
     def fcl(df, dtobj):
