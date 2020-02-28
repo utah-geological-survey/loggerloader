@@ -581,10 +581,12 @@ class Feedback:
                                                     man_field='dtwbelowcasing',
                                                     output_field='DTW_WL').process_drift()
 
-                drift_info[i] = dfrinf.reset_index()
+
                 mstickup = info.loc[i, 'stickup']
                 melev = info.loc[i, 'verticalmeasure']
                 name = info.loc[i, 'locationname']
+                dfrinf['name'] = name
+                drift_info[i] = dfrinf#.reset_index()
                 if max_drift > self.max_allowed_drift.get():
                     ttk.Label(popup, text=f'{name} drift too high at {max_drift}!').pack()
                     pass
@@ -597,8 +599,9 @@ class Feedback:
             pg.step()
 
         self.data['bulk-fix-drift'] = pd.concat(bulkdrift)
+        self.data['bulk-fix-drift'] = self.data['bulk-fix-drift'].set_index('name')
         key = 'drift-info'
-        self.data[key] = pd.concat(drift_info)
+        self.data[key] = pd.concat(drift_info, sort=True, ignore_index=True)
         graphframe, tableframe = self.note_tab_add(key)
         self.datatable[key] = Table(tableframe, dataframe=self.data[key], showtoolbar=True, showstatusbar=True)
         self.datatable[key].show()
@@ -874,6 +877,7 @@ class Feedback:
         else:
             if key in ('well', 'baro'):
                 self.data[key] = ll.NewTransImp(self.datastr[key].get()).well.drop(['name'], axis=1)
+                filenm, self.file_extension = os.path.splitext(self.datastr[key].get())
             elif key == 'manual':
                 filenm, file_extension = os.path.splitext(self.datastr[key].get())
                 if file_extension in ('.xls', '.xlsx'):
@@ -900,17 +904,24 @@ class Feedback:
         """
 
         Returns: notepad tab with aligned data;
-
+        TODO Add File type combo to improve csv processing
         """
         if 'well' in self.data.keys() and 'baro' in self.data.keys():
             key = 'well-baro'
+            if self.file_extension == '.csv':
+                sol = True
+            else:
+                sol = False
+
             self.data[key] = ll.well_baro_merge(self.datatable['well'].model.df,
                                                 self.datatable['baro'].model.df,
-                                                sampint=self.freqint.get())
+                                                sampint=self.freqint.get(),
+                                                vented = sol)
             graphframe, tableframe = self.note_tab_add(key)
             self.add_graph_table(key, tableframe, graphframe)
 
     def align_well_baro_bulk(self):
+        # TODO add feature to recognize global water transducers
         if 'bulk-well' in self.data.keys():
             files = self.datatable['file-info-table'].model.df
             info = self.datatable['well-info-table'].model.df
@@ -935,9 +946,19 @@ class Feedback:
                         medium = files[files['locationid'] == wellid]['measuring_medium'].values[0]
                         name = info.loc[int(wellid), "locationname"]
 
+                        ttype = files[files['locationid'] == wellid]['trans type'].values[0]
+
+                        if ttype == 'Solinst':
+                            sol = False
+                        elif ttype == 'Global Water':
+                            sol = True
+                        else:
+                            sol = False
+
                         if baroid in files['locationid'].unique() and medium == 'water':
                             mergedf[int(wellid)] = ll.well_baro_merge(self.data['bulk-well'].loc[int(wellid)],
-                                                                      self.data['bulk-well'].loc[int(baroid)])
+                                                                      self.data['bulk-well'].loc[int(baroid)],
+                                                                      vented=sol)
                 else:
                     print(f'no baroid for well {wellid}')
                     name = 'No Name'
