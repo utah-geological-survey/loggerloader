@@ -433,11 +433,11 @@ class Drifting(object):
 
     def beginning_end(self, i):
         df = self.transducer_df[
-            (self.transducer_df.index >= self.breakpoints[i]) & (self.transducer_df.index <= self.breakpoints[i + 1])]
+            (self.transducer_df.index >= self.breakpoints[i]) & (self.transducer_df.index < self.breakpoints[i + 1])]
         df = df.dropna(subset=[self.drifting_field])
         df = df.sort_index()
-        print(i)
-        print(df)
+        #print(i)
+        #print(df)
         if len(df) > 0:
             self.manual_df['datetime'] = self.manual_df.index
 
@@ -561,8 +561,8 @@ class Drifting(object):
         """
         self.slope_man[i] = 0
         self.slope_trans[i] = 0
-        self.first_offset[i] = 0
-        self.last_offset[i] = 0
+        self.first_offset[i] = None
+        self.last_offset[i] = None
 
         # if there is not a manual measurement at the start of the period,
         # set separation between trans and man to 0
@@ -570,6 +570,7 @@ class Drifting(object):
             try:
                 self.last_offset[i] = self.last_trans[i] - self.last_man[i]
             except TypeError:
+                print('Errorr')
                 self.last_offset[i] = 0
 
             self.first_man_julian_date[i] = self.first_trans_julian_date[i]
@@ -583,6 +584,7 @@ class Drifting(object):
 
         else:
             self.first_offset[i] = self.first_trans[i] - self.first_man[i]
+            self.last_offset[i] = self.last_trans[i] - self.last_man[i]
             self.slope_man[i] = (self.first_man[i] - self.last_man[i]) / (
                         self.first_man_julian_date[i] - self.last_man_julian_date[i])
             self.slope_trans[i] = (self.first_trans[i] - self.last_trans[i]) / (
@@ -590,7 +592,7 @@ class Drifting(object):
 
         self.slope[i] = self.slope_trans[i] - self.slope_man[i]
 
-        if self.first_offset[i] == 0:
+        if self.first_offset[i] is None:
             self.intercept[i] = self.last_offset[i]
         else:
             self.intercept[i] = self.first_offset[i]
@@ -716,8 +718,8 @@ class Drifting(object):
             if (self.levdt is not None) and (
                     self.first_trans_date[i] - datetime.timedelta(days=self.daybuffer) < pd.to_datetime(self.levdt)):
                 print("Pulling first manual measurement from database")
-                self.first_man = self.lev
-                self.first_man_julian_date = pd.to_datetime(self.levdt).to_julian_date()
+                self.first_man[i] = self.lev
+                self.first_man_julian_date[i] = pd.to_datetime(self.levdt).to_julian_date()
             else:
                 print('No initial transducer measurement within {:} days of {:}.'.format(self.daybuffer,
                                                                                          self.first_man_date[i]))
@@ -747,15 +749,15 @@ class Drifting(object):
                                                           self.engine, timedel=self.daybuffer)
 
             if (self.levdt is not None) and (
-                    self.first_trans_date - pd.Timedelta(f'{self.daybuffer:.0f}D') < pd.to_datetime(self.levdt)):
-                self.first_man = self.lev
-                self.first_man_julian_date = pd.to_datetime(self.levdt).to_julian_date()
+                    self.first_trans_date[i] - pd.Timedelta(f'{self.daybuffer:.0f}D') < pd.to_datetime(self.levdt)):
+                self.first_man[i] = self.lev
+                self.first_man_julian_date[i] = pd.to_datetime(self.levdt).to_julian_date()
         else:
             pass
 
     def combine_brackets(self):
         dtnm = self.bracketedwls[0].index.name
-        print(dtnm)
+        #print(dtnm)
         df = pd.concat(self.bracketedwls, sort=True)
         df = df.reset_index()
         df = df.set_index(dtnm)
