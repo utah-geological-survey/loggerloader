@@ -9,3 +9,4 @@ pandastable
 psycopg2
 pymssql
 pytz
+deprecation

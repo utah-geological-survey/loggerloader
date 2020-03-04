@@ -14,7 +14,7 @@ import matplotlib.ticker as tick
 import datetime
 from shutil import copyfile
 from pylab import rcParams
-
+import deprecation
 rcParams['figure.figsize'] = 15, 10
 
 try:
@@ -54,60 +54,6 @@ class Color:
 
 # -----------------------------------------------------------------------------------------------------------------------
 # These functions align relative transducer reading to manual data
-
-
-def get_breakpoints(manualfile, well, wl_field='corrwl'):
-    """Finds important break-point dates in well file that match manual measurements
-    and mark end and beginning times.
-    The transducer file will be split into chunks based on these dates to be processed for drift and corrected.
-
-    Args:
-        manualfile (pd.DataFrame): Pandas Dataframe of manual measurements
-        well (pd.DataFrame): Pandas Dataframe of transducer file
-        wl_field (str): field to drop NA values from; field used for matching
-
-    Returns:
-        list of breakpoints for the transducer file
-
-    Examples:
-
-        >>> manual = {'dates':['6/11/1991','2/1/1999','8/5/2001','7/14/2000','8/19/2002','4/2/2005'],'man_read':[1,10,14,52,10,8]}
-        >>> man_df = pd.DataFrame(manual)
-        >>> man_df.set_index('dates',inplace=True)
-        >>> datefield = pd.date_range(start='1/1/1995',end='12/15/2006',freq='3D')
-        >>> df = pd.DataFrame({'dates':datefield,'data':np.random.rand(len(datefield))})
-        >>> df.set_index('dates',inplace=True)
-        >>> get_breakpoints(man_df,df,'data')[1]
-        numpy.datetime64('1999-01-31T00:00:00.000000000')
-    """
-
-    breakpoints = []
-    manualfile.index = pd.to_datetime(manualfile.index)
-    manualfile.sort_index(inplace=True)
-
-    wellnona = well.dropna(subset=[wl_field])
-
-    # add first transducer time if it preceeds first manual measurement
-    if manualfile.first_valid_index() > wellnona.first_valid_index():
-        breakpoints.append(wellnona.first_valid_index())
-
-    # add all manual measurements
-    for i in range(len(manualfile)):
-        # breakpoints.append(fcl(wellnona, manualfile.index[i]).name)
-        breakpoints.append(manualfile.index[i])
-
-    # add last transducer time if it is after last manual measurement
-    if manualfile.last_valid_index() < wellnona.last_valid_index():
-        breakpoints.append(wellnona.last_valid_index())
-
-    breakpoints = pd.Series(breakpoints)
-    breakpoints = pd.to_datetime(breakpoints)
-    breakpoints.sort_values(inplace=True)
-    breakpoints.drop_duplicates(inplace=True)
-    breakpoints = breakpoints[~breakpoints.index.duplicated(keep='first')]
-    breakpoints = breakpoints.values
-    return breakpoints
-
 
 def pull_closest_well_data(wellid, breakpoint1, conn_file_root, timedel=3,
                            readtable='reading', timezone=None):
@@ -184,144 +130,42 @@ def pull_closest_well_data(wellid, breakpoint1, conn_file_root, timedel=3,
     return levdt, lev
 
 
-class ElevateWater(object):
-    def __init__(self, df, elevation, stickup, pressure_field='DTW_WL',
-                 dtw_field='dtwbelowcasing', wtr_elev_field='waterelevation'):
-        """treats both manual and transducer data; easiest to calculate manual elevations first
-        and do fix-drift class on raw well pressure
 
-        Args:
-            df: pandas dataframe containing water elevation data
-            elevation: ground elevation at wellsite
-            stickup: stickup of casing above ground surface
-            pressure_field: field in df (if transducer data) that contains pressure
-            dtw_field: field in df that denotes depth to water (should start positive for below ground)
-            wtr_elev_field: field to store groundwater elevation in
+def elevatewater(df, elevation, stickup,
+                 dtw_field='dtwbelowcasing', wtr_elev_field='waterelevation', flip = False):
+    """treats both manual and transducer data; easiest to calculate manual elevations first
+    and do fix-drift class on raw well pressure
 
-        Notes:
-            increase in pressure = increase in water elevation;
-            increase in pressure = decrease in depth to water;
-            increase in depth to water = decrease in water elevation;
+    Args:
+        df: pandas dataframe containing water elevation data
+        elevation: ground elevation at wellsite
+        stickup: stickup of casing above ground surface; can be float or series
+        dtw_field: field in df that denotes depth to water (should be negative for below ground)
+        wtr_elev_field: field to store groundwater elevation in
+        flip = if True, multiplies dataset by -1; use this if inputing pressure data
 
-        Examples:
-            >>> manual = {'dates':['6/11/1991','2/1/1999','8/5/2001','7/14/2000','8/19/2002','4/2/2005'], 'dtwbelowcasing':[1,10,14,52,10,8]}
-            >>> df = pd.DataFrame(manual)
-            >>> ew = ElevateWater(df, 4000, 1)
-            >>> ew.stickup
-            1
-            >>> ew.elevation
-            4000
-        """
+    Notes:
+        increase in pressure = increase in water elevation;
+        increase in pressure = decrease in depth to water;
+        increase in depth to water = decrease in water elevation;
 
-        self.input_data = df
-        self.elevation = elevation
-        self.stickup = stickup
-        self.pressure_field = pressure_field
-        self.dtw_field = dtw_field
-        self.wtr_elev_field = wtr_elev_field
+    Examples:
+        >>> manual = {'dates':['6/11/1991','2/1/1999','8/5/2001','7/14/2000','8/19/2002','4/2/2005'], 'dtwbelowcasing':[1,10,14,52,10,8]}
+        >>> df = pd.DataFrame(manual)
+        >>> ew = ElevateWater(df, 4000, 1)
+        >>> ew.stickup
+        1
+        >>> ew.elevation
+        4000
+    """
 
-    def make_dtw(self):
-        """pressure is feet of water above transducer; to make depth to water pressure must be inverse
+    if flip:
+        df[dtw_field] = df[dtw_field]*-1
+    else:
+        pass
 
-        Returns: negative pressure
-
-        Examples:
-            >>> pdata = {'dates':['6/11/1991','2/1/1999','8/5/2001','7/14/2000','8/19/2002','4/2/2005'], 'pressure':[1,10,14,52,10,8]}
-            >>> df = pd.DataFrame(manual)
-            >>> ew = ElevateWater(df, 4000, 1, pressure_field='pressure')
-            >>> ew.make_dtw()
-            >>> ew.input_data['dtwbelowcasing'][1]
-            -10
-        """
-        self.input_data[self.dtw_field] = -1 * self.input_data[self.pressure_field]
-        self.negative_dtw()
-
-    def negative_dtw(self):
-        """depth to water is feet below ground surface, which is opposite in direction of elevation and stickup
-
-        Returns: depth to water in feet relative to measure point (casing top); negative is down
-
-        Examples
-            >>> pdata = {'dates':['6/11/1991','2/1/1999','8/5/2001','7/14/2000','8/19/2002','4/2/2005'], 'dtw':[1,10,14,52,10,8]}
-            >>> df = pd.DataFrame(manual)
-            >>> ew = ElevateWater(df, 4000, 1, dtw_field='dtw')
-            >>> ew.negative_dtw()
-            >>> ew.input_data['dtw'][1]
-            -10
-        """
-        self.input_data[self.dtw_field] *= -1
-
-    def stickup_adjust(self):
-        """adds stickup to depth to water to account for riser height above surface
-
-        Returns:
-            depth to water relative to ground surface; negative is down
-
-            >>> pdata = {'dates':['6/11/1991','2/1/1999','8/5/2001','7/14/2000','8/19/2002','4/2/2005'], 'dtw':[1,10,14,52,10,8]}
-            >>> df = pd.DataFrame(manual)
-            >>> ew = ElevateWater(df, 4000, 1, dtw_field='dtw')
-            >>> ew.negative_dtw()
-            >>> ew.stickup_adjust()
-            >>> ew.input_data['dtw'][1]
-            -9
-
-        """
-        self.input_data[self.dtw_field] += self.stickup
-
-    def dtw_below_ground(self):
-        """
-        Returns:
-            depth to water relative to ground surface; negative is down
-
-        Examples:
-            >>> pdata = {'dates':['6/11/1991','2/1/1999','8/5/2001','7/14/2000','8/19/2002','4/2/2005'], 'dtw':[1,10,14,52,10,8]}
-            >>> df = pd.DataFrame(manual)
-            >>> ew = ElevateWater(df, 4000, 1, dtw_field='dtw')
-            >>> ew.dtw_below_ground()
-            >>> ew.input_data['dtw'][1]
-            -9
-        """
-        self.negative_dtw()
-        self.stickup_adjust()
-
-    def elevation_adjust(self):
-        """adds ground elevation to depth to water to calculate water elevation
-
-        Returns: returns water level elevation
-
-        Examples:
-            >>> pdata = {'dates':['6/11/1991','2/1/1999','8/5/2001','7/14/2000','8/19/2002','4/2/2005'], 'dtw':[1,10,14,52,10,8]}
-            >>> df = pd.DataFrame(manual)
-            >>> ew = ElevateWater(df, 4000, 1, dtw_field='dtw')
-            >>> ew.dtw_below_ground()
-            >>> ew.elevation_adjust()
-            >>> ew.input_data['waterelevation'][1]
-            3991
-        """
-        self.input_data[self.wtr_elev_field] = self.input_data[self.dtw_field] + self.elevation
-
-    def transducer_elevation(self):
-        self.make_dtw()
-        self.stickup_adjust()
-        self.elevation_adjust()
-        return self.input_data
-
-    def manual_elevation(self):
-        """adds ground elevation to depth to water to calculate water elevation
-
-        Returns: returns water level elevation
-
-        Examples:
-            >>> pdata = {'dates':['6/11/1991','2/1/1999','8/5/2001','7/14/2000','8/19/2002','4/2/2005'], 'dtw':[1,10,14,52,10,8]}
-            >>> df = pd.DataFrame(pdata)
-            >>> ew = ElevateWater(df, 4000, 1, dtw_field='dtw')
-            >>> ew.manual_elevation()
-            >>> ew.input_data['waterelevation'][1]
-            3991
-        """
-        self.dtw_below_ground()
-        self.elevation_adjust()
-        return self.input_data
+    df[wtr_elev_field] = df[dtw_field] + elevation + stickup
+    return df
 
 
 class Drifting(object):
@@ -396,8 +240,8 @@ class Drifting(object):
         self.well_id = well_id
         self.engine = engine
         self.breakpoints = []
-        self.levdt = None
-        self.lev = None
+        self.levdt = {}
+        self.lev = {}
         self.daybuffer = daybuffer
         self.wellbarofixed = pd.DataFrame()
         self.drift_sum_table = pd.DataFrame()
@@ -418,7 +262,7 @@ class Drifting(object):
         for i in range(len(self.breakpoints) - 1):
             # self.bracketed_wls(i)
             self.beginning_end(i)
-            if len(self.bracketedwls[i])>0:
+            if len(self.bracketedwls[i]) > 0:
                 if self.trim_end:
                     self.bracketedwls[i] = dataendclean(self.bracketedwls[i], self.drifting_field, jumptol=0.5)
                 self.endpoint_import(i)
@@ -561,8 +405,8 @@ class Drifting(object):
         """
         self.slope_man[i] = 0
         self.slope_trans[i] = 0
-        self.first_offset[i] = None
-        self.last_offset[i] = None
+        self.first_offset[i] = 0
+        self.last_offset[i] = 0
 
         # if there is not a manual measurement at the start of the period,
         # set separation between trans and man to 0
@@ -582,6 +426,7 @@ class Drifting(object):
             self.last_man_julian_date[i] = self.last_trans_julian_date[i]
             self.last_man[i] = self.last_trans[i]
 
+        # If manual measurements exist for both the end and beginning of the period
         else:
             self.first_offset[i] = self.first_trans[i] - self.first_man[i]
             self.last_offset[i] = self.last_trans[i] - self.last_man[i]
@@ -592,7 +437,7 @@ class Drifting(object):
 
         self.slope[i] = self.slope_trans[i] - self.slope_man[i]
 
-        if self.first_offset[i] is None:
+        if self.first_offset[i] == 0:
             self.intercept[i] = self.last_offset[i]
         else:
             self.intercept[i] = self.first_offset[i]
@@ -699,10 +544,12 @@ class Drifting(object):
         d2 = self.last_trans_date[i]
         e1 = self.slope_man[i]
         e2 = self.slope_trans[i]
+        if self.well_id:
+            print(f'Well ID {self.well_id}')
         print("_____________________________________________________________________________________")
         print("-----------|    First Day     |   First   |     Last Day     |   Last    |   Slope   |")
         print(
-            f"    Manual | {b1:{self.ine(b1, 'd')}} | {a1:{self.ine(a1, 'f')}} | {b2:{self.ine(b2, 'd')}} | {a2:{self.ine(a2, 'f')}} | {e1:{self.ine(e1, 'sl')}} |")
+            f"    Manual | {'   No Data      ' if pd.isna(b1) else b1:{self.ine(b1, 'd')}} | {a1:{self.ine(a1, 'f')}} | {'   No Data        ' if pd.isna(b2) else b2:{self.ine(b2, 'd')}} | {a2:{self.ine(a2, 'f')}} | {e1:{self.ine(e1, 'sl')}} |")
         print(
             f"Transducer | {d1:{self.ine(d1, 'd')}} | {c1:{self.ine(c1, 'f')}} | {d2:{self.ine(d2, 'd')}} | {c2:{self.ine(c2, 'f')}} | {e2:{self.ine(e2, 'sl')}} |")
         print("---------------------------------------------------------------------------------------------")
@@ -715,11 +562,11 @@ class Drifting(object):
         if np.abs(self.first_man_date[i] - self.first_trans_date[i]) > pd.Timedelta(f'{self.daybuffer:.0f}D'):
             print(f'No initial actual manual measurement within {self.daybuffer:} days of {self.first_trans_date[i]:}.')
 
-            if (self.levdt is not None) and (
-                    self.first_trans_date[i] - datetime.timedelta(days=self.daybuffer) < pd.to_datetime(self.levdt)):
-                print("Pulling first manual measurement from database")
-                self.first_man[i] = self.lev
-                self.first_man_julian_date[i] = pd.to_datetime(self.levdt).to_julian_date()
+            if (len(self.levdt) > 0) and (pd.notna(self.levdt[i])):
+                if (self.first_trans_date[i] - datetime.timedelta(days=self.daybuffer) < pd.to_datetime(self.levdt[i])):
+                    print("Pulling first manual measurement from database")
+                    self.first_man[i] = self.lev[i]
+                    self.first_man_julian_date[i] = pd.to_datetime(self.levdt[i]).to_julian_date()
             else:
                 print('No initial transducer measurement within {:} days of {:}.'.format(self.daybuffer,
                                                                                          self.first_man_date[i]))
@@ -741,17 +588,17 @@ class Drifting(object):
                                                                                self.breakpoints[i + 1]))
 
     def endpoint_import(self, i):
-
+        """Pulls data from database; only use this if database fields match that of the data you are drift correcting"""
         if self.well_id and self.engine:
             # pull existing data if a wellid is given
             breakpoint1 = fcl(self.bracketedwls[i], self.breakpoints[i]).name
-            self.levdt, self.lev = pull_closest_well_data(self.well_id, breakpoint1,
+            # TODO Adjust this function to specify the field being pulled matches the field being drift-corrected
+            self.levdt[i], self.lev[i] = pull_closest_well_data(self.well_id, breakpoint1,
                                                           self.engine, timedel=self.daybuffer)
-
-            if (self.levdt is not None) and (
-                    self.first_trans_date[i] - pd.Timedelta(f'{self.daybuffer:.0f}D') < pd.to_datetime(self.levdt)):
-                self.first_man[i] = self.lev
-                self.first_man_julian_date[i] = pd.to_datetime(self.levdt).to_julian_date()
+            if (len(self.levdt) > 0) and (pd.notna(self.levdt[i])):
+                if (self.first_trans_date[i] - datetime.timedelta(days=self.daybuffer) < pd.to_datetime(self.levdt[i])):
+                    self.first_man[i] = self.lev[i]
+                    self.first_man_julian_date[i] = pd.to_datetime(self.levdt).to_julian_date()
         else:
             pass
 
@@ -762,318 +609,6 @@ class Drifting(object):
         df = df.reset_index()
         df = df.set_index(dtnm)
         self.wellbarofixed = df.sort_index()
-
-
-def calc_slope_and_intercept(first_man, first_man_julian_date, last_man, last_man_julian_date, first_trans,
-                             first_trans_julian_date,
-                             last_trans, last_trans_julian_date):
-    """
-    Calculates slope and offset (y-intercept) between manual measurements and transducer readings.
-    Julian date can be any numeric datetime.
-    Use df.index.to_julian_date() function in pandas to convert from a datetime index to julian date
-
-    Args:
-        first_man (float): first manual reading
-        first_man_julian_date (float): julian date of first manual reading
-        last_man (float): last (most recent) manual reading
-        last_man_julian_date (float):  julian date of last (most recent) manual reading
-        first_trans (float): first transducer reading
-        first_trans_julian_date (float):  julian date of first manual reading
-        last_trans (float): last (most recent) transducer reading
-        last_trans_julian_date (float): julian date of last transducer reading
-
-    Returns:
-        slope, intercept, manual slope, transducer slope, drift
-
-    Examples:
-
-        >>> calc_slope_and_intercept(0,0,5,5,1,1,6,6)
-        (0.0, 1, 1.0, 1.0)
-
-        >>> calc_slope_and_intercept(0,0,5,5,7,0,0,7)
-        (-2.0, 7, 1.0, -1.0)
-    """
-    slope_man = 0
-    slope_trans = 0
-    first_offset = 0
-    last_offset = 0
-
-    if first_man is None:
-        try:
-            last_offset = last_trans - last_man
-        except TypeError:
-            last_offset = 0
-        first_man_julian_date = first_trans_julian_date
-        first_man = first_trans
-    elif last_man is None:
-        first_offset = first_trans - first_man
-        last_man_julian_date = last_trans_julian_date
-        last_man = last_trans
-    else:
-        first_offset = first_trans - first_man
-
-        slope_man = (first_man - last_man) / (first_man_julian_date - last_man_julian_date)
-        slope_trans = (first_trans - last_trans) / (first_trans_julian_date - last_trans_julian_date)
-
-    new_slope = slope_trans - slope_man
-
-    if first_offset == 0:
-        b = last_offset
-    else:
-        b = first_offset
-
-    return new_slope, b, slope_man, slope_trans
-
-
-def calc_drift(df, corrwl, outcolname, m, b):
-    """
-    Uses slope and offset from calc_slope_and_intercept to correct for transducer drift
-
-    Args:
-        df (pd.DataFrame): transducer readings table
-        corrwl (str): Name of column in df to calculate drift
-        outcolname (str): Name of results column for the data
-        m (float): slope of drift (from calc_slope_and_intercept)
-        b (float): intercept of drift (from calc_slope_and_intercept)
-
-    Returns:
-        pandas dataframe: drift columns and data column corrected for drift (outcolname)
-
-    Examples:
-
-        >>> df = pd.DataFrame({'date':pd.date_range(start='1900-01-01',periods=101,freq='1D'),
-        "data":[i*0.1+2 for i in range(0,101)]});
-        >>> df.set_index('date',inplace=True);
-        >>> df['julian'] = df.index.to_julian_date();
-        >>> print(calc_drift(df,'data','gooddata',0.05,1)['gooddata'][-1])
-        6.0
-    """
-    # datechange = amount of time between manual measurements
-    df.sort_index(inplace=True)
-    samp_int = pd.Timedelta('1D') / df.index.to_series().diff().mean()
-    slope_adj_for_samp_int = m * samp_int
-    last_julian_date = df.loc[df.index[-1], 'julian']
-    initial_julian_date = df.loc[df.index[0], 'julian']
-
-    total_date_change = last_julian_date - initial_julian_date
-    drift = m * total_date_change
-    df.loc[:, 'datechange'] = df['julian'] - initial_julian_date
-
-    df.loc[:, 'driftcorrection'] = df['datechange'].apply(lambda x: x * m, 1)
-    df.loc[:, 'driftcorrwoffset'] = df['driftcorrection'] + b
-    df.loc[:, outcolname] = df[corrwl] - df['driftcorrwoffset']
-    df.sort_index(inplace=True)
-
-    return df, drift
-
-
-def calc_drift_features(first_man, first_man_date, last_man, last_man_date, first_trans, first_trans_date,
-                        last_trans, last_trans_date, b, m, slope_man, slope_trans, drift) -> dict:
-    """Packages all drift calculations into a dictionary. Used by `fix_drift` function.
-
-    Args:
-        first_man (float): First manual measurement
-        first_man_date (datetime): Date of first manual measurement
-        last_man (float): Last manual measurement
-        last_man_date (datetime): Date of last manual measurement
-        first_trans (float): First Transducer Reading
-        first_trans_date (datetime): Date of first transducer reading
-        last_trans (float): Last transducer reading
-        last_trans_date (datetime): Date of last transducer reading
-        b (float): Offset (y-intercept) from calc_slope_and_intercept
-        m (float): slope from calc_slope_and_intercept
-        slope_man (float): Slope of manual measurements
-        slope_trans (float): Slope of transducer measurments
-        drift (float): drift from calc slope and intercept
-
-    Returns:
-        dictionary drift_features with standardized keys
-    """
-
-    drift_features = {'t_beg': first_trans_date, 'man_beg': first_man_date, 't_end': last_trans_date,
-                      'man_end': last_man_date, 'slope_man': slope_man, 'slope_trans': slope_trans,
-                      'intercept': b, 'slope': m,
-                      'first_meas': first_man, 'last_meas': last_man,
-                      'first_trans': first_trans, 'last_trans': last_trans, 'drift': drift}
-    return drift_features
-
-
-def fix_drift(well, manualfile, corrwl='corrwl', manmeas='measureddtw', outcolname='DTW_WL', wellid=None,
-              conn_file_root=None, well_table=None, search_tol=3, trim_end=True):
-    """Remove transducer drift from nonvented transducer data. Faster and should produce same output as fix_drift_stepwise
-
-    Args:
-        well (pd.DataFrame): Pandas DataFrame of merged water level and barometric data; index must be datetime
-        manualfile (pandas.core.frame.DataFrame): Pandas DataFrame of manual measurements
-        corrwl (str): name of column in well DataFrame containing transducer data to be corrected
-        manmeas (str): name of column in manualfile Dataframe containing manual measurement data
-        outcolname (str): name of column resulting from correction
-        wellid (int): unique id for well being analyzed; defaults to None
-        conn_file_root: database connection engine; defaults to None
-        well_table (str): name of table in database that contains well information; Defaults to None
-        search_tol (int): Amount of time, in days to search for readings in the database; Defaults to 3
-        trim_end (bool): Removes jumps from ends of data breakpoints that exceed a threshold; Defaults to True
-
-    Returns:
-        (tuple): tuple containing:
-
-            - wellbarofixed (pandas.core.frame.DataFrame):
-                corrected water levels with bp removed
-            - driftinfo (pandas.core.frame.DataFrame):
-                dataframe of correction parameters
-            - max_drift (float):
-                maximum drift for all breakpoints
-
-    Examples:
-
-        >>> manual = {'dates':['6/11/1991','2/1/1999'],'measureddtw':[1,10]}
-        >>> man_df = pd.DataFrame(manual)
-        >>> man_df.set_index('dates',inplace=True)
-        >>> datefield = pd.date_range(start='6/11/1991',end='2/1/1999',freq='12H')
-        >>> df = pd.DataFrame({'dates':datefield,'corrwl':np.sin(range(0,len(datefield)))})
-        >>> df.set_index('dates',inplace=True)
-        >>> wbf, fd = fix_drift(df, man_df, corrwl='corrwl', manmeas='measureddtw', outcolname='DTW_WL')
-        Processing dates 1991-06-11T00:00:00.000000000 to 1999-02-01T00:00:00.000000000
-        First man = 1.000, Last man = 10.000
-            First man date = 1991-06-11 00:00,
-            Last man date = 1999-02-01 00:00
-            -------------------
-            First trans = 0.000, Last trans = -0.380
-            First trans date = 1991-06-11 00:00
-            Last trans date = :1999-01-31 12:00
-        Slope = -0.003 and Intercept = -1.000
-    """
-    # breakpoints = self.get_breakpoints(wellbaro, manualfile)
-    breakpoints = get_breakpoints(manualfile, well, wl_field=corrwl)
-    bracketedwls, drift_features = {}, {}
-
-    if well.index.name:
-        dtnm = well.index.name
-    else:
-        dtnm = 'DateTime'
-        well.index.name = 'DateTime'
-
-    manualfile.loc[:, 'julian'] = manualfile.index.to_julian_date()
-    manualfile.loc[:, 'datetime'] = manualfile.index
-
-    for i in range(len(breakpoints) - 1):
-        # Break up pandas dataframe time series into pieces based on timing of manual measurements
-        bracketedwls[i] = well.loc[
-            (pd.to_datetime(well.index) >= breakpoints[i]) & (pd.to_datetime(well.index) < breakpoints[i + 1])]
-        df = bracketedwls[i]
-        df['datetime'] = df.index
-        df = df.dropna(subset=[corrwl])
-        if trim_end:
-            df = dataendclean(df, 'corrwl', jumptol=0.5)
-
-        if len(df) > 0:
-            print("----- Well {:} -----".format(wellid))
-            print("Processing dates {:} to {:}".format(breakpoints[i], breakpoints[i + 1]))
-            df.sort_index(inplace=True)
-            df.loc[:, 'julian'] = df.index.to_julian_date()
-
-            if wellid:
-                # pull existing data if a wellid is given
-                breakpoint1 = fcl(df, breakpoints[i]).name
-                breakpoint2 = fcl(df, breakpoints[i + 1]).name
-                offset = well_table.loc[wellid, 'stickup']
-                print(breakpoint1)
-                levdt, lev = pull_closest_well_data(wellid, breakpoint1,
-                                                    conn_file_root, timedel=search_tol)
-
-            else:
-                lev = None
-                levdt = None
-
-            # first_trans = fcl(df[corrwl], breakpoints[i])  # last transducer measurement
-            # last_trans = fcl(df[corrwl], breakpoints[i + 1])  # first transducer measurement
-
-            first_man_julian_date = fcl(manualfile['julian'], breakpoints[i])
-            last_man_julian_date = fcl(manualfile['julian'], breakpoints[i + 1])
-            first_man_date = fcl(manualfile['datetime'], breakpoints[i])
-            last_man_date = fcl(manualfile['datetime'], breakpoints[i + 1])
-            first_man = fcl(manualfile[manmeas], breakpoints[i])  # first manual measurement
-            last_man = fcl(manualfile[manmeas], breakpoints[i + 1])  # last manual measurement
-
-            first_trans = df.loc[df.first_valid_index(), corrwl]
-            last_trans = df.loc[df.last_valid_index(), corrwl]
-            first_trans_julian_date = df.loc[df.first_valid_index(), 'julian']
-            last_trans_julian_date = df.loc[df.last_valid_index(), 'julian']
-            first_trans_date = df.first_valid_index()
-            last_trans_date = df.last_valid_index()
-
-            man_df2 = fcl(manualfile, breakpoints[i + 1])
-
-            if np.abs(first_man_date - first_trans_date) > datetime.timedelta(days=search_tol):
-                print(
-                    'No initial actual manual measurement within {:} days of {:}.'.format(search_tol, first_trans_date))
-
-                if (levdt is not None) and (
-                        first_trans_date - datetime.timedelta(days=search_tol) < pd.to_datetime(levdt)):
-                    print("Pulling first manual measurement from database")
-                    first_man = lev
-                    first_man_julian_date = pd.to_datetime(levdt).to_julian_date()
-                else:
-                    print('No initial transducer measurement within {:} days of {:}.'.format(search_tol,
-                                                                                             first_man_date))
-                    first_man = None
-                    first_man_date = None
-
-            if np.abs(last_trans_date - last_man_date) > datetime.timedelta(days=search_tol):
-                print('No final manual measurement within {:} days of {:}.'.format(search_tol, last_trans_date))
-                last_man = None
-                last_man_date = None
-
-            slope, b, slope_man, slope_trans = calc_slope_and_intercept(first_man, first_man_julian_date,
-                                                                        last_man, last_man_julian_date, first_trans,
-                                                                        first_trans_julian_date, last_trans,
-                                                                        last_trans_julian_date)
-
-            # intercept of line = value of first manual measurement
-            if pd.isna(first_man):
-                print('First manual measurement missing between {:} and {:}'.format(breakpoints[i], breakpoints[i + 1]))
-                print("Last man = {:}\nLast man date = {:%Y-%m-%d %H:%M}".format(last_man, last_man_date))
-                print("First trans = {:0.3f}, Last trans = {:0.3f}".format(first_trans, last_trans))
-                print("First trans date = {:%Y-%m-%d %H:%M}".format(first_trans_date))
-                print("Last trans date = {:%Y-%m-%d %H:%M}".format(last_trans_date))
-
-            elif pd.isna(last_man):
-                print('Last manual measurement missing between {:} and {:}'.format(breakpoints[i], breakpoints[i + 1]))
-                print("First man = {:}\nFirst man date = {:%Y-%m-%d %H:%M}".format(first_man, first_man_date))
-                print("First trans = {:0.3f}, Last trans = {:0.3f}".format(first_trans, last_trans))
-                print("First trans date = {:%Y-%m-%d %H:%M}".format(first_trans_date))
-                print("Last trans date = {:%Y-%m-%d %H:%M}".format(last_trans_date))
-            else:
-
-                print("First man = {:0.3f}, Last man = {:0.3f} (from ground)".format(first_man, last_man))
-                print("First man date = {:%Y-%m-%d %H:%M}".format(first_man_date))
-                print("Last man date = {:%Y-%m-%d %H:%M}".format(last_man_date))
-
-                print("First trans = {:0.3f}, Last trans = {:0.3f}".format(first_trans, last_trans))
-                print("First trans date = {:%Y-%m-%d %H:%M}".format(first_trans_date))
-                print("Last trans date = {:%Y-%m-%d %H:%M}".format(last_trans_date))
-
-            bracketedwls[i], drift = calc_drift(df, corrwl, outcolname, slope, b)
-            print("Manual Slope = {:}".format(slope_man))
-            print("Transducer Slope = {:}".format(slope_trans))
-            print("Slope = {:0.3f} and Intercept = {:0.3f}".format(slope, b))
-            print("{:}Drift = {:0.3f} {:}".format(Color.BOLD, drift, Color.END))
-            print(" -------------------")
-            drift_features[i] = calc_drift_features(first_man, first_man_date, last_man, last_man_date, first_trans,
-                                                    first_trans_date,
-                                                    last_trans, last_trans_date, b, slope, slope_man, slope_trans,
-                                                    drift)
-        else:
-            pass
-
-    wellbarofixed = pd.concat(bracketedwls, sort=True)
-    wellbarofixed.reset_index(inplace=True)
-    wellbarofixed.set_index(dtnm, inplace=True)
-    wellbarofixed.sort_index(inplace=True)
-    drift_info = pd.DataFrame(drift_features).T
-    max_drift = drift_info['drift'].abs().max()
-    return wellbarofixed, drift_info, max_drift
-
 
 def pull_elev_and_stickup(site_number, manual, well_table=None, conn_file_root=None, stable_elev=True):
     """
@@ -1116,7 +651,6 @@ def pull_elev_and_stickup(site_number, manual, well_table=None, conn_file_root=N
     stickup = get_stickup(stdata, site_number, stable_elev=stable_elev, man=man)
     return stickup, well_elev
 
-
 def pull_well_table(conn_file_root, loc_table="ugs_ngwmn_monitoring_locations"):
     """
     Extracts Monitoring Location Table from database and converts it into a pandas DataFrame.
@@ -1150,7 +684,6 @@ def pull_well_table(conn_file_root, loc_table="ugs_ngwmn_monitoring_locations"):
     df.set_index('altlocationid', inplace=True)
 
     return df
-
 
 def get_stickup(stdata, site_number, stable_elev=True, man=None):
     """
@@ -1193,124 +726,6 @@ def get_stickup(stdata, site_number, stable_elev=True, man=None):
         # uses measured stickup data from manual table
         stickup = man.loc[man.last_valid_index(), 'current_stickup_height']
     return stickup
-
-
-def get_man_gw_elevs(manual, stickup, well_elev, stbelev=True):
-    """Gets basic well parameters and most recent groundwater level data for a well id for dtw calculations.
-
-    Args:
-        manual (pd.DataFrame): Pandas Dataframe of manual data
-        stickup (float): stickup of well (distance from mp to ground)
-        well_elev (float): elevation of well (ground surface elevation at wellhead)
-        stbelev (bool): boolean; if False, stickup is retrieved from the manual measurements table;
-
-    Returns:
-        manual table with new fields for depth to water (negative for below ground) and groundwater elevation
-
-    Examples:
-        >>> manual = {'dates':['6/11/1991','2/1/1999'],'dtwbelowcasing':[17,22]}
-        >>> man_df = pd.DataFrame(manual)
-        >>> man_df.set_index('dates',inplace=True)
-        >>> stickup = 1.5
-        >>> well_elevation = 4050.5
-        >>> man = get_man_gw_elevs(man_df, stickup, well_elevation, stbelev=True)
-        >>> man.loc['6/11/1991','waterelevation']
-        4035.0
-
-        >>> manual = {'dates':['6/11/1991','6/12/1991'],'dtwbelowcasing':[17,17],'current_stickup_height':[1.1,1.2]}
-        >>> man_df = pd.DataFrame(manual)
-        >>> man_df.set_index('dates',inplace=True)
-        >>> stickup = 1.5
-        >>> well_elevation = 4050.5
-        >>> man = get_man_gw_elevs(man_df, stickup, well_elevation, stbelev=False)
-        >>> man.loc['6/11/1991','waterelevation']
-        4034.6
-
-    """
-
-    # some users might have incompatible column names
-    old_fields = {'DateTime': 'readingdate',
-                  'Location ID': 'locationid',
-                  'Water Level (ft)': 'dtwbelowcasing'}
-    manual.rename(columns=old_fields, inplace=True)
-
-    # this allows for variable stickup heights over time
-    if 'current_stickup_height' in manual.columns and stbelev is False:
-        manual.loc[:, 'measureddtw'] = (-1 * manual['dtwbelowcasing']) + manual['current_stickup_height']
-
-    else:
-        # assumes stable stickup height
-        manual.loc[:, 'measureddtw'] = (-1*manual['dtwbelowcasing']) + stickup
-    manual.loc[:, 'waterelevation'] = manual['measureddtw'].apply(lambda x: well_elev + x, 1)
-    return manual
-
-
-def get_trans_gw_elevations(df, stickup, well_elev, site_number, level='Level', dtw='DTW_WL'):
-    """This function adds the necessary field names to import well data into the database.
-
-    Args:
-        df (pd.DataFrame): pandas DataFrame of processed well data
-        well_elev (float): elevation of ground surface at wellhead
-        site_number (int): unique id of monitoring location (well) in database
-        stickup (float): wellhead stickup above ground
-        level (float): raw transducer level from NewTransImp, new_xle_imp, or new_csv_imp functions
-        dtw (float): drift-corrected depth to water from fix_drift function
-
-    Returns:
-        processed df with necessary field names for import
-
-    Examples:
-        >>> dts = pd.date_range('1/1/2019','1/15/2019',freq='1H')
-        >>> dec = np.sin(np.linspace(0,20,len(dts)))-10
-        >>> fake_trans = {'dates':dts, 'DTW_WL':dec}
-        >>> trans_df = pd.DataFrame(fake_trans)
-        >>> trans_df.set_index('dates',inplace=True)
-        >>> stickup = 1.5
-        >>> well_elevation = 4050.5
-        >>> trns = get_trans_gw_elevs(trans_df, stickup, well_elevation, 1000)
-        >>> man.loc['6/11/1991','waterelevation']
-        4035.0
-    """
-
-    df['measuredlevel'] = df[level]
-    df['measureddtw'] = df[dtw] * -1 #changed 3/5/2020; pressure to dtw
-
-    print([stickup, well_elev, site_number])
-    if pd.isna(stickup):
-        stickup = 0
-    else:
-        pass
-
-    df['dtwbelowgroundsurface'] = df['measureddtw']
-
-    if pd.isna(well_elev):
-        df['waterelevation'] = None
-    else:
-        df['waterelevation'] = well_elev + df['dtwbelowgroundsurface'] + stickup
-
-    df['locationid'] = site_number
-
-    df.sort_index(inplace=True)
-
-    if 'Temperature' in df.columns:
-        df.rename(columns={'Temperature': 'temp'}, inplace=True)
-
-    if 'temp' in df.columns:
-        df['temp'] = df['temp'].apply(lambda x: np.round(x, 4), 1)
-    else:
-        df['temp'] = None
-
-    if 'baroefficiencylevel' in df.columns:
-        pass
-    else:
-        df['baroefficiencylevel'] = 0
-    # subset bp df and add relevant fields
-    df.index.name = 'readingdate'
-
-    subset = df.reset_index()
-
-    return subset
-
 
 def trans_type(well_file):
     """Uses information from the raw transducer file to determine the type of transducer used.
@@ -1556,7 +971,7 @@ def imp_one_well(well_file, baro_file, man_startdate, man_start_level, man_endat
     # pull stickup and elevation from well table; calculate water level elevations
     well_table = pull_well_table(conn_file_root)
     stickup, well_elev = pull_elev_and_stickup(wellid, man, well_table=well_table, conn_file_root=conn_file_root)
-    man = get_man_gw_elevs(man, stickup, well_elev)
+    man = elevatewater(man, well_elev, stickup, flip= True)
 
     # correct for barometric efficiency if available
     if be:
@@ -1564,11 +979,13 @@ def imp_one_well(well_file, baro_file, man_startdate, man_start_level, man_endat
         corrwl['corrwl'] = corrwl['baroefficiencylevel']
 
     # adjust for linear transducer drift between manual measurements
-    df, drift_info, drift = fix_drift(corrwl, man, corrwl='corrwl', manmeas='measureddtw')
+    df, drift_info, drift = Drifting(man, corrwl, drifting_field='corrwl',
+                                     man_field='dtwbelowcasing',
+                                     output_field='DTW_WL').process_drift()
     print('Maximum Drift for well {:} is {:.3f}.'.format(wellid, drift))
 
     # add, remove, and arrange column names to match database format schema
-    rowlist = get_trans_gw_elevations(df, stickup, well_elev, wellid)
+    rowlist = elevatewater(df, well_elev, stickup, dtw_field = 'DTW_WL')
 
     fieldnames = ['measuredlevel', 'measureddtw', 'driftcorrection',
                   'temp', 'locationid', 'baroefficiencylevel',
@@ -1618,7 +1035,7 @@ def simp_imp_well(well_file, baro_out, wellid, manual, conn_file_root, stbl_elev
     well_table = pull_well_table(conn_file_root)
     stickup, well_elev = pull_elev_and_stickup(wellid, manual, well_table=well_table,
                                                conn_file_root=conn_file_root, stable_elev=stbl_elev)
-    man = get_man_gw_elevs(manual, stickup, well_elev, stbelev=stbl_elev)
+    man = elevatewater(manual, well_elev, stickup, stbelev=stbl_elev)
 
     # Check to see if well has assigned barometer
     try:
@@ -1658,14 +1075,16 @@ def simp_imp_well(well_file, baro_out, wellid, manual, conn_file_root, stbl_elev
     corrwl.sort_index(inplace=True)
 
     # fix linear transducer drift using manual data
-    df, drift_info, max_drift = fix_drift(corrwl, man, corrwl='corrwl', manmeas='measureddtw', wellid=wellid,
-                                          well_table=well_table, conn_file_root=conn_file_root)
+    df, drift_info, max_drift = Drifting(man, corrwl, drifting_field='corrwl',
+                                         man_field='dtwbelowcasing',
+                                         output_field='DTW_WL',
+                                         well_id=wellid, trim_end=True).process_drift()
     drift = round(float(max_drift), 3)
 
     df = df.sort_index()
 
     # calculate groundwater elevation based on elevation and stickup data in monitoring locations table
-    rowlist = get_trans_gw_elevations(df, stickup, well_elev, wellid)
+    rowlist = elevatewater(df, well_elev, stickup, dtw_field='DTW_WL')
 
     rowlist = rowlist.set_index('readingdate')
 
@@ -1734,7 +1153,7 @@ def check_for_dups(df, wellid, conn_file_root, drift, drift_tol=0.3, gw_reading_
         print('Data for well {:} already exist!'.format(wellid))
     elif len(df) > len(existing_data) > 0 and abs(drift) < drift_tol:
         df1 = df[~df.index.isin(existing_data.index.values)]
-        print('Some values were missing. {:} values added.'.format(len(existing_data) - len(df)))
+        print('Some values were missing. {:} values added.'.format(len(df) - len(existing_data)))
     elif abs(drift) > drift_tol:
         df1 = None
         print('Drift for well {:} exceeds tolerance!'.format(wellid))
@@ -2054,8 +1473,59 @@ def get_field_names(engine, table='reading', table_schema='sde'):
     columns = list(df.column_name.values)
     return columns
 
+def rename_fields(df, gw_reading_table=None,
+                  timezone= None, engine=None, schema='sde',
+                  readingdate = 'DateTime',
+                  rawlevel = 'Level',
+                  temperature = 'Temperature',
+                  dtw = 'corrwl'):
+    """Preps dataframe for upload to the ugs levels database"""
+    if engine:
+        fieldnames_db = get_field_names(engine, gw_reading_table, table_schema=schema)
+    else:
+        fieldnames_db = ['readingdate','measuredlevel','temperature',
+                       'baroefficiencylevel','measureddtw','driftcorrection',
+                       'waterelevation','locationid']
 
-def edit_table(df, gw_reading_table, engine, timezone=None, schema='sde'):
+    df = df.rename(columns={readingdate:'readingdate',
+                            rawlevel:'measuredlevel',
+                            temperature:'temperature',
+                            dtw:'measureddtw'})
+
+    fieldnames = list(df.columns.values)
+
+    for name in fieldnames:
+        if name not in fieldnames_db:
+            fieldnames.remove(name)
+            print("{:} not in {:} fieldnames!".format(name, gw_reading_table))
+
+    namelist = []
+    for name in fieldnames_db:
+        if name in fieldnames:
+            namelist.append(name)
+        else:
+            df[name] = None
+            namelist.append(name)
+
+    if len(fieldnames) > 0:
+        subset = df[namelist]
+
+        if timezone:
+            if subset.index[0].utcoffset() is None:
+                subset['readingdate'] = subset.index.tz_localize('MST', ambiguous="NaT")
+            elif subset.index[0].utcoffset().total_seconds() == 0.0:
+                subset['readingdate'] = subset.index.tz_convert('MST')
+            else:
+                subset['readingdate'] = subset.index
+        else:
+            subset['readingdate'] = subset.index
+        subset = subset.round(3)
+        subset.dropna(subset=['readingdate'], inplace=True)
+        subset.drop_duplicates(subset=['locationid', 'readingdate'], inplace=True)
+
+    return subset
+
+def edit_table(df, engine,gw_reading_table='reading', timezone=None):
     """
     Edits SDE table by inserting new rows
 
@@ -2071,55 +1541,21 @@ def edit_table(df, gw_reading_table, engine, timezone=None, schema='sde'):
 
     """
 
-    table_names = get_field_names(engine, gw_reading_table, table_schema=schema)
-
-    fieldnames = list(df.columns.values)
-
-    for name in fieldnames:
-        if name not in table_names:
-            fieldnames.remove(name)
-            print("{:} not in {:} fieldnames!".format(name, gw_reading_table))
-
-    namelist = []
-    for name in table_names:
-        if name in fieldnames:
-            namelist.append(name)
-
-    if len(fieldnames) > 0:
-        subset = df[namelist]
-
+    try:
         if timezone:
-            if subset.index[0].utcoffset() is None:
-                subset['readingdate'] = subset.index.tz_localize('MST', ambiguous="NaT")
-            elif subset.index[0].utcoffset().total_seconds() == 0.0:
-                subset['readingdate'] = subset.index.tz_convert('MST')
-            else:
-                subset['readingdate'] = subset.index
+            df.to_sql(gw_reading_table, engine, chunksize=1000,
+                          dtype={'readingdate': sqlalchemy.types.DateTime(timezone=True)},
+                          index=False, if_exists='append')
         else:
-            subset['readingdate'] = subset.index
-
-        subset.dropna(subset=['readingdate'], inplace=True)
-        subset.drop_duplicates(subset=['locationid', 'readingdate'], inplace=True)
-
-        try:
-            if timezone:
-                subset.to_sql(gw_reading_table, engine, chunksize=1000,
-                              dtype={'readingdate': sqlalchemy.types.DateTime(timezone=True)},
-                              index=False, if_exists='append')
-            else:
-                subset.to_sql(gw_reading_table, engine, chunksize=1000,
-                              dtype={'readingdate': sqlalchemy.types.DateTime()},
-                              index=False, if_exists='append')
-            print('Data Sucessfully Imported')
-        except Exception as e:
-            print('Import Failed')
-            print(str(e))
-            pass
-
-    else:
-        print('No data imported!')
-
-    return subset
+            df.to_sql(gw_reading_table, engine, chunksize=1000,
+                          dtype={'readingdate': sqlalchemy.types.DateTime()},
+                          index=False, if_exists='append')
+        print('Data Sucessfully Imported')
+    except Exception as e:
+        print('Import Failed')
+        print(str(e))
+        pass
+    return df
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -2935,7 +2371,7 @@ def getwellid(infile, wellinfo):
 
 # -----------------------------------------------------------------------------------------------------------------------
 
-class baroimport(object):
+class BaroImport(object):
     def __init__(self):
         self.sde_conn = None
         self.wellid = None
@@ -3178,7 +2614,7 @@ class wellimport(object):
         df = well_baro_merge(well, baro, barocolumn='Level', wellcolumn='Level', outcolumn='corrwl', vented=False,
                              sampint=self.sampint)
 
-        df = get_trans_gw_elevations(df, stickup, well_elev, site_number, dtw="corrwl")
+        df = elevatewater(df, well_elev, stickup, dtw="corrwl")
         df.to_csv(self.save_location)
 
     def remove_bp_drift(self):
@@ -3202,12 +2638,17 @@ class wellimport(object):
             {'DateTime': [self.man_startdate, self.man_enddate],
              'measureddtw': [self.man_start_level * -1, self.man_end_level * -1]}).set_index('DateTime')
 
-        dft = fix_drift(corrwl, man, corrwl='corrwl', manmeas='measureddtw')
+        dft, drift_info, mxdrft = Drifting(man, corrwl,
+                                              drifting_field='corrwl',
+                                              man_field='measureddtw',
+                                              output_field='DTW_WL',
+                                              well_id=self.wellid, trim_end=True).process_drift()
+
         drift = round(float(dft[1]['drift'].values[0]), 3)
 
         print("Drift is {:} feet".format(drift))
 
-        df = get_trans_gw_elevations(dft[0], stickup, well_elev, site_number, dtw="corrwl")
+        df = elevatewater(dft[0], well_elev, stickup, dtw_field='DTW_WL')
 
         df.to_csv(self.save_location)
 
