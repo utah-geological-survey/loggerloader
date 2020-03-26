@@ -1390,7 +1390,7 @@ def get_location_data(site_numbers, enviro, first_date=None, last_date=None, lim
         sql += "\nLIMIT {:}".format(limit)
 
     readings = pd.read_sql(sql, con=enviro, parse_dates=True, index_col='readingdate')
-    readings.index = pd.to_datetime(readings.index, infer_datetime_format=True, utc=True)
+    readings.index = pd.to_datetime(readings.index, infer_datetime_format=True)
 
     try:
         readings.index = readings.index.tz_convert(tz='MST')
