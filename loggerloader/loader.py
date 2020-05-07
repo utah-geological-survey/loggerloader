@@ -15,6 +15,7 @@ import matplotlib.ticker as tick
 import datetime
 from shutil import copyfile
 from pylab import rcParams
+from xml.etree.ElementTree import ParseError
 import deprecation
 
 rcParams['figure.figsize'] = 15, 10
@@ -2180,7 +2181,7 @@ class NewTransImp(object):
         return f
 
     def new_xle_imp(self):
-        tree = eletree.parse(self.infile)
+        tree = eletree.parse(self.infile, parser=eletree.XMLParser(encoding="ISO-8859-1"))
         root = tree.getroot()
 
         ch1id = root.find('./Identification')
