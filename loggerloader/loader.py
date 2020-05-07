@@ -2212,7 +2212,7 @@ class NewTransImp(object):
                 if chname == 'Level':
                     f[chname] = f[chname] * levelconv.get(chunit.lower(), 1)
                 elif chname == 'Temperature' or chname == 'Temp':
-                    if chunit == '°F' or chunit.title() == 'Fahrenheit' or 'Deg F' or chunit == 'Deg_F' or chunit == u'\N{DEGREE SIGN}' + u'F':
+                    if chunit[-1] == 'F' or chunit.title() == 'Fahrenheit' or 'Deg F' or chunit == 'Deg_F':
                         f[chname] = (f[chname] - 32.0) * 5 / 9
             elif col in ['ms', 'Date', 'Time', 'index']:
                 f = f.drop(col, axis=1)
