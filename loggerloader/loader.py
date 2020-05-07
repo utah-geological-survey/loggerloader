@@ -4,6 +4,7 @@ import glob
 import re
 import sqlalchemy
 import pytz
+import xml.etree.ElementTree as eletree
 from urllib.request import urlopen
 import json
 import pandas as pd
@@ -15,6 +16,7 @@ import datetime
 from shutil import copyfile
 from pylab import rcParams
 import deprecation
+
 rcParams['figure.figsize'] = 15, 10
 
 try:
@@ -1371,12 +1373,9 @@ def get_location_data(site_numbers, enviro, first_date=None, last_date=None, lim
             first_date = datetime.datetime(1900, 1, 1)
 
     # Get last reading at the specified location
-    try:
-        if not last_date or last_date > datetime.datetime.now():
-            last_date = datetime.datetime.now()
-    except TypeError:
-        if not last_date or last_date > datetime.datetime.now(tz=pytz.timezone('MST')):
-            last_date = datetime.datetime.now(tz=pytz.timezone('MST'))
+    if not last_date or last_date > datetime.datetime.now():
+        last_date = datetime.datetime.now()
+
     if type(site_numbers) == list:
         site_numbers = ",".join([str(i) for i in site_numbers])
     else:
@@ -1392,10 +1391,7 @@ def get_location_data(site_numbers, enviro, first_date=None, last_date=None, lim
     readings = pd.read_sql(sql, con=enviro, parse_dates=True, index_col='readingdate')
     readings.index = pd.to_datetime(readings.index, infer_datetime_format=True)
 
-    try:
-        readings.index = readings.index.tz_convert(tz='MST')
-    except TypeError:
-        readings.index = readings.index.tz_localize(tz='MST')
+
     readings.reset_index(inplace=True)
     readings.set_index(['locationid', 'readingdate'], inplace=True)
     if len(readings) == 0:
@@ -1928,7 +1924,10 @@ class NewTransImp(object):
         file_ext = os.path.splitext(self.infile)[1]
         try:
             if file_ext == '.xle':
-                self.well = self.new_xle_imp()
+                try:
+                    self.well = self.new_xle_imp()
+                except AttributeError:
+                    self.well = self.old_xle_imp()
             elif file_ext == '.lev':
                 self.well = self.new_lev_imp()
             elif file_ext == '.csv':
@@ -2003,9 +2002,9 @@ class NewTransImp(object):
 
                 elif 'Date' in txt[1]:
                     print('{:} is Global'.format(self.infile))
-                    f = pd.read_csv(self.infile, skiprows=1, parse_dates=[[0, 1]])
+                    f = pd.read_csv(self.infile, skiprows=1, parse_dates={'DateTime':[0, 1]})
                     # f = f.reset_index()
-                    f['DateTime'] = pd.to_datetime(f['Date_ Time'], errors='coerce')
+                    #f['DateTime'] = pd.to_datetime(f.columns[0], errors='coerce')
                     f = f[f.DateTime.notnull()]
                     if ' Feet' in list(f.columns.values):
                         f['Level'] = f[' Feet']
@@ -2036,7 +2035,9 @@ class NewTransImp(object):
                     # bse = int(pd.to_datetime(f.index).minute[0])
                     # f = hourly_resample(f, bse)
                     f.rename(columns={' Volts': 'Volts'}, inplace=True)
-                    f.drop([u'date', u'datediff', u'Date_ Time'], inplace=True, axis=1)
+                    for col in [u'date', u'datediff', u'Date_ Time', u'Date_Time']:
+                        if col in f.columns:
+                            f = f.drop(col, axis=1)
                     return f
             else:
                 print('{:} is unrecognized'.format(self.infile))
@@ -2093,7 +2094,7 @@ class NewTransImp(object):
         except ValueError:
             print('File {:} has formatting issues'.format(self.infile))
 
-    def new_xle_imp(self):
+    def old_xle_imp(self):
         """This function uses an exact file path to upload a xle transducer file.
 
         Returns:
@@ -2178,6 +2179,47 @@ class NewTransImp(object):
 
         return f
 
+    def new_xle_imp(self):
+        tree = eletree.parse(self.infile)
+        root = tree.getroot()
+
+        ch1id = root.find('./Identification')
+        dfdata = {}
+        for item in root.findall('./Data/Log'):
+            dfdata[item.attrib['id']] = {}
+            for child in item:
+                dfdata[item.attrib['id']][child.tag] = child.text
+                # print([child[i].text for i in range(len(child))])
+        ch = {}
+        for child in root:
+            if 'Ch' in child.tag:
+                ch[child.tag[:3].lower()] = {}
+                for item in child:
+                    if item.text is not None:
+                        ch[child.tag[:3].lower()][item.tag] = item.text
+
+        f = pd.DataFrame.from_dict(dfdata, orient='index')
+        f['DateTime'] = pd.to_datetime(f.apply(lambda x: x['Date'] + ' ' + x['Time'], 1))
+        f = f.reset_index()
+        f = f.set_index('DateTime')
+        levelconv = {'feet': 1, 'ft': 1, 'kpa': 0.33456, 'mbar': 2.306726, 'm': 3.28084, 'meters': 3.28084}
+        for col in f:
+            if col in ch.keys():
+                chname = ch[col]['Identification'].title()
+                chunit = ch[col]['Unit']
+                f = f.rename(columns={col: chname})
+                f[chname] = pd.to_numeric(f[chname])
+                if chname == 'Level':
+                    f[chname] = f[chname] * levelconv.get(chunit.lower(), 1)
+                elif chname == 'Temperature' or chname == 'Temp':
+                    if chunit == '°F' or chunit.title() == 'Fahrenheit' or 'Deg F' or chunit == 'Deg_F' or chunit == u'\N{DEGREE SIGN}' + u'F':
+                        f[chname] = (f[chname] - 32.0) * 5 / 9
+            elif col in ['ms', 'Date', 'Time', 'index']:
+                f = f.drop(col, axis=1)
+        f['name'] = self.infile.split('\\').pop().split('/').pop().rsplit('.', 1)[0]
+        return f
+
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Summary scripts - these extract transducer headers and summarize them in tables
@@ -2226,7 +2268,7 @@ def compile_end_beg_dates(infile):
     return df
 
 
-import xml.etree.ElementTree as eletree
+
 
 
 class HeaderTable(object):
