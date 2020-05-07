@@ -1926,7 +1926,7 @@ class NewTransImp(object):
             if file_ext == '.xle':
                 try:
                     self.well = self.new_xle_imp()
-                except AttributeError:
+                except ParseError:
                     self.well = self.old_xle_imp()
             elif file_ext == '.lev':
                 self.well = self.new_lev_imp()
