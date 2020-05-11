@@ -2203,7 +2203,8 @@ class NewTransImp(object):
         f['DateTime'] = pd.to_datetime(f.apply(lambda x: x['Date'] + ' ' + x['Time'], 1))
         f = f.reset_index()
         f = f.set_index('DateTime')
-        levelconv = {'feet': 1, 'ft': 1, 'kpa': 0.33456, 'mbar': 0.033455256555148, 'm': 3.28084, 'meters': 3.28084}
+        levelconv = {'feet': 1, 'ft': 1, 'kpa': 0.33456, 'mbar': 0.033455256555148,
+                     'm': 3.28084, 'meters': 3.28084,'psi':2.306726}
         for col in f:
             if col in ch.keys():
                 chname = ch[col]['Identification'].title()
