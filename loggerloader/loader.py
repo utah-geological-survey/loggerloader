@@ -1307,6 +1307,69 @@ def find_extreme(site_number, gw_table="reading", sort_by='readingdate', extma='
     df = pd.read_sql(sql, engine)
     return df['readingdate'][0], df['measureddtw'][0], df['waterelevation'][0]
 
+def count_data(site_number, enviro, first_date=None, last_date=None, gw_reading_table="reading"):
+    """counts number of records for a locationid and date range
+
+    Args:
+        site_number: List of Location ID of time series data to be processed
+        enviro: workspace of SDE table
+        gw_reading_table: Name of SDE table in workspace to use
+        first_date: begining of time interval to search; defaults to 1/1/1900
+        last_date: end of time interval to search; defaults to current day
+    Returns:
+
+    """
+    if first_date is None:
+        first_date = datetime.datetime(1900, 1, 1)
+    if last_date is None:
+        last_date = datetime.datetime.now()
+
+    if type(site_number) == list:
+        pass
+    else:
+        site_number = [site_number]
+
+    query = f"""SELECT locationid, COUNT(*) FROM {gw_reading_table} 
+    WHERE locationid IN ({','.join([str(i) for i in site_number])}) 
+    AND readingdate >= '{first_date}' AND readingdate <= '{last_date}'
+    GROUP BY locationid
+    ORDER BY locationid ASC"""
+
+    df = pd.read_sql(query, con=enviro)
+
+    return df
+
+def summary_stats(site_number, field, enviro, first_date=None, last_date=None, gw_reading_table="reading"):
+    """
+
+    Args:
+        site_number: List of Location ID of time series data to be processed
+        enviro: workspace of SDE table
+        gw_reading_table: Name of SDE table in workspace to use
+        first_date: begining of time interval to search; defaults to 1/1/1900
+        last_date: end of time interval to search; defaults to current day
+    Returns:
+        summary statistics (count, min, max)
+    """
+    if first_date is None:
+        first_date = datetime.datetime(1900, 1, 1)
+    if last_date is None:
+        last_date = datetime.datetime.now()
+
+    if type(site_number) == list:
+        pass
+    else:
+        site_number = [site_number]
+
+    query = f"""SELECT locationid, MIN({field}), MAX({field}), COUNT({field}) FROM {gw_reading_table} 
+    WHERE locationid IN ({','.join([str(i) for i in site_number])}) 
+    AND readingdate >= '{first_date}' AND readingdate <= '{last_date}'
+    GROUP BY locationid
+    ORDER BY locationid ASC"""
+
+    df = pd.read_sql(query, con=enviro)
+
+    return df
 
 def get_gap_data(site_number, enviro, gap_tol=0.5, first_date=None, last_date=None,
                  gw_reading_table="reading"):
@@ -1323,7 +1386,6 @@ def get_gap_data(site_number, enviro, gap_tol=0.5, first_date=None, last_date=No
     Return:
         pandas dataframe with gap information
     """
-    # TODO MAke fast with SQL
     if first_date is None:
         first_date = datetime.datetime(1900, 1, 1)
     if last_date is None:
@@ -1344,7 +1406,12 @@ def get_gap_data(site_number, enviro, gap_tol=0.5, first_date=None, last_date=No
     df['t_diff'] = df['readingdate'].diff()
 
     df = df[df['t_diff'] > pd.Timedelta('{:}D'.format(gap_tol))]
-    df.sort_values('t_diff', ascending=False)
+    df['end_gap'] = df['readingdate'] + df['t_diff']
+    df['end_gap'] = df['end_gap'].apply(lambda x: x.strftime('%Y-%m-%d'))
+    df['beg_gap'] = df['readingdate'].apply(lambda x: x.strftime('%Y-%m-%d'))
+    df['gap_size'] = df['t_diff'].apply(lambda x: x.days, 1)
+
+    #df.sort_values('t_diff', ascending=False)
     return df
 
 
