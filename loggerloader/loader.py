@@ -1402,7 +1402,7 @@ def get_gap_data(site_number, enviro, gap_tol=0.5, first_date=None, last_date=No
     query = query_txt.format(gw_reading_table, ','.join([str(i) for i in site_number]), first_date, last_date)
     df = pd.read_sql(query, con=enviro,
                      parse_dates={'readingdate': '%Y-%m-%d %H:%M:%s-%z'})
-
+    df = df.resample('1D').mean()
     df['t_diff'] = df['readingdate'].diff()
 
     df = df[df['t_diff'] > pd.Timedelta('{:}D'.format(gap_tol))]
@@ -2275,12 +2275,12 @@ class NewTransImp(object):
         for col in f:
             if col in ch.keys():
                 print(col, ch[col])
-                if 'Identification' in ch[col].keys():
-                    chname = ch[col]['Identification'].title()
-                elif col == 'ch1':
+                if col == 'ch1':
                     chname = 'Level'
                 elif col == 'ch2':
                     chname = 'Temperature'
+                elif 'Identification' in ch[col].keys():
+                    chname = ch[col]['Identification'].title()
 
                 chunit = ch[col]['Unit']
                 f = f.rename(columns={col: chname})
@@ -2455,6 +2455,7 @@ class HeaderTable(object):
 
     def csv_head(self, file):
         cfile = {}
+        csvdata = pd.DataFrame()
         try:
             cfile['file_name'] = getfilename(file)
             csvdata = NewTransImp(file).well.sort_index()
@@ -2470,9 +2471,11 @@ class HeaderTable(object):
             cfile['trans type'] = 'Global Water'
             cfile['Num_log'] = len(csvdata)
             # df = pd.DataFrame.from_dict(cfile, orient='index').T
+
         except KeyError:
             pass
         return cfile, csvdata
+
 
 
 def getwellid(infile, wellinfo):
