@@ -2274,7 +2274,14 @@ class NewTransImp(object):
                      'm': 3.28084, 'meters': 3.28084,'psi':2.306726}
         for col in f:
             if col in ch.keys():
-                chname = ch[col]['Identification'].title()
+                print(col, ch[col])
+                if 'Identification' in ch[col].keys():
+                    chname = ch[col]['Identification'].title()
+                elif col == 'ch1':
+                    chname = 'Level'
+                elif col == 'ch2':
+                    chname = 'Temperature'
+
                 chunit = ch[col]['Unit']
                 f = f.rename(columns={col: chname})
                 f[chname] = pd.to_numeric(f[chname])
