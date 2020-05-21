@@ -2274,7 +2274,6 @@ class NewTransImp(object):
                      'm': 3.28084, 'meters': 3.28084,'psi':2.306726}
         for col in f:
             if col in ch.keys():
-                print(col, ch[col])
                 if col == 'ch1':
                     chname = 'Level'
                 elif col == 'ch2':
@@ -2287,9 +2286,11 @@ class NewTransImp(object):
                 f[chname] = pd.to_numeric(f[chname])
                 if chname == 'Level':
                     f[chname] = f[chname] * levelconv.get(chunit.lower(), 1)
+                    print(f"CH. 1 units in {chunit}, converting to ft...")
                 elif chname == 'Temperature' or chname == 'Temp':
                     if chunit[-1] == 'F' or chunit.title() == 'Fahrenheit' or chunit.title() == 'Deg F' or chunit.title() == 'Deg_F':
                         f[chname] = (f[chname] - 32.0) * 5 / 9
+                        print(f"CH. 2 units in {chunit}, converting to deg C...")
             elif col in ['ms', 'Date', 'Time', 'index']:
                 f = f.drop(col, axis=1)
         f['name'] = self.infile.split('\\').pop().split('/').pop().rsplit('.', 1)[0]
