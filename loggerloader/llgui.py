@@ -111,18 +111,16 @@ class Feedback:
         frame_header = ttk.Frame(self.onewelltab)
         frame_header.pack(pady=5)
         # Included because some attachments fail when packaging code
-        try:
-            self.logo = tk.PhotoImage(
-                file="G:/My Drive/Python/Pycharm/loggerloader/data_files/GeologicalSurvey.png").subsample(10, 10)
-            ttk.Label(frame_header, image=self.logo).grid(row=0, column=0, rowspan=2)
-        except:
-            pass
-        ttk.Label(frame_header, wraplength=150,
-                  text=" Utah Geological Survey Scripts for Processing transducer data").grid(row=0, column=1)
+        ttk.Label(frame_header, wraplength=450,
+                  text=" Utah Geological Survey Scripts for Processing transducer data").grid(row=0, column=0)
 
         # Data Entry Frame
         self.filefinders('well')  # Select and import well data
+
+        self.outlierremove('well')
+
         self.filefinders('baro')  # Select and import baro data
+
 
         # Align Data
         self.add_alignment_interface()
@@ -538,6 +536,63 @@ class Feedback:
         self.entry[key].bind('<3>', lambda k: self.wellbaroabb(key))
         filefinderframe.pack()
 
+    def outlierremove(self, key):
+        ttk.Separator(self.onewelltab, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
+        frame_step1_5 = ttk.Frame(self.onewelltab)
+        ttk.Label(frame_step1_5, text='1a. Fix Jumps and outliers (optional)').grid(column=0, row=0, columnspan=6)
+        dataminlab = ttk.Label(frame_step1_5, text='Min. Allowed Value:')
+        dataminlab.grid(column=0, row=1)
+
+        self.dataminvar = tk.DoubleVar(frame_step1_5, value=-10000.0)
+        self.datamaxvar = tk.DoubleVar(frame_step1_5, value=100000.0)
+        self.datamin = ttk.Entry(frame_step1_5, textvariable=self.dataminvar, width=10, state='disabled')
+        self.datamin.grid(column=1, row=1)
+
+        dataminlab = ttk.Label(frame_step1_5, text='Max. Allowed Value:')
+        dataminlab.grid(column=2, row=1)
+        self.datamax = ttk.Entry(frame_step1_5, textvariable=self.datamaxvar, width=10, state='disabled')
+        self.datamax.grid(column=3, row=1)
+        self.trimbutt = ttk.Button(frame_step1_5, text='Trim Extrema', command=self.trimextrema, state='disabled')
+        self.trimbutt.grid(column=4, row=1)
+
+        datajumplab = ttk.Label(frame_step1_5, text='Jump Tolerance:')
+        datajumplab.grid(column=0, row=2)
+        self.datajumptol = tk.DoubleVar(frame_step1_5, value=100.0)
+        self.datajump = ttk.Entry(frame_step1_5, textvariable=self.datajumptol, width=10, state='disabled')
+        self.datajump.grid(column=1, row=2)
+        self.jumpbutt = ttk.Button(frame_step1_5, text='Fix Jumps', command=self.fixjumps, state='disabled')
+        self.jumpbutt.grid(column=2, row=2)
+        frame_step1_5.pack()
+        #self.data[key]
+
+    def trimextrema(self):
+        if 'well' in self.data.keys():
+            if 'Level' in self.data['well'].columns:
+                self.data['well'] = self.data['well'][(self.data['well']['Level']>=self.dataminvar.get())&(self.data['well']['Level']<=self.datamaxvar.get())]
+                graphframe, tableframe = self.note_tab_add('well')
+                self.add_graph_table('well', tableframe, graphframe)
+                #self.datatable['well'].show()
+                #self.datatable['well'].update()
+                #self.datatable['well'].show()
+        else:
+            print('No column named Level')
+            pass
+        #TODO add dialog to select a column to adjust
+
+    def fixjumps(self):
+        if 'well' in self.data.keys():
+            if 'Level' in self.data['well'].columns:
+                self.data['well'] = ll.jumpfix(self.data['well'], 'Level', self.datajumptol.get())
+                graphframe, tableframe = self.note_tab_add('well')
+                self.add_graph_table('well', tableframe, graphframe)
+                #self.datatable['well'].show()
+                #self.datatable['well'].update()
+                #self.datatable['well'].show()
+        else:
+            print('No column named Level')
+            pass
+        #TODO add dialog to select a column to adjust
+
     def fix_drift_interface(self):
         # Fix Drift Button
         ttk.Separator(self.onewelltab, orient=tk.HORIZONTAL).pack(fill=tk.X)
@@ -557,7 +612,7 @@ class Feedback:
         ttk.Separator(self.onewelltab, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
         frame_step3 = ttk.Frame(self.onewelltab)
         frame_step3.pack()
-        ttk.Label(frame_step3, text="3. Align Baro and Well Data:").grid(row=0, column=0, columnspan=3)
+        ttk.Label(frame_step3, text="3. Align Baro and Well Data:").grid(row=0, column=0, columnspan=5)
         ttk.Label(frame_step3, text='Pref. Data Freq.').grid(row=1, column=0, columnspan=2)
         # Boxes for data frequency
         self.freqint = ttk.Combobox(frame_step3, width=4, values=list(range(1, 120)))
@@ -569,6 +624,22 @@ class Feedback:
         b = ttk.Button(frame_step3, text='Align Datasets',
                        command=self.alignedplot)
         b.grid(row=2, column=2)
+
+        self.export_wb = tk.IntVar(value=1)
+        self.export_single_well_baro = tk.Checkbutton(frame_step3,
+                                                 text="Export Well-Baro Data?",
+                                                 variable=self.export_wb)
+        self.export_single_well_baro.grid(row=2, column=3, sticky=tk.W)
+        self.export_single_well_baro.select()
+
+        self.is_vented = tk.IntVar(value=0)
+        self.trans_vented = tk.Checkbutton(frame_step3,
+                                                 text="Vented?",
+                                                 variable=self.is_vented)
+        self.trans_vented.grid(row=2, column=4, sticky=tk.W)
+        #self.trans_vented.select()
+
+
 
     def add_elevation_interface(self, master):
         #
@@ -1013,7 +1084,18 @@ class Feedback:
             key].get() == f'Double-Click for {key} file':
             pass
         else:
-            if key in ('well', 'baro'):
+            if key in ('well'):
+                self.data[key] = ll.NewTransImp(self.datastr[key].get()).well.drop(['name'], axis=1)
+                filenm, self.file_extension = os.path.splitext(self.datastr[key].get())
+                self.datamin['state'] = 'normal'
+                self.datamax['state'] = 'normal'
+                self.trimbutt['state'] = 'normal'
+                self.datajump['state'] = 'normal'
+                self.jumpbutt['state'] = 'normal'
+                if 'Level' in self.data['well'].columns:
+                    self.dataminvar.set(self.data['well']['Level'].min())
+                    self.datamaxvar.set(self.data['well']['Level'].max())
+            elif key in ('baro'):
                 self.data[key] = ll.NewTransImp(self.datastr[key].get()).well.drop(['name'], axis=1)
                 filenm, self.file_extension = os.path.splitext(self.datastr[key].get())
             elif key in ('manual','bulk-manual','manual-single'):
@@ -1046,7 +1128,7 @@ class Feedback:
         """
         if 'well' in self.data.keys() and 'baro' in self.data.keys():
             key = 'well-baro'
-            if self.file_extension == '.csv':
+            if self.is_vented == 1:
                 sol = True
             else:
                 sol = False
@@ -1057,6 +1139,13 @@ class Feedback:
                                                 vented = sol)
             graphframe, tableframe = self.note_tab_add(key)
             self.add_graph_table(key, tableframe, graphframe)
+
+            if self.export_wb.get() == 1:
+                df = self.data[key]
+                df.index.name = 'locationid'
+                df = df.reset_index()
+                file = filedialog.asksaveasfilename(filetypes=[('csv', '.csv')], defaultextension=".csv")
+                df.to_csv(file)
 
     def align_well_baro_bulk(self):
         # TODO add feature to recognize global water transducers
