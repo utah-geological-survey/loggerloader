@@ -4,6 +4,7 @@ import glob
 import re
 import sqlalchemy
 import pytz
+import xml.etree.ElementTree as eletree
 from urllib.request import urlopen
 import json
 import pandas as pd
@@ -14,7 +15,8 @@ import matplotlib.ticker as tick
 import datetime
 from shutil import copyfile
 from pylab import rcParams
-import deprecation
+from xml.etree.ElementTree import ParseError
+
 rcParams['figure.figsize'] = 15, 10
 
 try:
@@ -49,7 +51,6 @@ class Color:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
     END = '\033[0m'
-
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -1302,8 +1303,75 @@ def find_extreme(site_number, gw_table="reading", sort_by='readingdate', extma='
     LIMIT 1""".format(gw_table, site_number, sort_by, sort_by, lorder)
 
     df = pd.read_sql(sql, engine)
-    return df['readingdate'][0], df['measureddtw'][0], df['waterelevation'][0]
 
+    #if gw_table=="reading":
+    #    return df['readingdate'][0], df['measureddtw'][0], df['waterelevation'][0]
+    #else:
+    return df.loc[0]
+
+def count_data(site_number, enviro, first_date=None, last_date=None, gw_reading_table="reading"):
+    """counts number of records for a locationid and date range
+
+    Args:
+        site_number: List of Location ID of time series data to be processed
+        enviro: workspace of SDE table
+        gw_reading_table: Name of SDE table in workspace to use
+        first_date: begining of time interval to search; defaults to 1/1/1900
+        last_date: end of time interval to search; defaults to current day
+    Returns:
+
+    """
+    if first_date is None:
+        first_date = datetime.datetime(1900, 1, 1)
+    if last_date is None:
+        last_date = datetime.datetime.now()
+
+    if type(site_number) == list:
+        pass
+    else:
+        site_number = [site_number]
+
+    query = f"""SELECT locationid, COUNT(*) FROM {gw_reading_table} 
+    WHERE locationid IN ({','.join([str(i) for i in site_number])}) 
+    AND readingdate >= '{first_date}' AND readingdate <= '{last_date}'
+    GROUP BY locationid
+    ORDER BY locationid ASC"""
+
+    df = pd.read_sql(query, con=enviro)
+
+    return df
+
+def summary_stats(site_number, field, enviro, first_date=None, last_date=None, gw_reading_table="reading"):
+    """
+
+    Args:
+        site_number: List of Location ID of time series data to be processed
+        enviro: workspace of SDE table
+        gw_reading_table: Name of SDE table in workspace to use
+        first_date: begining of time interval to search; defaults to 1/1/1900
+        last_date: end of time interval to search; defaults to current day
+    Returns:
+        summary statistics (count, min, max)
+    """
+    if first_date is None:
+        first_date = datetime.datetime(1900, 1, 1)
+    if last_date is None:
+        last_date = datetime.datetime.now()
+
+    if type(site_number) == list:
+        pass
+    else:
+        site_number = [site_number]
+
+    query = f"""SELECT locationid, MIN({field}), MAX({field}), COUNT({field}) FROM {gw_reading_table} 
+    WHERE locationid IN ({','.join([str(i) for i in site_number])}) 
+    AND readingdate >= '{first_date}' AND readingdate <= '{last_date}'
+    GROUP BY locationid
+    ORDER BY locationid ASC"""
+
+    df = pd.read_sql(query, con=enviro)
+
+    return df
 
 def get_gap_data(site_number, enviro, gap_tol=0.5, first_date=None, last_date=None,
                  gw_reading_table="reading"):
@@ -1320,7 +1388,6 @@ def get_gap_data(site_number, enviro, gap_tol=0.5, first_date=None, last_date=No
     Return:
         pandas dataframe with gap information
     """
-    # TODO MAke fast with SQL
     if first_date is None:
         first_date = datetime.datetime(1900, 1, 1)
     if last_date is None:
@@ -1331,17 +1398,26 @@ def get_gap_data(site_number, enviro, gap_tol=0.5, first_date=None, last_date=No
     else:
         site_number = [site_number]
 
-    query_txt = """SELECT readingdate,locationid FROM {:}
+    query_txt = """SELECT * FROM {:}
     WHERE locationid IN ({:}) AND readingdate >= '{:}' AND readingdate <= '{:}'
     ORDER BY locationid ASC, readingdate ASC"""
     query = query_txt.format(gw_reading_table, ','.join([str(i) for i in site_number]), first_date, last_date)
     df = pd.read_sql(query, con=enviro,
                      parse_dates={'readingdate': '%Y-%m-%d %H:%M:%s-%z'})
 
+    df = df.set_index(['locationid','readingdate'])
+    for i in site_number:
+        df.loc[i] = df.loc[i].resample('1D').mean()
+    df = df.reset_index()
     df['t_diff'] = df['readingdate'].diff()
 
     df = df[df['t_diff'] > pd.Timedelta('{:}D'.format(gap_tol))]
-    df.sort_values('t_diff', ascending=False)
+    df['end_gap'] = df['readingdate'] + df['t_diff']
+    df['end_gap'] = df['end_gap'].apply(lambda x: x.strftime('%Y-%m-%d'))
+    df['beg_gap'] = df['readingdate'].apply(lambda x: x.strftime('%Y-%m-%d'))
+    df['gap_size'] = df['t_diff'].apply(lambda x: x.days, 1)
+    df = df[['locationid','t_diff', 'end_gap', 'beg_gap', 'gap_size']]
+    #df.sort_values('t_diff', ascending=False)
     return df
 
 
@@ -1371,33 +1447,31 @@ def get_location_data(site_numbers, enviro, first_date=None, last_date=None, lim
             first_date = datetime.datetime(1900, 1, 1)
 
     # Get last reading at the specified location
-    try:
-        if not last_date or last_date > datetime.datetime.now():
-            last_date = datetime.datetime.now()
-    except TypeError:
-        if not last_date or last_date > datetime.datetime.now(tz=pytz.timezone('MST')):
-            last_date = datetime.datetime.now(tz=pytz.timezone('MST'))
+    if not last_date or last_date > datetime.datetime.now():
+        last_date = datetime.datetime.now()
+
     if type(site_numbers) == list:
         site_numbers = ",".join([str(i) for i in site_numbers])
     else:
         pass
 
-    sql = """SELECT * FROM {:} 
-    WHERE locationid IN ({:}) AND readingdate >= '{:}' AND readingdate <= '{:}'
-    ORDER BY locationid ASC, readingdate ASC""".format(gw_reading_table, site_numbers, first_date, last_date)
+    if gw_reading_table=='reading':
+        datefield = 'readingdate'
+    elif gw_reading_table=='ugs_gw_flow':
+        datefield = 'flowdate'
+    else:
+        datefield = 'readingdate'
+    sql = f"SELECT * FROM {gw_reading_table} WHERE locationid IN ({site_numbers}) AND {datefield} >= '{first_date}' AND {datefield} <= '{last_date}' ORDER BY locationid ASC, {datefield} ASC "
 
     if limit:
         sql += "\nLIMIT {:}".format(limit)
 
-    readings = pd.read_sql(sql, con=enviro, parse_dates=True, index_col='readingdate')
+    readings = pd.read_sql(sql, con=enviro, parse_dates=True, index_col=datefield)
     readings.index = pd.to_datetime(readings.index, infer_datetime_format=True)
 
-    try:
-        readings.index = readings.index.tz_convert(tz='MST')
-    except TypeError:
-        readings.index = readings.index.tz_localize(tz='MST')
+
     readings.reset_index(inplace=True)
-    readings.set_index(['locationid', 'readingdate'], inplace=True)
+    readings.set_index(['locationid', datefield], inplace=True)
     if len(readings) == 0:
         print('No Records for location(s) {:}'.format(site_numbers))
     return readings
@@ -1763,7 +1837,7 @@ def hourly_resample(df, bse=0, minutes=60):
     else:
         sampfrq = str(minutes) + 'T'
 
-    df = df.resample(sampfrq, closed='right', label='right', base=bse).asfreq()
+    df = df.resample(sampfrq, closed='right', label='right', origin=bse).asfreq()
     return df
 
 
@@ -1928,7 +2002,10 @@ class NewTransImp(object):
         file_ext = os.path.splitext(self.infile)[1]
         try:
             if file_ext == '.xle':
-                self.well = self.new_xle_imp()
+                try:
+                    self.well = self.new_xle_imp()
+                except (ParseError,KeyError):
+                    self.well = self.old_xle_imp()
             elif file_ext == '.lev':
                 self.well = self.new_lev_imp()
             elif file_ext == '.csv':
@@ -2003,9 +2080,9 @@ class NewTransImp(object):
 
                 elif 'Date' in txt[1]:
                     print('{:} is Global'.format(self.infile))
-                    f = pd.read_csv(self.infile, skiprows=1, parse_dates=[[0, 1]])
+                    f = pd.read_csv(self.infile, skiprows=1, parse_dates={'DateTime':[0, 1]})
                     # f = f.reset_index()
-                    f['DateTime'] = pd.to_datetime(f['Date_ Time'], errors='coerce')
+                    #f['DateTime'] = pd.to_datetime(f.columns[0], errors='coerce')
                     f = f[f.DateTime.notnull()]
                     if ' Feet' in list(f.columns.values):
                         f['Level'] = f[' Feet']
@@ -2036,7 +2113,9 @@ class NewTransImp(object):
                     # bse = int(pd.to_datetime(f.index).minute[0])
                     # f = hourly_resample(f, bse)
                     f.rename(columns={' Volts': 'Volts'}, inplace=True)
-                    f.drop([u'date', u'datediff', u'Date_ Time'], inplace=True, axis=1)
+                    for col in [u'date', u'datediff', u'Date_ Time', u'Date_Time']:
+                        if col in f.columns:
+                            f = f.drop(col, axis=1)
                     return f
             else:
                 print('{:} is unrecognized'.format(self.infile))
@@ -2093,7 +2172,7 @@ class NewTransImp(object):
         except ValueError:
             print('File {:} has formatting issues'.format(self.infile))
 
-    def new_xle_imp(self):
+    def old_xle_imp(self):
         """This function uses an exact file path to upload a xle transducer file.
 
         Returns:
@@ -2178,6 +2257,56 @@ class NewTransImp(object):
 
         return f
 
+    def new_xle_imp(self):
+        tree = eletree.parse(self.infile, parser=eletree.XMLParser(encoding="ISO-8859-1"))
+        root = tree.getroot()
+
+        ch1id = root.find('./Identification')
+        dfdata = {}
+        for item in root.findall('./Data/Log'):
+            dfdata[item.attrib['id']] = {}
+            for child in item:
+                dfdata[item.attrib['id']][child.tag] = child.text
+                # print([child[i].text for i in range(len(child))])
+        ch = {}
+        for child in root:
+            if 'Ch' in child.tag:
+                ch[child.tag[:3].lower()] = {}
+                for item in child:
+                    if item.text is not None:
+                        ch[child.tag[:3].lower()][item.tag] = item.text
+
+        f = pd.DataFrame.from_dict(dfdata, orient='index')
+        f['DateTime'] = pd.to_datetime(f.apply(lambda x: x['Date'] + ' ' + x['Time'], 1))
+        f = f.reset_index()
+        f = f.set_index('DateTime')
+        levelconv = {'feet': 1, 'ft': 1, 'kpa': 0.33456, 'mbar': 0.033455256555148,
+                     'm': 3.28084, 'meters': 3.28084,'psi':2.306726}
+        for col in f:
+            if col in ch.keys():
+                if col == 'ch1':
+                    chname = 'Level'
+                elif col == 'ch2':
+                    chname = 'Temperature'
+                elif 'Identification' in ch[col].keys():
+                    chname = ch[col]['Identification'].title()
+
+                chunit = ch[col]['Unit']
+                f = f.rename(columns={col: chname})
+                f[chname] = pd.to_numeric(f[chname])
+                if chname == 'Level':
+                    f[chname] = f[chname] * levelconv.get(chunit.lower(), 1)
+                    print(f"CH. 1 units in {chunit}, converting to ft...")
+                elif chname == 'Temperature' or chname == 'Temp':
+                    if chunit[-1] == 'F' or chunit.title() == 'Fahrenheit' or chunit.title() == 'Deg F' or chunit.title() == 'Deg_F':
+                        f[chname] = (f[chname] - 32.0) * 5 / 9
+                        print(f"CH. 2 units in {chunit}, converting to deg C...")
+            elif col in ['ms', 'Date', 'Time', 'index']:
+                f = f.drop(col, axis=1)
+        f['name'] = self.infile.split('\\').pop().split('/').pop().rsplit('.', 1)[0]
+        return f
+
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Summary scripts - these extract transducer headers and summarize them in tables
@@ -2226,7 +2355,7 @@ def compile_end_beg_dates(infile):
     return df
 
 
-import xml.etree.ElementTree as eletree
+
 
 
 class HeaderTable(object):
@@ -2337,6 +2466,7 @@ class HeaderTable(object):
 
     def csv_head(self, file):
         cfile = {}
+        csvdata = pd.DataFrame()
         try:
             cfile['file_name'] = getfilename(file)
             csvdata = NewTransImp(file).well.sort_index()
@@ -2352,9 +2482,11 @@ class HeaderTable(object):
             cfile['trans type'] = 'Global Water'
             cfile['Num_log'] = len(csvdata)
             # df = pd.DataFrame.from_dict(cfile, orient='index').T
+
         except KeyError:
             pass
         return cfile, csvdata
+
 
 
 def getwellid(infile, wellinfo):

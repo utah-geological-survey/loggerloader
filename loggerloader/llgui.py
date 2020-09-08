@@ -35,7 +35,7 @@ from pandastable import dialogs
 from pandastable import util
 from pandastable import logfile
 from pandastable import SimpleEditor
-
+#from tksheet import Sheet
 from pandas.plotting import register_matplotlib_converters
 
 import time
@@ -100,9 +100,21 @@ class Feedback:
         # add tabs in the frame to the left
         self.processing_notebook = ttk.Notebook(self.process_frame)
         self.processing_notebook.pack(fill='both', expand=True)
-        self.onewelltab = ttk.Frame(self.processing_notebook)
+        #self.onewelltab = ttk.Frame(self.processing_notebook)
+
+        #https://stackoverflow.com/questions/3085696/adding-a-scrollbar-to-a-group-of-widgets-in-tkinter
+        self.frame = ttk.Frame(self.processing_notebook)
+        self.canvas = tk.Canvas(self.frame, borderwidth=0, width=150, height=800)
+        self.onewelltab = tk.Frame(self.canvas)
+        self.vsb = tk.Scrollbar(self.frame, orient="vertical", command=self.canvas.yview)
+        self.canvas.configure(yscrollcommand=self.vsb.set)
+        self.vsb.pack(side="right", fill="y")
+        self.canvas.pack(side="left", fill="both", expand=True)
+        self.canvas.create_window((4,4), window=self.onewelltab, anchor="nw", tags="self.frame")
+        self.onewelltab.bind("<Configure>", self.onFrameConfigure)
+
         self.bulkwelltab = ttk.Frame(self.processing_notebook)
-        self.processing_notebook.add(self.onewelltab, text='Single-Well Process')
+        self.processing_notebook.add(self.frame, text='Single-Well Process')
         self.processing_notebook.add(self.bulkwelltab, text='Bulk Well Process')
         self.processing_notebook.bind("<<NotebookTabChanged>>", self.tab_update)
 
@@ -111,23 +123,32 @@ class Feedback:
         frame_header = ttk.Frame(self.onewelltab)
         frame_header.pack(pady=5)
         # Included because some attachments fail when packaging code
-        try:
-            self.logo = tk.PhotoImage(
-                file="G:/My Drive/Python/Pycharm/loggerloader/data_files/GeologicalSurvey.png").subsample(10, 10)
-            ttk.Label(frame_header, image=self.logo).grid(row=0, column=0, rowspan=2)
-        except:
-            pass
-        ttk.Label(frame_header, wraplength=150,
-                  text=" Utah Geological Survey Scripts for Processing transducer data").grid(row=0, column=1)
+        ttk.Label(frame_header, wraplength=450,
+                  text=" Utah Geological Survey Scripts for Processing transducer data").grid(row=0, column=0)
 
         # Data Entry Frame
         self.filefinders('well')  # Select and import well data
+
+        self.outlierremove('well')
+
         self.filefinders('baro')  # Select and import baro data
+
 
         # Align Data
         self.add_alignment_interface()
 
-        self.add_manual_notepad()
+        # -----------Manual Data------------------------------------
+        # Select Manual Table Interface
+        ttk.Separator(self.onewelltab).pack(fill=tk.X, pady=5)
+        self.frame_step4 = ttk.Frame(self.onewelltab)
+        self.frame_step4.pack()
+        ttk.Label(self.frame_step4, text="4. Select Manual Data:").grid(row=0, column=0, columnspan=3)
+        self.manbook = ttk.Notebook(self.frame_step4)
+        self.manbook.grid(row=1, column=0, columnspan=3)
+        self.manframe = ttk.Frame(self.manbook)
+        self.manfileframe = ttk.Frame(self.manbook)
+        self.manbook.add(self.manframe, text='Manual Entry')
+        self.manbook.add(self.manfileframe, text='Data Import')
         # validates time number inputs
         self.measvalidation = (self.manframe.register(self.only_meas), '%P')
 
@@ -154,7 +175,43 @@ class Feedback:
 
         # Tab for entering manual data by file
         # TODO Auto align sheet fields to columns
-        self.man_file_frame(self.manfileframe)
+        manfileframetext = """File with manual data must have datetime, reading, and locationid fields"""
+        key = 'manual-single'
+        ttk.Label(self.manfileframe, text=manfileframetext).grid(row=0, column=0, columnspan=4)
+        self.datastr[key] = tk.StringVar(self.manfileframe)
+        self.datastr[key].set('G:/Shared drives/UGS_Groundwater/Projects/Transducers/manmeas.csv')
+
+        man_entry = ttk.Entry(self.manfileframe, textvariable=self.datastr[key], width=80, justify='left')
+
+        man_entry.grid(row=2, column=0, columnspan=4)
+        self.fillervals = ['readingdate', 'dtwbelowcasing', 'locid']
+
+        man_entry.bind('<Double-ButtonRelease-1>', lambda event: self.mandiag(event, key='manual-single'))
+
+        self.scombo, self.scombo_choice, self.scombo_label = {}, {}, {}
+        self.scombovals = {"Datetime": [3, 0, 15, self.fillervals, 4, 0],
+                          "DTW": [3, 1, 15, self.fillervals, 4, 1],
+                          "locationid": [3, 2, 15, self.fillervals, 4, 2],
+                          "Pick id": [5, 1, 15, [1001, 1002], 5, 2]}
+
+        for ky, vals in self.scombovals.items():
+            self.scombo_choice[ky] = tk.StringVar()
+            self.scombo_label[ky] = ttk.Label(self.manfileframe, text=ky)
+            self.scombo_label[ky].grid(row=vals[0], column=vals[1])
+
+            self.scombo[ky] = ttk.Combobox(self.manfileframe, width=vals[2], values=self.fillervals,
+                                           textvariable=self.scombo_choice[ky],
+                                           postcommand=lambda: self.man_col_select_single(self.scombo[ky]))
+            self.scombo[ky].grid(row=vals[4], column=vals[5])
+
+        self.mandiag(False, key='manual-single')
+        ttk.Label(self.manfileframe, text="units").grid(row=3, column=3)
+        self.manunits = ttk.Combobox(self.manfileframe, width=5,
+                                     values=['ft', 'm'], state="readonly")
+
+        self.manunits.grid(row=4, column=3)
+        self.manunits.current(0)
+
 
         b = ttk.Button(self.frame_step4,
                        text='Process Manual Data',
@@ -269,6 +326,10 @@ class Feedback:
         ent = ttk.Entry(bulk_drift_frame, textvariable=self.max_allowed_drift, width=10)
         ent.grid(row=1, column=2)
 
+    def onFrameConfigure(self, event):
+        '''Reset the scroll region to encompass the inner frame'''
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+
     def man_file_frame(self, master, key='manual'):
         # self.manfileframe = ttk.Frame(master)
 
@@ -377,7 +438,7 @@ class Feedback:
             sv.set(base)
             pg.step()
 
-        self.data['bulk-well'] = pd.concat(wdf).sort_index()
+        self.data['bulk-well'] = pd.concat(wdf, axis=0).sort_index()
         # concatinate file info
         df = pd.DataFrame.from_dict(fild, orient='index')
         # df['locationid'] = df['file_name'].apply(lambda x: f"{self.locnametoid.get(self.combo.get(x,None).get(),None)}",1)
@@ -414,16 +475,43 @@ class Feedback:
         self.combo[lab].grid(row=vals[4], column=vals[5])
 
     def man_col_select(self, cmbo):
-        if 'manual' in self.data.keys() or 'bulk-manual' in self.data.keys():
-            mancols = list(self.data['manual'].columns.values)
+        if 'manual' in self.data.keys() or 'bulk-manual' in self.data.keys() or 'manual-single' in self.data.keys():
+            if 'manual-single' in self.data.keys():
+                key = 'manual-single'
+            elif 'bulk-manual' in self.data.keys():
+                key = 'bulk-manual'
+            else:
+                key = 'manual'
+            mancols = list(self.data[key].columns.values)
             if cmbo == self.combo['Pick id']:
-                locids = self.data['manual'][pd.to_numeric(self.combo['locationid'].get(),
+                locids = self.data[key][pd.to_numeric(self.combo['locationid'].get(),
                                                            errors='coerce',
                                                            downcast='integer')].unique()
                 # TODO this will cause problems later; change to handle multiple types
-                cmbo['values'] = list([pd.to_numeric(loc, downcast='integer') for loc in locids])
+                cmbo['values'] = list([pd.to_numeric(loc, downcast='integer',errors='coerce') for loc in locids])
             else:
                 cmbo['values'] = mancols
+
+        else:
+            messagebox.showinfo(title='Attention', message='Select a manual file!')
+            self.mandiag(True)
+
+    def man_col_select_single(self, cmbo):
+        if 'manual' in self.data.keys() or 'bulk-manual' in self.data.keys() or 'manual-single' in self.data.keys():
+            if 'manual-single' in self.data.keys():
+                key = 'manual-single'
+            elif 'bulk-manual' in self.data.keys():
+                key = 'bulk-manual'
+            else:
+                key = 'manual'
+            mancols = list(self.data[key].columns.values)
+            print(self.scombo['locationid'].get())
+            if cmbo == self.scombo['Pick id']:
+                locids = self.data[key][self.scombo['locationid'].get()].unique()
+                # TODO this will cause problems later; change to handle multiple types
+                cmbo['values'] = list([pd.to_numeric(loc, downcast='integer') for loc in locids])
+            else:
+                cmbo['values'] = [0]
 
         else:
             messagebox.showinfo(title='Attention', message='Select a manual file!')
@@ -449,20 +537,6 @@ class Feedback:
         self.man_meas[i] = ttk.Entry(self.manframe, validate="key", validatecommand=self.measvalidation, width=10)
         self.man_meas[i].grid(row=i + 1, column=5, padx=2)
 
-    def add_manual_notepad(self):
-        # -----------Manual Data-------------------------------------------------------------
-        # Select Manual Table Interface
-        ttk.Separator(self.onewelltab).pack(fill=tk.X, pady=5)
-        self.frame_step4 = ttk.Frame(self.onewelltab)
-        self.frame_step4.pack()
-        ttk.Label(self.frame_step4, text="4. Select Manual Data:").grid(row=0, column=0, columnspan=3)
-        self.manbook = ttk.Notebook(self.frame_step4)
-        self.manbook.grid(row=1, column=0, columnspan=3)
-        self.manframe = ttk.Frame(self.manbook)
-        self.manfileframe = ttk.Frame(self.manbook)
-        self.manbook.add(self.manframe, text='Manual Entry')
-        self.manbook.add(self.manfileframe, text='Data Import')
-
     def filefinders(self, key):
         datasets = {"well": "1. Select Well Data:",
                     "baro": "2. Select Barometric Data:"}
@@ -476,6 +550,63 @@ class Feedback:
         self.entry[key].bind('<Double-ButtonRelease-1>', lambda k: self.wellbarodiag(key))
         self.entry[key].bind('<3>', lambda k: self.wellbaroabb(key))
         filefinderframe.pack()
+
+    def outlierremove(self, key):
+        ttk.Separator(self.onewelltab, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
+        frame_step1_5 = ttk.Frame(self.onewelltab)
+        ttk.Label(frame_step1_5, text='1a. Fix Jumps and outliers (optional)').grid(column=0, row=0, columnspan=6)
+        dataminlab = ttk.Label(frame_step1_5, text='Min. Allowed Value:')
+        dataminlab.grid(column=0, row=1)
+
+        self.dataminvar = tk.DoubleVar(frame_step1_5, value=-10000.0)
+        self.datamaxvar = tk.DoubleVar(frame_step1_5, value=100000.0)
+        self.datamin = ttk.Entry(frame_step1_5, textvariable=self.dataminvar, width=10, state='disabled')
+        self.datamin.grid(column=1, row=1)
+
+        dataminlab = ttk.Label(frame_step1_5, text='Max. Allowed Value:')
+        dataminlab.grid(column=2, row=1)
+        self.datamax = ttk.Entry(frame_step1_5, textvariable=self.datamaxvar, width=10, state='disabled')
+        self.datamax.grid(column=3, row=1)
+        self.trimbutt = ttk.Button(frame_step1_5, text='Trim Extrema', command=self.trimextrema, state='disabled')
+        self.trimbutt.grid(column=4, row=1)
+
+        datajumplab = ttk.Label(frame_step1_5, text='Jump Tolerance:')
+        datajumplab.grid(column=0, row=2)
+        self.datajumptol = tk.DoubleVar(frame_step1_5, value=100.0)
+        self.datajump = ttk.Entry(frame_step1_5, textvariable=self.datajumptol, width=10, state='disabled')
+        self.datajump.grid(column=1, row=2)
+        self.jumpbutt = ttk.Button(frame_step1_5, text='Fix Jumps', command=self.fixjumps, state='disabled')
+        self.jumpbutt.grid(column=2, row=2)
+        frame_step1_5.pack()
+        #self.data[key]
+
+    def trimextrema(self):
+        if 'well' in self.data.keys():
+            if 'Level' in self.data['well'].columns:
+                self.data['well'] = self.data['well'][(self.data['well']['Level']>=self.dataminvar.get())&(self.data['well']['Level']<=self.datamaxvar.get())]
+                graphframe, tableframe = self.note_tab_add('well')
+                self.add_graph_table('well', tableframe, graphframe)
+                #self.datatable['well'].show()
+                #self.datatable['well'].update()
+                #self.datatable['well'].show()
+        else:
+            print('No column named Level')
+            pass
+        #TODO add dialog to select a column to adjust
+
+    def fixjumps(self):
+        if 'well' in self.data.keys():
+            if 'Level' in self.data['well'].columns:
+                self.data['well'] = ll.jumpfix(self.data['well'], 'Level', self.datajumptol.get())
+                graphframe, tableframe = self.note_tab_add('well')
+                self.add_graph_table('well', tableframe, graphframe)
+                #self.datatable['well'].show()
+                #self.datatable['well'].update()
+                #self.datatable['well'].show()
+        else:
+            print('No column named Level')
+            pass
+        #TODO add dialog to select a column to adjust
 
     def fix_drift_interface(self):
         # Fix Drift Button
@@ -496,7 +627,7 @@ class Feedback:
         ttk.Separator(self.onewelltab, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
         frame_step3 = ttk.Frame(self.onewelltab)
         frame_step3.pack()
-        ttk.Label(frame_step3, text="3. Align Baro and Well Data:").grid(row=0, column=0, columnspan=3)
+        ttk.Label(frame_step3, text="3. Align Baro and Well Data:").grid(row=0, column=0, columnspan=5)
         ttk.Label(frame_step3, text='Pref. Data Freq.').grid(row=1, column=0, columnspan=2)
         # Boxes for data frequency
         self.freqint = ttk.Combobox(frame_step3, width=4, values=list(range(1, 120)))
@@ -508,6 +639,22 @@ class Feedback:
         b = ttk.Button(frame_step3, text='Align Datasets',
                        command=self.alignedplot)
         b.grid(row=2, column=2)
+
+        self.export_wb = tk.IntVar(value=1)
+        self.export_single_well_baro = tk.Checkbutton(frame_step3,
+                                                 text="Export Well-Baro Data?",
+                                                 variable=self.export_wb)
+        self.export_single_well_baro.grid(row=2, column=3, sticky=tk.W)
+        self.export_single_well_baro.select()
+
+        self.is_vented = tk.IntVar(value=0)
+        self.trans_vented = tk.Checkbutton(frame_step3,
+                                                 text="Vented?",
+                                                 variable=self.is_vented)
+        self.trans_vented.grid(row=2, column=4, sticky=tk.W)
+        #self.trans_vented.select()
+
+
 
     def add_elevation_interface(self, master):
         #
@@ -549,11 +696,17 @@ class Feedback:
         # self.manelevs = wlevels.manual_elevation()
         df = self.datatable['fixed-drift'].model.df
         # wlevels = ll.ElevateWater(self.datatable['fixed-drift'].model.df, melev, mstickup)
+        if 'manual-single' in self.data.keys():
+            key2 = 'manual-single'
+        elif 'bulk-manual' in self.data.keys():
+            key2 = 'bulk-manual'
+        else:
+            key2 = 'manual'
 
-        self.datatable['manual'].model.df['waterelevation'] = self.datatable['manual'].model.df[
+        self.datatable[key2].model.df['waterelevation'] = self.datatable[key2].model.df[
                                                                   'dtwbelowcasing'] + mstickup + melev
-        self.datatable['manual'].update()
-        self.manelevs = self.datatable['manual'].model.df
+        self.datatable[key2].update()
+        self.manelevs = self.datatable[key2].model.df
         df['waterelevation'] = self.datatable['fixed-drift'].model.df['DTW_WL'] + mstickup + melev
 
         self.data[key] = df
@@ -564,11 +717,18 @@ class Feedback:
     def fix_drift(self):
         key = 'fixed-drift'
         if 'well-baro' in self.datatable.keys():
-            self.datatable['manual'].model.df['dtwbelowcasing'] = self.datatable['manual'].model.df[
-                                                                      'dtwbelowcasing'] * -1
-            self.datatable['manual'].update()
+            if 'manual-single' in self.data.keys():
+                key2 = 'manual-single'
+            elif 'bulk-manual' in self.data.keys():
+                key2 = 'bulk-manual'
+            else:
+                key2 = 'manual'
 
-            df, self.drift_info, mxdrft = ll.Drifting(self.datatable['manual'].model.df,
+            self.datatable[key2].model.df['dtwbelowcasing'] = self.datatable[key2].model.df[
+                                                                      'dtwbelowcasing'] * -1
+            self.datatable[key2].update()
+
+            df, self.drift_info, mxdrft = ll.Drifting(self.datatable[key2].model.df,
                                                       self.datatable['well-baro'].model.df,
                                                       drifting_field='corrwl',
                                                       man_field='dtwbelowcasing',
@@ -605,8 +765,13 @@ class Feedback:
         for i in self.data['bulk-well-baro'].index.get_level_values(0).unique():
             popup.update()
             if pd.notnull(i):
-
-                mandf = self.datatable['manual'].model.df.loc[int(i)]
+                if 'manual-single' in self.data.keys():
+                    key2 = 'manual-single'
+                elif 'bulk-manual' in self.data.keys():
+                    key2 = 'bulk-manual'
+                else:
+                    key2 = 'manual'
+                mandf = self.datatable[key2].model.df.loc[int(i)]
                 wellbaro = self.data['bulk-well-baro'].loc[int(i)]
 
                 df, dfrinf, max_drift = ll.Drifting(mandf,
@@ -672,8 +837,13 @@ class Feedback:
                         fig.canvas.draw()
                         df = self.data['bulk-fix-drift'].loc[ind]
                         df = df.dropna(subset=['waterelevation'])
-
-                        mandf = self.datatable['manual'].model.df.loc[ind]
+                        if 'manual-single' in self.data.keys():
+                            key2 = 'manual-single'
+                        elif 'bulk-manual' in self.data.keys():
+                            key2 = 'bulk-manual'
+                        else:
+                            key2 = 'manual'
+                        mandf = self.datatable[key2].model.df.loc[ind]
                         mandf = mandf.dropna(subset=['waterelevation'])
 
                         if len(df) > 0 and len(mandf) > 0:
@@ -697,7 +867,12 @@ class Feedback:
 
     def proc_man(self):
         nbnum = self.manbook.index(self.manbook.select())
-        key = 'manual'
+        if 'manual-single' in self.data.keys():
+            key = 'manual-single'
+        elif 'bulk-manual' in self.data.keys():
+            key = 'bulk-manual'
+        else:
+            key = 'manual'
         if nbnum == 0:
             for i in [0, 1]:
                 self.man_datetime[i] = pd.to_datetime(
@@ -714,9 +889,9 @@ class Feedback:
             self.data[key] = df.set_index(['readingdate'])
             print(self.data[key])
         elif nbnum == 1:
-            df = self.data[key].rename(columns={self.combo['Datetime'].get(): 'readingdate',
-                                                self.combo['DTW'].get(): 'dtwbelowcasing',
-                                                self.combo['locationid'].get(): 'locationid'})
+            df = self.data[key].rename(columns={self.scombo['Datetime'].get(): 'readingdate',
+                                                self.scombo['DTW'].get(): 'dtwbelowcasing',
+                                                self.scombo['locationid'].get(): 'locationid'})
             df['units'] = self.manunits.get()
             if self.manunits.get() == 'm':
                 df['dtwbelowcasing'] = df['dtwbelowcasing'] * 3.28084
@@ -729,7 +904,7 @@ class Feedback:
             if 'well' in self.datatable.keys():
                 df = df[df.index > self.datatable['well'].model.df.first_valid_index() - pd.DateOffset(days=8)]
 
-            self.data[key] = df[df['locationid'] == int(self.combo['Pick id'].get())]
+            self.data[key] = df[df['locationid'] == pd.to_numeric(self.scombo['Pick id'].get(), downcast='integer')]
 
         graphframe, tableframe = self.note_tab_add(key)
         self.add_graph_table(key, tableframe, graphframe)
@@ -740,7 +915,14 @@ class Feedback:
         pg.step()
         return wl
 
-    def proc_man_bulk(self, key='manual'):
+    def proc_man_bulk(self):
+        if 'manual-single' in self.data.keys():
+            key = 'manual-single'
+        elif 'bulk-manual' in self.data.keys():
+            key = 'bulk-manual'
+        else:
+            key = 'manual'
+
         try:
             df = self.data[key].rename(columns={self.combo['Datetime'].get(): 'readingdate',
                                                 self.combo['DTW'].get(): 'dtwbelowcasing',
@@ -894,31 +1076,49 @@ class Feedback:
 
     def add_manual_points(self, key, graph_frame1):
         ax = self.datatable[key].showPlotViewer(parent=graph_frame1).ax
+        if 'manual-single' in self.data.keys():
+            key2 = 'manual-single'
+        elif 'bulk-manual' in self.data.keys():
+            key2 = 'bulk-manual'
+        else:
+            key2 = 'manual'
         if key == 'fixed-drift':
+
             ax.plot(self.datatable[key].model.df['DTW_WL'], color='green', label='unprocessed')
-            ax.scatter(self.datatable['manual'].model.df.index, self.datatable['manual'].model.df['dtwbelowcasing'])
+            ax.scatter(self.datatable[key2].model.df.index, self.datatable[key2].model.df['dtwbelowcasing'])
             ax.set_ylabel(f"Depth to Water (ft)")
         elif key == 'wl-elev':
             ax.plot(self.datatable[key].model.df['waterelevation'], color='green', label='unprocessed')
-            ax.scatter(self.datatable['manual'].model.df.index, self.datatable['manual'].model.df['waterelevation'])
+            ax.scatter(self.datatable[key2].model.df.index, self.datatable[key2].model.df['waterelevation'])
             ax.set_ylabel(f"Water Elevation (ft)")
-        ax.set_xlim(self.datatable['manual'].model.df.first_valid_index() - pd.Timedelta('3 days'),
-                    self.datatable['manual'].model.df.last_valid_index() + pd.Timedelta('3 days'), )
+        ax.set_xlim(self.datatable[key2].model.df.first_valid_index() - pd.Timedelta('3 days'),
+                    self.datatable[key2].model.df.last_valid_index() + pd.Timedelta('3 days'), )
 
     def wellbaroabb(self, key):
         if self.datastr[key].get() == '' or type(self.datastr[key].get()) == tuple or self.datastr[
             key].get() == f'Double-Click for {key} file':
             pass
         else:
-            if key in ('well', 'baro'):
+            if key in ('well'):
                 self.data[key] = ll.NewTransImp(self.datastr[key].get()).well.drop(['name'], axis=1)
                 filenm, self.file_extension = os.path.splitext(self.datastr[key].get())
-            elif key == 'manual':
+                self.datamin['state'] = 'normal'
+                self.datamax['state'] = 'normal'
+                self.trimbutt['state'] = 'normal'
+                self.datajump['state'] = 'normal'
+                self.jumpbutt['state'] = 'normal'
+                if 'Level' in self.data['well'].columns:
+                    self.dataminvar.set(self.data['well']['Level'].min())
+                    self.datamaxvar.set(self.data['well']['Level'].max())
+            elif key in ('baro'):
+                self.data[key] = ll.NewTransImp(self.datastr[key].get()).well.drop(['name'], axis=1)
+                filenm, self.file_extension = os.path.splitext(self.datastr[key].get())
+            elif key in ('manual','bulk-manual','manual-single'):
                 filenm, file_extension = os.path.splitext(self.datastr[key].get())
                 if file_extension in ('.xls', '.xlsx'):
-                    self.data['manual'] = pd.read_excel(self.datastr[key].get())
+                    self.data[key] = pd.read_excel(self.datastr[key].get())
                 elif file_extension == '.csv':
-                    self.data['manual'] = pd.read_csv(self.datastr[key].get())
+                    self.data[key] = pd.read_csv(self.datastr[key].get())
             # add notepad tab
             graphframe, tableframe = self.note_tab_add(key)
             # add graph and table to new tab
@@ -943,7 +1143,7 @@ class Feedback:
         """
         if 'well' in self.data.keys() and 'baro' in self.data.keys():
             key = 'well-baro'
-            if self.file_extension == '.csv':
+            if self.is_vented == 1:
                 sol = True
             else:
                 sol = False
@@ -954,6 +1154,13 @@ class Feedback:
                                                 vented = sol)
             graphframe, tableframe = self.note_tab_add(key)
             self.add_graph_table(key, tableframe, graphframe)
+
+            if self.export_wb.get() == 1:
+                df = self.data[key]
+                df.index.name = 'locationid'
+                df = df.reset_index()
+                file = filedialog.asksaveasfilename(filetypes=[('csv', '.csv')], defaultextension=".csv")
+                df.to_csv(file)
 
     def align_well_baro_bulk(self):
         # TODO add feature to recognize global water transducers
@@ -1015,37 +1222,51 @@ class Feedback:
 
     def mandiag(self, event, key='manual'):
         if event:
-            ftypelist = (("csv", "*.csv*"), ("xlsx", "*.xlsx"), ("xls", ".xls"))
+
             self.datastr[key].set(filedialog.askopenfilename(initialdir=self.currentdir,
                                                              title=f"Select {key} file",
-                                                             filetypes=ftypelist))
+                                                             filetypes=[('csv', '.csv')],
+                                                             defaultextension=".csv"))
 
             self.currentdir = os.path.dirname(self.datastr[key].get())
 
             # https://stackoverflow.com/questions/45357174/tkinter-drop-down-menu-from-excel
             # TODO add excel sheet options to file selection
 
-            # self.graph_frame1.pack()
-            if self.datastr[key].get() == '' or self.datastr[key].get() == f'Double-Click for {key} file':
-                self.datastr[key].set(f'Double-Click for {key} file')
-            else:
+        # self.graph_frame1.pack()
+        if self.datastr[key].get() == '' or self.datastr[key].get() == f'Double-Click for {key} file':
+            self.datastr[key].set(f'Double-Click for {key} file')
+        else:
+            try:
                 filenm, file_extension = os.path.splitext(self.datastr[key].get())
                 if file_extension in ('.xls', '.xlsx'):
                     self.data[key] = pd.read_excel(self.datastr[key].get())
                 elif file_extension == '.csv':
                     self.data[key] = pd.read_csv(self.datastr[key].get())
-
+                print('file read')
                 mancols = list(self.data[key].columns.values)
+                self.fillervals = mancols
                 for col in mancols:
                     if col.lower() in ['datetime', 'date', 'readingdate']:
-                        self.combo_choice["Datetime"].set(col)
+                        if key == 'manual':
+                            self.combo_choice["Datetime"].set(col)
+                        else:
+                            self.scombo_choice["Datetime"].set(col)
                         # self.combo["Datetime"].current(mancols.index(col))
                     elif col.lower() in ['dtw', 'waterlevel', 'depthtowater', 'water_level',
                                          'level', 'depth_to_water', 'water_depth', 'depth',
                                          'dtwbelowcasing', 'dtw_below_casing']:
-                        self.combo_choice["DTW"].set(col)
+                        if key == 'manual':
+                            self.combo_choice["DTW"].set(col)
+                        else:
+                            self.scombo_choice["DTW"].set(col)
                     elif col.lower() in ['locationid', 'locid', 'id', 'location_id', 'lid']:
-                        self.combo_choice['locationid'].set(col)
+                        if key == 'manual':
+                            self.combo_choice['locationid'].set(col)
+                        else:
+                            self.scombo_choice['locationid'].set(col)
+            except FileNotFoundError:
+                pass
 
     def save_one_well(self):
         filename = filedialog.asksaveasfilename(confirmoverwrite=True)
