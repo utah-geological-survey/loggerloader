@@ -434,11 +434,17 @@ class Feedback:
             fild[file]['locationid'] = pd.to_numeric(
                 self.locnametoid.get(self.combo.get(fild[file]['file_name'], None).get(), None), errors="coerce",
                 downcast="integer")
-            wdf[fild[file]['locationid']] = df.sort_index()
+
+            if pd.isna(fild[file]['locationid']):
+                pass
+                print('na worked on file ', file)
+            else:
+                wdf[fild[file]['locationid']] = df.sort_index()
             sv.set(base)
             pg.step()
 
         self.data['bulk-well'] = pd.concat(wdf, axis=0).sort_index()
+
         # concatinate file info
         df = pd.DataFrame.from_dict(fild, orient='index')
         # df['locationid'] = df['file_name'].apply(lambda x: f"{self.locnametoid.get(self.combo.get(x,None).get(),None)}",1)
@@ -1428,6 +1434,7 @@ class Feedback:
                         self.combo[filestr].set(self.locnamedict[a])
                         self.locidmatch[filestr].set(self.welldict[a])
                         self.inputforheadertable[filew_ext] = self.welldict[a]
+
                     self.combo[filestr].bind("<<ComboboxSelected>>",
                                              lambda event, filestr=filestr: self.update_location_dicts(filestr))
 
