@@ -212,7 +212,6 @@ class Feedback:
         self.manunits.grid(row=4, column=3)
         self.manunits.current(0)
 
-
         b = ttk.Button(self.frame_step4,
                        text='Process Manual Data',
                        command=self.proc_man)
@@ -744,8 +743,10 @@ class Feedback:
             #                                           manmeas='dtwbelowcasing')
             self.max_drift.set(mxdrft)
 
-            self.data[key] = df[['barometer', 'corrwl', 'DTW_WL']]
-
+            if 'Temperature' in df.columns:
+                self.data[key] = df[['barometer', 'corrwl', 'DTW_WL','driftcorrwoffset', 'Temperature']]
+            else:
+                self.data[key] = df[['barometer', 'corrwl', 'DTW_WL', 'driftcorrwoffset']]
             graphframe, tableframe = self.note_tab_add(key)
             self.add_graph_table(key, tableframe, graphframe)
         else:
@@ -1281,7 +1282,11 @@ class Feedback:
             return
         else:
             df = self.datatable['wl-elev'].model.df
-
+            df['measureddtw'] = -1*df['DTW_WL']
+            df = df.rename(columns={'Temperature':'temperature',
+                                    'corrwl':'measuredlevel',
+                                    'driftcorrwoffset':'driftcorrection'})
+            df = df.drop(['DTW_WL'], axis=1)
             df.to_csv(filename)
             return
 

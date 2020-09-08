@@ -2311,8 +2311,6 @@ class NewTransImp(object):
         f['name'] = self.infile.split('\\').pop().split('/').pop().rsplit('.', 1)[0]
         return f
 
-
-
 # ----------------------------------------------------------------------------------------------------------------------
 # Summary scripts - these extract transducer headers and summarize them in tables
 
@@ -2358,9 +2356,6 @@ def compile_end_beg_dates(infile):
 
     df = pd.DataFrame(dflist, columns=['filename', 'beginning', 'end'])
     return df
-
-
-
 
 
 class HeaderTable(object):
@@ -2439,7 +2434,6 @@ class HeaderTable(object):
             files_grabbed += (glob.glob(self.folder + ext))
         return files_grabbed
 
-
     def xle_head(self, file):
         """Creates a Pandas DataFrame containing header information from all xle files in a folder
 
@@ -2492,8 +2486,6 @@ class HeaderTable(object):
             pass
 
         return cfile, csvdata
-
-
 
 
 def getwellid(infile, wellinfo):
