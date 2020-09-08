@@ -787,7 +787,6 @@ class Feedback:
                                                     man_field='dtwbelowcasing',
                                                     output_field='DTW_WL').process_drift()
 
-
                 mstickup = info.loc[i, 'stickup']
                 melev = info.loc[i, 'verticalmeasure']
                 name = info.loc[i, 'locationname']
