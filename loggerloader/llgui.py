@@ -744,9 +744,9 @@ class Feedback:
             self.max_drift.set(mxdrft)
 
             if 'Temperature' in df.columns:
-                self.data[key] = df[['barometer', 'corrwl', 'DTW_WL','driftcorrwoffset', 'Temperature']]
+                self.data[key] = df[['barometer', 'corrwl', 'DTW_WL','driftcorrection', 'Temperature']]
             else:
-                self.data[key] = df[['barometer', 'corrwl', 'DTW_WL', 'driftcorrwoffset']]
+                self.data[key] = df[['barometer', 'corrwl', 'DTW_WL', 'driftcorrection']]
             graphframe, tableframe = self.note_tab_add(key)
             self.add_graph_table(key, tableframe, graphframe)
         else:
@@ -1283,8 +1283,7 @@ class Feedback:
             df = self.datatable['wl-elev'].model.df
             df['measureddtw'] = -1*df['DTW_WL']
             df = df.rename(columns={'Temperature':'temperature',
-                                    'corrwl':'measuredlevel',
-                                    'driftcorrwoffset':'driftcorrection'})
+                                    'corrwl':'measuredlevel'})
             df = df.drop(['DTW_WL'], axis=1)
             df.to_csv(filename)
             return
