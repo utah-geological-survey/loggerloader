@@ -2488,9 +2488,11 @@ class HeaderTable(object):
             cfile['Num_log'] = len(csvdata)
             # df = pd.DataFrame.from_dict(cfile, orient='index').T
 
-        except KeyError:
+        except (KeyError, AttributeError):
             pass
+
         return cfile, csvdata
+
 
 
 
