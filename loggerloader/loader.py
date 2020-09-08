@@ -1409,6 +1409,7 @@ def get_gap_data(site_number, enviro, gap_tol=0.5, first_date=None, last_date=No
     for i in site_number:
         df.loc[i] = df.loc[i].resample('1D').mean()
     df = df.reset_index()
+
     df['t_diff'] = df['readingdate'].diff()
 
     df = df[df['t_diff'] > pd.Timedelta('{:}D'.format(gap_tol))]
@@ -1416,7 +1417,9 @@ def get_gap_data(site_number, enviro, gap_tol=0.5, first_date=None, last_date=No
     df['end_gap'] = df['end_gap'].apply(lambda x: x.strftime('%Y-%m-%d'))
     df['beg_gap'] = df['readingdate'].apply(lambda x: x.strftime('%Y-%m-%d'))
     df['gap_size'] = df['t_diff'].apply(lambda x: x.days, 1)
+
     df = df[['locationid','t_diff', 'end_gap', 'beg_gap', 'gap_size']]
+
     #df.sort_values('t_diff', ascending=False)
     return df
 
@@ -2004,7 +2007,9 @@ class NewTransImp(object):
             if file_ext == '.xle':
                 try:
                     self.well = self.new_xle_imp()
+
                 except (ParseError,KeyError):
+
                     self.well = self.old_xle_imp()
             elif file_ext == '.lev':
                 self.well = self.new_lev_imp()
