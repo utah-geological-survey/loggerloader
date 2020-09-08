@@ -35,7 +35,7 @@ from pandastable import dialogs
 from pandastable import util
 from pandastable import logfile
 from pandastable import SimpleEditor
-
+#from tksheet import Sheet
 from pandas.plotting import register_matplotlib_converters
 
 import time
@@ -100,9 +100,21 @@ class Feedback:
         # add tabs in the frame to the left
         self.processing_notebook = ttk.Notebook(self.process_frame)
         self.processing_notebook.pack(fill='both', expand=True)
-        self.onewelltab = ttk.Frame(self.processing_notebook)
+        #self.onewelltab = ttk.Frame(self.processing_notebook)
+
+        #https://stackoverflow.com/questions/3085696/adding-a-scrollbar-to-a-group-of-widgets-in-tkinter
+        self.frame = ttk.Frame(self.processing_notebook)
+        self.canvas = tk.Canvas(self.frame, borderwidth=0, width=150, height=800)
+        self.onewelltab = tk.Frame(self.canvas)
+        self.vsb = tk.Scrollbar(self.frame, orient="vertical", command=self.canvas.yview)
+        self.canvas.configure(yscrollcommand=self.vsb.set)
+        self.vsb.pack(side="right", fill="y")
+        self.canvas.pack(side="left", fill="both", expand=True)
+        self.canvas.create_window((4,4), window=self.onewelltab, anchor="nw", tags="self.frame")
+        self.onewelltab.bind("<Configure>", self.onFrameConfigure)
+
         self.bulkwelltab = ttk.Frame(self.processing_notebook)
-        self.processing_notebook.add(self.onewelltab, text='Single-Well Process')
+        self.processing_notebook.add(self.frame, text='Single-Well Process')
         self.processing_notebook.add(self.bulkwelltab, text='Bulk Well Process')
         self.processing_notebook.bind("<<NotebookTabChanged>>", self.tab_update)
 
@@ -199,7 +211,6 @@ class Feedback:
 
         self.manunits.grid(row=4, column=3)
         self.manunits.current(0)
-
 
 
         b = ttk.Button(self.frame_step4,
@@ -314,6 +325,10 @@ class Feedback:
         self.max_allowed_drift = tk.DoubleVar(bulk_drift_frame, value=0.3)
         ent = ttk.Entry(bulk_drift_frame, textvariable=self.max_allowed_drift, width=10)
         ent.grid(row=1, column=2)
+
+    def onFrameConfigure(self, event):
+        '''Reset the scroll region to encompass the inner frame'''
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
 
     def man_file_frame(self, master, key='manual'):
         # self.manfileframe = ttk.Frame(master)

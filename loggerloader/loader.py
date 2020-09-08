@@ -16,7 +16,6 @@ import datetime
 from shutil import copyfile
 from pylab import rcParams
 from xml.etree.ElementTree import ParseError
-import deprecation
 
 rcParams['figure.figsize'] = 15, 10
 
@@ -52,7 +51,6 @@ class Color:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
     END = '\033[0m'
-
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -1305,7 +1303,11 @@ def find_extreme(site_number, gw_table="reading", sort_by='readingdate', extma='
     LIMIT 1""".format(gw_table, site_number, sort_by, sort_by, lorder)
 
     df = pd.read_sql(sql, engine)
-    return df['readingdate'][0], df['measureddtw'][0], df['waterelevation'][0]
+
+    #if gw_table=="reading":
+    #    return df['readingdate'][0], df['measureddtw'][0], df['waterelevation'][0]
+    #else:
+    return df.loc[0]
 
 def count_data(site_number, enviro, first_date=None, last_date=None, gw_reading_table="reading"):
     """counts number of records for a locationid and date range
@@ -1396,13 +1398,18 @@ def get_gap_data(site_number, enviro, gap_tol=0.5, first_date=None, last_date=No
     else:
         site_number = [site_number]
 
-    query_txt = """SELECT readingdate,locationid FROM {:}
+    query_txt = """SELECT * FROM {:}
     WHERE locationid IN ({:}) AND readingdate >= '{:}' AND readingdate <= '{:}'
     ORDER BY locationid ASC, readingdate ASC"""
     query = query_txt.format(gw_reading_table, ','.join([str(i) for i in site_number]), first_date, last_date)
     df = pd.read_sql(query, con=enviro,
                      parse_dates={'readingdate': '%Y-%m-%d %H:%M:%s-%z'})
-    df = df.resample('1D').mean()
+
+    df = df.set_index(['locationid','readingdate'])
+    for i in site_number:
+        df.loc[i] = df.loc[i].resample('1D').mean()
+    df = df.reset_index()
+
     df['t_diff'] = df['readingdate'].diff()
 
     df = df[df['t_diff'] > pd.Timedelta('{:}D'.format(gap_tol))]
@@ -1410,6 +1417,8 @@ def get_gap_data(site_number, enviro, gap_tol=0.5, first_date=None, last_date=No
     df['end_gap'] = df['end_gap'].apply(lambda x: x.strftime('%Y-%m-%d'))
     df['beg_gap'] = df['readingdate'].apply(lambda x: x.strftime('%Y-%m-%d'))
     df['gap_size'] = df['t_diff'].apply(lambda x: x.days, 1)
+
+    df = df[['locationid','t_diff', 'end_gap', 'beg_gap', 'gap_size']]
 
     #df.sort_values('t_diff', ascending=False)
     return df
@@ -1449,19 +1458,23 @@ def get_location_data(site_numbers, enviro, first_date=None, last_date=None, lim
     else:
         pass
 
-    sql = """SELECT * FROM {:} 
-    WHERE locationid IN ({:}) AND readingdate >= '{:}' AND readingdate <= '{:}'
-    ORDER BY locationid ASC, readingdate ASC""".format(gw_reading_table, site_numbers, first_date, last_date)
+    if gw_reading_table=='reading':
+        datefield = 'readingdate'
+    elif gw_reading_table=='ugs_gw_flow':
+        datefield = 'flowdate'
+    else:
+        datefield = 'readingdate'
+    sql = f"SELECT * FROM {gw_reading_table} WHERE locationid IN ({site_numbers}) AND {datefield} >= '{first_date}' AND {datefield} <= '{last_date}' ORDER BY locationid ASC, {datefield} ASC "
 
     if limit:
         sql += "\nLIMIT {:}".format(limit)
 
-    readings = pd.read_sql(sql, con=enviro, parse_dates=True, index_col='readingdate')
+    readings = pd.read_sql(sql, con=enviro, parse_dates=True, index_col=datefield)
     readings.index = pd.to_datetime(readings.index, infer_datetime_format=True)
 
 
     readings.reset_index(inplace=True)
-    readings.set_index(['locationid', 'readingdate'], inplace=True)
+    readings.set_index(['locationid', datefield], inplace=True)
     if len(readings) == 0:
         print('No Records for location(s) {:}'.format(site_numbers))
     return readings
@@ -1827,7 +1840,7 @@ def hourly_resample(df, bse=0, minutes=60):
     else:
         sampfrq = str(minutes) + 'T'
 
-    df = df.resample(sampfrq, closed='right', label='right', base=bse).asfreq()
+    df = df.resample(sampfrq, closed='right', label='right', origin=bse).asfreq()
     return df
 
 
@@ -1994,7 +2007,9 @@ class NewTransImp(object):
             if file_ext == '.xle':
                 try:
                     self.well = self.new_xle_imp()
-                except ParseError:
+
+                except (ParseError,KeyError):
+
                     self.well = self.old_xle_imp()
             elif file_ext == '.lev':
                 self.well = self.new_lev_imp()
