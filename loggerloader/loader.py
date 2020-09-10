@@ -1840,7 +1840,7 @@ def hourly_resample(df, bse=0, minutes=60):
     else:
         sampfrq = str(minutes) + 'T'
 
-    df = df.resample(sampfrq, closed='right', label='right', origin=bse).asfreq()
+    df = df.resample(sampfrq, closed='right', label='right').asfreq()
     return df
 
 
@@ -2311,8 +2311,6 @@ class NewTransImp(object):
         f['name'] = self.infile.split('\\').pop().split('/').pop().rsplit('.', 1)[0]
         return f
 
-
-
 # ----------------------------------------------------------------------------------------------------------------------
 # Summary scripts - these extract transducer headers and summarize them in tables
 
@@ -2358,9 +2356,6 @@ def compile_end_beg_dates(infile):
 
     df = pd.DataFrame(dflist, columns=['filename', 'beginning', 'end'])
     return df
-
-
-
 
 
 class HeaderTable(object):
@@ -2411,9 +2406,9 @@ class HeaderTable(object):
             file_extension = os.path.splitext(file)[1]
 
             if file_extension == '.xle':
-                fild[file], = self.xle_head(file)
+                fild[file],xledat = self.xle_head(file)
             elif file_extension == '.csv':
-                fild[file], = self.csv_head(file)
+                fild[file],xledat = self.csv_head(file)
 
         df = pd.DataFrame.from_dict(fild, orient='index')
         return df
@@ -2438,7 +2433,6 @@ class HeaderTable(object):
         for ext in exts:
             files_grabbed += (glob.glob(self.folder + ext))
         return files_grabbed
-
 
     def xle_head(self, file):
         """Creates a Pandas DataFrame containing header information from all xle files in a folder
@@ -2492,8 +2486,6 @@ class HeaderTable(object):
             pass
 
         return cfile, csvdata
-
-
 
 
 def getwellid(infile, wellinfo):
