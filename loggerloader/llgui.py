@@ -292,7 +292,7 @@ class Feedback:
         # self.manfileframe(dirselectframe).pack()
         self.bulk_manfileframe = ttk.Frame(dirselectframe)
         self.bulk_manfileframe.pack()
-        self.man_file_frame(self.bulk_manfileframe)
+        self.man_file_frame(self.bulk_manfileframe,key='bulk-manual')
 
         self.proc_man_bulk_button = ttk.Button(self.bulk_manfileframe, text='Process Manual Data', command=self.proc_man_bulk)
         self.proc_man_bulk_button.grid(column=1, row=5, columnspan=2)
@@ -340,7 +340,7 @@ class Feedback:
 
         man_entry = ttk.Entry(master, textvariable=self.datastr[key], width=80, justify='left')
         man_entry.grid(row=2, column=0, columnspan=4)
-        man_entry.bind('<Double-ButtonRelease-1>', self.mandiag)
+        man_entry.bind('<Double-ButtonRelease-1>', lambda e: self.mandiag(e, key=key))
 
         fillervals = ['readingdate', 'dtwbelowcasing', 'locid']
         self.combo, self.combo_choice, self.combo_label = {}, {}, {}
@@ -464,7 +464,9 @@ class Feedback:
         popup.destroy()
 
     def detect_baro(self, x):
-        if x[0] == "M1.5" or 'baro' in x[1] or x[2] in ('9003', '9049', '9024', '9025', '9027', '9063', '9070', '9066'):
+        if pd.isna(x[1]):
+            x[1] = 'water'
+        if x[0] == "M1.5" or 'baro' in x[1].lower() or x[2] in ('9003', '9049', '9024', '9025', '9027', '9063', '9067','9070', '9066'):
             return "air"
         else:
             return "water"
@@ -772,16 +774,20 @@ class Feedback:
         for i in self.data['bulk-well-baro'].index.get_level_values(0).unique():
             popup.update()
             if pd.notnull(i):
-                if 'manual-single' in self.data.keys():
-                    key2 = 'manual-single'
-                elif 'bulk-manual' in self.data.keys():
+                if 'bulk-manual' in self.data.keys():
                     key2 = 'bulk-manual'
+                elif 'manual-single' in self.data.keys():
+                    key2 = 'manual-single'
                 else:
                     key2 = 'manual'
-                mandf = self.datatable[key2].model.df.loc[int(i)]
+                try:
+                    mandf = self.datatable[key2].model.df.loc[int(i)]
+                except KeyError:
+                    print('trying manual-single')
+                    mandf = self.datatable['manual-single'].model.df.loc[int(i)]
                 wellbaro = self.data['bulk-well-baro'].loc[int(i)]
 
-                df, dfrinf, max_drift = ll.Drifting(mandf,
+                dftcorr, dfrinf, max_drift = ll.Drifting(mandf,
                                                     wellbaro,
                                                     drifting_field='corrwl',
                                                     man_field='dtwbelowcasing',
@@ -791,22 +797,23 @@ class Feedback:
                 melev = info.loc[i, 'verticalmeasure']
                 name = info.loc[i, 'locationname']
                 dfrinf['name'] = name
+                #df['name'] = name
                 drift_info[i] = dfrinf#.reset_index()
                 if max_drift > self.max_allowed_drift.get():
                     ttk.Label(popup, text=f'{name} drift too high at {max_drift}!').pack()
                     pass
 
                 else:
-                    df['waterelevation'] = df['DTW_WL'] + mstickup + melev
-                    bulkdrift[i] = df
+                    dftcorr['waterelevation'] = dftcorr['DTW_WL'] + mstickup + melev
+                    bulkdrift[i] = dftcorr
                     # bulkdrift[i] = ll.get_trans_gw_elevations(df, mstickup,  melev, site_number = i, level='corrwl', dtw='DTW_WL')
                 sv.set(f"{name} has a max drift of {max_drift}")
             pg.step()
 
         self.data['bulk-fix-drift'] = pd.concat(bulkdrift)
-        self.data['bulk-fix-drift'] = self.data['bulk-fix-drift'].set_index('name')
+        #self.data['bulk-fix-drift'] = self.data['bulk-fix-drift']
         key = 'drift-info'
-        self.data[key] = pd.concat(drift_info, sort=True, ignore_index=True)
+        self.data[key] = pd.concat(drift_info, sort=True, ignore_index=True).set_index('name')
         graphframe, tableframe = self.note_tab_add(key)
         self.datatable[key] = Table(tableframe, dataframe=self.data[key], showtoolbar=True, showstatusbar=True)
         self.datatable[key].show()
@@ -814,11 +821,20 @@ class Feedback:
         self.datatable[key].update()
         popup.destroy()
         if self.export_drift.get() == 1:
+
             df = self.data['bulk-fix-drift']
+            if 'level_0' in df.columns:
+                df = df.drop(['level_0'], axis=1)
+            print(df.head())
             df.index.name = 'locationid'
             df = df.reset_index()
+            if 'level_0' in df.columns:
+                df = df.rename(columns={'level_0':'locationid'})
+
+            df['measureddtw'] = df['DTW_WL']
             df = df.rename(columns={'DateTime':'readingdate','Level':'measuredlevel','Temperature':'temperature',
                                     'DTW_WL':'measureddtw'})
+
             df = df[['locationid','readingdate','measuredlevel','temperature',
                      'measureddtw','driftcorrection','waterelevation']]
             file = filedialog.asksaveasfilename(filetypes=[('csv', '.csv')], defaultextension=".csv")
@@ -843,13 +859,17 @@ class Feedback:
                         fig.canvas.draw()
                         df = self.data['bulk-fix-drift'].loc[ind]
                         df = df.dropna(subset=['waterelevation'])
-                        if 'manual-single' in self.data.keys():
-                            key2 = 'manual-single'
-                        elif 'bulk-manual' in self.data.keys():
+                        if 'bulk-manual' in self.data.keys():
                             key2 = 'bulk-manual'
+                        elif 'manual-single' in self.data.keys():
+                            key2 = 'manual-single'
                         else:
                             key2 = 'manual'
-                        mandf = self.datatable[key2].model.df.loc[ind]
+
+                        try:
+                            mandf = self.datatable[key2].model.df.loc[ind]
+                        except KeyError:
+                            mandf = self.datatable['manual-single'].model.df.loc[ind]
                         mandf = mandf.dropna(subset=['waterelevation'])
 
                         if len(df) > 0 and len(mandf) > 0:
@@ -922,12 +942,13 @@ class Feedback:
         return wl
 
     def proc_man_bulk(self):
-        if 'manual-single' in self.data.keys():
-            key = 'manual-single'
-        elif 'bulk-manual' in self.data.keys():
-            key = 'bulk-manual'
-        else:
-            key = 'manual'
+        key = 'bulk-manual'
+        #if 'bulk-manual' in self.data.keys():
+        #    key = 'bulk-manual'
+        #elif 'manual-single' in self.data.keys():
+        #    key = 'manual-single'
+        #else:
+        #    key = 'manual'
 
         try:
             df = self.data[key].rename(columns={self.combo['Datetime'].get(): 'readingdate',
@@ -963,6 +984,7 @@ class Feedback:
             self.export_drift_check['state'] = 'normal'
             self.bfdb['state'] = 'normal'
         except KeyError:
+            print()
             tk.messagebox.showerror(title='Process Well Info Table First', message="Process Well Info Table First")
 
     def only_meas(self, value_if_allowed):
@@ -1262,12 +1284,12 @@ class Feedback:
                     elif col.lower() in ['dtw', 'waterlevel', 'depthtowater', 'water_level',
                                          'level', 'depth_to_water', 'water_depth', 'depth',
                                          'dtwbelowcasing', 'dtw_below_casing']:
-                        if key == 'manual':
+                        if key == 'manual' or key=='bulk-manual':
                             self.combo_choice["DTW"].set(col)
                         else:
                             self.scombo_choice["DTW"].set(col)
                     elif col.lower() in ['locationid', 'locid', 'id', 'location_id', 'lid']:
-                        if key == 'manual':
+                        if key == 'manual' or key =='bulk-manual':
                             self.combo_choice['locationid'].set(col)
                         else:
                             self.scombo_choice['locationid'].set(col)

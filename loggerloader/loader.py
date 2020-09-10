@@ -1840,7 +1840,7 @@ def hourly_resample(df, bse=0, minutes=60):
     else:
         sampfrq = str(minutes) + 'T'
 
-    df = df.resample(sampfrq, closed='right', label='right', origin=bse).asfreq()
+    df = df.resample(sampfrq, closed='right', label='right').asfreq()
     return df
 
 
@@ -2406,9 +2406,9 @@ class HeaderTable(object):
             file_extension = os.path.splitext(file)[1]
 
             if file_extension == '.xle':
-                fild[file], = self.xle_head(file)
+                fild[file],xledat = self.xle_head(file)
             elif file_extension == '.csv':
-                fild[file], = self.csv_head(file)
+                fild[file],xledat = self.csv_head(file)
 
         df = pd.DataFrame.from_dict(fild, orient='index')
         return df
