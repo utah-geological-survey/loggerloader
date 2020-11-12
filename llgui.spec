@@ -1,5 +1,5 @@
 # -*- mode: python ; coding: utf-8 -*-
-# use command pyinstaller --clean --onefile --distpath "C:/Users/Hutto/PycharmProjects/loggerloader/" llgui.spec
+# use command pyinstaller --clean --onefile --distpath "C:/Users/Hutto/PycharmProjects/loggerloader/" C:/Users/Hutto/PycharmProjects/loggerloader/llgui.spec
 
 block_cipher = None
 

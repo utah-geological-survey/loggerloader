@@ -10,3 +10,7 @@ pandastable
 psycopg2
 pymssql
 pytz
+numexpr
+future
+babel
+

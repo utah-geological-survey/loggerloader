@@ -1315,12 +1315,10 @@ def find_extreme(site_number, gw_table="reading", sort_by='readingdate', extma='
     LIMIT 1""".format(gw_table, site_number, sort_by, sort_by, lorder)
 
     df = pd.read_sql(sql, engine)
-
     # if gw_table=="reading":
     #    return df['readingdate'][0], df['measureddtw'][0], df['waterelevation'][0]
     # else:
     return df.loc[0]
-
 
 def count_data(site_number, enviro, first_date=None, last_date=None, gw_reading_table="reading"):
     """counts number of records for a locationid and date range
@@ -1469,7 +1467,7 @@ def get_location_data(site_numbers, enviro, first_date=None, last_date=None, lim
         site_numbers = ",".join([str(i) for i in site_numbers])
     else:
         pass
-
+        
     if gw_reading_table == 'reading':
         datefield = 'readingdate'
     elif gw_reading_table == 'ugs_gw_flow':
@@ -2496,10 +2494,10 @@ class HeaderTable(object):
             cfile['Num_log'] = len(csvdata)
             # df = pd.DataFrame.from_dict(cfile, orient='index').T
 
-        except KeyError:
+        except (KeyError, AttributeError):
             pass
-        return cfile, csvdata
 
+        return cfile, csvdata
 
 def getwellid(infile, wellinfo):
     """Specialized function that uses a well info table and file name to lookup a well's id number"""

@@ -36,7 +36,7 @@ from pandastable import dialogs
 from pandastable import util
 from pandastable import logfile
 from pandastable import SimpleEditor
-# from tksheet import Sheet
+
 from pandas.plotting import register_matplotlib_converters
 
 import time
@@ -102,9 +102,21 @@ class Feedback:
         # add tabs in the frame to the left
         self.processing_notebook = ttk.Notebook(self.process_frame)
         self.processing_notebook.pack(fill='both', expand=True)
-        self.onewelltab = ttk.Frame(self.processing_notebook)
+        #self.onewelltab = ttk.Frame(self.processing_notebook)
+
+        #https://stackoverflow.com/questions/3085696/adding-a-scrollbar-to-a-group-of-widgets-in-tkinter
+        self.frame = ttk.Frame(self.processing_notebook)
+        self.canvas = tk.Canvas(self.frame, borderwidth=0, width=150, height=800)
+        self.onewelltab = tk.Frame(self.canvas)
+        self.vsb = tk.Scrollbar(self.frame, orient="vertical", command=self.canvas.yview)
+        self.canvas.configure(yscrollcommand=self.vsb.set)
+        self.vsb.pack(side="right", fill="y")
+        self.canvas.pack(side="left", fill="both", expand=True)
+        self.canvas.create_window((4,4), window=self.onewelltab, anchor="nw", tags="self.frame")
+        self.onewelltab.bind("<Configure>", self.onFrameConfigure)
+
         self.bulkwelltab = ttk.Frame(self.processing_notebook)
-        self.processing_notebook.add(self.onewelltab, text='Single-Well Process')
+        self.processing_notebook.add(self.frame, text='Single-Well Process')
         self.processing_notebook.add(self.bulkwelltab, text='Bulk Well Process')
         self.processing_notebook.bind("<<NotebookTabChanged>>", self.tab_update)
 
@@ -281,7 +293,7 @@ class Feedback:
         # self.manfileframe(dirselectframe).pack()
         self.bulk_manfileframe = ttk.Frame(dirselectframe)
         self.bulk_manfileframe.pack()
-        self.man_file_frame(self.bulk_manfileframe)
+        self.man_file_frame(self.bulk_manfileframe,key='bulk-manual')
 
         self.proc_man_bulk_button = tk.Button(self.bulk_manfileframe, text='Process Manual Data',
                                                command=self.proc_man_bulk, fg='red')
@@ -315,6 +327,10 @@ class Feedback:
         ent = ttk.Entry(bulk_drift_frame, textvariable=self.max_allowed_drift, width=10)
         ent.grid(row=1, column=2)
 
+    def onFrameConfigure(self, event):
+        '''Reset the scroll region to encompass the inner frame'''
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+
     def man_file_frame(self, master, key='manual'):
         # self.manfileframe = ttk.Frame(master)
 
@@ -326,7 +342,7 @@ class Feedback:
 
         man_entry = ttk.Entry(master, textvariable=self.datastr[key], width=80, justify='left')
         man_entry.grid(row=2, column=0, columnspan=4)
-        man_entry.bind('<Double-ButtonRelease-1>', self.mandiag)
+        man_entry.bind('<Double-ButtonRelease-1>', lambda e: self.mandiag(e, key=key))
 
         fillervals = ['readingdate', 'dtwbelowcasing', 'locid']
         self.combo, self.combo_choice, self.combo_label = {}, {}, {}
@@ -442,6 +458,7 @@ class Feedback:
             pg.step()
 
         self.data['bulk-well'] = pd.concat(wdf, axis=0).sort_index()
+
         # concatinate file info
         df = pd.DataFrame.from_dict(fild, orient='index')
         # df['locationid'] = df['file_name'].apply(lambda x: f"{self.locnametoid.get(self.combo.get(x,None).get(),None)}",1)
@@ -462,7 +479,9 @@ class Feedback:
         popup.destroy()
 
     def detect_baro(self, x):
-        if x[0] == "M1.5" or 'baro' in x[1] or x[2] in ('9003', '9049', '9024', '9025', '9027', '9063', '9070', '9066'):
+        if pd.isna(x[1]):
+            x[1] = 'water'
+        if x[0] == "M1.5" or 'baro' in x[1].lower() or x[2] in ('9003', '9049', '9024', '9025', '9027', '9063', '9067','9070', '9066'):
             return "air"
         else:
             return "water"
@@ -740,8 +759,10 @@ class Feedback:
             #                                           manmeas='dtwbelowcasing')
             self.max_drift.set(mxdrft)
 
-            self.data[key] = df[['barometer', 'corrwl', 'DTW_WL']]
-
+            if 'Temperature' in df.columns:
+                self.data[key] = df[['barometer', 'corrwl', 'DTW_WL','driftcorrection', 'Temperature']]
+            else:
+                self.data[key] = df[['barometer', 'corrwl', 'DTW_WL', 'driftcorrection']]
             graphframe, tableframe = self.note_tab_add(key)
             self.add_graph_table(key, tableframe, graphframe)
         else:
@@ -773,7 +794,6 @@ class Feedback:
                     key2 = 'manual-single'
                 else:
                     key2 = 'manual'
-
                 if int(i) in self.datatable[key2].model.df.index:
                     mandf = self.datatable[key2].model.df.loc[int(i)]
                     wellbaro = self.data['bulk-well-baro'].loc[int(i)]
@@ -811,7 +831,7 @@ class Feedback:
         self.data['bulk-fix-drift'] = pd.concat(bulkdrift).set_index(['locationid','DateTime'])
         #self.data['bulk-fix-drift'] = self.data['bulk-fix-drift']
         key = 'drift-info'
-        self.data[key] = pd.concat(drift_info, sort=True, ignore_index=True)
+        self.data[key] = pd.concat(drift_info, sort=True, ignore_index=True).set_index('name')
         graphframe, tableframe = self.note_tab_add(key)
         self.datatable[key] = MTable(tableframe, dataframe=self.data[key], showtoolbar=True, showstatusbar=True)
         self.datatable[key].show()
@@ -819,14 +839,16 @@ class Feedback:
         self.datatable[key].update()
         popup.destroy()
         if self.export_drift.get() == 1:
+
             df = self.data['bulk-fix-drift']
-            #df.index.name = 'locationid'
+
             df = df.reset_index()
             print(df.columns)
             df = df.rename(columns={'DateTime': 'readingdate', 'Level': 'measuredlevel', 'Temperature': 'temperature',
                                     'DTW_WL': 'measureddtw'})
             df = df[['locationid', 'readingdate', 'measuredlevel', 'temperature',
                      'measureddtw', 'driftcorrection', 'waterelevation']]
+
             file = filedialog.asksaveasfilename(filetypes=[('csv', '.csv')], defaultextension=".csv")
             df.to_csv(file)
 
@@ -849,13 +871,17 @@ class Feedback:
                         fig.canvas.draw()
                         df = self.data['bulk-fix-drift'].loc[ind]
                         df = df.dropna(subset=['waterelevation'])
-                        if 'manual-single' in self.data.keys():
-                            key2 = 'manual-single'
-                        elif 'bulk-manual' in self.data.keys():
+                        if 'bulk-manual' in self.data.keys():
                             key2 = 'bulk-manual'
+                        elif 'manual-single' in self.data.keys():
+                            key2 = 'manual-single'
                         else:
                             key2 = 'manual'
-                        mandf = self.datatable[key2].model.df.loc[ind]
+
+                        try:
+                            mandf = self.datatable[key2].model.df.loc[ind]
+                        except KeyError:
+                            mandf = self.datatable['manual-single'].model.df.loc[ind]
                         mandf = mandf.dropna(subset=['waterelevation'])
 
                         if len(df) > 0 and len(mandf) > 0:
@@ -928,12 +954,13 @@ class Feedback:
         return wl
 
     def proc_man_bulk(self):
-        if 'manual-single' in self.data.keys():
-            key = 'manual-single'
-        elif 'bulk-manual' in self.data.keys():
-            key = 'bulk-manual'
-        else:
-            key = 'manual'
+        key = 'bulk-manual'
+        #if 'bulk-manual' in self.data.keys():
+        #    key = 'bulk-manual'
+        #elif 'manual-single' in self.data.keys():
+        #    key = 'manual-single'
+        #else:
+        #    key = 'manual'
 
         try:
             df = self.data[key].rename(columns={self.combo['Datetime'].get(): 'readingdate',
@@ -1272,12 +1299,12 @@ class Feedback:
                     elif col.lower() in ['dtw', 'waterlevel', 'depthtowater', 'water_level',
                                          'level', 'depth_to_water', 'water_depth', 'depth',
                                          'dtwbelowcasing', 'dtw_below_casing']:
-                        if key == 'manual':
+                        if key == 'manual' or key=='bulk-manual':
                             self.combo_choice["DTW"].set(col)
                         else:
                             self.scombo_choice["DTW"].set(col)
                     elif col.lower() in ['locationid', 'locid', 'id', 'location_id', 'lid']:
-                        if key == 'manual':
+                        if key == 'manual' or key =='bulk-manual':
                             self.combo_choice['locationid'].set(col)
                         else:
                             self.scombo_choice['locationid'].set(col)
@@ -1291,7 +1318,10 @@ class Feedback:
             return
         else:
             df = self.datatable['wl-elev'].model.df
-
+            df['measureddtw'] = -1*df['DTW_WL']
+            df = df.rename(columns={'Temperature':'temperature',
+                                    'corrwl':'measuredlevel'})
+            df = df.drop(['DTW_WL'], axis=1)
             df.to_csv(filename)
             return
 
@@ -1448,6 +1478,7 @@ class Feedback:
                         self.combo[filestr].set(self.locnamedict[a])
                         self.locidmatch[filestr].set(self.welldict[a])
                         self.inputforheadertable[filew_ext] = self.welldict[a]
+
                     # this fills in the id number if a name is selected
                     self.combo[filestr].bind("<<ComboboxSelected>>",
                                              lambda event,
