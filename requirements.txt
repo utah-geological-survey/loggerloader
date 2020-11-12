@@ -4,9 +4,9 @@ Matplotlib >= 1.1
 xlrd >= 0.5.4
 openpyxl >= 2.4.0
 sqlalchemy >= 1.1.0
+requests
 tkcalendar
 pandastable
 psycopg2
 pymssql
 pytz
-deprecation
