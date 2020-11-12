@@ -1,5 +1,5 @@
 import matplotlib
-
+import webbrowser
 matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk, FigureCanvasTkAgg
 # Implement the default Matplotlib key bindings.
@@ -38,7 +38,8 @@ from pandastable import logfile
 from pandastable import SimpleEditor
 
 from pandas.plotting import register_matplotlib_converters
-
+from PIL import ImageTk
+import PIL
 import time
 
 register_matplotlib_converters()
@@ -55,9 +56,12 @@ class Feedback:
         # tk.Tk.__init__(self, *args, **kwargs)
         master.geometry('1400x800')
         master.wm_title("Transducer Processing")
+        with open(os.path.join('../', 'VERSION')) as version_file:
+            self.version = version_file.read().strip()
+        self.version
         self.root = master
         self.main = master
-
+        self.master = master
         # Get platform into a variable
         self.currplatform = platform.system()
         self.setConfigDir()
@@ -1912,7 +1916,7 @@ class Feedback:
             pass
         self.filename = None
         self.projopen = True
-        self.main.title('LoggerLoader v. 0.9.1 (alpha)')
+        self.main.title(f'LoggerLoader v.{self.version} (alpha)')
         return
 
     def loadProject(self, filename=None, asksave=False):
@@ -2424,40 +2428,72 @@ class Feedback:
         h = 600
         abwin.geometry('+%d+%d' % (x + w / 2 - 200, y + h / 2 - 200))
         abwin.title('About')
-        abwin.transient(self)
+        abwin.transient()
         abwin.grab_set()
         abwin.resizable(width=False, height=False)
-        abwin.configure(background=self.bg)
-        logo = "G:/My Drive/Python/Pycharm/loggerloader/data_files/GeologicalSurvey.png"
-        label = tk.Label(abwin, image=logo, anchor=tk.CENTER)
-        label.image = logo
-        label.grid(row=0, column=0, sticky='ew', padx=4, pady=4)
+        #abwin.configure(background=self.bg)
+        logo = "../data_files/GeologicalSurvey.png"
+        orig = PIL.Image.open(logo)
+        resized = orig.resize((100,110), PIL.Image.ANTIALIAS)
+        ph = ImageTk.PhotoImage(resized, abwin)
+        label = tk.Label(abwin, image=ph)
+        label.image = ph
+        label.pack()
+        #label.grid(row=0, column=0, sticky='ew', padx=4, pady=4)
         pandasver = pd.__version__
         pythonver = platform.python_version()
         mplver = matplotlib.__version__
+        ttl = tk.Label(abwin, text=f'Logger Loader v.{self.version}', font = 'Helvetica 18 bold')
+        ttl.pack()
+        #ttl.grid(row=1, column=0, sticky='news', pady=1, padx=4)
 
-        text = 'Logger Loader\n' \
-               + 'Processing scripts Written By Paul Inkenbrandt, Utah Geological Survey' \
-               + 'Graphing and Table functions from pandastable by Damien Farrell 2014-\n' \
-               + 'This program is free software; you can redistribute it and/or\n' \
+        fm1 = tk.Frame(abwin)
+        fm1.pack()
+        text1a = 'Processing scripts Written By Paul Inkenbrandt, '
+        text1b = 'Utah Geological Survey'
+        t1a = tk.Label(fm1, text=text1a)
+        t1a.pack(side=tk.LEFT)
+        t1b = tk.Label(fm1, text=text1b, fg="blue", cursor="hand2")
+        t1b.pack(side=tk.LEFT)
+        t1b.bind("<Button-1>", lambda e: self.callback("https://geology.utah.gov"))
+        fm2 = tk.Frame(abwin)
+        fm2.pack()
+        text2a = 'Graphing and Table functions from '
+        text2b = 'pandastable by Damien Farrell'
+        t2a = tk.Label(fm2, text=text2a)
+        t2a.pack(side=tk.LEFT)
+        t2b = tk.Label(fm2, text=text2b, fg="blue", cursor="hand2")
+        t2b.pack(side=tk.LEFT)
+        t2b.bind("<Button-1>", lambda e: self.callback("https://github.com/dmnfarrell/pandastable"))
+        text3 = 'This program is free software; you can redistribute it and/or\n' \
                + 'modify it under the terms of the GNU General Public License\n' \
                + 'as published by the Free Software Foundation; either version 3\n' \
-               + 'of the License, or (at your option) any later version.\n' \
-               + f'Using Python v{pythonver}\n' \
-               + f'pandas v{pandasver}, matplotlib v{mplver}'
-
-        row = 1
-        # for line in text:
-        tmp = tk.Label(abwin, text=text, style="BW.TLabel")
-        tmp.grid(row=row, column=0, sticky='news', pady=2, padx=4)
+               + 'of the License, or (at your option) any later version.'
+        lic = tk.Label(abwin, text=text3)
+        lic.pack()
+        text4 = f'Using Python v{pythonver}'
+        pyver = tk.Label(abwin, text=text4, fg="blue", cursor="hand2")
+        pyver.pack()
+        pyver.bind("<Button-1>", lambda e: self.callback("https://www.python.org/"))
+        text5 = f'pandas v{pandasver}'
+        pdver = tk.Label(abwin, text=text5, fg="blue", cursor="hand2")
+        pdver.pack()
+        pdver.bind("<Button-1>", lambda e: self.callback("https://pandas.pydata.org/"))
+        text6 = f'matplotlib v{mplver}'
+        pltver = tk.Label(abwin, text=text6, fg="blue", cursor="hand2")
+        pltver.pack()
+        pltver.bind("<Button-1>", lambda e: self.callback("https://matplotlib.org/"))
+        #tmp.grid(row=2, column=0, sticky='news', pady=1, padx=4)
 
         return
 
+    def callback(self, url):
+        webbrowser.open_new(url)
+
     def online_documentation(self, event=None):
         """Open the online documentation"""
-        import webbrowser
-        link = 'https://pandastable.readthedocs.io/en/latest/'
-        webbrowser.open(link, autoraise=1)
+        link = 'https://github.com/utah-geological-survey/loggerloader/wiki'
+        self.callback(link)
         return
 
     def quit(self):

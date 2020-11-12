@@ -7,7 +7,10 @@ except ImportError:
     from .loader import *
     from .pandastablemods import *
 
-__version__ = '0.9.1'
+with open(os.path.join('../', 'VERSION')) as version_file:
+    version = version_file.read().strip()
+
+__version__ = version
 __author__ = 'Paul Inkenbrandt'
 __name__ = 'loggerloader'
 

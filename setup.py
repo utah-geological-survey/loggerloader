@@ -17,10 +17,13 @@ try:
 except:
     pass
 
+with open(os.path.join('./', 'VERSION')) as version_file:
+    version = version_file.read().strip()
+
 setup(name='loggerloader',
       description = 'Interface with xle and lev (Solinst) and csv (Global Water) files',
       long_description = long_description,
-      version = '0.9.1',
+      version = version,
       author = 'Paul Inkenbrandt',
       author_email = 'paulinkenbrandt@utah.gov',
       url = 'https://github.com/utah-geological-survey/loggerloader',
