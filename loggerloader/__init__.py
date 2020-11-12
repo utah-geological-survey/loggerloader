@@ -2,10 +2,12 @@
 
 try:
     from loggerloader.loader import *
+    from loggerloader.pandastablemods import *
 except ImportError:
     from .loader import *
+    from .pandastablemods import *
 
-__version__ = '0.7.0'
+__version__ = '0.9.1'
 __author__ = 'Paul Inkenbrandt'
 __name__ = 'loggerloader'
 
