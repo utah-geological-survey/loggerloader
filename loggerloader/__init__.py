@@ -7,7 +7,7 @@ except ImportError:
     from .loader import *
     from .pandastablemods import *
 
-with open(os.path.join('../', 'VERSION')) as version_file:
+with open(os.path.join(r'C:\Users\Hutto\PycharmProjects\loggerloader', 'VERSION')) as version_file:
     version = version_file.read().strip()
 
 __version__ = version

@@ -1,5 +1,5 @@
 # -*- mode: python ; coding: utf-8 -*-
-# use command pyinstaller --clean --onefile --distpath "C:/Users/Hutto/PycharmProjects/loggerloader/" C:/Users/Hutto/PycharmProjects/loggerloader/llgui.spec
+# use command pyinstaller --clean --onefile --log-level DEBUG --distpath "C:/Users/Hutto/PycharmProjects/loggerloader/" C:/Users/Hutto/PycharmProjects/loggerloader/llgui.spec
 
 block_cipher = None
 
@@ -7,8 +7,10 @@ block_cipher = None
 a = Analysis(['C:\\Users\\Hutto\\PycharmProjects\\loggerloader\\loggerloader\\llgui.py'],
              pathex=['C:\\Users\\Hutto\\PycharmProjects\\loggerloader\\loggerloader'],
              binaries=[],
-             datas=[('C:\\Users\\Hutto\\PycharmProjects\\loggerloader\\data_files\\', 'data_files')],
-             hiddenimports=['pkg_resources.py2_warn','babel.numbers'],
+             datas=[('C:\\Users\\Hutto\\PycharmProjects\\loggerloader\\data_files\\', 'data_files'),
+             ('C:\\ProgramData\\Anaconda3\\envs\\loaderlib\\Library\\bin\\','.')],
+             hiddenimports=['pkg_resources.py2_warn','pkg_resources.markers','babel.numbers','pysqlite2',
+             'MySQLdb','sqlalchemy.sql.functions.func','mx.DateTime','System','copy_reg','setuptools.extern.six'],
              hookspath=[],
              runtime_hooks=[],
              excludes=[],
@@ -24,8 +26,8 @@ exe = EXE(pyz,
           a.zipfiles,
           a.datas,
           [],
-          name='llgui',
-          debug=False,
+          name='loggerloader',
+          debug=True,
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,

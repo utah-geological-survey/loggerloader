@@ -56,7 +56,7 @@ class Feedback:
         # tk.Tk.__init__(self, *args, **kwargs)
         master.geometry('1400x800')
         master.wm_title("Transducer Processing")
-        with open(os.path.join('../', 'VERSION')) as version_file:
+        with open(os.path.join(r'C:\Users\Hutto\PycharmProjects\loggerloader', 'VERSION')) as version_file:
             self.version = version_file.read().strip()
         self.version
         self.root = master
@@ -74,9 +74,12 @@ class Feedback:
         self.start_logging()
 
         try:
-            self.root.iconbitmap(r'G:\My Drive\Python\Pycharm\loggerloader\data_files\icon.ico')
+            self.root.iconbitmap(r'../data_files/icon.ico')
         except:
-            pass
+            try:
+                self.root.iconbitmap(r'G:/My Drive/Python/Pycharm/loggerloader/data_files/icon.ico')
+            except:
+                pass
         self.currentdir = os.path.expanduser('~')
 
         # self.dropmenu(master)
@@ -716,7 +719,7 @@ class Feedback:
             mstickup = mstickup * 3.2808
         elif self.wellgroundelevunits.get() == 'm':
             melev = melev * 3.2808
-        # TODO Replace these with ElevateWater class
+
         # wlevels = ll.ElevateWater(self.datatable['manual'].model.df, melev, mstickup)
         # self.manelevs = wlevels.manual_elevation()
         df = self.datatable['fixed-drift'].model.df
@@ -757,6 +760,7 @@ class Feedback:
                                                       self.datatable['well-baro'].model.df,
                                                       drifting_field='corrwl',
                                                       man_field='dtwbelowcasing',
+                                                      well_id= self.datatable[key2].model.df.loc[0,'locationid'],
                                                       output_field='DTW_WL').process_drift()
             # df, self.drift_info, mxdrft = ll.fix_drift(self.datatable['well-baro'].model.df,
             #                                           self.datatable['manual'].model.df,
@@ -767,6 +771,7 @@ class Feedback:
                 self.data[key] = df[['barometer', 'corrwl', 'DTW_WL','driftcorrection', 'Temperature']]
             else:
                 self.data[key] = df[['barometer', 'corrwl', 'DTW_WL', 'driftcorrection']]
+
             graphframe, tableframe = self.note_tab_add(key)
             self.add_graph_table(key, tableframe, graphframe)
         else:
@@ -2432,7 +2437,7 @@ class Feedback:
         abwin.grab_set()
         abwin.resizable(width=False, height=False)
         #abwin.configure(background=self.bg)
-        logo = "../data_files/GeologicalSurvey.png"
+        logo = "C:/Users/Hutto/PycharmProjects/loggerloader/data_files/GeologicalSurvey.png"
         orig = PIL.Image.open(logo)
         resized = orig.resize((100,110), PIL.Image.ANTIALIAS)
         ph = ImageTk.PhotoImage(resized, abwin)
