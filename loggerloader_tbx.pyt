@@ -1,9 +1,6 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-try:
-    from loggerloader.loader import *
-except:
-    from loader import *
+from loggerloader.loader import *
 
 from pylab import rcParams
 import os
@@ -124,7 +121,7 @@ class SingleTransducerImport(object):
 
 
         wellimp.one_well()
-        printmes(arcpy.GetMessages())
+        arcpy.GetMessages()
         return
 
 
@@ -248,9 +245,9 @@ class MultBarometerImport(object):
         return
 
     def execute(self, parameters, messages):
-        printmes("Initiating")
+        arcpy.AddMessage("Initiating")
         wellimp = baroimport()
-        printmes("Parametizing")
+        arcpy.AddMessage("Parametizing")
 
         wellimp.sde_conn = parameters[0].valueAsText
         wellimp.xledir = parameters[1].valueAsText
@@ -268,9 +265,9 @@ class MultBarometerImport(object):
         wellimp.should_plot = parameters[5].value
         wellimp.chart_out = parameters[6].valueAsText
         wellimp.toexcel = parameters[7].value
-        printmes("Processing")
+        arcpy.AddMessage("Processing")
         wellimp.many_baros()
-        printmes(arcpy.GetMessages())
+        arcpy.AddMessage(arcpy.GetMessages())
         return
 
 
@@ -417,7 +414,7 @@ class MultTransducerImport(object):
         wellimp.toexcel = parameters[10].value
         wellimp.api_token = parameters[11].valueAsText
         wellimp.many_wells()
-        printmes(arcpy.GetMessages())
+        arcpy.GetMessages()
         return
 
 
@@ -458,7 +455,7 @@ class SimpleBaroFix(object):
         wellimp.baro_file = parameters[1].valueAsText
         wellimp.save_location = parameters[2].valueAsText
         wellimp.remove_bp()
-        printmes(arcpy.GetMessages())
+        arcpy.GetMessages()
 
 
 class SimpleBaroDriftFix(object):
@@ -523,7 +520,7 @@ class SimpleBaroDriftFix(object):
         wellimp.should_plot = parameters[11].value
         wellimp.chart_out = parameters[12].valueAsText
         wellimp.remove_bp_drift()
-        printmes(arcpy.GetMessages())
+        arcpy.GetMessages()
 
 
 class XLERead(object):
@@ -563,7 +560,7 @@ class XLERead(object):
         wellimp.well_file = parameters[0].valueAsText
         wellimp.save_location = parameters[1].valueAsText
         wellimp.read_xle()
-        printmes(arcpy.GetMessages())
+        arcpy.GetMessages()
 
 class GapData(object):
     def __init__(self):
@@ -609,5 +606,5 @@ class GapData(object):
         wellimp.man_enddate= parameters[3].valueAsText
         wellimp.save_location= parameters[4].valueAsText
         wellimp.find_gaps()
-        printmes(arcpy.GetMessages())
+        arcpy.GetMessages()
 

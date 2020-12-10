@@ -1,52 +1,34 @@
 import matplotlib
-import webbrowser
+
 matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk, FigureCanvasTkAgg
 # Implement the default Matplotlib key bindings.
-import matplotlib.pyplot as plt
 from matplotlib import style
 from matplotlib.backend_bases import key_press_handler
 from matplotlib.backends.backend_pdf import PdfPages
+import matplotlib.pyplot as plt
+
+import webbrowser
+import tkinter as tk
+from tkinter import filedialog, messagebox, simpledialog, messagebox, ttk
+from tkcalendar import DateEntry
 
 import pandas as pd
 import os
-import platform
 import re
 import glob
-import pickle
 import gzip
+import pickle
+import time
+import platform
 
-import tkinter as tk
-from tkinter import ttk
-from tkinter import filedialog
-from tkinter import messagebox
-from tkinter import simpledialog
-
-from tkcalendar import DateEntry
-
-from collections import OrderedDict
-
-from pandastable import PlotViewer
-from pandastable import Table
-from pandastable import MultipleValDialog
-from pandastable import plotting
-from pandastable import TableModel
-from pandastable import Style
-from pandastable import dialogs
-from pandastable import util
-from pandastable import logfile
-from pandastable import SimpleEditor
+from pandastable import plotting, dialogs, util, logfile, Table, SimpleEditor, OrderedDict, MultipleValDialog, TableModel
 
 from pandas.plotting import register_matplotlib_converters
-from PIL import ImageTk
-import PIL
-import time
 
 register_matplotlib_converters()
-
 style.use('ggplot')
 import loggerloader as ll
-from loggerloader.pandastablemods import *
 
 
 class Feedback:
@@ -63,7 +45,6 @@ class Feedback:
         self.main = master
         self.master = master
         # Get platform into a variable
-        self.currplatform = platform.system()
         self.setConfigDir()
         # if not hasattr(self,'defaultsavedir'):
         self.defaultsavedir = os.path.join(os.path.expanduser('~'))
@@ -110,7 +91,6 @@ class Feedback:
         self.processing_notebook = ttk.Notebook(self.process_frame)
         self.processing_notebook.pack(fill='both', expand=True)
         #self.onewelltab = ttk.Frame(self.processing_notebook)
-
         #https://stackoverflow.com/questions/3085696/adding-a-scrollbar-to-a-group-of-widgets-in-tkinter
         self.frame = ttk.Frame(self.processing_notebook)
         self.canvas = tk.Canvas(self.frame, borderwidth=0, width=150, height=800)
@@ -475,7 +455,7 @@ class Feedback:
         graphframe, tableframe = self.note_tab_add(key, tabw=4, grph=1)
         # add graph and table to new tab
         # self.add_graph_table(key, tableframe, graphframe)
-        self.datatable[key] = MTable(tableframe, dataframe=df, showtoolbar=True, showstatusbar=True)
+        self.datatable[key] = Table(tableframe, dataframe=df, showtoolbar=True, showstatusbar=True)
         self.datatable[key].show()
         self.datatable[key].showIndex()
         self.datatable[key].update()
@@ -842,7 +822,7 @@ class Feedback:
         key = 'drift-info'
         self.data[key] = pd.concat(drift_info, sort=True, ignore_index=True).set_index('name')
         graphframe, tableframe = self.note_tab_add(key)
-        self.datatable[key] = MTable(tableframe, dataframe=self.data[key], showtoolbar=True, showstatusbar=True)
+        self.datatable[key] = Table(tableframe, dataframe=self.data[key], showtoolbar=True, showstatusbar=True)
         self.datatable[key].show()
         self.datatable[key].showIndex()
         self.datatable[key].update()
@@ -1080,12 +1060,12 @@ class Feedback:
 
         """
         graph_frame1 = ttk.Frame(graphframe)
-        self.datatable[key] = MTable(tableframe, dataframe=self.data[key], showtoolbar=True, showstatusbar=True)
+        self.datatable[key] = Table(tableframe, dataframe=self.data[key], showtoolbar=True, showstatusbar=True)
         self.datatable[key].show()
         self.datatable[key].showIndex()
         self.datatable[key].update()
 
-        self.datatable[key].showPlotViewer(parent=graph_frame1, showdialogs=False)
+        self.datatable[key].showPlotViewer(parent=graph_frame1)
         canvas = self.datatable[key].showPlotViewer(parent=graph_frame1).canvas
         if key == 'well-baro':
             self.add_baro_axis(graph_frame1)
@@ -1382,7 +1362,7 @@ class Feedback:
         self.data[key] = df
 
         graphframe, tableframe = self.note_tab_add(key, tabw=5, grph=1)
-        self.datatable[key] = MTable(tableframe, dataframe=self.data[key], showtoolbar=True, showstatusbar=True)
+        self.datatable[key] = Table(tableframe, dataframe=self.data[key], showtoolbar=True, showstatusbar=True)
         self.datatable[key].show()
         self.datatable[key].showIndex()
         self.datatable[key].update()
@@ -1594,13 +1574,8 @@ class Feedback:
     def setStyles(self):
         """Set theme and widget styles"""
 
-        style = self.style = Style(self)
+        style = self.style = tk.Style(self)
         available_themes = self.style.theme_names()
-        plf = util.checkOS()
-        if plf == 'linux':
-            style.theme_use('default')
-        elif plf == 'darwin':
-            style.theme_use('clam')
 
         self.bg = bg = self.style.lookup('TLabel.label', 'background')
         style.configure('Horizontal.TScale', background=bg)
@@ -1649,7 +1624,6 @@ class Feedback:
                            '02Remove Sheet': {'cmd': lambda: self.deleteSheet(ask=True)},
                            '03Copy Sheet': {'cmd': self.copySheet},
                            '04Rename Sheet': {'cmd': self.renameSheet},
-                           # '05Sheet Description':{'cmd':self.editSheetDescription}
                            }
         self.sheet_menu = self.createPulldown(self.menu, self.sheet_menu)
         self.menu.add_cascade(label='Sheet', menu=self.sheet_menu['var'])
@@ -2176,7 +2150,7 @@ class Feedback:
         self.sheetframes[sheetname] = main
         self.notebook.add(main, text=sheetname)
         f1 = ttk.Frame(main)
-        table = MTable(f1, dataframe=df, showtoolbar=1, showstatusbar=1)
+        table = Table(f1, dataframe=df, showtoolbar=1, showstatusbar=1)
         f2 = ttk.Frame(main)
         # show the plot frame
         pf = table.showPlotViewer(f2, layout='horizontal')
@@ -2438,9 +2412,10 @@ class Feedback:
         abwin.resizable(width=False, height=False)
         #abwin.configure(background=self.bg)
         logo = "C:/Users/Hutto/PycharmProjects/loggerloader/data_files/GeologicalSurvey.png"
-        orig = PIL.Image.open(logo)
-        resized = orig.resize((100,110), PIL.Image.ANTIALIAS)
-        ph = ImageTk.PhotoImage(resized, abwin)
+        #orig = Image.open(logo)
+        ph = tk.PhotoImage(file=logo)
+        #resized = orig.resize((100,110), Image.ANTIALIAS)
+        #ph = ImageTk.PhotoImage(resized, abwin)
         label = tk.Label(abwin, image=ph)
         label.image = ph
         label.pack()
@@ -2489,7 +2464,6 @@ class Feedback:
         pltver.pack()
         pltver.bind("<Button-1>", lambda e: self.callback("https://matplotlib.org/"))
         #tmp.grid(row=2, column=0, sticky='news', pady=1, padx=4)
-
         return
 
     def callback(self, url):
@@ -2505,17 +2479,9 @@ class Feedback:
         self.main.destroy()
         return
 
-
-### dataexplore
-
-
 def main():
     root = tk.Tk()
     feedback = Feedback(root)
     root.mainloop()
 
-
-# tkinter.mainloop()
-# If you put root.destroy() here, it will cause an error if the window is
-# closed with the window manager.
 if __name__ == "__main__": main()
