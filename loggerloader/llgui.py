@@ -27,7 +27,7 @@ from pandastable import plotting, dialogs, util, logfile, Table, SimpleEditor, O
 from pandas.plotting import register_matplotlib_converters
 
 register_matplotlib_converters()
-style.use('ggplot')
+#style.use('ggplot')
 import loggerloader as ll
 
 
