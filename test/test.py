@@ -11,7 +11,7 @@ import sys
 
 
 try:
-    from loggerloader.loader import *
+    from loggerloader.llgui import *
 except:
     from loggerloader import *
 
