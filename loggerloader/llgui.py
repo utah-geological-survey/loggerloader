@@ -51,7 +51,7 @@ class Feedback:
         # tk.Tk.__init__(self, *args, **kwargs)
         master.geometry('1400x800')
         master.wm_title("Transducer Processing")
-        self.version = "0.9.7"
+        self.version = "0.9.8"
         self.root = master
         self.main = master
         self.master = master
@@ -78,6 +78,7 @@ class Feedback:
         self.createMenuBar()
 
         self.datastr, self.data, self.datatable, self.combo = {}, {}, {}, {}
+
         self.entry = {}
         self.locidmatch = {}
         self.bulktransfilestr = {}  # dictionary to store trans file names
@@ -576,6 +577,7 @@ class Feedback:
         self.man_meas[i].grid(row=i + 1, column=5, padx=2)
 
     def filefinders(self, key):
+        """Adds the label and entry fields for single raw barometric or level files"""
         datasets = {"well": "1. Select Well Data:",
                     "baro": "2. Select Barometric Data:"}
         ttk.Separator(self.onewelltab, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
@@ -586,14 +588,14 @@ class Feedback:
         #ttk.Label(filefinderframe, text=datasets[key]).pack()
         #ttk.Label(filefinderframe, text='(Right click for refresh.)').pack()
         self.datastr[key] = tk.StringVar(filefinderframe, value=f'Double-Click for {key} file')
-        self.entry[key] = ttk.Entry(filefinderframe, textvariable=self.datastr[key], width=80)
+        self.entry[key] = ttk.Entry(filefinderframe, textvariable=self.datastr[key], width=60)
         self.entry[key].grid(column=0, row=1, columnspan=2)
         #self.entry[key].pack()
         self.entry[key].bind('<Double-ButtonRelease-1>', lambda k: self.wellbarodiag(key))
 
         self.filetype[key] = tk.StringVar(filefinderframe, value="xle")
         self.fileselectcombo[key] = ttk.Combobox(filefinderframe,width=10,
-                                                 values=['xle','raw csv', 'Excel', 'solinst csv out'],
+                                                 values=['xle','Global Water csv', 'Excel', 'csv'],
                                                  state="readonly", textvariable = self.filetype[key])
 
         self.fileselectcombo[key].grid(column=2, row=1, columnspan=2)
@@ -647,7 +649,7 @@ class Feedback:
             if 'Level' in self.data['baro'].columns:
                 self.data['baro'] = jumpfix(self.data['baro'], 'Level', self.datajumptol[key].get())
                 graphframe, tableframe = self.note_tab_add('baro')
-                self.add_graph_table('well', tableframe, graphframe)
+                self.add_graph_table('baro', tableframe, graphframe)
                 # self.datatable['well'].show()
                 # self.datatable['well'].update()
                 # self.datatable['well'].show()
@@ -666,7 +668,7 @@ class Feedback:
             if 'Level' in self.data['baro'].columns:
                 self.data['baro'] = jumpfix(self.data['baro'], 'Level', self.datajumptol[key].get())
                 graphframe, tableframe = self.note_tab_add('baro')
-                self.add_graph_table('well', tableframe, graphframe)
+                self.add_graph_table('baro', tableframe, graphframe)
         else:
             print('No column named Level')
             pass
@@ -1187,45 +1189,47 @@ class Feedback:
         else:
             if key in ('well'):
                 #'xle','raw csv', 'Excel', 'modified csv'
-                if self.fileselectcombo[key].get() in ['xle','raw csv']:
+                if self.fileselectcombo[key].get() in ['xle','Global Water csv']:
                     self.data[key] = NewTransImp(self.datastr[key].get()).well.drop(['name'], axis=1)
                 elif self.fileselectcombo[key].get() in ['Excel']:
                     #self.data[key] = pd.read_excel(self.datastr[key].get())
                     self.wellbaroxl[key] = pd.ExcelFile(self.datastr[key].get())
 
                     self.openNewWindowxl(key)
-                elif self.fileselectcombo[key].get() in ['solinst csv out']:
+                elif self.fileselectcombo[key].get() in ['csv']:
                     self.wellbarocsv[key] = pd.read_csv(self.datastr[key].get())
                     self.openNewWindowcsv(key)
 
                 filenm, self.file_extension = os.path.splitext(self.datastr[key].get())
-                self.datamin[key]['state'] = 'normal'
-                self.datamax[key]['state'] = 'normal'
-                self.trimbutt[key]['state'] = 'normal'
-                self.datajump[key]['state'] = 'normal'
-                self.jumpbutt[key]['state'] = 'normal'
+                if key in self.datamin.keys():
+                    self.datamin[key]['state'] = 'normal'
+                    self.datamax[key]['state'] = 'normal'
+                    self.trimbutt[key]['state'] = 'normal'
+                    self.datajump[key]['state'] = 'normal'
+                    self.jumpbutt[key]['state'] = 'normal'
                 if 'Level' in self.data['well'].columns:
                     self.dataminvar[key].set(self.data['well']['Level'].min())
                     self.datamaxvar[key].set(self.data['well']['Level'].max())
             elif key in ('baro'):
-                if self.fileselectcombo[key].get() in ['xle','raw csv']:
+                if self.fileselectcombo[key].get() in ['xle','Global Water csv']:
                     self.data[key] = NewTransImp(self.datastr[key].get()).well.drop(['name'], axis=1)
                 elif self.fileselectcombo[key].get() in ['Excel']:
                     #self.data[key] = pd.read_excel(self.datastr[key].get())
                     self.wellbaroxl[key] = pd.ExcelFile(self.datastr[key].get())
 
                     self.openNewWindowxl(key)
-                elif self.fileselectcombo[key].get() in ['solinst csv out']:
+                elif self.fileselectcombo[key].get() in ['csv']:
                     self.wellbarocsv[key] = pd.read_csv(self.datastr[key].get())
                     self.openNewWindowcsv(key)
 
                 #self.data[key] = NewTransImp(self.datastr[key].get()).well.drop(['name'], axis=1)
                 filenm, self.file_extension = os.path.splitext(self.datastr[key].get())
-                self.datamin[key]['state'] = 'normal'
-                self.datamax[key]['state'] = 'normal'
-                self.trimbutt[key]['state'] = 'normal'
-                self.datajump[key]['state'] = 'normal'
-                self.jumpbutt[key]['state'] = 'normal'
+                if key in self.datamin.keys():
+                    self.datamin[key]['state'] = 'normal'
+                    self.datamax[key]['state'] = 'normal'
+                    self.trimbutt[key]['state'] = 'normal'
+                    self.datajump[key]['state'] = 'normal'
+                    self.jumpbutt[key]['state'] = 'normal'
                 if 'Level' in self.data[key].columns:
                     self.dataminvar[key].set(self.data[key]['Level'].min())
                     self.datamaxvar[key].set(self.data[key]['Level'].max())
@@ -1335,13 +1339,13 @@ class Feedback:
 
     def wellbarodiag(self, key):
 
-        ftypelist = (("Solinst xle", "*.xle*"), ("Solinst csv", "*.csv"),("Excel","*.xlsx"))
+        ftypelist = (("Solinst xle", "*.xle*"), ("csv", "*.csv"),("Excel","*.xlsx"))
         self.datastr[key].set(filedialog.askopenfilename(initialdir=self.currentdir,
                                                          title=f"Select {key} file",
                                                          filetypes=ftypelist))
         self.currentdir = os.path.dirname(self.datastr[key].get())
         ext = os.path.splitext(self.datastr[key].get())[-1]
-        extdir ={'.xle':'xle','.csv':'raw csv','.xlsx':'Excel'}
+        extdir ={'.xle':'xle','.csv':'csv','.xlsx':'Excel'}
         #['xle','raw csv', 'Excel', 'solinst csv out']
 
         self.filetype[key].set(extdir.get(ext,'xle'))
@@ -2057,6 +2061,29 @@ class Feedback:
         self.sheets = OrderedDict()
         self.sheetframes = {}  # store references to enclosing widgets
         self.openplugins = {}  # refs to running plugins
+
+        self.data, self.datatable = {}, {}
+        self.datastr = {}
+        self.entry = {}
+        self.locidmatch = {}
+        self.bulktransfilestr = {}  # dictionary to store trans file names
+
+        self.filetype = {}
+        self.wellbaroxl = {}
+
+        self.wellbarocsv = {}
+
+        # jump fix dictionaries
+        self.dataminvar = {}
+        self.datamaxvar = {}
+        self.datamin = {}
+
+        self.datamax = {}
+        self.trimbutt = {}
+        self.datajumptol = {}
+        self.datajump = {}
+        self.jumpbutt = {}
+
         self.updatePlotsMenu()
         for n in self.notebook.tabs():
             self.notebook.forget(n)
