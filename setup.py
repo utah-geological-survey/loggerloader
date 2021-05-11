@@ -1,6 +1,12 @@
 import sys
 import os
 from setuptools import setup, find_packages
+from glob import glob
+
+sys.path.append("C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Redist/MSVC/14.16.27012/x64/Microsoft.VC141.CRT")
+data_files = [
+    ("Microsoft.VC90.CRT", glob(r'C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Redist\MSVC\14.16.27012\x64\Microsoft.VC141.CRT\*.*'))]
+
 
 if not sys.version_info[0] in [3]:
     print('Sorry, loggerloader not supported in your Python version')
@@ -29,4 +35,5 @@ setup(name='loggerloader',
       url = 'https://github.com/utah-geological-survey/loggerloader',
       license = 'LICENSE.txt',
       install_requires='requirements.txt',
+      data_files=data_files,
       packages = find_packages(exclude=['contrib', 'docs', 'tests*']))
