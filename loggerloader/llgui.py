@@ -50,7 +50,7 @@ class Feedback:
         # tk.Tk.__init__(self, *args, **kwargs)
         master.geometry('1400x800')
         master.wm_title("Transducer Processing")
-        self.version = "0.9.9"
+        self.version = "0.9.10"
         self.root = master
         self.main = master
         self.master = master
@@ -138,6 +138,7 @@ class Feedback:
         self.processing_notebook.add(self.frame, text='Single-Well Process')
         self.processing_notebook.add(self.bulkwelltab, text='Bulk Well Process')
         self.processing_notebook.bind("<<NotebookTabChanged>>", self.tab_update)
+
 
         # SINGLE WELL PROCESSING TAB for left side of application ---------------------------------------------
         # Header image logo and Description seen by user
