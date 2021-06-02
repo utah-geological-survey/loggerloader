@@ -1430,7 +1430,7 @@ class Feedback:
                         else:
                             sol = False
 
-                        if baroid in files['locationid'].unique() and stattype is not 'Atmosphere' and len(self.data['bulk-well'].loc[int(wellid)])>0:
+                        if baroid in files['locationid'].unique() and (int(wellid) < 9000 or int(wellid) >= 10000) and len(self.data['bulk-well'].loc[int(wellid)])>0:
                             mergedf[int(wellid)] = well_baro_merge(self.data['bulk-well'].loc[int(wellid)],
                                                                       self.data['bulk-well'].loc[int(baroid)],
                                                                       vented=sol)

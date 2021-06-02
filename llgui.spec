@@ -1,14 +1,14 @@
 # -*- mode: python ; coding: utf-8 -*-
-# use command pyinstaller --clean --onefile --additional-hooks-dir=. C:/Users/Hutto/loggerloader/llgui.spec
+# use command pyinstaller --clean --onefile --additional-hooks-dir=. C:/Users/paulinkenbrandt/loggerloader/llgui.spec
 
 block_cipher = None
 
 
-a = Analysis(['C:\\Users\\Hutto\\loggerloader\\loggerloader\\llgui.py'],
-             pathex=['C:\\Users\\Hutto\\loggerloader\\loggerloader'],
+a = Analysis(['C:\\Users\\paulinkenbrandt\\loggerloader\\loggerloader\\llgui.py'],
+             pathex=['C:\\Users\\paulinkenbrandt\\loggerloader\\loggerloader'],
              binaries=None,
              hiddenimports = ["babel.dates", "babel.numbers"],
-             datas=[('C:\\Users\\Hutto\\loggerloader\\data_files\\', 'data_files'),
+             datas=[('C:\\Users\\paulinkenbrandt\\loggerloader\\data_files\\', 'data_files'),
              ('C:\\ProgramData\\Anaconda3\\envs\\llpy\\Lib\\site-packages\\matplotlib\\mpl-data\\', "matplotlib/mpl-data")],
              win_no_prefer_redirects=False,
              win_private_assemblies=False,
