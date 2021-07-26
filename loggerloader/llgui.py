@@ -31,7 +31,10 @@ from pandastable import plotting, dialogs, util, logfile, Table, SimpleEditor, O
 
 from pandas.plotting import register_matplotlib_converters
 
-from loader import *
+try:
+    from loader import *
+except:
+    from .loader import *
 
 register_matplotlib_converters()
 
@@ -312,7 +315,7 @@ class Feedback:
         # self.manfileframe(dirselectframe).pack()
         self.bulk_manfileframe = ttk.Frame(dirselectframe)
         self.bulk_manfileframe.pack()
-        self.man_file_frame(self.bulk_manfileframe,key='bulk-manual')
+        self.man_file_frame(self.bulk_manfileframe, key='bulk-manual')
 
         self.proc_man_bulk_button = tk.Button(self.bulk_manfileframe, text='Process Manual Data',
                                                command=self.proc_man_bulk, fg='red')
@@ -1503,7 +1506,9 @@ class Feedback:
                 pass
 
     def save_one_well(self):
-        filename = filedialog.asksaveasfilename(confirmoverwrite=True)
+        filename = filedialog.asksaveasfilename(filetypes=[('csv', '.csv'),('Excel','.xlsx')],
+                                                defaultextension=".csv",
+                                                confirmoverwrite=True)
         if filename is None:
             print('no')
             return
@@ -1513,7 +1518,11 @@ class Feedback:
             df = df.rename(columns={'Temperature':'temperature',
                                     'corrwl':'measuredlevel'})
             df = df.drop(['DTW_WL'], axis=1)
-            df.to_csv(filename)
+            filename, file_extension = os.path.splitext(filename)
+            if file_extension == '.csv':
+                df.to_csv(filename)
+            else:
+                df.to_excel(filename)
             return
 
     def open_file(self, master):

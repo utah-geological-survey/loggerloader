@@ -666,6 +666,7 @@ def smoother(df, p, win=30, sd=3):
     df1.loc[:, 'mst' + p] = df1.loc[:, 'dp' + p].rolling(window=win, center=True).std()
     for i in df.index:
         try:
+            # abs diff - moving average >= abs moving std * 2
             if abs(df1.loc[i, 'dp' + p] - df1.loc[i, 'ma' + p]) >= abs(df1.loc[i, 'mst' + p] * sd):
                 df.loc[i, p] = np.nan
             else:
@@ -744,7 +745,9 @@ def jumpfix(df, meas, threashold=0.005, return_jump=False):
     """
     df1 = df.copy(deep=True)
     df1['delta' + meas] = df1.loc[:, meas].diff()
+    # designate jump based on a threshold
     jump = df1[abs(df1['delta' + meas]) > threashold]
+    # cumulative sum
     jump['cumul'] = jump.loc[:, 'delta' + meas].cumsum()
     df1['newVal'] = df1.loc[:, meas]
 
