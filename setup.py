@@ -34,6 +34,6 @@ setup(name='loggerloader',
       author_email = 'paulinkenbrandt@utah.gov',
       url = 'https://github.com/utah-geological-survey/loggerloader',
       license = 'LICENSE.txt',
-      install_requires=['Pandas >= 1.0', 'Numpy >= 1.0', 'Matplotlib >= 3.0', 'xlrd >= 0.5.4', 'openpyxl >= 2.4.0', 'numexpr'],
+      install_requires=['Pandas >= 1.0', 'Numpy >= 1.0', 'Matplotlib >= 3.0', 'xlrd >= 0.5.4', 'openpyxl >= 2.4.0', 'numexpr','babel'],
       data_files=data_files,
       packages = find_packages(exclude=['contrib', 'docs', 'tests*']))
