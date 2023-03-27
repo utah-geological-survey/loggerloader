@@ -1,9 +1,18 @@
 import matplotlib
 import babel.numbers
+
+from tksheet import Sheet
+#import sv_ttk
+
 matplotlib.use("TkAgg")
-from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk, FigureCanvasTkAgg
+#from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk, FigureCanvasTkAgg
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 # Implement the default Matplotlib key bindings.
-from matplotlib import style
+from matplotlib.backend_bases import key_press_handler
+from matplotlib.figure import Figure
+
+# Implement the default Matplotlib key bindings.
+#from matplotlib import style
 from matplotlib.backend_bases import key_press_handler
 from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.pyplot as plt
@@ -13,10 +22,11 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, simpledialog, messagebox, ttk
 from tkcalendar import DateEntry
 
-
 import os
 import glob
 import re
+
+import pathlib
 
 from pylab import rcParams
 from xml.etree.ElementTree import ParseError
@@ -27,7 +37,8 @@ import pickle
 import time
 import platform
 
-from pandastable import plotting, dialogs, util, logfile, Table, SimpleEditor, OrderedDict, MultipleValDialog, TableModel
+#from pandastable import plotting, dialogs, util, logfile, Table, SimpleEditor, OrderedDict, MultipleValDialog, \
+#    TableModel
 
 from pandas.plotting import register_matplotlib_converters
 
@@ -50,10 +61,21 @@ class Feedback:
 
     def __init__(self, master):
         # create main window and configure size and title
-        # tk.Tk.__init__(self, *args, **kwargs)
+        #tk.Tk.__init__(self)
         master.geometry('1400x800')
         master.wm_title("Transducer Processing")
-        self.version = "0.9.10"
+
+        master.tk.call('source', 'forest-dark.tcl')
+        master.tk.call('source', 'forest-light.tcl')
+        ttk.Style().theme_use('forest-light')
+        #ttk.Style().theme_use('forest-dark')
+
+        #sv_ttk.set_theme("dark")
+        #plt.style.use('dark_background')
+        plt.style.use('default')
+
+        self.version = "2.0.0"
+
         self.root = master
         self.main = master
         self.master = master
@@ -65,7 +87,7 @@ class Feedback:
         # self.sheetframes = {}
         self.loadAppOptions()
         # start logging
-        self.start_logging()
+        #self.start_logging()
 
         try:
             self.root.iconbitmap(r'../data_files/icon.ico')
@@ -77,9 +99,14 @@ class Feedback:
         self.currentdir = os.path.expanduser('~')
 
         # self.dropmenu(master)
-        self.createMenuBar()
+        self.create_menu_bar()
+
+        self.sheettheme = "light blue"
 
         self.datastr, self.data, self.datatable, self.combo = {}, {}, {}, {}
+
+        self.field = None
+        self.toolbar = None
 
         self.entry = {}
         self.locidmatch = {}
@@ -92,6 +119,11 @@ class Feedback:
         self.xlcols_date_combo = {}
         self.xlcols_value_combo = {}
         self.xlcols_temp_combo = {}
+
+        self.graphframe = {}
+        self.tableframe = {}
+        self.graph_frame1 = {}
+        self.graphcanvas = {}
 
         self.wellbarocsv = {}
 
@@ -106,6 +138,9 @@ class Feedback:
         self.datajump = {}
         self.jumpbutt = {}
 
+        self.fig  = {}
+        self.ax = {}
+
         # Create side by side panel areas
         self.panedwindow = ttk.Panedwindow(master, orient='horizontal')
         self.panedwindow.pack(fill='both', expand=True)
@@ -119,29 +154,38 @@ class Feedback:
         self.notebook.pack(fill='both', expand=True)
         self.notelist = {}
 
+        #self.notebook.add(new_frame, text=key)
+        #for t in range(len(self.notebook.tabs())):
+        #    self.notelist[self.notebook.tab(t)['text']] = t
+        #self.notebook.select(t)
+        #self.notebook.bind("<<NotebookTabChanged>>", self.nbselect)
+
         self.projopen = False
-        self.newProject()
+        #self.newProject()
 
         # add tabs in the frame to the left
         self.processing_notebook = ttk.Notebook(self.process_frame)
         self.processing_notebook.pack(fill='both', expand=True)
-        #self.onewelltab = ttk.Frame(self.processing_notebook)
-        #https://stackoverflow.com/questions/3085696/adding-a-scrollbar-to-a-group-of-widgets-in-tkinter
+        # self.onewelltab = ttk.Frame(self.processing_notebook)
+        # https://stackoverflow.com/questions/3085696/adding-a-scrollbar-to-a-group-of-widgets-in-tkinter
         self.frame = ttk.Frame(self.processing_notebook)
         self.canvas = tk.Canvas(self.frame, borderwidth=0, width=150, height=800)
-        self.onewelltab = tk.Frame(self.canvas)
-        self.vsb = tk.Scrollbar(self.frame, orient="vertical", command=self.canvas.yview)
+        self.onewelltab = ttk.Frame(self.canvas)
+
+        self.vsb = ttk.Scrollbar(self.frame, orient="vertical", command=self.canvas.yview)
         self.canvas.configure(yscrollcommand=self.vsb.set)
         self.vsb.pack(side="right", fill="y")
         self.canvas.pack(side="left", fill="both", expand=True)
-        self.canvas.create_window((4,4), window=self.onewelltab, anchor="nw", tags="self.frame")
+        self.canvas.create_window((4, 4), window=self.onewelltab, anchor="nw", tags="self.frame")
         self.onewelltab.bind("<Configure>", self.onFrameConfigure)
 
         self.bulkwelltab = ttk.Frame(self.processing_notebook)
+        self.manyfiletab = ttk.Frame(self.processing_notebook)
+
         self.processing_notebook.add(self.frame, text='Single-Well Process')
         self.processing_notebook.add(self.bulkwelltab, text='Bulk Well Process')
+        self.processing_notebook.add(self.manyfiletab, text='One Well Many files')
         self.processing_notebook.bind("<<NotebookTabChanged>>", self.tab_update)
-
 
         # SINGLE WELL PROCESSING TAB for left side of application ---------------------------------------------
         # Header image logo and Description seen by user
@@ -198,7 +242,6 @@ class Feedback:
         self.man_locid.grid(row=1, column=6, rowspan=3)
 
         # Tab for entering manual data by file
-        # TODO Auto align sheet fields to columns
         manfileframetext = """File with manual data must have datetime, reading, and locationid fields"""
         key = 'manual-single'
         ttk.Label(self.manfileframe, text=manfileframetext).grid(row=0, column=0, columnspan=4)
@@ -286,7 +329,7 @@ class Feedback:
         applymatchframe.pack()
         self.inputforheadertable = {}
 
-        self.bulk_match_button = tk.Button(applymatchframe,
+        self.bulk_match_button = ttk.Button(applymatchframe,
                                            text='5. Click when done matching files to well names',
                                            command=lambda: self.make_file_info_table(master),
                                            state='disabled')
@@ -296,19 +339,20 @@ class Feedback:
 
         bulk_align_frame = ttk.Frame(dirselectframe)
         bulk_align_frame.pack()
-        self.align_bulk_wb_button = tk.Button(bulk_align_frame,
+        self.align_bulk_wb_button = ttk.Button(bulk_align_frame,
                                               text='6. Align Well-Baro Data',
                                               command=self.align_well_baro_bulk,
-                                              state='disabled', fg='red')
+                                              state='disabled',)
         self.align_bulk_wb_button.grid(row=0, column=0)
 
         self.export_align = tk.IntVar()
-        self.export_align_check = tk.Checkbutton(bulk_align_frame,
+        self.export_align_check = ttk.Checkbutton(bulk_align_frame,
                                                  text="Export Aligned Data?",
                                                  variable=self.export_align,
                                                  state='disabled')
         self.export_align_check.grid(row=0, column=1)
-        self.export_align_check.deselect()
+        self.export_align.set(0)
+        #self.export_align_check.deselect()
 
         ttk.Separator(dirselectframe, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
         ttk.Label(dirselectframe, text='7. Import Manual Data').pack()
@@ -317,8 +361,8 @@ class Feedback:
         self.bulk_manfileframe.pack()
         self.man_file_frame(self.bulk_manfileframe, key='bulk-manual')
 
-        self.proc_man_bulk_button = tk.Button(self.bulk_manfileframe, text='Process Manual Data',
-                                               command=self.proc_man_bulk, fg='red')
+        self.proc_man_bulk_button = ttk.Button(self.bulk_manfileframe, text='Process Manual Data',
+                                              command=self.proc_man_bulk)
         self.proc_man_bulk_button.grid(column=1, row=5, columnspan=2)
         self.proc_man_bulk_button['state'] = 'disabled'
 
@@ -329,20 +373,20 @@ class Feedback:
         self.bfdb.grid(column=0, row=0, columnspan=1, rowspan=2)
         self.bfdb['state'] = 'disabled'
         self.export_drift = tk.IntVar(value=1)
-        self.export_drift_check = tk.Checkbutton(bulk_drift_frame,
+        self.export_drift_check = ttk.Checkbutton(bulk_drift_frame,
                                                  text="Export Drift Data?",
                                                  variable=self.export_drift,
                                                  state='disabled')
         self.export_drift_check.grid(row=0, column=1, sticky=tk.W)
-        self.export_drift_check.select()
+        #self.export_drift_check.select()
 
         self.export_drift_graph = tk.IntVar(value=1)
-        self.export_drift_graph_check = tk.Checkbutton(bulk_drift_frame,
+        self.export_drift_graph_check = ttk.Checkbutton(bulk_drift_frame,
                                                        text="Graph Data?",
                                                        variable=self.export_drift_graph,
                                                        state='disabled')
         self.export_drift_graph_check.grid(row=1, column=1, sticky=tk.W)
-        self.export_drift_graph_check.select()
+        #self.export_drift_graph_check.select()
 
         ttk.Label(bulk_drift_frame, text='Max Allowed Drift (ft)').grid(row=0, column=2)
         self.max_allowed_drift = tk.DoubleVar(bulk_drift_frame, value=0.3)
@@ -440,7 +484,7 @@ class Feedback:
         """
         popup = tk.Toplevel()
         popup.geometry("400x100+200+200")
-        tk.Label(popup, text="Examining Directory...").pack()
+        ttk.Label(popup, text="Examining Directory...").pack()
         pg = ttk.Progressbar(popup, orient=tk.HORIZONTAL, mode='determinate', length=200)
         pg.pack()
 
@@ -484,14 +528,18 @@ class Feedback:
         # df['locationid'] = df['file_name'].apply(lambda x: f"{self.locnametoid.get(self.combo.get(x,None).get(),None)}",1)
         df['measuring_medium'] = df[['Model_number', 'Location', 'locationid']].apply(lambda x: self.detect_baro(x), 1)
         df = df.reset_index().set_index('file_name').rename(columns={'index': 'full_file_path'})
-
-        graphframe, tableframe = self.note_tab_add(key, tabw=4, grph=1)
+        self.data[key] = df
+        self.graphframe[key], self.tableframe[key] = self.note_tab_add(key, tabw=4, grph=1)
         # add graph and table to new tab
-        # self.add_graph_table(key, tableframe, graphframe)
-        self.datatable[key] = Table(tableframe, dataframe=df, showtoolbar=True, showstatusbar=True)
-        self.datatable[key].show()
-        self.datatable[key].showIndex()
-        self.datatable[key].update()
+
+        self.datatable[key] = Sheet(self.tableframe[key], data=df.values.tolist())
+
+
+        self.datatable[key].change_theme(theme=self.sheettheme)
+        self.datatable[key].headers(self.data[key].columns)
+        self.datatable[key].enable_bindings()
+
+        self.datatable[key].pack(fill="both", expand=True)
         self.align_bulk_wb_button['state'] = 'normal'
         self.export_align_check['state'] = 'normal'
         # self.bulk_data_file_button['state'] = 'normal'
@@ -499,9 +547,11 @@ class Feedback:
         popup.destroy()
 
     def detect_baro(self, x):
+        """Finds the barometers in the well-info-table"""
         if pd.isna(x[1]):
             x[1] = 'water'
-        if x[0] == "M1.5" or 'baro' in x[1].lower() or x[2] in ('9003', '9049', '9024','9060', '9025', '9027', '9063', '9067','9070', '9066'):
+        if x[0] == "M1.5" or 'baro' in x[1].lower() or x[2] in (
+                '9003', '9049', '9024', '9060', '9025', '9027', '9063', '9067', '9070', '9066'):
             return "air"
         else:
             return "water"
@@ -588,34 +638,34 @@ class Feedback:
         ttk.Label(filefinderframe, text=datasets[key]).grid(column=0, row=0, columnspan=3)
         ttk.Label(filefinderframe, text='(Right click for refresh.)').grid(column=2, row=0, columnspan=3)
 
-        #ttk.Label(filefinderframe, text=datasets[key]).pack()
-        #ttk.Label(filefinderframe, text='(Right click for refresh.)').pack()
+        # ttk.Label(filefinderframe, text=datasets[key]).pack()
+        # ttk.Label(filefinderframe, text='(Right click for refresh.)').pack()
         self.datastr[key] = tk.StringVar(filefinderframe, value=f'Double-Click for {key} file')
         self.entry[key] = ttk.Entry(filefinderframe, textvariable=self.datastr[key], width=60)
         self.entry[key].grid(column=0, row=1, columnspan=2)
-        #self.entry[key].pack()
+        # self.entry[key].pack()
         self.entry[key].bind('<Double-ButtonRelease-1>', lambda k: self.wellbarodiag(key))
 
         self.filetype[key] = tk.StringVar(filefinderframe, value="xle")
-        self.fileselectcombo[key] = ttk.Combobox(filefinderframe,width=10,
-                                                 values=['xle','Global Water csv', 'Excel', 'csv'],
-                                                 state="readonly", textvariable = self.filetype[key])
+        self.fileselectcombo[key] = ttk.Combobox(filefinderframe, width=10,
+                                                 values=['xle', 'Global Water csv', 'Excel', 'csv','Troll htm'],
+                                                 state="readonly", textvariable=self.filetype[key])
 
         self.fileselectcombo[key].grid(column=2, row=1, columnspan=2)
-        #self.fileselectcombo[key].current(self.filetype)
+        # self.fileselectcombo[key].current(self.filetype)
         self.fileselectbutt[key] = ttk.Button(filefinderframe,
                                               text='Import data',
                                               command=lambda: self.wellbaroabb(key))
-        self.fileselectbutt[key].grid(column=4,row=1,columnspan=1)
+        self.fileselectbutt[key].grid(column=4, row=1, columnspan=1)
 
-        #self.entry[key].bind('<3>', lambda k: self.wellbaroabb(key))
+        # self.entry[key].bind('<3>', lambda k: self.wellbaroabb(key))
         filefinderframe.pack()
 
     def outlierremove(self, key):
         ttk.Separator(self.onewelltab, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
         frame_step1_5 = ttk.Frame(self.onewelltab)
         ttk.Label(frame_step1_5, text=f'{key} Fix Jumps and outliers (optional)').grid(column=0, row=0, columnspan=6)
-        dataminlab = ttk.Label(frame_step1_5, text='Min. Allowed Value:')
+        dataminlab = ttk.Label(frame_step1_5, text='Min Allowed Value:')
         dataminlab.grid(column=0, row=1)
 
         self.dataminvar[key] = tk.DoubleVar(frame_step1_5, value=-10000.0)
@@ -623,11 +673,12 @@ class Feedback:
         self.datamin[key] = ttk.Entry(frame_step1_5, textvariable=self.dataminvar[key], width=10, state='disabled')
         self.datamin[key].grid(column=1, row=1)
 
-        dataminlab = ttk.Label(frame_step1_5, text='Max. Allowed Value:')
+        dataminlab = ttk.Label(frame_step1_5, text='Max Allowed Value:')
         dataminlab.grid(column=2, row=1)
         self.datamax[key] = ttk.Entry(frame_step1_5, textvariable=self.datamaxvar[key], width=10, state='disabled')
         self.datamax[key].grid(column=3, row=1)
-        self.trimbutt[key] = ttk.Button(frame_step1_5, text='Trim Extrema', command=lambda: self.trimextrema(key), state='disabled')
+        self.trimbutt[key] = ttk.Button(frame_step1_5, text='Trim Extrema', command=lambda: self.trimextrema(key),
+                                             state='disabled')
         self.trimbutt[key].grid(column=4, row=1)
 
         datajumplab = ttk.Label(frame_step1_5, text='Jump Tolerance:')
@@ -636,42 +687,57 @@ class Feedback:
         self.datajump[key] = ttk.Entry(frame_step1_5, textvariable=self.datajumptol[key], width=10, state='disabled')
         self.datajump[key].grid(column=1, row=2)
         self.jumpbutt[key] = ttk.Button(frame_step1_5, text='Fix Jumps', command=lambda: self.fixjumps(key),
-                                        state='disabled')
+                                             state='disabled')
         self.jumpbutt[key].grid(column=2, row=2)
         frame_step1_5.pack()
         # self.data[key]
 
-    def trimextrema(self,key):
+    def trimextrema(self, key):
         if key == 'well' and 'well' in self.data.keys():
-            if 'Level' in self.data['well'].columns:
+            if self.field:
+                self.data['well'] = self.data['well'][(self.data['well'][self.field] >= self.dataminvar[key].get()) & (
+                        self.data['well'][self.field] <= self.datamaxvar[key].get())]
+                self.graphframe[key], self.tableframe[key] = self.note_tab_add('well')
+                self.add_graph_table('well')
+            elif 'Level' in self.data['well'].columns:
                 self.data['well'] = self.data['well'][(self.data['well']['Level'] >= self.dataminvar[key].get()) & (
-                            self.data['well']['Level'] <= self.datamaxvar[key].get())]
-                graphframe, tableframe = self.note_tab_add('well')
-                self.add_graph_table('well', tableframe, graphframe)
+                        self.data['well']['Level'] <= self.datamaxvar[key].get())]
+                self.graphframe[key], self.tableframe[key] = self.note_tab_add('well')
+                self.add_graph_table('well')
         elif key == 'baro' and 'baro' in self.data.keys():
-            if 'Level' in self.data['baro'].columns:
+            if self.field:
+                self.data['baro'] = jumpfix(self.data['baro'], self.field, self.datajumptol[key].get())
+                self.graphframe[key], self.tableframe[key] = self.note_tab_add('baro')
+                self.add_graph_table('baro')
+            elif 'Level' in self.data['baro'].columns:
                 self.data['baro'] = jumpfix(self.data['baro'], 'Level', self.datajumptol[key].get())
-                graphframe, tableframe = self.note_tab_add('baro')
-                self.add_graph_table('baro', tableframe, graphframe)
-                # self.datatable['well'].show()
-                # self.datatable['well'].update()
-                # self.datatable['well'].show()
+                self.graphframe[key], self.tableframe[key] = self.note_tab_add('baro')
+                self.add_graph_table('baro')
+
         else:
             print('No column named Level')
             pass
         # TODO add dialog to select a column to adjust
 
-    def fixjumps(self,key):
+    def fixjumps(self, key):
         if key == 'well' and 'well' in self.data.keys():
-            if 'Level' in self.data['well'].columns:
+            if self.field:
+                self.data['well'] = jumpfix(self.data['well'], self.field, self.datajumptol[key].get())
+                self.graphframe[key], self.tableframe[key] = self.note_tab_add('well')
+                self.add_graph_table('well')
+            elif 'Level' in self.data['well'].columns:
                 self.data['well'] = jumpfix(self.data['well'], 'Level', self.datajumptol[key].get())
-                graphframe, tableframe = self.note_tab_add('well')
-                self.add_graph_table('well', tableframe, graphframe)
+                self.graphframe[key], self.tableframe[key] = self.note_tab_add('well')
+                self.add_graph_table('well')
         elif key == 'baro' and 'baro' in self.data.keys():
-            if 'Level' in self.data['baro'].columns:
+            if self.field:
+                self.data['baro'] = jumpfix(self.data['baro'], self.field, self.datajumptol[key].get())
+                self.graphframe[key], self.tableframe[key] = self.note_tab_add('baro')
+                self.add_graph_table('baro')
+            elif 'Level' in self.data['baro'].columns:
                 self.data['baro'] = jumpfix(self.data['baro'], 'Level', self.datajumptol[key].get())
-                graphframe, tableframe = self.note_tab_add('baro')
-                self.add_graph_table('baro', tableframe, graphframe)
+                self.graphframe[key], self.tableframe[key] = self.note_tab_add('baro')
+                self.add_graph_table('baro')
         else:
             print('No column named Level')
             pass
@@ -697,30 +763,42 @@ class Feedback:
         frame_step3 = ttk.Frame(self.onewelltab)
         frame_step3.pack()
         ttk.Label(frame_step3, text="3. Align Baro and Well Data:").grid(row=0, column=0, columnspan=5)
-        ttk.Label(frame_step3, text='Pref. Data Freq.').grid(row=1, column=0, columnspan=2)
+
+        ttk.Label(frame_step3, text='Well field').grid(row=1, column=0, columnspan=1)
+        self.wellalignfieldbox = ttk.Combobox(frame_step3, width=5, values=['Level'])
+        self.wellalignfieldbox.grid(row=1, column=2)
+        self.wellalignfieldbox.current(0)
+
+        ttk.Label(frame_step3, text='Baro field').grid(row=1, column=3, columnspan=1)
+        self.baroalignfieldbox = ttk.Combobox(frame_step3, width=5, values=['Level'])
+        self.baroalignfieldbox.grid(row=1, column=4)
+        self.baroalignfieldbox.current(0)
+
+        ttk.Label(frame_step3, text='Pref. Data Freq.').grid(row=2, column=0, columnspan=2)
         # Boxes for data frequency
         self.freqint = ttk.Combobox(frame_step3, width=4, values=list(range(1, 120)))
-        self.freqint.grid(row=2, column=0)
+        self.freqint.grid(row=3, column=0)
         self.freqint.current(59)
         self.freqtype = ttk.Combobox(frame_step3, width=4, values=['min'])
-        self.freqtype.grid(row=2, column=1)
+        self.freqtype.grid(row=3, column=1)
         self.freqtype.current(0)
         b = ttk.Button(frame_step3, text='Align Datasets',
                        command=self.alignedplot)
-        b.grid(row=2, column=2)
+        b.grid(row=3, column=2)
 
         self.export_wb = tk.IntVar(value=1)
-        self.export_single_well_baro = tk.Checkbutton(frame_step3,
+        self.export_single_well_baro = ttk.Checkbutton(frame_step3,
                                                       text="Export Well-Baro Data?",
                                                       variable=self.export_wb)
-        self.export_single_well_baro.grid(row=2, column=3, sticky=tk.W)
-        self.export_single_well_baro.select()
+        self.export_single_well_baro.grid(row=3, column=3, sticky=tk.W)
+        #self.export_single_well_baro.select()
 
         self.is_vented = tk.IntVar(value=0)
-        self.trans_vented = tk.Checkbutton(frame_step3,
+        self.trans_vented = ttk.Checkbutton(frame_step3,
                                            text="Vented?",
                                            variable=self.is_vented)
-        self.trans_vented.grid(row=2, column=4, sticky=tk.W)
+        self.trans_vented.grid(row=3, column=4, sticky=tk.W)
+        self.is_vented.set(0)
         # self.trans_vented.select()
 
     def add_elevation_interface(self, master):
@@ -759,7 +837,8 @@ class Feedback:
         elif self.wellgroundelevunits.get() == 'm':
             melev = melev * 3.2808
 
-        df = self.datatable['fixed-drift'].model.df
+        self.end_edit_cell(key='fixed-drift')
+        df = self.data['fixed-drift']
 
         if 'manual-single' in self.data.keys():
             key2 = 'manual-single'
@@ -768,15 +847,15 @@ class Feedback:
         else:
             key2 = 'manual'
 
-        self.datatable[key2].model.df['waterelevation'] = self.datatable[key2].model.df[
-                                                              'dtwbelowcasing'] + mstickup + melev
+        self.end_edit_cell(key=key2)
+        self.data[key2]['waterelevation'] = self.data[key2]['dtwbelowcasing'] + mstickup + melev
         self.datatable[key2].update()
-        self.manelevs = self.datatable[key2].model.df
-        df['waterelevation'] = self.datatable['fixed-drift'].model.df['DTW_WL'] + mstickup + melev
+        self.manelevs = self.data[key2]
+        df['waterelevation'] = self.data['fixed-drift']['DTW_WL'] + mstickup + melev
 
         self.data[key] = df
-        graphframe, tableframe = self.note_tab_add(key)
-        self.add_graph_table(key, tableframe, graphframe)
+        self.graphframe[key], self.tableframe[key] = self.note_tab_add(key)
+        self.add_graph_table(key)
         print(self.manelevs)
 
     def fix_drift(self):
@@ -789,26 +868,28 @@ class Feedback:
             else:
                 key2 = 'manual'
 
-            self.datatable[key2].model.df['dtwbelowcasing'] = self.datatable[key2].model.df['dtwbelowcasing'] * -1
-            self.datatable[key2].update()
+            self.end_edit_cell(key=key2)
+            self.data[key2]['dtwbelowcasing'] = self.data[key2]['dtwbelowcasing'] * -1
+            #self.end_edit_cell(key=key2)
+            #self.datatable[key2].update()
 
-            wellid = self.datatable[key2].model.df.loc[self.datatable[key2].model.df.first_valid_index(),'locationid']
-            df, self.drift_info, mxdrft = Drifting(self.datatable[key2].model.df,
-                                                      self.datatable['well-baro'].model.df,
-                                                      drifting_field='corrwl',
-                                                      man_field='dtwbelowcasing',
-                                                      well_id= wellid,
-                                                      output_field='DTW_WL').process_drift()
+            wellid = self.data[key2].loc[self.data[key2].first_valid_index(), 'locationid']
+            df, self.drift_info, mxdrft = Drifting(self.data[key2],
+                                                   self.data['well-baro'],
+                                                   drifting_field='corrwl',
+                                                   man_field='dtwbelowcasing',
+                                                   well_id=wellid,
+                                                   output_field='DTW_WL').process_drift()
 
             self.max_drift.set(mxdrft)
 
             if 'Temperature' in df.columns:
-                self.data[key] = df[['barometer', 'corrwl', 'DTW_WL','driftcorrection', 'Temperature']]
+                self.data[key] = df[['barometer', 'corrwl', 'DTW_WL', 'driftcorrection', 'Temperature']]
             else:
                 self.data[key] = df[['barometer', 'corrwl', 'DTW_WL', 'driftcorrection']]
 
-            graphframe, tableframe = self.note_tab_add(key)
-            self.add_graph_table(key, tableframe, graphframe)
+            self.graphframe[key], self.tableframe[key] = self.note_tab_add(key)
+            self.add_graph_table(key)
         else:
             tk.messagebox.showinfo(title='Yo!', message='Align the data first!')
 
@@ -820,7 +901,7 @@ class Feedback:
         pg.pack()
         bulkdrift = {}
         drift_info = {}
-        info = self.datatable['well-info-table'].model.df
+        info = self.data['well-info-table']
         try:
             pg.config(maximum=len(self.data['bulk-well-baro'].index.get_level_values(0).unique()))
         except KeyError:
@@ -838,22 +919,21 @@ class Feedback:
         # Check effect of this comment;
         #  Uncommented on 5/26/2021 in attempt to make consistent with single-well
         #  Recommented as caused high drift
-        #self.datatable[key2].model.df['dtwbelowcasing'] = self.datatable[key2].model.df['dtwbelowcasing'] * -1
 
         for i in self.data['bulk-well-baro'].index.get_level_values(0).unique():
             popup.update()
             if pd.notnull(i):
 
-                if int(i) in self.datatable[key2].model.df.index:
-                    mandf = self.datatable[key2].model.df.loc[int(i)]
+                if int(i) in self.data[key2].index:
+                    mandf = self.data[key2].loc[int(i)]
                     wellbaro = self.data['bulk-well-baro'].loc[int(i)]
 
                     try:
                         df, dfrinf, max_drift = Drifting(mandf,
-                                                            wellbaro,
-                                                            drifting_field='corrwl',
-                                                            man_field='dtwbelowcasing',
-                                                            output_field='DTW_WL').process_drift()
+                                                         wellbaro,
+                                                         drifting_field='corrwl',
+                                                         man_field='dtwbelowcasing',
+                                                         output_field='DTW_WL').process_drift()
 
                         mstickup = info.loc[i, 'stickup']
                         melev = info.loc[i, 'verticalmeasure']
@@ -874,19 +954,24 @@ class Feedback:
                     except KeyError as err:
                         sv.set("Need More Recent Manual Data")
                         print(err)
-                        #sv.set(f"{err}")
+                        # sv.set(f"{err}")
                         pass
             pg.step()
 
-        self.data['bulk-fix-drift'] = pd.concat(bulkdrift).set_index(['locationid','DateTime'])
-        #self.data['bulk-fix-drift'] = self.data['bulk-fix-drift']
+        self.data['bulk-fix-drift'] = pd.concat(bulkdrift).set_index(['locationid', 'DateTime'])
+        # self.data['bulk-fix-drift'] = self.data['bulk-fix-drift']
         key = 'drift-info'
         self.data[key] = pd.concat(drift_info, sort=True, ignore_index=True).set_index('name')
-        graphframe, tableframe = self.note_tab_add(key)
-        self.datatable[key] = Table(tableframe, dataframe=self.data[key], showtoolbar=True, showstatusbar=True)
-        self.datatable[key].show()
-        self.datatable[key].showIndex()
-        self.datatable[key].update()
+        self.graphframe[key], self.tableframe[key] = self.note_tab_add(key)
+
+        self.datatable[key] = Sheet(self.tableframe[key], data=self.data[key].reset_index().values.tolist())
+
+        self.datatable[key].change_theme(theme=self.sheettheme)
+        self.datatable[key].headers(self.data[key].reset_index().columns)
+
+        self.datatable[key].pack(fill="both", expand=True)
+
+        self.datatable[key].enable_bindings()
         popup.destroy()
 
         if self.export_drift.get() == 1:
@@ -938,9 +1023,9 @@ class Feedback:
                             key2 = 'manual'
 
                         try:
-                            mandf = self.datatable[key2].model.df.loc[ind]
+                            mandf = self.data[key2].loc[ind]
                         except KeyError:
-                            mandf = self.datatable['manual-single'].model.df.loc[ind]
+                            mandf = self.data['manual-single'].loc[ind]
                         mandf = mandf.dropna(subset=['waterelevation'])
 
                         if len(df) > 0 and len(mandf) > 0:
@@ -1001,12 +1086,13 @@ class Feedback:
             df = df.set_index(['readingdate'])
             df = df[['dtwbelowcasing', 'locationid', 'units']]
             if 'well' in self.datatable.keys():
-                df = df[df.index > self.datatable['well'].model.df.first_valid_index() - pd.DateOffset(days=8)]
+                self.end_edit_cell(key='well')
+                df = df[df.index > self.data['well'].first_valid_index() - pd.DateOffset(days=8)]
 
             self.data[key] = df[df['locationid'] == pd.to_numeric(self.scombo['Pick id'].get(), downcast='integer')]
 
-        graphframe, tableframe = self.note_tab_add(key)
-        self.add_graph_table(key, tableframe, graphframe)
+        self.graphframe[key], self.tableframe[key] = self.note_tab_add(key)
+        self.add_graph_table(key)
 
     def bulk_wlelev(self, x, inf, pg, pop):
         pop.update()
@@ -1016,11 +1102,11 @@ class Feedback:
 
     def proc_man_bulk(self):
         key = 'bulk-manual'
-        #if 'bulk-manual' in self.data.keys():
+        # if 'bulk-manual' in self.data.keys():
         #    key = 'bulk-manual'
-        #elif 'manual-single' in self.data.keys():
+        # elif 'manual-single' in self.data.keys():
         #    key = 'manual-single'
-        #else:
+        # else:
         #    key = 'manual'
 
         try:
@@ -1036,7 +1122,7 @@ class Feedback:
             df['dtwbelowcasing'] = df['dtwbelowcasing'].apply(lambda x: -1 * pd.to_numeric(x, errors='coerce'))
             # df = df.set_index(['locationid', 'readingdate'])
             # df = df['dtwbelowcasing']
-            info = self.datatable['well-info-table'].model.df
+            info = self.data['well-info-table']
             df = df[df['locationid'].isin(info.index)]
 
             popup = tk.Toplevel()
@@ -1052,12 +1138,12 @@ class Feedback:
 
             popup.destroy()
             self.data[key] = df
-            graphframe, tableframe = self.note_tab_add(key)
-            self.add_graph_table(key, tableframe, graphframe)
+            self.graphframe[key], self.tableframe[key] = self.note_tab_add(key)
+            self.add_graph_table(key)
             self.export_drift_graph_check['state'] = 'normal'
             self.export_drift_check['state'] = 'normal'
             self.bfdb['state'] = 'normal'
-            self.proc_man_bulk_button['fg'] = 'green'
+            #self.proc_man_bulk_button['fg'] = 'green'
         except KeyError as err:
             print(f"Key Error: {err}")
             tk.messagebox.showerror(title='Process Well Info Table First', message="Process Well Info Table First")
@@ -1065,10 +1151,9 @@ class Feedback:
     def only_meas(self, value_if_allowed):
         try:
             float(value_if_allowed)
-            bool = True
+            return True
         except ValueError:
-            bool = False
-        return bool
+            return False
 
     def decrease(self):
         x, y = self.line.get_data()
@@ -1089,7 +1174,7 @@ class Feedback:
         print("you pressed {}".format(event.key))
         key_press_handler(event, self.canvas, self.toolbar)
 
-    def note_tab_add(self, key, tabw=1, grph=4):
+    def note_tab_add(self, key, tabw=2, grph=3):
         """
 
         Args:
@@ -1098,7 +1183,7 @@ class Feedback:
         Returns:
 
         """
-        print(key)
+        #print(key)
         if key in self.notelist.keys():
             self.notebook.forget(self.notelist[key])
             self.notelist[key] = 'old'
@@ -1110,16 +1195,89 @@ class Feedback:
 
         panedframe = ttk.Panedwindow(new_frame, orient='vertical')
         panedframe.pack(fill='both', expand=True)
-        tableframe = ttk.Frame(panedframe, relief='sunken')
-        graphframe = ttk.Frame(panedframe, relief='sunken')
-        panedframe.add(tableframe, weight=tabw)
-        panedframe.add(graphframe, weight=grph)
-        labframe = ttk.Frame(graphframe)
+        self.tableframe[key] = ttk.Frame(panedframe, relief='sunken')
+        self.graphframe[key] = ttk.Frame(panedframe, relief='sunken')
+
+        panedframe.add(self.tableframe[key], weight=tabw)
+        panedframe.add(self.graphframe[key], weight=grph)
+        labframe = ttk.Frame(self.graphframe[key])
         labframe.pack()
         ttk.Label(labframe, text='Click on column of choice and then the Plot button!').pack()
-        return graphframe, tableframe
+        return self.graphframe[key], self.tableframe[key]
 
-    def add_graph_table(self, key, tableframe, graphframe):
+    def make_chart(self, event, key):
+
+        self.end_edit_cell(key=key)
+
+        self.field = list(self.data[key].columns)[event[1]-1]
+        print(self.field)
+
+        # remove old widgets
+        if key in self.graphcanvas.keys():
+            self.graphcanvas[key].destroy()
+
+        if self.toolbar:
+            self.toolbar.destroy()
+        plt.clf()
+        # create new elements
+
+        fig = Figure(figsize=(5.5,4))
+
+        a = fig.add_subplot(211)
+        x = self.data[key].index
+        y = self.data[key][self.field]
+        a.plot(x, y)
+
+        a.set_ylabel(self.field)
+        for label in a.get_xticklabels():
+            label.set_ha("right")
+            label.set_rotation(45)
+
+        a.set_xlabel("Date")
+        #fig.set_tight_layout(True)
+
+        canvas = FigureCanvasTkAgg(fig, self.graph_frame1[key])
+
+        self.toolbar = NavigationToolbar2Tk(canvas, self.graph_frame1[key])
+        #toolbar.update()
+
+        self.graphcanvas[key] = canvas.get_tk_widget()
+        self.graphcanvas[key].pack(fill=tk.BOTH)
+
+
+
+        if self.field in self.data[key].columns:
+            self.dataminvar[key].set(self.data[key][self.field].min())
+            self.datamaxvar[key].set(self.data[key][self.field].max())
+
+
+
+    def end_edit_cell(self, event = None, key=None):
+        df = pd.DataFrame(self.datatable[key].get_sheet_data(return_copy=True, get_header=False, get_index=False))
+        df.index = self.data[key].index
+
+        if len(df.columns) == len(self.data[key].columns):
+            df.columns = self.data[key].columns
+        elif len(df.columns)-1 == len(self.data[key].columns):
+            df = df.iloc[:, 1:]
+            df.columns = self.data[key].columns
+        else:
+            pass
+            print('Column transfer mismatch')
+
+        for col in df.columns:
+            try:
+                df[col] = pd.to_numeric(df[col])
+            except ValueError:
+                pass
+
+        self.data[key] = df
+        self.datatable[key].redraw(redraw_header=True, redraw_row_index=True)
+
+        if event:
+            return event.text
+
+    def add_graph_table(self, key):
         """
 
         Args:
@@ -1131,35 +1289,35 @@ class Feedback:
             adds pandastable elements to a frame
 
         """
-        graph_frame1 = ttk.Frame(graphframe)
-        self.datatable[key] = Table(tableframe, dataframe=self.data[key], showtoolbar=True, showstatusbar=True)
-        self.datatable[key].show()
-        self.datatable[key].showIndex()
-        self.datatable[key].update()
 
-        self.datatable[key].showPlotViewer(parent=graph_frame1)
-        canvas = self.datatable[key].showPlotViewer(parent=graph_frame1).canvas
-        if key == 'well-baro':
-            self.add_baro_axis(graph_frame1)
-        elif key == 'fixed-drift':
-            self.add_manual_points(key, graph_frame1)
-        elif key == 'wl-elev':
-            self.add_manual_points(key, graph_frame1)
-        elif key == 'bulk-baro':
-            self.plot_bulk_baro(graph_frame1)
-        toolbar = NavigationToolbar2Tk(canvas, graph_frame1)
-        toolbar.update()
-        canvas.draw()
-        canvas.get_tk_widget().pack(side='top', fill='both', expand=1)
-        canvas.mpl_connect("key_press_event", self.on_key_press)
-        graph_frame1.pack()
-        self.sheets[key] = self.datatable[key]
+        self.graph_frame1[key] = ttk.Frame(self.graphframe[key])
+
+
+        self.datatable[key] = Sheet(self.tableframe[key], data=self.data[key].reset_index().values.tolist())
+
+        self.datatable[key].change_theme(theme=self.sheettheme)
+        self.datatable[key].headers(self.data[key].reset_index().columns)
+        self.datatable[key].enable_bindings()
+
+
+        self.datatable[key].pack(fill="both", expand=True)
+
+        self.datatable[key].extra_bindings([("column_select", lambda event: self.make_chart(event, key=key)),
+                                            ("end_edit_cell", lambda event: self.end_edit_cell(event, key=key))])
+
+        self.graph_frame1[key].pack()
+
+        if 'well' in self.data.keys():
+            self.wellalignfieldbox['values'] = list(self.data[key].columns)
+        elif 'baor' in self.data.keys():
+            self.baroalignfieldbox['values'] = list(self.data[key].columns)
+
 
     def plot_bulk_baro(self, graph_frame1):
         key = 'bulk-baro'
         ax = self.datatable[key].showPlotViewer(parent=graph_frame1).ax
-        for wellid in self.datatable[key].model.df.index.get_level_values(0).unique():
-            ax.plot(self.datatable[key].model.df.loc[wellid, 'Level'], label=wellid)
+        for wellid in self.data[key].index.get_level_values(0).unique():
+            ax.plot(self.data[key].loc[wellid, 'Level'], label=wellid)
 
         ax.set_ylabel('well levels', color='blue')
 
@@ -1168,10 +1326,10 @@ class Feedback:
     def add_baro_axis(self, graph_frame1):
         key = 'well-baro'
         ax = self.datatable[key].showPlotViewer(parent=graph_frame1).ax
-        lns1 = ax.plot(self.datatable[key].model.df['Level'], color='green', label='unprocessed')
-        lns2 = ax.plot(self.datatable[key].model.df['corrwl'], color='blue', label='baro-removed')
+        lns1 = ax.plot(self.data[key]['Level'], color='green', label='unprocessed')
+        lns2 = ax.plot(self.data[key]['corrwl'], color='blue', label='baro-removed')
         ax2 = ax.twinx()
-        lns3 = ax2.plot(self.datatable[key].model.df['barometer'], color='red', label='baro')
+        lns3 = ax2.plot(self.data[key]['barometer'], color='red', label='baro')
         ax2.set_ylabel('barometer', color='red')
         ax.set_ylabel('well levels', color='blue')
         lns = lns1 + lns2 + lns3
@@ -1188,33 +1346,34 @@ class Feedback:
             key2 = 'manual'
         if key == 'fixed-drift':
 
-            ax.plot(self.datatable[key].model.df['DTW_WL'], color='green', label='unprocessed')
-            ax.scatter(self.datatable[key2].model.df.index, self.datatable[key2].model.df['dtwbelowcasing'])
+            ax.plot(self.data[key]['DTW_WL'], color='green', label='unprocessed')
+            ax.scatter(self.data[key2].index, self.data[key2]['dtwbelowcasing'])
             ax.set_ylabel(f"Depth to Water (ft)")
         elif key == 'wl-elev':
-            ax.plot(self.datatable[key].model.df['waterelevation'], color='green', label='unprocessed')
-            ax.scatter(self.datatable[key2].model.df.index, self.datatable[key2].model.df['waterelevation'])
+            ax.plot(self.data[key]['waterelevation'], color='green', label='unprocessed')
+            ax.scatter(self.data[key2].index, self.data[key2]['waterelevation'])
             ax.set_ylabel(f"Water Elevation (ft)")
-        ax.set_xlim(self.datatable[key2].model.df.first_valid_index() - pd.Timedelta('3 days'),
-                    self.datatable[key2].model.df.last_valid_index() + pd.Timedelta('3 days'), )
+        ax.set_xlim(self.data[key2].first_valid_index() - pd.Timedelta('3 days'),
+                    self.data[key2].last_valid_index() + pd.Timedelta('3 days'), )
 
     def wellbaroabb(self, key):
-        if self.datastr[key].get() == '' or type(self.datastr[key].get()) == tuple or self.datastr[
-            key].get() == f'Double-Click for {key} file':
+        if self.datastr[key].get() == '' or type(self.datastr[key].get()) == tuple or self.datastr[key].get() == f'Double-Click for {key} file':
             pass
         else:
             if key in ('well'):
-                #'xle','raw csv', 'Excel', 'modified csv'
-                if self.fileselectcombo[key].get() in ['xle','Global Water csv']:
+                # 'xle','raw csv', 'Excel', 'modified csv'
+                if self.fileselectcombo[key].get() in ['xle', 'Global Water csv']:
                     self.data[key] = NewTransImp(self.datastr[key].get()).well.drop(['name'], axis=1)
                 elif self.fileselectcombo[key].get() in ['Excel']:
-                    #self.data[key] = pd.read_excel(self.datastr[key].get())
+                    # self.data[key] = pd.read_excel(self.datastr[key].get())
                     self.data[key] = pd.ExcelFile(self.datastr[key].get())
 
                     self.openNewWindowxl(key)
                 elif self.fileselectcombo[key].get() in ['csv']:
                     self.data[key] = pd.read_csv(self.datastr[key].get())
                     self.openNewWindowcsv(key)
+                elif self.fileselectcombo[key].get() in ['Troll htm']:
+                    self.data[key] = read_troll_htm(self.datastr[key].get())
 
                 filenm, self.file_extension = os.path.splitext(self.datastr[key].get())
                 if key in self.datamin.keys():
@@ -1223,22 +1382,26 @@ class Feedback:
                     self.trimbutt[key]['state'] = 'normal'
                     self.datajump[key]['state'] = 'normal'
                     self.jumpbutt[key]['state'] = 'normal'
-                if 'Level' in self.data['well'].columns:
+                if self.field in self.data['well'].columns:
+                    self.dataminvar[key].set(self.data['well'][self.field].min())
+                    self.datamaxvar[key].set(self.data['well'][self.field].max())
+                elif 'Level' in self.data['well'].columns:
                     self.dataminvar[key].set(self.data['well']['Level'].min())
                     self.datamaxvar[key].set(self.data['well']['Level'].max())
             elif key in ('baro'):
-                if self.fileselectcombo[key].get() in ['xle','Global Water csv']:
+                if self.fileselectcombo[key].get() in ['xle', 'Global Water csv']:
                     self.data[key] = NewTransImp(self.datastr[key].get()).well.drop(['name'], axis=1)
                 elif self.fileselectcombo[key].get() in ['Excel']:
-                    #self.data[key] = pd.read_excel(self.datastr[key].get())
+                    # self.data[key] = pd.read_excel(self.datastr[key].get())
                     self.wellbaroxl[key] = pd.ExcelFile(self.datastr[key].get())
-
                     self.openNewWindowxl(key)
                 elif self.fileselectcombo[key].get() in ['csv']:
                     self.data[key] = pd.read_csv(self.datastr[key].get())
                     self.openNewWindowcsv(key)
+                elif self.fileselectcombo[key].get() in ['Troll htm']:
+                    self.data[key] = read_troll_htm(self.datastr[key].get())
 
-                #self.data[key] = NewTransImp(self.datastr[key].get()).well.drop(['name'], axis=1)
+                # self.data[key] = NewTransImp(self.datastr[key].get()).well.drop(['name'], axis=1)
                 filenm, self.file_extension = os.path.splitext(self.datastr[key].get())
                 if key in self.datamin.keys():
                     self.datamin[key]['state'] = 'normal'
@@ -1246,7 +1409,10 @@ class Feedback:
                     self.trimbutt[key]['state'] = 'normal'
                     self.datajump[key]['state'] = 'normal'
                     self.jumpbutt[key]['state'] = 'normal'
-                if 'Level' in self.data[key].columns:
+                if self.field in self.data[key].columns:
+                    self.dataminvar[key].set(self.data[key][self.field].min())
+                    self.datamaxvar[key].set(self.data[key][self.field].max())
+                elif 'Level' in self.data[key].columns:
                     self.dataminvar[key].set(self.data[key]['Level'].min())
                     self.datamaxvar[key].set(self.data[key]['Level'].max())
             elif key in ('manual', 'bulk-manual', 'manual-single'):
@@ -1256,42 +1422,11 @@ class Feedback:
                 elif file_extension == '.csv':
                     self.data[key] = pd.read_csv(self.datastr[key].get())
             # add notepad tab
-            graphframe, tableframe = self.note_tab_add(key)
+            self.graphframe[key], self.tableframe[key] = self.note_tab_add(key)
             # add graph and table to new tab
-            self.add_graph_table(key, tableframe, graphframe)
+            self.add_graph_table(key)
 
-    def openNewWindowcsv(self,key):
-
-        # Toplevel object which will
-        # be treated as a new window
-        self.newWindow  = tk.Toplevel(self.master)
-
-        # sets the title of the
-        # Toplevel widget
-        self.newWindow.title("New Window")
-
-        # sets the geometry of toplevel
-        self.newWindow.geometry("200x200")
-        #df = pd.read
-        # A Label widget to show in toplevel
-        #self.data[key] =
-        columns = list(self.data[key].columns.values)  # see all sheet names
-
-        tk.Label(self.newWindow , text="Datetime Field").pack()
-        self.xlcols_date_combo[key] = ttk.Combobox(self.newWindow , values=columns)
-        self.xlcols_date_combo[key].pack()
-        tk.Label(self.newWindow , text="Value Field").pack()
-        self.xlcols_value_combo[key] = ttk.Combobox(self.newWindow , values=columns)
-        self.xlcols_value_combo[key].pack()
-        tk.Label(self.newWindow , text="Temperature Field (optional)").pack()
-        self.xlcols_temp_combo[key] = ttk.Combobox(self.newWindow , values=columns)
-        self.xlcols_temp_combo[key].pack()
-
-        #tk.Label(newWindow, text=self.datastr[key].get()).pack()
-        tk.Button(self.newWindow ,text='OoooK', command=lambda: self.xl_cols_match(key)).pack()
-
-
-    def openNewWindowxl(self,key):
+    def openNewWindowcsv(self, key):
 
         # Toplevel object which will
         # be treated as a new window
@@ -1303,9 +1438,39 @@ class Feedback:
 
         # sets the geometry of toplevel
         self.newWindow.geometry("200x200")
-        #df = pd.read
+        # df = pd.read
         # A Label widget to show in toplevel
-        #self.data[key] =
+        # self.data[key] =
+        columns = list(self.data[key].columns.values)  # see all sheet names
+
+        tk.Label(self.newWindow, text="Datetime Field").pack()
+        self.xlcols_date_combo[key] = ttk.Combobox(self.newWindow, values=columns)
+        self.xlcols_date_combo[key].pack()
+        tk.Label(self.newWindow, text="Value Field").pack()
+        self.xlcols_value_combo[key] = ttk.Combobox(self.newWindow, values=columns)
+        self.xlcols_value_combo[key].pack()
+        tk.Label(self.newWindow, text="Temperature Field (optional)").pack()
+        self.xlcols_temp_combo[key] = ttk.Combobox(self.newWindow, values=columns)
+        self.xlcols_temp_combo[key].pack()
+
+        # tk.Label(newWindow, text=self.datastr[key].get()).pack()
+        tk.Button(self.newWindow, text='OoooK', command=lambda: self.xl_cols_match(key)).pack()
+
+    def openNewWindowxl(self, key):
+
+        # Toplevel object which will
+        # be treated as a new window
+        self.newWindow = tk.Toplevel(self.master)
+
+        # sets the title of the
+        # Toplevel widget
+        self.newWindow.title("New Window")
+
+        # sets the geometry of toplevel
+        self.newWindow.geometry("200x200")
+        # df = pd.read
+        # A Label widget to show in toplevel
+        # self.data[key] =
         tk.Label(self.newWindow, text="Excel Sheet with Data").pack()
         sheets = self.wellbaroxl[key].sheet_names  # see all sheet names
         self.sheetcombo = {}
@@ -1322,13 +1487,13 @@ class Feedback:
         self.xlcols_temp_combo[key].pack()
         # read a specific sheet to DataFrame
         self.sheetcombo[key].bind("<<ComboboxSelected>>",
-                                 lambda event, key=key: self.parse_sheet(key))
-        #tk.Label(newWindow, text=self.datastr[key].get()).pack()
-        tk.Button(self.newWindow,text='OoooK', command=lambda: self.xl_cols_match(key)).pack()
+                                  lambda event, key=key: self.parse_sheet(key))
+        # tk.Label(newWindow, text=self.datastr[key].get()).pack()
+        tk.Button(self.newWindow, text='OoooK', command=lambda: self.xl_cols_match(key)).pack()
 
     def parse_sheet(self, key):
         self.data[key] = self.wellbaroxl[key].parse(self.sheetcombo[key].get())
-        #self.xlsheetcols =
+        # self.xlsheetcols =
         self.xlcols_date_combo[key]['values'] = list(self.data[key].columns.values)
         self.xlcols_value_combo[key]['values'] = list(self.data[key].columns.values)
         self.xlcols_temp_combo[key]['values'] = list(self.data[key].columns.values)
@@ -1337,37 +1502,37 @@ class Feedback:
         datecol = self.xlcols_date_combo[key].get()
         valcol = self.xlcols_value_combo[key].get()
         tempcol = self.xlcols_temp_combo[key].get()
-        self.data[key] = self.data[key].rename(columns={datecol:'DateTime',
-                                                        valcol:'Level',
-                                                        tempcol:'Temperature'})
+        self.data[key] = self.data[key].rename(columns={datecol: 'DateTime',
+                                                        valcol: 'Level',
+                                                        tempcol: 'Temperature'})
         self.data[key] = self.data[key].reset_index()
         self.data[key]['DateTime'] = pd.to_datetime(self.data[key]['DateTime'])
         self.data[key] = self.data[key].set_index('DateTime')
 
-        #self.wellbaroabb(key)
+        # self.wellbaroabb(key)
         # add notepad tab
-        graphframe, tableframe = self.note_tab_add(key)
+        self.graphframe[key], self.tableframe[key] = self.note_tab_add(key)
         # add graph and table to new tab
-        self.add_graph_table(key, tableframe, graphframe)
+        self.add_graph_table(key)
 
         self.newWindow.destroy()
 
     def wellbarodiag(self, key):
 
-        ftypelist = (("Solinst xle", "*.xle*"), ("csv", "*.csv"),("Excel","*.xlsx"))
+        ftypelist = (("Solinst xle", "*.xle*"), ("csv", "*.csv"), ("Excel", "*.xlsx"),("Troll htm","*.htm*"))
         self.datastr[key].set(filedialog.askopenfilename(initialdir=self.currentdir,
                                                          title=f"Select {key} file",
                                                          filetypes=ftypelist))
         self.currentdir = os.path.dirname(self.datastr[key].get())
         ext = os.path.splitext(self.datastr[key].get())[-1]
-        extdir ={'.xle':'xle','.csv':'csv','.xlsx':'Excel'}
-        #['xle','raw csv', 'Excel', 'solinst csv out']
+        extdir = {'.xle': 'xle', '.csv': 'csv', '.xlsx': 'Excel','.htm': 'Troll htm'}
+        # ['xle','raw csv', 'Excel', 'solinst csv out']
 
-        self.filetype[key].set(extdir.get(ext,'xle'))
+        self.filetype[key].set(extdir.get(ext, 'xle'))
         print(self.filetype[key].get())
 
         # Action if cancel in file dialog is pressed
-        #self.wellbaroabb(key)
+        # self.wellbaroabb(key)
 
     def alignedplot(self):
         """
@@ -1382,12 +1547,18 @@ class Feedback:
             else:
                 sol = False
 
-            self.data[key] = well_baro_merge(self.datatable['well'].model.df,
-                                                self.datatable['baro'].model.df,
-                                                sampint=self.freqint.get(),
-                                                vented=sol)
-            graphframe, tableframe = self.note_tab_add(key)
-            self.add_graph_table(key, tableframe, graphframe)
+            #dfwell = pd.DataFrame()
+            self.end_edit_cell(key='well')
+            self.end_edit_cell(key='baro')
+
+            self.data[key] = well_baro_merge(self.data['well'],
+                                             self.data['baro'],
+                                             wellcolumn=self.wellalignfieldbox.get(),
+                                             barocolumn=self.baroalignfieldbox.get(),
+                                             sampint=self.freqint.get(),
+                                             vented=sol)
+            self.graphframe[key], self.tableframe[key] = self.note_tab_add(key)
+            self.add_graph_table(key)
 
             if self.export_wb.get() == 1:
                 df = self.data[key]
@@ -1399,13 +1570,13 @@ class Feedback:
     def align_well_baro_bulk(self):
         # TODO add feature to recognize global water transducers
         if 'bulk-well' in self.data.keys():
-            files = self.datatable['file-info-table'].model.df
-            info = self.datatable['well-info-table'].model.df
+            files = self.data['file-info-table']
+            info = self.data['well-info-table']
             wellids = self.data['bulk-well'].index.get_level_values(0).unique()
             mergedf = {}
             popup = tk.Toplevel()
             popup.geometry("400x100+200+200")
-            tk.Label(popup, text="Aligning datasets...").pack()
+            ttk.Label(popup, text="Aligning datasets...").pack()
             pg = ttk.Progressbar(popup, orient=tk.HORIZONTAL, mode='determinate', length=200)
             pg.pack()
             pg.config(maximum=len(wellids))
@@ -1415,13 +1586,12 @@ class Feedback:
             for wellid in wellids:
                 popup.update()
                 if wellid is not None and pd.notna(wellid) and pd.notnull(wellid):
-                    if info.loc[int(wellid), 'barologgertype'] != "None" and info.loc[
-                        int(wellid), 'barologgertype'] != "":
+                    if info.loc[int(wellid), 'barologgertype'] != "None" and info.loc[int(wellid), 'barologgertype'] != "":
                         baroid = pd.to_numeric(info.loc[int(wellid), 'barologgertype'],
                                                downcast='integer', errors='coerce')
-                        #medium = files[files['locationid'] == wellid]['measuring_medium'].values[0]
-                        stattype = info.loc[int(wellid),'locationtype']
-                        #print(stattype)
+                        # medium = files[files['locationid'] == wellid]['measuring_medium'].values[0]
+                        stattype = info.loc[int(wellid), 'locationtype']
+                        # print(stattype)
                         name = info.loc[int(wellid), "locationname"]
 
                         ttype = files[files['locationid'] == wellid]['trans type'].values[0]
@@ -1433,10 +1603,23 @@ class Feedback:
                         else:
                             sol = False
 
-                        if baroid in files['locationid'].unique() and (int(wellid) < 9000 or int(wellid) >= 10000) and len(self.data['bulk-well'].loc[int(wellid)])>0:
-                            mergedf[int(wellid)] = well_baro_merge(self.data['bulk-well'].loc[int(wellid)],
-                                                                      self.data['bulk-well'].loc[int(baroid)],
-                                                                      vented=sol)
+                        if baroid in files['locationid'].unique() and (
+                                int(wellid) < 9000 or int(wellid) >= 10000) and len(
+                            self.data['bulk-well'].loc[int(wellid)]) > 0:
+                            try:
+
+                                dat = well_baro_merge(self.data['bulk-well'].loc[int(wellid)],
+                                                       self.data['bulk-well'].loc[int(baroid)],
+                                                       vented=sol)
+                                dat.index.name = 'DateTime'
+                            except IndexError:
+                                print(f"No match for wellid {wellid}, {baroid}")
+                                print(f"{self.data['bulk-well'].loc[int(wellid)].first_valid_index()}")
+                                print(f"{self.data['bulk-well'].loc[int(baroid)].first_valid_index()}")
+                                dat = pd.DataFrame(columns=['Blank1','Blank2'])
+                                pass
+                            if len(dat)>1 and dat.index.name == 'DateTime':
+                                mergedf[int(wellid)] = dat
 
                 else:
                     print(f'no baroid for well {wellid}')
@@ -1452,7 +1635,7 @@ class Feedback:
             df = df.set_index(['locationid', 'DateTime'])
             df = df[['Level', 'Temperature', 'barometer', 'dbp', 'dwl', 'corrwl']]
             self.data['bulk-well-baro'] = df
-            self.align_bulk_wb_button['fg'] = 'green'
+            #self.align_bulk_wb_button['fg'] = 'green'
 
             if self.export_align.get() == 1:
                 file = filedialog.asksaveasfilename(filetypes=[('csv', '.csv')], defaultextension=".csv")
@@ -1493,12 +1676,12 @@ class Feedback:
                     elif col.lower() in ['dtw', 'waterlevel', 'depthtowater', 'water_level',
                                          'level', 'depth_to_water', 'water_depth', 'depth',
                                          'dtwbelowcasing', 'dtw_below_casing']:
-                        if key == 'manual' or key=='bulk-manual':
+                        if key == 'manual' or key == 'bulk-manual':
                             self.combo_choice["DTW"].set(col)
                         else:
                             self.scombo_choice["DTW"].set(col)
                     elif col.lower() in ['locationid', 'locid', 'id', 'location_id', 'lid']:
-                        if key == 'manual' or key =='bulk-manual':
+                        if key == 'manual' or key == 'bulk-manual':
                             self.combo_choice['locationid'].set(col)
                         else:
                             self.scombo_choice['locationid'].set(col)
@@ -1506,23 +1689,24 @@ class Feedback:
                 pass
 
     def save_one_well(self):
-        filename = filedialog.asksaveasfilename(filetypes=[('csv', '.csv'),('Excel','.xlsx')],
+        filename = filedialog.asksaveasfilename(filetypes=[('csv', '.csv'), ('Excel', '.xlsx')],
                                                 defaultextension=".csv",
                                                 confirmoverwrite=True)
         if filename is None:
             print('no')
             return
         else:
-            df = self.datatable['wl-elev'].model.df
-            df['measureddtw'] = -1*df['DTW_WL']
-            df = df.rename(columns={'Temperature':'temperature',
-                                    'corrwl':'measuredlevel'})
+            self.end_edit_cell(key='wl-elev')
+            df = self.data['wl-elev']
+            df['measureddtw'] = -1 * df['DTW_WL']
+            df = df.rename(columns={'Temperature': 'temperature',
+                                    'corrwl': 'measuredlevel'})
             df = df.drop(['DTW_WL'], axis=1)
             filename, file_extension = os.path.splitext(filename)
             if file_extension == '.csv':
-                df.to_csv(filename)
+                df.to_csv(filename+".csv")
             else:
-                df.to_excel(filename)
+                df.to_excel(filename+".xlsx")
             return
 
     def open_file(self, master):
@@ -1572,11 +1756,18 @@ class Feedback:
         # df.index = df.index.astype('int64')
         self.data[key] = df
 
-        graphframe, tableframe = self.note_tab_add(key, tabw=5, grph=1)
-        self.datatable[key] = Table(tableframe, dataframe=self.data[key], showtoolbar=True, showstatusbar=True)
-        self.datatable[key].show()
-        self.datatable[key].showIndex()
-        self.datatable[key].update()
+        self.graphframe[key], self.tableframe[key] = self.note_tab_add(key, tabw=5, grph=1)
+        self.datatable[key] = Sheet(self.tableframe[key], data=self.data[key].values.tolist())
+        #self.datatable[key].show()
+
+        self.datatable[key].change_theme(theme=self.sheettheme)
+        self.datatable[key].headers(self.data[key].reset_index().columns)
+        self.datatable[key].enable_bindings()
+
+        self.datatable[key].pack(fill="both", expand=True)
+
+        #self.datatable[key].showIndex()
+        #self.datatable[key].update()
 
         self.filefnd['state'] = 'normal'
         self.combo_source['state'] = 'normal'
@@ -1618,7 +1809,8 @@ class Feedback:
             scrollbarx = ttk.Scrollbar(container, orient="horizontal", command=canvas.xview)
             scrollable_frame = ttk.Frame(canvas)
             if 'well-info-table' in self.datatable.keys():
-                df = self.datatable['well-info-table'].model.df
+                self.end_edit_cell(key='well-info-table')
+                df = self.data['well-info-table']
                 df['locationnamelwr'] = df['locationname'].apply(lambda x: x.lower(), 1)
 
                 self.locdict = df['locationnamelwr'].to_dict()
@@ -1627,7 +1819,7 @@ class Feedback:
                 self.locnametoid = dict(zip(df['locationname'].values, df.index.values))
 
             syndict = {73: ['Eskdale MX', ['eskmx', 'eskdalemx', 'edmx']],
-                       69: ['Twin Springs MX', ['tsmx', 'twinmx', 'twin', 'twin springs mx']],
+                       69: ['Twin Springs MX', ['tsmx', 'twinmx', 'twin', 'twin springs mx','twinspringsmx']],
                        70: ['Snake Valley North MX', ['svnmx', 'snakevnmx', 'northmx']],
                        71: ['Snake Valley South MX', ['svsmx', 'snakevsmx', 'southmx']],
                        46: ['Coyote Knolls MX', ['cksmx', 'ckmx', 'coyoteknollsmx', 'pw17mx']],
@@ -1640,7 +1832,16 @@ class Feedback:
                        39: ['AG15', ['pw15', 'ag15', 'pw15a', 'ag15a']],
                        136: ['Callao C119', ['callao', 'callaoag']],
                        75: ['Central Tule MX', ['ctvmx', 'centraltulemx', 'ctulemx', 'ctmx']],
-                       51: ['PW20', ['pw20a']]}
+                       51: ['PW20', ['pw20a']],
+                       5053: ['Sliver Creek MX', ['scmx']],
+                       5052: ['USGS Snake Creek Well',['usgsscw']],
+                       5055: ['(C-13-17)03bcb-1 Simm',['rsimm']],
+                       5056: ['(C-11-17)12dcb-1 Callao South',['Callao South']],
+                       5052: ['Snake Creek Well', ['snakecreek']],
+                       6001: ['T2',['T2']],
+                       6002: ['T5',['T5']]
+
+                       }
 
             for key, value in syndict.items():
                 for syn in value[1]:
@@ -1782,7 +1983,7 @@ class Feedback:
             os.makedirs(self.pluginpath)
         return
 
-    def setStyles(self):
+    def set_styles(self):
         """Set theme and widget styles"""
 
         style = self.style = tk.Style(self)
@@ -1793,112 +1994,69 @@ class Feedback:
         # set common background style for all widgets because of color issues
         # if plf in ['linux','darwin']:
         #    self.option_add("*background", bg)
-        dialogs.applyStyle(self.menu)
+        #dialogs.applyStyle(self.menu)
         return
 
-    def start_logging(self):
-        import logging
-        logging.basicConfig(filename=logfile, format='%(asctime)s %(message)s')
 
-    def createMenuBar(self):
+    def create_menu_bar(self):
         """Create the menu bar for the application. """
 
         self.menu = tk.Menu(self.main)
         file_menu = tk.Menu(self.menu, tearoff=0)
         # add recent first
-        self.createRecentMenu(file_menu)
-        filemenuitems = {'01New Project': {'cmd': self.newProject},
-                         '02Open Project': {'cmd': lambda: self.loadProject(asksave=True)},
-                         '03Close': {'cmd': self.closeProject},
-                         '04Save': {'cmd': self.saveProject},
-                         '05Save As': {'cmd': self.saveasProject},
-                         '06sep': '',
-                         '07Import CSV': {'cmd': self.importCSV},
-                         '08Import from URL': {'cmd': self.importURL},
-                         '08Import Excel': {'cmd': self.importExcel},
-                         '09Export CSV': {'cmd': self.exportCSV},
-                         '10sep': '',
-                         '11Quit': {'cmd': self.quit}}
 
-        self.file_menu = self.createPulldown(self.menu, filemenuitems, var=file_menu)
+        self.createRecentMenu(file_menu)
+
+        filemenuitems = {'01Quit': {'cmd': self.quit}}
+        self.file_menu = self.create_pulldown(self.menu, filemenuitems, var=file_menu)
         self.menu.add_cascade(label='File', menu=self.file_menu['var'])
 
-        editmenuitems = {'01Undo Last Change': {'cmd': self.undo},
-                         '02Copy Table': {'cmd': self.copyTable},
-                         '03Find/Replace': {'cmd': self.findText},
-                         '04Preferences': {'cmd': self.currentTablePrefs}
-                         }
-        self.edit_menu = self.createPulldown(self.menu, editmenuitems)
-        self.menu.add_cascade(label='Edit', menu=self.edit_menu['var'])
-
-        self.sheet_menu = {'01Add Sheet': {'cmd': lambda: self.addSheet(select=True)},
-                           '02Remove Sheet': {'cmd': lambda: self.deleteSheet(ask=True)},
-                           '03Copy Sheet': {'cmd': self.copySheet},
-                           '04Rename Sheet': {'cmd': self.renameSheet},
-                           }
-        self.sheet_menu = self.createPulldown(self.menu, self.sheet_menu)
-        self.menu.add_cascade(label='Sheet', menu=self.sheet_menu['var'])
-
-        self.view_menu = {'01Zoom In': {'cmd': lambda: self._call('zoomIn')},
-                          '02Zoom Out': {'cmd': lambda: self._call('zoomOut')},
-                          '03Wrap Columns': {'cmd': lambda: self._call('setWrap')},
-                          '04sep': '',
-                          '05Dark Theme': {'cmd': lambda: self._call('setTheme', name='dark')},
-                          '06Bold Theme': {'cmd': lambda: self._call('setTheme', name='bold')},
-                          '07Default Theme': {'cmd': lambda: self._call('setTheme', name='default')},
-                          }
-        self.view_menu = self.createPulldown(self.menu, self.view_menu)
-        self.menu.add_cascade(label='View', menu=self.view_menu['var'])
-
-        self.table_menu = {'01Describe Table': {'cmd': self.describe},
-                           '02Convert Column Names': {'cmd': lambda: self._call('convertColumnNames')},
-                           '03Convert Numeric': {'cmd': lambda: self._call('convertNumeric')},
-                           '04Clean Data': {'cmd': lambda: self._call('cleanData')},
-                           '05Find Duplicates': {'cmd': lambda: self._call('findDuplicates')},
-                           '06Correlation Matrix': {'cmd': lambda: self._call('corrMatrix')},
-                           '07Concatenate Tables': {'cmd': self.concat},
-                           '08Table to Text': {'cmd': lambda: self._call('showasText')},
-                           '09Table Info': {'cmd': lambda: self._call('showInfo')},
-                           '10sep': '',
-                           '11Transform Values': {'cmd': lambda: self._call('transform')},
-                           '12Group-Aggregate': {'cmd': lambda: self._call('aggregate')},
-                           '13Cross Tabulation': {'cmd': lambda: self._call('crosstab')},
-                           '14Merge/Concat Tables': {'cmd': lambda: self._call('doCombine')},
-                           '15Pivot Table': {'cmd': lambda: self._call('pivot')},
-                           '16Melt Table': {'cmd': lambda: self._call('melt')},
-                           '17Time Series Resampling': {'cmd': lambda: self._call('resample')}
-                           }
-        self.table_menu = self.createPulldown(self.menu, self.table_menu)
-        self.menu.add_cascade(label='Tools', menu=self.table_menu['var'])
-
-        self.plots_menu = {'01Store plot': {'cmd': self.addPlot},
-                           '02Clear plots': {'cmd': self.updatePlotsMenu},
-                           '03PDF report': {'cmd': self.pdfReport},
-                           '04sep': ''}
-        self.plots_menu = self.createPulldown(self.menu, self.plots_menu)
-        self.menu.add_cascade(label='Plots', menu=self.plots_menu['var'])
+        self.option_menu = {'01Set Dark Theme': {'cmd':self.set_dark_theme},
+                         '02Set Light Theme': {'cmd':self.set_light_theme}}
+        self.option_menu = self.create_pulldown(self.menu, self.option_menu)
+        self.menu.add_cascade(label='Options', menu=self.option_menu['var'])
 
         self.help_menu = {'01Online Help': {'cmd': self.online_documentation},
-                          '02View Error Log': {'cmd': self.showErrorLog},
-                          '03About': {'cmd': self.about}}
-        self.help_menu = self.createPulldown(self.menu, self.help_menu)
+                          '02About': {'cmd': self.about}}
+        self.help_menu = self.create_pulldown(self.menu, self.help_menu)
         self.menu.add_cascade(label='Help', menu=self.help_menu['var'])
 
         self.main.config(menu=self.menu)
         return
 
-    def showErrorLog(self):
-        """Open log file"""
+    def create_pulldown(self, menu, dict, var=None):
+        """Create pulldown menu, returns a dict.
+        Args:
+            menu: parent menu bar
+            dict: dictionary of the form -
+            {'01item name':{'cmd':function name, 'sc': shortcut key}}
+            var: an already created menu
+        """
 
-        f = open(logfile, 'r')
-        s = ''.join(f.readlines())
-        w = tk.Toplevel(self)
-        w.grab_set()
-        w.transient(self)
-        ed = SimpleEditor(w)
-        ed.pack(in_=w, fill=tk.BOTH, expand=tk.Y)
-        ed.text.insert(tk.END, s)
-        return
+        if var is None:
+            var = tk.Menu(menu, tearoff=0)
+        items = list(dict.keys())
+        items.sort()
+        for item in items:
+            if item[-3:] == 'sep':
+                var.add_separator()
+            else:
+                command = dict[item]['cmd']
+                label = '%-25s' % (item[2:])
+                if 'img' in dict[item]:
+                    img = dict[item]['img']
+                else:
+                    img = None
+                if 'sc' in dict[item]:
+                    sc = dict[item]['sc']
+                    # bind command
+                    # self.main.bind(sc, command)
+                else:
+                    sc = None
+                var.add('command', label=label, command=command, image=img,
+                        compound="left")  # , accelerator=sc)
+        dict['var'] = var
+        return dict
 
     def createRecentMenu(self, menu):
         """Recent projects menu"""
@@ -1944,39 +2102,35 @@ class Feedback:
         self.main.geometry(self.winsize)
         return
 
-    def createPulldown(self, menu, dict, var=None):
-        """Create pulldown menu, returns a dict.
-        Args:
-            menu: parent menu bar
-            dict: dictionary of the form -
-            {'01item name':{'cmd':function name, 'sc': shortcut key}}
-            var: an already created menu
-        """
+    def set_dark_theme(self):
+        self.canvas.configure(bg="#313131",highlightthickness=0)
+        self.sheettheme = "dark"
 
-        if var is None:
-            var = tk.Menu(menu, tearoff=0)
-        items = list(dict.keys())
-        items.sort()
-        for item in items:
-            if item[-3:] == 'sep':
-                var.add_separator()
-            else:
-                command = dict[item]['cmd']
-                label = '%-25s' % (item[2:])
-                if 'img' in dict[item]:
-                    img = dict[item]['img']
-                else:
-                    img = None
-                if 'sc' in dict[item]:
-                    sc = dict[item]['sc']
-                    # bind command
-                    # self.main.bind(sc, command)
-                else:
-                    sc = None
-                var.add('command', label=label, command=command, image=img,
-                        compound="left")  # , accelerator=sc)
-        dict['var'] = var
-        return dict
+        # change table style when new theme is selected
+        for key in self.datatable.keys():
+            self.datatable[key].change_theme(theme=self.sheettheme)
+
+        # Set the theme with the theme_use method
+        ttk.Style().theme_use('forest-dark')
+
+        plt.style.use('dark_background')
+
+    def set_light_theme(self):
+
+        self.canvas.configure(bg='white')
+        self.sheettheme = "light blue"
+
+        # change table style when new theme is selected
+        for key in self.datatable.keys():
+            self.datatable[key].change_theme(theme=self.sheettheme)
+
+        # Set the theme with the theme_use method
+        ttk.Style().theme_use('forest-light')
+
+        plt.style.use('default')
+
+    def exitProgram(self):
+        exit()
 
     def progressDialog(self):
 
@@ -1988,73 +2142,6 @@ class Feedback:
         t.grab_set()
         t.resizable(width=False, height=False)
         return pb
-
-    def loadMeta(self, table, meta):
-        """Load meta data for a sheet, this includes plot options and
-        table selections"""
-
-        tablesettings = meta['table']
-        if 'childtable' in meta:
-            childtable = meta['childtable']
-            childsettings = meta['childselected']
-        else:
-            childtable = None
-        # load plot options
-        opts = {'mplopts': table.pf.mplopts,
-                'mplopts3d': table.pf.mplopts3d,
-                'labelopts': table.pf.labelopts
-                }
-        for m in opts:
-            if m in meta and meta[m] is not None:
-                # util.setAttributes(opts[m], meta[m])
-                opts[m].updateFromOptions(meta[m])
-                # check options loaded for missing values
-                # avoids breaking file saves when options changed
-                defaults = plotting.get_defaults(m)
-                for key in defaults:
-                    if key not in opts[m].opts:
-                        opts[m].opts[key] = defaults[key]
-
-        # load table settings
-        util.setAttributes(table, tablesettings)
-        # load plotviewer
-        if 'plotviewer' in meta:
-            # print (meta['plotviewer'])
-            util.setAttributes(table.pf, meta['plotviewer'])
-            table.pf.updateWidgets()
-
-        if childtable is not None:
-            table.createChildTable(df=childtable)
-            util.setAttributes(table.child, childsettings)
-
-        # redraw col selections
-        if type(table.multiplecollist) is tuple:
-            table.multiplecollist = list(table.multiplecollist)
-        table.drawMultipleCols()
-        return
-
-    def saveMeta(self, table):
-        """Save meta data such as current plot options"""
-
-        meta = {}
-        # save plot options
-        meta['mplopts'] = table.pf.mplopts.kwds
-        meta['mplopts3d'] = table.pf.mplopts3d.kwds
-        meta['labelopts'] = table.pf.labelopts.kwds
-        # print (table.pf.mplopts.kwds)
-
-        # save table selections
-        meta['table'] = util.getAttributes(table)
-        meta['plotviewer'] = util.getAttributes(table.pf)
-        # print (meta['plotviewer'])
-        # save row colors since its a dataframe and isn't picked up by getattributes currently
-        meta['table']['rowcolors'] = table.rowcolors
-        # save child table if present
-        if table.child != None:
-            meta['childtable'] = table.child.model.df
-            meta['childselected'] = util.getAttributes(table.child)
-
-        return meta
 
     def saveAppOptions(self):
         """Save global app options to config dir"""
@@ -2074,62 +2161,6 @@ class Feedback:
         else:
             self.appoptions = {}
             self.appoptions['recent'] = []
-        return
-
-    def newProject(self, data=None, df=None):
-        """Create a new project from data or empty"""
-
-        w = self.closeProject()
-        if w == None:
-            return
-        self.sheets = OrderedDict()
-        self.sheetframes = {}  # store references to enclosing widgets
-        self.openplugins = {}  # refs to running plugins
-
-        self.data, self.datatable = {}, {}
-        self.datastr = {}
-        self.entry = {}
-        self.locidmatch = {}
-        self.bulktransfilestr = {}  # dictionary to store trans file names
-
-        self.filetype = {}
-        self.wellbaroxl = {}
-
-        self.wellbarocsv = {}
-
-        # jump fix dictionaries
-        self.dataminvar = {}
-        self.datamaxvar = {}
-        self.datamin = {}
-
-        self.datamax = {}
-        self.trimbutt = {}
-        self.datajumptol = {}
-        self.datajump = {}
-        self.jumpbutt = {}
-
-        self.updatePlotsMenu()
-        for n in self.notebook.tabs():
-            self.notebook.forget(n)
-        if data != None:
-            for s in sorted(data.keys()):
-                if s == 'meta':
-                    continue
-                df = data[s]['table']
-                if 'meta' in data[s]:
-                    meta = data[s]['meta']
-                else:
-                    meta = None
-                # try:
-                self.addSheet(s, df, meta)
-                '''except Exception as e:
-                    print ('error reading in options?')
-                    print (e)'''
-        else:
-            pass
-        self.filename = None
-        self.projopen = True
-        self.main.title(f'LoggerLoader v.{self.version} (alpha)')
         return
 
     def loadProject(self, filename=None, asksave=False):
@@ -2181,25 +2212,6 @@ class Feedback:
         self.addRecent(filename)
         return
 
-    def removeRecent(self, filename):
-        """Remove file from recent list"""
-
-        recent = self.appoptions['recent']
-        if filename in recent:
-            recent.remove(filename)
-            self.saveAppOptions()
-        return
-
-    def addRecent(self, filename):
-        """Add file name to recent projects"""
-
-        recent = self.appoptions['recent']
-        if not os.path.abspath(filename) in recent:
-            if len(recent) >= 5:
-                recent.pop(0)
-            recent.append(os.path.abspath(filename))
-            self.saveAppOptions()
-        return
 
     def saveProject(self, filename=None):
         """Save project"""
@@ -2244,15 +2256,13 @@ class Feedback:
         pickle.dump(data, file)
         return
 
-    def _checkTables(self):
-        """Check tables before saving that so we are not saving
-        filtered copies"""
+    def nbselect(self, event):
+        codedtabname = self.notebook.select()
+        key = self.notebook.tab(codedtabname,"text")
+        print(self.notebook.tab(codedtabname,"text"))
 
-        for s in self.sheets:
-            t = self.sheets[s]
-            if t.filtered == True:
-                t.showAll()
-        return
+
+
 
     def closeProject(self):
         """Close"""
@@ -2316,20 +2326,6 @@ class Feedback:
             self.addSheet(n, df=data[n], select=True)
         return
 
-    def load_dataframe(self, df, name=None, select=False):
-        """Load a DataFrame into a new sheet
-           Args:
-            df: dataframe
-            name: name of new sheet
-            select: set new sheet as selected
-        """
-
-        if hasattr(self, 'sheets'):
-            self.addSheet(sheetname=name, df=df, select=select)
-        else:
-            data = {name: {'table': df}}
-            self.newProject(data)
-        return
 
     def load_msgpack(self, filename):
         """Load a msgpack file"""
@@ -2358,239 +2354,6 @@ class Feedback:
         self.load_dataframe(df, name, select=True)
         return
 
-    def addSheet(self, sheetname=None, df=None, meta=None, select=False):
-        """Add a sheet with new or existing data"""
-
-        names = [self.notebook.tab(i, "text") for i in self.notebook.tabs()]
-
-        def checkName(name):
-            if name == '':
-                messagebox.showwarning("Whoops", "Name should not be blank.")
-                return 0
-            if name in names:
-                messagebox.showwarning("Name exists", "Sheet name already exists!")
-                return 0
-
-        noshts = len(self.notebook.tabs())
-        if sheetname == None:
-            sheetname = simpledialog.askstring("New sheet name?", "Enter sheet name:",
-                                               initialvalue='sheet' + str(noshts + 1))
-        if sheetname == None:
-            return
-        if checkName(sheetname) == 0:
-            return
-        # Create the table
-        main = ttk.PanedWindow(orient=tk.HORIZONTAL)
-        self.sheetframes[sheetname] = main
-        self.notebook.add(main, text=sheetname)
-        f1 = ttk.Frame(main)
-        table = Table(f1, dataframe=df, showtoolbar=1, showstatusbar=1)
-        f2 = ttk.Frame(main)
-        # show the plot frame
-        pf = table.showPlotViewer(f2, layout='horizontal')
-        # load meta data
-        if meta != None:
-            self.loadMeta(table, meta)
-        # add table last so we have save options loaded already
-        main.add(f1, weight=3)
-        table.show()
-        main.add(f2, weight=4)
-
-        if table.plotted == 'main':
-            table.plotSelected()
-        elif table.plotted == 'child' and table.child != None:
-            table.child.plotSelected()
-        self.saved = 0
-        self.currenttable = table
-        # attach menu state of undo item so that it's disabled after an undo
-        # table.undo_callback = lambda: self.toggleUndoMenu('active')
-        self.sheets[sheetname] = table
-
-        if select == True:
-            ind = self.notebook.index('end') - 1
-            s = self.notebook.tabs()[ind]
-            self.notebook.select(s)
-        return sheetname
-
-    def deleteSheet(self, ask=False):
-        """Delete a sheet"""
-
-        s = self.notebook.index(self.notebook.select())
-        name = self.notebook.tab(s, 'text')
-        w = True
-        if ask == True:
-            w = messagebox.askyesno("Delete Sheet",
-                                    "Remove this sheet?",
-                                    parent=self.master)
-        if w == False:
-            return
-        self.notebook.forget(s)
-        del self.sheets[name]
-        del self.sheetframes[name]
-        return
-
-    def copySheet(self, newname=None):
-        """Copy a sheet"""
-
-        currenttable = self.getCurrentTable()
-        newdata = currenttable.model.df
-        meta = self.saveMeta(currenttable)
-        self.addSheet(newname, df=newdata, meta=meta)
-        return
-
-    def renameSheet(self):
-        """Rename a sheet"""
-
-        s = self.notebook.tab(self.notebook.select(), 'text')
-        newname = simpledialog.askstring("New sheet name?",
-                                         "Enter new sheet name:",
-                                         initialvalue=s)
-        if newname == None:
-            return
-        self.copySheet(newname)
-        self.deleteSheet()
-        return
-
-    def editSheetDescription(self):
-        """Add some meta data about the sheet"""
-        w = tk.Toplevel(self.main)
-        w.grab_set()
-        w.transient(self)
-        ed = SimpleEditor(w, height=25)
-        ed.pack(in_=w, fill=tk.BOTH, expand=tk.Y)
-        # ed.text.insert(END, buf.getvalue())
-        return
-
-    def getCurrentSheet(self):
-        """Get current sheet name"""
-
-        s = self.notebook.index(self.notebook.select())
-        name = self.notebook.tab(s, 'text')
-        return name
-
-    def getCurrentTable(self):
-
-        s = self.notebook.index(self.notebook.select())
-        name = self.notebook.tab(s, 'text')
-        table = self.sheets[name]
-        return table
-
-    def getSheetList(self):
-        return list(self.sheets.keys())
-
-    def describe(self):
-        """Describe dataframe"""
-
-        table = self.getCurrentTable()
-        df = table.model.df
-        d = df.describe()
-        table.createChildTable(d, index=True)
-        return
-
-    def findText(self):
-
-        table = self.getCurrentTable()
-        table.findText()
-        return
-
-    def concat(self):
-        """Concat 2 tables"""
-
-        vals = list(self.sheets.keys())
-        if len(vals) <= 1:
-            return
-        d = MultipleValDialog(title='Concat',
-                              initialvalues=(vals, vals),
-                              labels=('Table 1', 'Table 2'),
-                              types=('combobox', 'combobox'),
-                              parent=self.master)
-        if d.result == None:
-            return
-        else:
-            s1 = d.results[0]
-            s2 = d.results[1]
-        if s1 == s2:
-            return
-        df1 = self.sheets[s1].model.df
-        df2 = self.sheets[s2].model.df
-        m = pd.concat([df1, df2])
-        self.addSheet('concat-%s-%s' % (s1, s2), m)
-        return
-
-    def getStackedData(self):
-
-        df = TableModel.getStackedData()
-        self.addSheet(sheetname='stacked-data', df=df)
-        return
-
-    def copyTable(self, subtable=False):
-        """Copy current table dataframe"""
-
-        table = self.getCurrentTable()
-        table.model.df.to_clipboard()
-        return
-
-    def pasteTable(self, subtable=False):
-        """Paste copied dataframe into current table"""
-
-        # add warning?
-        if self.clipboarddf is None:
-            return
-        df = self.clipboarddf
-        table = self.getCurrentTable()
-        if subtable == True:
-            table.createChildTable(df)
-        else:
-            model = TableModel(df)
-            table.updateModel(model)
-        return
-
-    def hidePlot(self):
-        name = self.getCurrentSheet()
-        pw = self.sheetframes[name]
-        pw.forget(1)
-        return
-
-    def showPlot(self):
-        name = self.getCurrentSheet()
-        table = self.sheets[name]
-        pw = self.sheetframes[name]
-        pw.add(table.pf, weight=2)
-        return
-
-    def addPlot(self):
-        """Store the current plot so it can be re-loaded"""
-
-        import pickle
-        name = self.getCurrentSheet()
-        table = self.sheets[name]
-        fig = table.pf.fig
-        t = time.strftime("%H:%M:%S")
-        label = name + '-' + t
-        # dump and reload the figure to get a new object
-        p = pickle.dumps(fig)
-        fig = pickle.loads(p)
-        self.plots[label] = fig
-
-        def func(label):
-            fig = self.plots[label]
-            win = tk.Toplevel()
-            win.title(label)
-            plotting.addFigure(win, fig)
-
-        menu = self.plots_menu['var']
-        menu.add_command(label=label, command=lambda: func(label))
-        return
-
-    def updatePlotsMenu(self, clear=True):
-        """Clear stored plots"""
-
-        if clear == True:
-            self.plots = {}
-        menu = self.plots_menu['var']
-        menu.delete(4, menu.index(tk.END))
-        return
-
     def pdfReport(self):
         """Create pdf report from stored plots"""
 
@@ -2602,34 +2365,14 @@ class Feedback:
         if not filename:
             return
         pdf_pages = PdfPages(filename)
-        from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-        for p in self.plots:
-            fig = self.plots[p]
+        for p in self.fig:
+            fig = self.fig[p]
             canvas = FigureCanvasTkAgg(fig, master=self)
             pdf_pages.savefig(fig)
         pdf_pages.close()
         return
 
-    def undo(self):
-        """Restores last version of current table"""
-
-        table = self.getCurrentTable()
-        table.undo()
-        # self.toggleUndoMenu('disabled')
-        return
-
-    def toggleUndoMenu(self, state='active'):
-        menu = self.edit_menu['var']
-        menu.entryconfigure(0, state=state)
-        return
-
-    def _call(self, func, **args):
-        """Call a table function from it's string name"""
-
-        table = self.getCurrentTable()
-        getattr(table, func)(**args)
-        return
 
     def about(self):
         """About dialog"""
@@ -2644,14 +2387,14 @@ class Feedback:
         abwin.transient()
         abwin.grab_set()
         abwin.resizable(width=False, height=False)
-        #abwin.configure(background=self.bg)
-        #label.grid(row=0, column=0, sticky='ew', padx=4, pady=4)
+        # abwin.configure(background=self.bg)
+        # label.grid(row=0, column=0, sticky='ew', padx=4, pady=4)
         pandasver = pd.__version__
         pythonver = platform.python_version()
         mplver = matplotlib.__version__
-        ttl = tk.Label(abwin, text=f'Logger Loader v.{self.version}', font = 'Helvetica 18 bold')
+        ttl = tk.Label(abwin, text=f'Logger Loader v.{self.version}', font='Helvetica 18 bold')
         ttl.pack()
-        #ttl.grid(row=1, column=0, sticky='news', pady=1, padx=4)
+        # ttl.grid(row=1, column=0, sticky='news', pady=1, padx=4)
 
         fm1 = tk.Frame(abwin)
         fm1.pack()
@@ -2665,16 +2408,26 @@ class Feedback:
         fm2 = tk.Frame(abwin)
         fm2.pack()
         text2a = 'Graphing and Table functions from '
-        text2b = 'pandastable by Damien Farrell'
+        text2b = 'tksheet by ragardner'
         t2a = tk.Label(fm2, text=text2a)
         t2a.pack(side=tk.LEFT)
         t2b = tk.Label(fm2, text=text2b, fg="blue", cursor="hand2")
         t2b.pack(side=tk.LEFT)
-        t2b.bind("<Button-1>", lambda e: self.callback("https://github.com/dmnfarrell/pandastable"))
+        t2b.bind("<Button-1>", lambda e: self.callback("https://github.com/ragardner/tksheet"))
+        fm3ab = tk.Frame(abwin)
+        fm3ab.pack()
+        text3a = 'UI Themes from '
+        text3b = 'Forest-ttk-theme by rdbende'
+        t3a = tk.Label(fm3ab, text=text3a)
+        t3a.pack(side=tk.LEFT)
+        t3b = tk.Label(fm3ab, text=text3b, fg="blue", cursor="hand2")
+        t3b.pack(side=tk.LEFT)
+        t3b.bind("<Button-1>", lambda e: self.callback("https://github.com/rdbende/Forest-ttk-theme"))
+
         text3 = 'This program is free software; you can redistribute it and/or\n' \
-               + 'modify it under the terms of the GNU General Public License\n' \
-               + 'as published by the Free Software Foundation; either version 3\n' \
-               + 'of the License, or (at your option) any later version.'
+                + 'modify it under the terms of the GNU General Public License\n' \
+                + 'as published by the Free Software Foundation; either version 3\n' \
+                + 'of the License, or (at your option) any later version.'
         lic = tk.Label(abwin, text=text3)
         lic.pack()
         text4 = f'Using Python v{pythonver}'
@@ -2689,7 +2442,7 @@ class Feedback:
         pltver = tk.Label(abwin, text=text6, fg="blue", cursor="hand2")
         pltver.pack()
         pltver.bind("<Button-1>", lambda e: self.callback("https://matplotlib.org/"))
-        #tmp.grid(row=2, column=0, sticky='news', pady=1, padx=4)
+        # tmp.grid(row=2, column=0, sticky='news', pady=1, padx=4)
         return
 
     def callback(self, url):
@@ -2705,14 +2458,11 @@ class Feedback:
         self.main.destroy()
         return
 
+
 def main():
     root = tk.Tk()
     feedback = Feedback(root)
     root.mainloop()
-
-
-
-
 
 
 if __name__ == "__main__": main()

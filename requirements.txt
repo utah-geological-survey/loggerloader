@@ -8,4 +8,6 @@ pytz
 numexpr
 future
 babel
+tksheet
+beautifulsoup4
 
