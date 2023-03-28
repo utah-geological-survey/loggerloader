@@ -1002,6 +1002,36 @@ def compilation(inputfile, trm=True):
 # ----------------------------------------------------------------------------------------------------------------------
 # Raw transducer import functions - these convert raw lev, xle, and csv files to Pandas Dataframes for processing
 
+def get_line_num(filename, lookup="Date and Time,Seconds"):
+    """This function will find the first instance of the string `lookup` and give the line number of that string.
+    I chose 'Date and Time,Seconds' as the default value for the `lookup` variable because that looks like the
+    first part of the header.  If the function can't find that string, it uses 70 by default.
+
+    Stolen from https://stackoverflow.com/questions/3961265/get-line-number-of-certain-phrase-in-file-python
+    """
+    linenum = 70
+    with open(filename) as myFile:
+        for num, line in enumerate(myFile, 1):
+            if lookup in line:
+                linenum = num - 1
+
+    return linenum
+
+
+def read_troll_csv(filename):
+    df = pd.read_csv(filename, skiprows=get_line_num(filename), parse_dates=True,
+                     encoding='unicode_escape')
+
+    df['Date and Time'] = pd.to_datetime(df['Date and Time'])
+
+    df.columns = df.columns.str.replace(' ', '')
+    df.columns = df.columns.str.replace('(', '_')
+    df.columns = df.columns.str.replace(')', '')
+
+    # Get rid of duplicate data
+    df = df.reset_index().drop_duplicates(["DateandTime"])
+    df = df.set_index(["DateandTime"]).sort_index()
+    return df
 
 class NewTransImp(object):
     """This class uses an imports and cleans the ends of transducer file.

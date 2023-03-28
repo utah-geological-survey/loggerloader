@@ -648,7 +648,7 @@ class Feedback:
 
         self.filetype[key] = tk.StringVar(filefinderframe, value="xle")
         self.fileselectcombo[key] = ttk.Combobox(filefinderframe, width=10,
-                                                 values=['xle', 'Global Water csv', 'Excel', 'csv','Troll htm'],
+                                                 values=['xle', 'Global Water csv', 'Excel', 'csv','Troll htm','Troll csv'],
                                                  state="readonly", textvariable=self.filetype[key])
 
         self.fileselectcombo[key].grid(column=2, row=1, columnspan=2)
@@ -1374,8 +1374,11 @@ class Feedback:
                     self.openNewWindowcsv(key)
                 elif self.fileselectcombo[key].get() in ['Troll htm']:
                     self.data[key] = read_troll_htm(self.datastr[key].get())
+                elif self.fileselectcombo[key].get() in ['Troll csv']:
+                    self.data[key] = read_troll_csv(self.datastr[key].get())
 
                 filenm, self.file_extension = os.path.splitext(self.datastr[key].get())
+
                 if key in self.datamin.keys():
                     self.datamin[key]['state'] = 'normal'
                     self.datamax[key]['state'] = 'normal'
@@ -1388,6 +1391,7 @@ class Feedback:
                 elif 'Level' in self.data['well'].columns:
                     self.dataminvar[key].set(self.data['well']['Level'].min())
                     self.datamaxvar[key].set(self.data['well']['Level'].max())
+
             elif key in ('baro'):
                 if self.fileselectcombo[key].get() in ['xle', 'Global Water csv']:
                     self.data[key] = NewTransImp(self.datastr[key].get()).well.drop(['name'], axis=1)
@@ -1400,6 +1404,8 @@ class Feedback:
                     self.openNewWindowcsv(key)
                 elif self.fileselectcombo[key].get() in ['Troll htm']:
                     self.data[key] = read_troll_htm(self.datastr[key].get())
+                elif self.fileselectcombo[key].get() in ['Troll csv']:
+                    self.data[key] = read_troll_csv(self.datastr[key].get())
 
                 # self.data[key] = NewTransImp(self.datastr[key].get()).well.drop(['name'], axis=1)
                 filenm, self.file_extension = os.path.splitext(self.datastr[key].get())
