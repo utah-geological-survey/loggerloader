@@ -7,7 +7,7 @@ import numpy as np
 import datetime
 from shutil import copyfile
 from xml.etree.ElementTree import ParseError
-
+from bs4 import BeautifulSoup
 import pandas as pd
 
 
@@ -693,6 +693,55 @@ def smoother(df, p, win=30, sd=3):
     df = df[1:-1]
     return df
 
+def read_troll_htm(filepath):
+    """given a path to the .htm (html) file, function will read in the data and produce pandas dataframe
+    Args:
+        filepath (str):
+            path to data file
+
+    Return:
+        df:
+            dataframe
+    """
+    with open(filepath, 'r') as f:
+        html_string = f.read()
+
+    # use BeautifulSoup to parse the HTML content of the page
+    soup = BeautifulSoup(html_string, "html.parser")
+
+    # find all the table rows with class "data"
+    table_rows = soup.find_all('tr', {'class': 'data'})
+    header = soup.find_all('tr',{'class':'dataHeader'})
+
+    heads = header[0].find_all('td')
+    colnames = [head.text.strip() for head in heads]
+
+    # create an empty list to hold the data
+    data = []
+
+    # loop through each row and extract the data into a list
+    for row in table_rows:
+        cols = row.find_all('td')
+        cols = [col.text.strip() for col in cols]
+        data.append(cols)
+
+    # convert the list of data into a pandas dataframe
+    df = pd.DataFrame(data)
+    df.columns = colnames
+
+    for col in df.columns:
+        if "Date" in col or "date" in col:
+            print(col)
+            df[col] = pd.to_datetime(df[col])
+            df = df.set_index(col)
+        elif ("Press" in col) and ("psi" in col):
+            df[col] = pd.to_numeric(df[col])
+            df['Level'] = df[col]*2.3067
+            #df = df.rename(columns={col:"Level"})
+        elif "Depth" in col or "Cond" in col or "Total" in col or "Salin" in col or "Dens" in col or "Temp" in col:
+            df[col] = pd.to_numeric(df[col])
+
+    return df
 
 def rollmeandiff(df1, p1, df2, p2, win):
     """Returns the rolling mean difference of two columns from two different dataframes
@@ -806,7 +855,7 @@ def hourly_resample(df, bse=0, minutes=60):
         see http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases
     """
 
-    df = df.resample('1T').mean().interpolate(method='time', limit=90)
+    df = df.resample('1T').mean(numeric_only=True).interpolate(method='time', limit=90)
 
     if minutes == 60:
         sampfrq = '1H'
@@ -953,6 +1002,36 @@ def compilation(inputfile, trm=True):
 # ----------------------------------------------------------------------------------------------------------------------
 # Raw transducer import functions - these convert raw lev, xle, and csv files to Pandas Dataframes for processing
 
+def get_line_num(filename, lookup="Date and Time,Seconds"):
+    """This function will find the first instance of the string `lookup` and give the line number of that string.
+    I chose 'Date and Time,Seconds' as the default value for the `lookup` variable because that looks like the
+    first part of the header.  If the function can't find that string, it uses 70 by default.
+
+    Stolen from https://stackoverflow.com/questions/3961265/get-line-number-of-certain-phrase-in-file-python
+    """
+    linenum = 70
+    with open(filename) as myFile:
+        for num, line in enumerate(myFile, 1):
+            if lookup in line:
+                linenum = num - 1
+
+    return linenum
+
+
+def read_troll_csv(filename):
+    df = pd.read_csv(filename, skiprows=get_line_num(filename), parse_dates=True,
+                     encoding='unicode_escape')
+
+    df['Date and Time'] = pd.to_datetime(df['Date and Time'])
+
+    df.columns = df.columns.str.replace(' ', '')
+    df.columns = df.columns.str.replace('(', '_')
+    df.columns = df.columns.str.replace(')', '')
+
+    # Get rid of duplicate data
+    df = df.reset_index().drop_duplicates(["DateandTime"])
+    df = df.set_index(["DateandTime"]).sort_index()
+    return df
 
 class NewTransImp(object):
     """This class uses an imports and cleans the ends of transducer file.
@@ -974,6 +1053,7 @@ class NewTransImp(object):
         :param trim_end: turns on the dataendclean function
         :param jumptol: minimum amount of jump to search for that was caused by an out-of-water experience
         """
+
         self.well = None
         self.infile = infile
         file_ext = os.path.splitext(self.infile)[1]
@@ -1023,9 +1103,10 @@ class NewTransImp(object):
                     f['DateTime'] = pd.to_datetime(f['Date_Time'], errors='coerce')
                     f.set_index('DateTime', inplace=True)
                     f.drop('Date_Time', axis=1, inplace=True)
-                    f.rename(columns={'LEVEL': 'Level', 'TEMP': 'Temp'}, inplace=True)
+                    f.rename(columns={'LEVEL': 'Level', 'TEMP': 'Temp', 'COND': 'Cond'}, inplace=True)
                     level = 'Level'
                     temp = 'Temp'
+                    cond = 'Cond'
 
                     if level_units == "feet" or level_units == "ft":
                         f[level] = pd.to_numeric(f[level])
@@ -1213,6 +1294,7 @@ class NewTransImp(object):
             print('No channel 2 for {:}'.format(self.infile))
 
         if 'ch3' in f.columns:
+            # Usually Conductivity
             ch3ID = tree[5][0].text.title()  # Level
             ch3Unit = tree[5][1].text
             f[str(ch3ID).title()] = pd.to_numeric(f['ch3'])
@@ -1254,9 +1336,11 @@ class NewTransImp(object):
                         ch[child.tag[:3].lower()][item.tag] = item.text
 
         f = pd.DataFrame.from_dict(dfdata, orient='index')
-        f['DateTime'] = pd.to_datetime(f.apply(lambda x: x['Date'] + ' ' + x['Time'], 1))
+        f['DateTime'] = f.apply(lambda x: pd.to_datetime(x['Date'] + ' ' + x['Time']),1)
+
         f = f.reset_index()
         f = f.set_index('DateTime')
+
         levelconv = {'feet': 1, 'ft': 1, 'kpa': 0.33456, 'mbar': 0.033455256555148,
                      'm': 3.28084, 'meters': 3.28084, 'psi': 2.306726}
         for col in f:
@@ -1283,6 +1367,7 @@ class NewTransImp(object):
                 f = f.drop(col, axis=1)
         f['name'] = self.infile.split('\\').pop().split('/').pop().rsplit('.', 1)[0]
         return f
+
 
 
 # ----------------------------------------------------------------------------------------------------------------------

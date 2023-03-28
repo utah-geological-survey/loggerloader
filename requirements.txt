@@ -6,6 +6,7 @@ openpyxl >= 2.4.0
 tkcalendar
 pytz
 numexpr
-future
 babel
+tksheet
+beautifulsoup4
 
