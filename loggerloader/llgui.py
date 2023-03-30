@@ -56,6 +56,15 @@ class Feedback:
         self.main = master
         self.master = master
 
+        # Create a style
+        style = ttk.Style(master)
+
+        # Import the tcl file
+        master.tk.call("source", "../themes/forest-light.tcl")
+
+        # Set the theme with the theme_use method
+        style.theme_use("forest-light")
+
         # Get platform into a variable
         self.setConfigDir()
         # if not hasattr(self,'defaultsavedir'):
@@ -95,6 +104,7 @@ class Feedback:
         self.xlcols_date_combo = {}
         self.xlcols_value_combo = {}
         self.xlcols_temp_combo = {}
+        self.xlcols_cond_combo = {}
 
         self.graphframe = {}
         self.tableframe = {}
@@ -1265,9 +1275,9 @@ class Feedback:
 
         self.graph_frame1[key].pack()
 
-        if 'well' in self.data.keys():
+        if key == 'well':
             self.wellalignfieldbox['values'] = list(self.data[key].columns)
-        elif 'baro' in self.data.keys():
+        elif key == 'baro':
             self.baroalignfieldbox['values'] = list(self.data[key].columns)
 
     def plot_bulk_baro(self, graph_frame1):
@@ -1325,6 +1335,7 @@ class Feedback:
                 elif self.fileselectcombo[key].get() in ['Excel']:
                     # self.data[key] = pd.read_excel(self.datastr[key].get())
                     self.wellbaroxl[key] = pd.ExcelFile(self.datastr[key].get())
+
                     self.openNewWindowxl(key)
                 elif self.fileselectcombo[key].get() in ['csv']:
                     self.data[key] = pd.read_csv(self.datastr[key].get())
@@ -1397,10 +1408,10 @@ class Feedback:
 
         # sets the title of the
         # Toplevel widget
-        self.newWindow.title("New Window")
+        self.newWindow.title("Match CSV Info")
 
         # sets the geometry of toplevel
-        self.newWindow.geometry("200x200")
+        self.newWindow.geometry("250x350")
         # df = pd.read
         # A Label widget to show in toplevel
         # self.data[key] =
@@ -1419,7 +1430,6 @@ class Feedback:
         self.xlcols_cond_combo[key] = ttk.Combobox(self.newWindow, values=columns)
         self.xlcols_cond_combo[key].pack()
 
-
         # tk.Label(newWindow, text=self.datastr[key].get()).pack()
         tk.Button(self.newWindow, text='OoooK', command=lambda: self.xl_cols_match(key)).pack()
 
@@ -1431,10 +1441,10 @@ class Feedback:
 
         # sets the title of the
         # Toplevel widget
-        self.newWindow.title("New Window")
+        self.newWindow.title("Pick Excel Sheet and Columns")
 
         # sets the geometry of toplevel
-        self.newWindow.geometry("200x200")
+        self.newWindow.geometry("250x400")
         # df = pd.read
         # A Label widget to show in toplevel
         # self.data[key] =
@@ -1453,9 +1463,8 @@ class Feedback:
         self.xlcols_temp_combo[key] = ttk.Combobox(self.newWindow, textvariable='Temperature')
         self.xlcols_temp_combo[key].pack()
         tk.Label(self.newWindow, text="Conductivity Field (optional)").pack()
-        self.xlcols_cond_combo[key] = ttk.Combobox(self.newWindow)
+        self.xlcols_cond_combo[key] = ttk.Combobox(self.newWindow, textvariable='Conductivity')
         self.xlcols_cond_combo[key].pack()
-
         # read a specific sheet to DataFrame
         self.sheetcombo[key].bind("<<ComboboxSelected>>",
                                   lambda event, key=key: self.parse_sheet(key))
@@ -1474,11 +1483,10 @@ class Feedback:
         datecol = self.xlcols_date_combo[key].get()
         valcol = self.xlcols_value_combo[key].get()
         tempcol = self.xlcols_temp_combo[key].get()
-        condcol = self.xlcols_temp_combo[key].get()
+        condcol = self.xlcols_cond_combo[key].get()
         self.data[key] = self.data[key].rename(columns={datecol: 'DateTime',
                                                         valcol: 'Level',
-                                                        tempcol: 'Temperature',condcol: 'Cond.'
-                                                        })
+                                                        tempcol: 'Temperature',condcol:'Cond'})
         self.data[key] = self.data[key].reset_index()
         self.data[key]['DateTime'] = pd.to_datetime(self.data[key]['DateTime'])
         self.data[key] = self.data[key].set_index('DateTime')
