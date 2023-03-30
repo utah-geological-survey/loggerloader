@@ -1267,7 +1267,7 @@ class Feedback:
 
         if 'well' in self.data.keys():
             self.wellalignfieldbox['values'] = list(self.data[key].columns)
-        elif 'baor' in self.data.keys():
+        elif 'baro' in self.data.keys():
             self.baroalignfieldbox['values'] = list(self.data[key].columns)
 
     def plot_bulk_baro(self, graph_frame1):
@@ -1324,8 +1324,7 @@ class Feedback:
                     self.data[key] = NewTransImp(self.datastr[key].get()).well.drop(['name'], axis=1)
                 elif self.fileselectcombo[key].get() in ['Excel']:
                     # self.data[key] = pd.read_excel(self.datastr[key].get())
-                    self.data[key] = pd.ExcelFile(self.datastr[key].get())
-
+                    self.wellbaroxl[key] = pd.ExcelFile(self.datastr[key].get())
                     self.openNewWindowxl(key)
                 elif self.fileselectcombo[key].get() in ['csv']:
                     self.data[key] = pd.read_csv(self.datastr[key].get())
@@ -1416,6 +1415,10 @@ class Feedback:
         tk.Label(self.newWindow, text="Temperature Field (optional)").pack()
         self.xlcols_temp_combo[key] = ttk.Combobox(self.newWindow, values=columns)
         self.xlcols_temp_combo[key].pack()
+        tk.Label(self.newWindow, text="Conductivity Field (optional)").pack()
+        self.xlcols_cond_combo[key] = ttk.Combobox(self.newWindow, values=columns)
+        self.xlcols_cond_combo[key].pack()
+
 
         # tk.Label(newWindow, text=self.datastr[key].get()).pack()
         tk.Button(self.newWindow, text='OoooK', command=lambda: self.xl_cols_match(key)).pack()
@@ -1449,6 +1452,10 @@ class Feedback:
         tk.Label(self.newWindow, text="Temperature Field (optional)").pack()
         self.xlcols_temp_combo[key] = ttk.Combobox(self.newWindow, textvariable='Temperature')
         self.xlcols_temp_combo[key].pack()
+        tk.Label(self.newWindow, text="Conductivity Field (optional)").pack()
+        self.xlcols_cond_combo[key] = ttk.Combobox(self.newWindow)
+        self.xlcols_cond_combo[key].pack()
+
         # read a specific sheet to DataFrame
         self.sheetcombo[key].bind("<<ComboboxSelected>>",
                                   lambda event, key=key: self.parse_sheet(key))
@@ -1461,14 +1468,17 @@ class Feedback:
         self.xlcols_date_combo[key]['values'] = list(self.data[key].columns.values)
         self.xlcols_value_combo[key]['values'] = list(self.data[key].columns.values)
         self.xlcols_temp_combo[key]['values'] = list(self.data[key].columns.values)
+        self.xlcols_cond_combo[key]['values'] = list(self.data[key].columns.values)
 
     def xl_cols_match(self, key):
         datecol = self.xlcols_date_combo[key].get()
         valcol = self.xlcols_value_combo[key].get()
         tempcol = self.xlcols_temp_combo[key].get()
+        condcol = self.xlcols_temp_combo[key].get()
         self.data[key] = self.data[key].rename(columns={datecol: 'DateTime',
                                                         valcol: 'Level',
-                                                        tempcol: 'Temperature'})
+                                                        tempcol: 'Temperature',condcol: 'Cond.'
+                                                        })
         self.data[key] = self.data[key].reset_index()
         self.data[key]['DateTime'] = pd.to_datetime(self.data[key]['DateTime'])
         self.data[key] = self.data[key].set_index('DateTime')

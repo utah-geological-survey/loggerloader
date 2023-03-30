@@ -734,9 +734,12 @@ def read_troll_htm(filepath):
             print(col)
             df[col] = pd.to_datetime(df[col])
             df = df.set_index(col)
-        elif ("Press" in col) and ("psi" in col):
+        elif "Press" in col:
             df[col] = pd.to_numeric(df[col])
-            df['Level'] = df[col]*2.3067
+            if "psi" in col:
+                df['Level'] = df[col]*2.3067
+            elif "Hg" in col:
+                df['Level'] = df[col]*0.044603
             #df = df.rename(columns={col:"Level"})
         elif "Depth" in col or "Cond" in col or "Total" in col or "Salin" in col or "Dens" in col or "Temp" in col:
             df[col] = pd.to_numeric(df[col])
@@ -1031,6 +1034,22 @@ def read_troll_csv(filename):
     # Get rid of duplicate data
     df = df.reset_index().drop_duplicates(["DateandTime"])
     df = df.set_index(["DateandTime"]).sort_index()
+
+    for col in df.columns:
+        if "Date" in col or "date" in col:
+            print(col)
+            df[col] = pd.to_datetime(df[col])
+            df = df.set_index(col)
+        elif "Press" in col:
+            df[col] = pd.to_numeric(df[col])
+            if "psi" in col:
+                df['Level'] = df[col]*2.3067
+            elif "Hg" in col:
+                df['Level'] = df[col]*0.044603
+            #df = df.rename(columns={col:"Level"})
+        elif "Depth" in col or "Cond" in col or "Total" in col or "Salin" in col or "Dens" in col or "Temp" in col:
+            df[col] = pd.to_numeric(df[col])
+
     return df
 
 class NewTransImp(object):
