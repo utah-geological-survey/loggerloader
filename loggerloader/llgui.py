@@ -23,6 +23,7 @@ from pylab import rcParams
 
 import platform
 
+
 #from pandas.plotting import register_matplotlib_converters
 
 try:
@@ -30,6 +31,19 @@ try:
 except:
     from .loader import *
 
+try:
+    import pyi_splash
+
+    # Update the text on the splash screen
+    pyi_splash.update_text("PyInstaller is a great software!")
+    pyi_splash.update_text("Second time's a charm!")
+
+    # Close the splash screen. It does not matter when the call
+    # to this function is made, the splash screen remains open until
+    # this function is called or the Python program is terminated.
+    pyi_splash.close()
+except:
+    pass
 #register_matplotlib_converters()
 
 rcParams['figure.figsize'] = 15, 10
@@ -60,10 +74,18 @@ class Feedback:
         style = ttk.Style(master)
 
         # Import the tcl file
-        master.tk.call("source", "../themes/forest-light.tcl")
+        try:
+            master.tk.call("source", "../themes/forest-light.tcl")
+            style.theme_use("forest-light")
+        except:
+            try:
+                master.tk.call("source", "./themes/forest-light.tcl")
+                style.theme_use("forest-light")
+            except:
+                pass
 
         # Set the theme with the theme_use method
-        style.theme_use("forest-light")
+
 
         # Get platform into a variable
         self.setConfigDir()
@@ -79,6 +101,7 @@ class Feedback:
             self.root.iconbitmap(r'../data_files/icon.ico')
         except:
             try:
+                print('no')
                 self.root.iconbitmap(r'G:/My Drive/Python/Pycharm/loggerloader/data_files/icon.ico')
             except:
                 pass
@@ -2143,9 +2166,11 @@ class Feedback:
 
 
 def main():
+
     root = tk.Tk()
     feedback = Feedback(root)
     root.mainloop()
 
 
-if __name__ == "__main__": main()
+if __name__ == "__main__":
+    main()

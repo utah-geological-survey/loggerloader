@@ -5,6 +5,7 @@ xlrd >= 0.5.4
 openpyxl >= 2.4.0
 tkcalendar
 pytz
+numexpr
 babel
 tksheet
 beautifulsoup4
