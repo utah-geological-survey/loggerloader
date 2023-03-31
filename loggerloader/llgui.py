@@ -88,6 +88,8 @@ class Feedback:
 
         self.sheettheme = "light blue"
 
+        ## -- MAKE EMPTY DICTIONARIES TO HOLD CLASS OBJECTS -- ##
+
         self.datastr, self.data, self.datatable, self.combo = {}, {}, {}, {}
 
         self.field = None
@@ -97,15 +99,19 @@ class Feedback:
         self.locidmatch = {}
         self.bulktransfilestr = {}  # dictionary to store trans file names
 
+        # selecting files
         self.fileselectbutt = {}
         self.fileselectcombo = {}
         self.filetype = {}
+
+        # matching sheets and columns
         self.wellbaroxl = {}
         self.xlcols_date_combo = {}
         self.xlcols_value_combo = {}
         self.xlcols_temp_combo = {}
         self.xlcols_cond_combo = {}
 
+        # generating right-hand tables and charts
         self.graphframe = {}
         self.tableframe = {}
         self.graph_frame1 = {}
@@ -127,6 +133,8 @@ class Feedback:
         self.fig = {}
         self.ax = {}
 
+        ## -- WIDGET AREA -- ##
+
         # Create side by side panel areas
         self.panedwindow = ttk.Panedwindow(master, orient='horizontal')
         self.panedwindow.pack(fill='both', expand=True)
@@ -140,11 +148,12 @@ class Feedback:
         self.notebook.pack(fill='both', expand=True)
         self.notelist = {}
 
-        # self.notebook.add(new_frame, text=key)
-        # for t in range(len(self.notebook.tabs())):
+        # These lines tell the script which tab is selected
+        self.selected_tab = None
+        #for t in range(len(self.notebook.tabs())):
         #    self.notelist[self.notebook.tab(t)['text']] = t
-        # self.notebook.select(t)
-        # self.notebook.bind("<<NotebookTabChanged>>", self.nbselect)
+        #self.notebook.select(t)
+        self.notebook.bind("<<NotebookTabChanged>>", self.nbselect)
 
         self.projopen = False
         # self.newProject()
@@ -679,29 +688,15 @@ class Feedback:
         # self.data[key]
 
     def trimextrema(self, key):
-        if key == 'well' and 'well' in self.data.keys():
+        if key in self.data.keys():
             if self.field:
-                self.data['well'] = self.data['well'][(self.data['well'][self.field] >= self.dataminvar[key].get()) & (
-                        self.data['well'][self.field] <= self.datamaxvar[key].get())]
-                self.graphframe[key], self.tableframe[key] = self.note_tab_add('well')
-                self.add_graph_table('well')
-            elif 'Level' in self.data['well'].columns:
-                self.data['well'] = self.data['well'][(self.data['well']['Level'] >= self.dataminvar[key].get()) & (
-                        self.data['well']['Level'] <= self.datamaxvar[key].get())]
-                self.graphframe[key], self.tableframe[key] = self.note_tab_add('well')
-                self.add_graph_table('well')
-        elif key == 'baro' and 'baro' in self.data.keys():
-            if self.field:
-                self.data['baro'] = jumpfix(self.data['baro'], self.field, self.datajumptol[key].get())
-                self.graphframe[key], self.tableframe[key] = self.note_tab_add('baro')
-                self.add_graph_table('baro')
-            elif 'Level' in self.data['baro'].columns:
-                self.data['baro'] = jumpfix(self.data['baro'], 'Level', self.datajumptol[key].get())
-                self.graphframe[key], self.tableframe[key] = self.note_tab_add('baro')
-                self.add_graph_table('baro')
+                self.data[key] = self.data[key][(self.data[key][self.field] >= self.dataminvar[key].get()) & (
+                        self.data[key][self.field] <= self.datamaxvar[key].get())]
+                self.graphframe[key], self.tableframe[key] = self.note_tab_add(key)
+                self.add_graph_table(key)
 
         else:
-            print('No column named Level')
+            print('No column selected')
             pass
         # TODO add dialog to select a column to adjust
 
@@ -2036,8 +2031,8 @@ class Feedback:
 
     def nbselect(self, event):
         codedtabname = self.notebook.select()
-        key = self.notebook.tab(codedtabname, "text")
-        print(self.notebook.tab(codedtabname, "text"))
+        self.selected_tab = self.notebook.tab(codedtabname, "text")
+        print(self.selected_tab)
 
 
 
