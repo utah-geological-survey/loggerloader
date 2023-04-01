@@ -20,6 +20,7 @@ from tkinter import filedialog, messagebox, simpledialog, messagebox, ttk
 from tkcalendar import DateEntry
 
 from pylab import rcParams
+from PIL import ImageTk, Image
 
 import platform
 
@@ -63,6 +64,25 @@ class Feedback:
         master.wm_title("Transducer Processing")
 
         plt.style.use('default')
+        # Create a style
+        self.style = ttk.Style(master)
+
+        # Import the tcl file
+        try:
+            master.tk.call("source", "../themes/forest-dark.tcl")
+            master.tk.call("source", "../themes/forest-light.tcl")
+
+            self.style.theme_use("forest-light")
+        except:
+            try:
+                master.tk.call("source", "./themes/forest-dark.tcl")
+                master.tk.call("source", "./themes/forest-light.tcl")
+
+                self.style.theme_use("forest-light")
+            except:
+                pass
+
+        self.sheettheme = "light blue"
 
         self.version = "2.0.0"
 
@@ -70,19 +90,7 @@ class Feedback:
         self.main = master
         self.master = master
 
-        # Create a style
-        style = ttk.Style(master)
 
-        # Import the tcl file
-        try:
-            master.tk.call("source", "../themes/forest-light.tcl")
-            style.theme_use("forest-light")
-        except:
-            try:
-                master.tk.call("source", "./themes/forest-light.tcl")
-                style.theme_use("forest-light")
-            except:
-                pass
 
         # Set the theme with the theme_use method
 
@@ -109,7 +117,7 @@ class Feedback:
 
         self.create_menu_bar()
 
-        self.sheettheme = "light blue"
+
 
         ## -- MAKE EMPTY DICTIONARIES TO HOLD CLASS OBJECTS -- ##
 
@@ -192,6 +200,7 @@ class Feedback:
         self.vsb.pack(side="right", fill="y")
         self.canvas.pack(side="left", fill="both", expand=True)
         self.canvas.create_window((4, 4), window=self.onewelltab, anchor="nw", tags="self.frame")
+        self.canvas.configure(bg="#ffffff")
         self.onewelltab.bind("<Configure>", self.onFrameConfigure)
 
         self.bulkwelltab = ttk.Frame(self.processing_notebook)
@@ -546,7 +555,7 @@ class Feedback:
         self.graphframe[key], self.tableframe[key] = self.note_tab_add(key, tabw=4, grph=1)
         # add graph and table to new tab
 
-        self.datatable[key] = Sheet(self.tableframe[key], data=df.values.tolist())
+        self.datatable[key] = Sheet(self.tableframe[key], data=df.values.tolist(), theme=self.sheettheme)
 
         self.datatable[key].change_theme(theme=self.sheettheme)
         self.datatable[key].headers(self.data[key].columns)
@@ -650,7 +659,7 @@ class Feedback:
         ttk.Separator(self.onewelltab, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
         filefinderframe = ttk.Frame(self.onewelltab)
         ttk.Label(filefinderframe, text=datasets[key]).grid(column=0, row=0, columnspan=3)
-        ttk.Label(filefinderframe, text='(Right click for refresh.)').grid(column=2, row=0, columnspan=3)
+        #ttk.Label(filefinderframe, text='(Right click for refresh.)').grid(column=2, row=0, columnspan=3)
 
         self.datastr[key] = tk.StringVar(filefinderframe, value=f'Double-Click for {key} file')
         self.entry[key] = ttk.Entry(filefinderframe, textvariable=self.datastr[key], width=60)
@@ -665,11 +674,12 @@ class Feedback:
                                                  state="readonly", textvariable=self.filetype[key])
 
         self.fileselectcombo[key].grid(column=2, row=1, columnspan=2)
+
         # self.fileselectcombo[key].current(self.filetype)
-        self.fileselectbutt[key] = ttk.Button(filefinderframe,
-                                              text='Import data',
-                                              command=lambda: self.wellbaroabb(key))
-        self.fileselectbutt[key].grid(column=4, row=1, columnspan=1)
+        #self.fileselectbutt[key] = ttk.Button(filefinderframe,
+        #                                      text='Import data',
+        #                                      command=lambda: self.wellbaroabb(key))
+        #self.fileselectbutt[key].grid(column=4, row=1, columnspan=1)
 
         # self.entry[key].bind('<3>', lambda k: self.wellbaroabb(key))
         filefinderframe.pack()
@@ -681,11 +691,11 @@ class Feedback:
             key = 'well'
 
         key = self.selected_tab
-        popup = tk.Toplevel()
-        popup.geometry("550x150+200+200")
+        self.jump_popup = tk.Toplevel()
+        self.jump_popup.geometry("550x150+200+200")
 
         #ttk.Separator(popup, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
-        frame_step1_5 = ttk.Frame(popup)
+        frame_step1_5 = ttk.Frame(self.jump_popup)
         ttk.Label(frame_step1_5, text='Fix Jumps and outliers (optional)').grid(column=0, row=0, columnspan=6)
         datajumplab = ttk.Label(frame_step1_5, text='Jump Tolerance:')
         datajumplab.grid(column=0, row=2)
@@ -707,31 +717,31 @@ class Feedback:
             key = 'well'
 
         key = self.selected_tab
-        popup = tk.Toplevel()
-        popup.geometry("250x200+200+200")
+        self.extreme_popup = tk.Toplevel()
+        self.extreme_popup.geometry("250x200+200+200")
 
         #ttk.Separator(popup, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
-        frame_step1_5 = ttk.Frame(popup)
-        ttk.Label(frame_step1_5, text=f'Remove extreme values').grid(column=0, row=0, columnspan=2)
-        dataminlab = ttk.Label(frame_step1_5, text='Min Allowed Value:')
-        ttk.Label(frame_step1_5, text=f'from sheet {self.selected_tab} & column {self.field}').grid(column=0, row=1, columnspan=2)
-        dataminlab.grid(column=0, row=2, columspan= 2)
+        exframe = ttk.Frame(self.extreme_popup)
+        ttk.Label(exframe, text=f'Remove extreme values').grid(column=0, row=0, columnspan=2)
+        dataminlab = ttk.Label(exframe, text='Min Allowed Value:').grid(column=0, row=2, columnspan= 1)
+        ttk.Label(exframe, text=f'from {self.selected_tab} {self.field}').grid(column=0, row=1, columnspan=2)
 
-        self.dataminvar = tk.DoubleVar(frame_step1_5, value=-10000.0)
-        self.datamaxvar = tk.DoubleVar(frame_step1_5, value=100000.0)
-        self.datamin = ttk.Entry(frame_step1_5, textvariable=self.dataminvar, width=10, state='disabled')
+
+        self.dataminvar = tk.DoubleVar(exframe, value=-9999.0)
+        self.datamaxvar = tk.DoubleVar(exframe, value=9999.0)
+        self.datamin = ttk.Entry(exframe, textvariable=self.dataminvar, width=10, state='disabled')
         self.datamin.grid(column=1, row=2)
 
-        dataminlab = ttk.Label(frame_step1_5, text='Max Allowed Value:')
+        dataminlab = ttk.Label(exframe, text='Max Allowed Value:')
         dataminlab.grid(column=0, row=3)
-        self.datamax = ttk.Entry(frame_step1_5, textvariable=self.datamaxvar, width=10, state='disabled')
+        self.datamax = ttk.Entry(exframe, textvariable=self.datamaxvar, width=10, state='disabled')
         self.datamax.grid(column=1, row=3)
-        self.trimbutt = ttk.Button(frame_step1_5, text='Trim Extrema', command=self.trimextrema)
+        self.trimbutt = ttk.Button(exframe, text='Trim Extrema', command=self.trimextrema)
         self.trimbutt.grid(column=0, row=4,columnspan=2)
 
-        frame_step1_5.pack()
-        self.dataminvar.set(self.data[key][self.field].mean() - self.data[key][self.field].std()*4)
-        self.datamaxvar.set(self.data[key][self.field].mean() + self.data[key][self.field].std()*4)
+        exframe.pack()
+        self.dataminvar.set(round(self.data[key][self.field].mean() - self.data[key][self.field].std()*4,3))
+        self.datamaxvar.set(round(self.data[key][self.field].mean() + self.data[key][self.field].std()*4,3))
         # self.data[key]
 
     def trimextrema(self):
@@ -746,7 +756,8 @@ class Feedback:
         else:
             print('No column selected')
             pass
-
+        self.extreme_popup.destroy()
+        self.make_chart(key=key)
 
     def fixjumps(self):
         key = self.selected_tab
@@ -758,7 +769,8 @@ class Feedback:
         else:
             print('No column named Level')
             pass
-
+        self.jump_popup.destroy()
+        self.make_chart(key=key)
 
     def fix_drift_interface(self):
         # Fix Drift Button
@@ -981,7 +993,7 @@ class Feedback:
         self.data[key] = pd.concat(drift_info, sort=True, ignore_index=True).set_index('name')
         self.graphframe[key], self.tableframe[key] = self.note_tab_add(key)
 
-        self.datatable[key] = Sheet(self.tableframe[key], data=self.data[key].reset_index().values.tolist())
+        self.datatable[key] = Sheet(self.tableframe[key], data=self.data[key].reset_index().values.tolist(), theme=self.sheettheme)
 
         self.datatable[key].change_theme(theme=self.sheettheme)
         self.datatable[key].headers(self.data[key].reset_index().columns)
@@ -1214,12 +1226,12 @@ class Feedback:
         ttk.Label(labframe, text='Click on column of choice and then the Plot button!').pack()
         return self.graphframe[key], self.tableframe[key]
 
-    def make_chart(self, event, key):
+    def make_chart(self, event=None, key=None):
 
         self.end_edit_cell(key=key)
 
-        self.field = list(self.data[key].columns)[event[1] - 1]
-
+        if event:
+            self.field = list(self.data[key].columns)[event[1] - 1]
         #self.datajumptol.set(self.data[key][self.field].std()*5)
         #self.dataminvar.set(self.data[key][self.field].mean() - self.data[key][self.field].std()*4)
         #self.datamaxvar.set(self.data[key][self.field].mean() + self.data[key][self.field].std()*4)
@@ -1296,7 +1308,7 @@ class Feedback:
         self.selected_tab = key
         self.graph_frame1[key] = ttk.Frame(self.graphframe[key])
 
-        self.datatable[key] = Sheet(self.tableframe[key], data=self.data[key].reset_index().values.tolist())
+        self.datatable[key] = Sheet(self.tableframe[key], data=self.data[key].reset_index().values.tolist(), theme=self.sheettheme)
 
         self.datatable[key].change_theme(theme=self.sheettheme)
         self.datatable[key].headers(self.data[key].reset_index().columns)
@@ -1516,8 +1528,8 @@ class Feedback:
         # ['xle','raw csv', 'Excel', 'solinst csv out']
 
         self.filetype[key].set(extdir.get(ext, 'xle'))
-        print(self.filetype[key].get())
-
+        #print(self.filetype[key].get())
+        self.wellbaroabb(key)
         # Action if cancel in file dialog is pressed
         # self.wellbaroabb(key)
 
@@ -1746,7 +1758,7 @@ class Feedback:
         self.data[key] = df
 
         self.graphframe[key], self.tableframe[key] = self.note_tab_add(key, tabw=5, grph=1)
-        self.datatable[key] = Sheet(self.tableframe[key], data=self.data[key].values.tolist())
+        self.datatable[key] = Sheet(self.tableframe[key], data=self.data[key].values.tolist(), theme=self.sheettheme)
         # self.datatable[key].show()
 
         self.datatable[key].change_theme(theme=self.sheettheme)
@@ -1966,6 +1978,29 @@ class Feedback:
             os.makedirs(self.pluginpath)
         return
 
+    def darktheme(self):
+
+        self.style.theme_use("forest-dark")
+
+        self.sheettheme =  "dark green"
+        self.canvas.configure(bg="#313131")
+        self.menu.config(bg="#313131")
+        plt.style.use('dark_background')
+        #plt.style.use('seaborn-dark')
+        for key in self.datatable.keys():
+            self.datatable[key].change_theme(theme=self.sheettheme, redraw=True)
+
+    def lighttheme(self):
+
+        self.style.theme_use("forest-light")
+
+        self.sheettheme = "light blue"
+        self.canvas.configure(bg="#ffffff")
+        self.menu.config(bg="#ffffff")
+        #self.plottheme = "light"
+        plt.style.use('default')
+        for key in self.datatable.keys():
+            self.datatable[key].change_theme(theme=self.sheettheme, redraw=True)
 
     def create_menu_bar(self):
         """Create the menu bar for the application. """
@@ -1978,6 +2013,10 @@ class Feedback:
         self.file_menu = self.create_pulldown(self.menu, filemenuitems, var=file_menu)
         self.menu.add_cascade(label='File', menu=self.file_menu['var'])
 
+        thememenuitems = {'01Dark Theme':{'cmd':self.darktheme},'02Lite Theme':{'cmd':self.lighttheme}}
+        self.theme_menu = self.create_pulldown(self.menu, thememenuitems)
+        self.menu.add_cascade(label='Theme', menu=self.theme_menu['var'])
+
         self.help_menu = {'01Online Help': {'cmd': self.online_documentation},
                           '02About': {'cmd': self.about}}
         self.help_menu = self.create_pulldown(self.menu, self.help_menu)
@@ -1985,6 +2024,7 @@ class Feedback:
 
         self.main.config(menu=self.menu)
         return
+
 
     def create_pulldown(self, menu, dict, var=None):
         """Create pulldown menu, returns a dict.
@@ -2089,7 +2129,7 @@ class Feedback:
         ttl = tk.Label(abwin, text=f'Logger Loader v.{self.version}', font='Helvetica 18 bold')
         ttl.pack()
         # ttl.grid(row=1, column=0, sticky='news', pady=1, padx=4)
-
+        # Import the tcl file
         fm1 = tk.Frame(abwin)
         fm1.pack()
         text1a = 'Processing scripts Written By Paul Inkenbrandt, '
