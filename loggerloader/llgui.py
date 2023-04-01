@@ -143,15 +143,15 @@ class Feedback:
         self.wellbarocsv = {}
 
         # jump fix dictionaries
-        self.dataminvar = {}
-        self.datamaxvar = {}
-        self.datamin = {}
+        self.dataminvar = None
+        self.datamaxvar = None
+        self.datamin = None
 
-        self.datamax = {}
-        self.trimbutt = {}
-        self.datajumptol = {}
-        self.datajump = {}
-        self.jumpbutt = {}
+        self.datamax = None
+        self.trimbutt = None
+        self.datajumptol = None
+        self.datajump = None
+        self.jumpbutt = None
 
         self.fig = {}
         self.ax = {}
@@ -173,9 +173,6 @@ class Feedback:
 
         # These lines tell the script which tab is selected
         self.selected_tab = None
-        #for t in range(len(self.notebook.tabs())):
-        #    self.notelist[self.notebook.tab(t)['text']] = t
-        #self.notebook.select(t)
         self.notebook.bind("<<NotebookTabChanged>>", self.nbselect)
 
         self.projopen = False
@@ -216,10 +213,8 @@ class Feedback:
         # Data Entry Frame
         self.filefinders('well')  # Select and import well data
 
-        self.outlierremove('well')
-
         self.filefinders('baro')  # Select and import baro data
-        self.outlierremove('baro')
+
         # Align Data
         self.add_alignment_interface()
 
@@ -478,13 +473,13 @@ class Feedback:
         # select file for well-info-table
         well_info_frame = ttk.Frame(master)
         well_info_frame.pack()
-        key = 'well-info-table'
-        self.datastr[key] = tk.StringVar(well_info_frame)
-        self.datastr[key].set("ugs_ngwmn_monitoring_locations.csv")
+        self.selected_tab = 'well-info-table'
+        self.datastr[self.selected_tab] = tk.StringVar(well_info_frame)
+        self.datastr[self.selected_tab].set("ugs_ngwmn_monitoring_locations.csv")
 
         ttk.Label(well_info_frame, text='1. Input well info file (must be csv)').grid(row=0, column=0, columnspan=3)
 
-        e = ttk.Entry(well_info_frame, textvariable=self.datastr[key], width=80)
+        e = ttk.Entry(well_info_frame, textvariable=self.datastr[self.selected_tab], width=80)
         e.grid(row=1, column=0, columnspan=2)
         e.bind('<Double-ButtonRelease-1>', lambda f: self.open_file(well_info_frame))
         b = ttk.Button(well_info_frame, text='Process Well Info File', command=self.add_well_info_table)
@@ -507,6 +502,7 @@ class Feedback:
         pg.pack()
 
         key = 'file-info-table'
+        self.selected_tab = key
         # TODO Enter dict and file well info table screening here
         ht = HeaderTable(self.datastr['trans-dir'].get())
         filelist = ht.xle_csv_filelist()
@@ -648,6 +644,7 @@ class Feedback:
 
     def filefinders(self, key):
         """Adds the label and entry fields for single raw barometric or level files"""
+        self.selected_tab = key
         datasets = {"well": "1. Select Well Data:",
                     "baro": "2. Select Barometric Data:"}
         ttk.Separator(self.onewelltab, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
@@ -655,12 +652,10 @@ class Feedback:
         ttk.Label(filefinderframe, text=datasets[key]).grid(column=0, row=0, columnspan=3)
         ttk.Label(filefinderframe, text='(Right click for refresh.)').grid(column=2, row=0, columnspan=3)
 
-        # ttk.Label(filefinderframe, text=datasets[key]).pack()
-        # ttk.Label(filefinderframe, text='(Right click for refresh.)').pack()
         self.datastr[key] = tk.StringVar(filefinderframe, value=f'Double-Click for {key} file')
         self.entry[key] = ttk.Entry(filefinderframe, textvariable=self.datastr[key], width=60)
         self.entry[key].grid(column=0, row=1, columnspan=2)
-        # self.entry[key].pack()
+
         self.entry[key].bind('<Double-ButtonRelease-1>', lambda k: self.wellbarodiag(key))
 
         self.filetype[key] = tk.StringVar(filefinderframe, value="xle")
@@ -679,73 +674,91 @@ class Feedback:
         # self.entry[key].bind('<3>', lambda k: self.wellbaroabb(key))
         filefinderframe.pack()
 
-    def outlierremove(self, key):
-        ttk.Separator(self.onewelltab, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
-        frame_step1_5 = ttk.Frame(self.onewelltab)
-        ttk.Label(frame_step1_5, text=f'{key} Fix Jumps and outliers (optional)').grid(column=0, row=0, columnspan=6)
-        dataminlab = ttk.Label(frame_step1_5, text='Min Allowed Value:')
-        dataminlab.grid(column=0, row=1)
+    def jump_fix_popup(self):
+        if self.selected_tab:
+            key = self.selected_tab
+        else:
+            key = 'well'
 
-        self.dataminvar[key] = tk.DoubleVar(frame_step1_5, value=-10000.0)
-        self.datamaxvar[key] = tk.DoubleVar(frame_step1_5, value=100000.0)
-        self.datamin[key] = ttk.Entry(frame_step1_5, textvariable=self.dataminvar[key], width=10, state='disabled')
-        self.datamin[key].grid(column=1, row=1)
+        key = self.selected_tab
+        popup = tk.Toplevel()
+        popup.geometry("550x150+200+200")
 
-        dataminlab = ttk.Label(frame_step1_5, text='Max Allowed Value:')
-        dataminlab.grid(column=2, row=1)
-        self.datamax[key] = ttk.Entry(frame_step1_5, textvariable=self.datamaxvar[key], width=10, state='disabled')
-        self.datamax[key].grid(column=3, row=1)
-        self.trimbutt[key] = ttk.Button(frame_step1_5, text='Trim Extrema', command=lambda: self.trimextrema(key),
-                                        state='disabled')
-        self.trimbutt[key].grid(column=4, row=1)
-
+        #ttk.Separator(popup, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
+        frame_step1_5 = ttk.Frame(popup)
+        ttk.Label(frame_step1_5, text='Fix Jumps and outliers (optional)').grid(column=0, row=0, columnspan=6)
         datajumplab = ttk.Label(frame_step1_5, text='Jump Tolerance:')
         datajumplab.grid(column=0, row=2)
-        self.datajumptol[key] = tk.DoubleVar(frame_step1_5, value=100.0)
-        self.datajump[key] = ttk.Entry(frame_step1_5, textvariable=self.datajumptol[key], width=10, state='disabled')
-        self.datajump[key].grid(column=1, row=2)
-        self.jumpbutt[key] = ttk.Button(frame_step1_5, text='Fix Jumps', command=lambda: self.fixjumps(key),
-                                        state='disabled')
-        self.jumpbutt[key].grid(column=2, row=2)
+        self.datajumptol = tk.DoubleVar(frame_step1_5, value=100.0)
+        self.datajump = ttk.Entry(frame_step1_5, textvariable=self.datajumptol, width=10)
+        self.datajump.grid(column=1, row=2)
+        self.jumpbutt = ttk.Button(frame_step1_5, text='Fix Jumps', command=self.fixjumps)
+        self.jumpbutt.grid(column=2, row=2)
         frame_step1_5.pack()
+        self.datajumptol.set(self.data[key][self.field].std()*5)
+
+    def placeholder_func(self):
+        pass
+
+    def trim_extrema_popup(self):
+        if self.selected_tab:
+            key = self.selected_tab
+        else:
+            key = 'well'
+
+        key = self.selected_tab
+        popup = tk.Toplevel()
+        popup.geometry("250x200+200+200")
+
+        #ttk.Separator(popup, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
+        frame_step1_5 = ttk.Frame(popup)
+        ttk.Label(frame_step1_5, text=f'Remove extreme values').grid(column=0, row=0, columnspan=2)
+        dataminlab = ttk.Label(frame_step1_5, text='Min Allowed Value:')
+        ttk.Label(frame_step1_5, text=f'from sheet {self.selected_tab} & column {self.field}').grid(column=0, row=1, columnspan=2)
+        dataminlab.grid(column=0, row=2, columspan= 2)
+
+        self.dataminvar = tk.DoubleVar(frame_step1_5, value=-10000.0)
+        self.datamaxvar = tk.DoubleVar(frame_step1_5, value=100000.0)
+        self.datamin = ttk.Entry(frame_step1_5, textvariable=self.dataminvar, width=10, state='disabled')
+        self.datamin.grid(column=1, row=2)
+
+        dataminlab = ttk.Label(frame_step1_5, text='Max Allowed Value:')
+        dataminlab.grid(column=0, row=3)
+        self.datamax = ttk.Entry(frame_step1_5, textvariable=self.datamaxvar, width=10, state='disabled')
+        self.datamax.grid(column=1, row=3)
+        self.trimbutt = ttk.Button(frame_step1_5, text='Trim Extrema', command=self.trimextrema)
+        self.trimbutt.grid(column=0, row=4,columnspan=2)
+
+        frame_step1_5.pack()
+        self.dataminvar.set(self.data[key][self.field].mean() - self.data[key][self.field].std()*4)
+        self.datamaxvar.set(self.data[key][self.field].mean() + self.data[key][self.field].std()*4)
         # self.data[key]
 
-    def trimextrema(self, key):
+    def trimextrema(self):
+        key = self.selected_tab
         if key in self.data.keys():
             if self.field:
-                self.data[key] = self.data[key][(self.data[key][self.field] >= self.dataminvar[key].get()) & (
-                        self.data[key][self.field] <= self.datamaxvar[key].get())]
+                self.data[key] = self.data[key][(self.data[key][self.field] >= self.dataminvar.get()) & (
+                        self.data[key][self.field] <= self.datamaxvar.get())]
                 self.graphframe[key], self.tableframe[key] = self.note_tab_add(key)
                 self.add_graph_table(key)
 
         else:
             print('No column selected')
             pass
-        # TODO add dialog to select a column to adjust
 
-    def fixjumps(self, key):
-        if key == 'well' and 'well' in self.data.keys():
+
+    def fixjumps(self):
+        key = self.selected_tab
+        if key in self.data.keys():
             if self.field:
-                self.data['well'] = jumpfix(self.data['well'], self.field, self.datajumptol[key].get())
-                self.graphframe[key], self.tableframe[key] = self.note_tab_add('well')
-                self.add_graph_table('well')
-            elif 'Level' in self.data['well'].columns:
-                self.data['well'] = jumpfix(self.data['well'], 'Level', self.datajumptol[key].get())
-                self.graphframe[key], self.tableframe[key] = self.note_tab_add('well')
-                self.add_graph_table('well')
-        elif key == 'baro' and 'baro' in self.data.keys():
-            if self.field:
-                self.data['baro'] = jumpfix(self.data['baro'], self.field, self.datajumptol[key].get())
-                self.graphframe[key], self.tableframe[key] = self.note_tab_add('baro')
-                self.add_graph_table('baro')
-            elif 'Level' in self.data['baro'].columns:
-                self.data['baro'] = jumpfix(self.data['baro'], 'Level', self.datajumptol[key].get())
-                self.graphframe[key], self.tableframe[key] = self.note_tab_add('baro')
-                self.add_graph_table('baro')
+                self.data[key] = jumpfix(self.data[key], self.field, self.datajumptol.get())
+                self.graphframe[key], self.tableframe[key] = self.note_tab_add(key)
+                self.add_graph_table(key)
         else:
             print('No column named Level')
             pass
-        # TODO add dialog to select a column to adjust
+
 
     def fix_drift_interface(self):
         # Fix Drift Button
@@ -1178,6 +1191,8 @@ class Feedback:
 
         """
         # print(key)
+        self.selected_tab = key
+
         if key in self.notelist.keys():
             self.notebook.forget(self.notelist[key])
             self.notelist[key] = 'old'
@@ -1204,6 +1219,10 @@ class Feedback:
         self.end_edit_cell(key=key)
 
         self.field = list(self.data[key].columns)[event[1] - 1]
+
+        #self.datajumptol.set(self.data[key][self.field].std()*5)
+        #self.dataminvar.set(self.data[key][self.field].mean() - self.data[key][self.field].std()*4)
+        #self.datamaxvar.set(self.data[key][self.field].mean() + self.data[key][self.field].std()*4)
         print(self.field)
 
         # remove old widgets
@@ -1238,9 +1257,6 @@ class Feedback:
         self.graphcanvas[key] = canvas.get_tk_widget()
         self.graphcanvas[key].pack(fill=tk.BOTH)
 
-        if self.field in self.data[key].columns:
-            self.dataminvar[key].set(self.data[key][self.field].min())
-            self.datamaxvar[key].set(self.data[key][self.field].max())
 
     def end_edit_cell(self, event=None, key=None):
         df = pd.DataFrame(self.datatable[key].get_sheet_data(return_copy=True, get_header=False, get_index=False))
@@ -1277,7 +1293,7 @@ class Feedback:
             adds pandastable elements to a frame
 
         """
-
+        self.selected_tab = key
         self.graph_frame1[key] = ttk.Frame(self.graphframe[key])
 
         self.datatable[key] = Sheet(self.tableframe[key], data=self.data[key].reset_index().values.tolist())
@@ -1290,7 +1306,9 @@ class Feedback:
 
         self.datatable[key].extra_bindings([("column_select", lambda event: self.make_chart(event, key=key)),
                                             ("end_edit_cell", lambda event: self.end_edit_cell(event, key=key))])
-
+        self.datatable[key].popup_menu_add_command("---------", self.placeholder_func)
+        self.datatable[key].popup_menu_add_command("Trim Extrema", self.trim_extrema_popup)
+        self.datatable[key].popup_menu_add_command("Jump Fix", self.jump_fix_popup)
         self.graph_frame1[key].pack()
 
         if key == 'well':
@@ -1346,7 +1364,7 @@ class Feedback:
             key].get() == f'Double-Click for {key} file':
             pass
         else:
-            if key in ('well'):
+            if key in ['well','baro']:
                 # 'xle','raw csv', 'Excel', 'modified csv'
                 if self.fileselectcombo[key].get() in ['xle', 'Global Water csv']:
                     self.data[key] = NewTransImp(self.datastr[key].get()).well.drop(['name'], axis=1)
@@ -1365,48 +1383,17 @@ class Feedback:
 
                 filenm, self.file_extension = os.path.splitext(self.datastr[key].get())
 
-                if key in self.datamin.keys():
-                    self.datamin[key]['state'] = 'normal'
-                    self.datamax[key]['state'] = 'normal'
-                    self.trimbutt[key]['state'] = 'normal'
-                    self.datajump[key]['state'] = 'normal'
-                    self.jumpbutt[key]['state'] = 'normal'
-                if self.field in self.data['well'].columns:
-                    self.dataminvar[key].set(self.data['well'][self.field].min())
-                    self.datamaxvar[key].set(self.data['well'][self.field].max())
-                elif 'Level' in self.data['well'].columns:
-                    self.dataminvar[key].set(self.data['well']['Level'].min())
-                    self.datamaxvar[key].set(self.data['well']['Level'].max())
+                if key in self.data.keys() and self.datajumptol:
+                    #self.datamin['state'] = 'normal'
+                    #self.datamax['state'] = 'normal'
+                    #self.trimbutt['state'] = 'normal'
+                    #self.datajump['state'] = 'normal'
+                    #self.jumpbutt['state'] = 'normal'
+                    if self.field in self.data[key].columns:
+                        self.datajumptol.set(self.data[key][self.field].std() * 5)
+                        self.dataminvar.set(self.data[key][self.field].mean() - self.data[key][self.field].std() * 4)
+                        self.datamaxvar.set(self.data[key][self.field].mean() + self.data[key][self.field].std() * 4)
 
-            elif key in ('baro'):
-                if self.fileselectcombo[key].get() in ['xle', 'Global Water csv']:
-                    self.data[key] = NewTransImp(self.datastr[key].get()).well.drop(['name'], axis=1)
-                elif self.fileselectcombo[key].get() in ['Excel']:
-                    # self.data[key] = pd.read_excel(self.datastr[key].get())
-                    self.wellbaroxl[key] = pd.ExcelFile(self.datastr[key].get())
-                    self.openNewWindowxl(key)
-                elif self.fileselectcombo[key].get() in ['csv']:
-                    self.data[key] = pd.read_csv(self.datastr[key].get())
-                    self.openNewWindowcsv(key)
-                elif self.fileselectcombo[key].get() in ['Troll htm']:
-                    self.data[key] = read_troll_htm(self.datastr[key].get())
-                elif self.fileselectcombo[key].get() in ['Troll csv']:
-                    self.data[key] = read_troll_csv(self.datastr[key].get())
-
-                # self.data[key] = NewTransImp(self.datastr[key].get()).well.drop(['name'], axis=1)
-                filenm, self.file_extension = os.path.splitext(self.datastr[key].get())
-                if key in self.datamin.keys():
-                    self.datamin[key]['state'] = 'normal'
-                    self.datamax[key]['state'] = 'normal'
-                    self.trimbutt[key]['state'] = 'normal'
-                    self.datajump[key]['state'] = 'normal'
-                    self.jumpbutt[key]['state'] = 'normal'
-                if self.field in self.data[key].columns:
-                    self.dataminvar[key].set(self.data[key][self.field].min())
-                    self.datamaxvar[key].set(self.data[key][self.field].max())
-                elif 'Level' in self.data[key].columns:
-                    self.dataminvar[key].set(self.data[key]['Level'].min())
-                    self.datamaxvar[key].set(self.data[key]['Level'].max())
             elif key in ('manual', 'bulk-manual', 'manual-single'):
                 filenm, file_extension = os.path.splitext(self.datastr[key].get())
                 if file_extension in ('.xls', '.xlsx'):
@@ -1566,6 +1553,7 @@ class Feedback:
                 df = df.reset_index()
                 file = filedialog.asksaveasfilename(filetypes=[('csv', '.csv')], defaultextension=".csv")
                 df.to_csv(file)
+
 
     def align_well_baro_bulk(self):
         # TODO add feature to recognize global water transducers
