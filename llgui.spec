@@ -8,8 +8,10 @@ a = Analysis(['C:\\Users\\paulinkenbrandt\\loggerloader\\loggerloader\\llgui.py'
              pathex=['C:\\Users\\paulinkenbrandt\\loggerloader\\loggerloader'],
              binaries=None,
              hiddenimports = ["babel.dates", "babel.numbers"],
-             datas=[('C:\\Users\\paulinkenbrandt\\loggerloader\\data_files\\', 'data_files'),
-             ('C:\\Users\\paulinkenbrandt\\loggerloader\\themes\\', 'themes'),
+             datas=[('C:\\Users\\paulinkenbrandt\\loggerloader\\loggerloader\\data_files\\', 'data_files'),
+             ('C:\\Users\\paulinkenbrandt\\loggerloader\\loggerloader\\themes\\', 'themes'),
+             ('C:\\Users\\paulinkenbrandt\\loggerloader\\loggerloader\\themes\\forest-light\\', 'themes/forest-light'),
+             ('C:\\Users\\paulinkenbrandt\\loggerloader\\loggerloader\\themes\\forest-dark\\', 'themes/forest-dark'),
              ('C:\\Users\\paulinkenbrandt\\loggerloader\\venv\\Lib\\site-packages\\matplotlib\\mpl-data\\', "matplotlib/mpl-data")],
              win_no_prefer_redirects=False,
              win_private_assemblies=False,
@@ -19,7 +21,7 @@ a = Analysis(['C:\\Users\\paulinkenbrandt\\loggerloader\\loggerloader\\llgui.py'
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 
-splash = Splash('./data_files/SplashPic.png',
+splash = Splash('loggerloader/data_files/SplashPic.png',
                 binaries=a.binaries,
                 datas=a.datas,
                 text_pos=(10, 50),

@@ -23,7 +23,8 @@ from pylab import rcParams
 from PIL import ImageTk, Image
 
 import platform
-
+import os
+import sys
 
 #from pandas.plotting import register_matplotlib_converters
 
@@ -54,6 +55,16 @@ try:
 except AttributeError:
     pass
 
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
 
 class Feedback:
 
@@ -69,14 +80,14 @@ class Feedback:
 
         # Import the tcl file
         try:
-            master.tk.call("source", "../themes/forest-dark.tcl")
-            master.tk.call("source", "../themes/forest-light.tcl")
 
+            master.tk.call("source", resource_path("themes/forest-dark.tcl"))
+            master.tk.call("source", resource_path("themes/forest-light.tcl"))
             self.style.theme_use("forest-light")
         except:
             try:
-                master.tk.call("source", "./themes/forest-dark.tcl")
-                master.tk.call("source", "./themes/forest-light.tcl")
+                master.tk.call("source", resource_path("themes/forest-dark.tcl"))
+                master.tk.call("source", resource_path("themes/forest-light.tcl"))
 
                 self.style.theme_use("forest-light")
             except:
@@ -106,7 +117,7 @@ class Feedback:
         # self.start_logging()
 
         try:
-            self.root.iconbitmap(r'../data_files/icon.ico')
+            self.root.iconbitmap(resource_path('data_files/icon.ico'))
         except:
             try:
                 print('no')
@@ -147,7 +158,8 @@ class Feedback:
         self.tableframe = {}
         self.graph_frame1 = {}
         self.graphcanvas = {}
-
+        self.flip_y_check = {}
+        self.flip_y_status = tk.IntVar(value=0)
         self.wellbarocsv = {}
 
         # jump fix dictionaries
@@ -683,6 +695,63 @@ class Feedback:
 
         # self.entry[key].bind('<3>', lambda k: self.wellbaroabb(key))
         filefinderframe.pack()
+
+    def unit_converter_popup(self):
+        if self.selected_tab:
+            key = self.selected_tab
+        else:
+            key = 'well'
+        key = self.selected_tab
+        self.unit_popup = tk.Toplevel()
+        self.unit_popup.geometry("300x200+200+200")
+        ttk.Label(self.unit_popup, text=f'Adds new field with converted units of selected field').pack()
+        ttk.Label(self.unit_popup, text=f'from {self.selected_tab} {self.field}').pack()
+
+        incolumns = ['C','F','psi','mmHg','ft','bar']
+        outcolumns = ['C','F','psi','mmHg','ft','bar']
+
+        ttk.Label(self.unit_popup, text='Units of Selected Column').pack()
+        self.unit_converter_in = ttk.Combobox(self.unit_popup, values=incolumns)
+        self.unit_converter_in.pack()
+
+        ttk.Label(self.unit_popup, text='Desired Units of New Column').pack()
+        self.unit_converter_out = ttk.Combobox(self.unit_popup, values=outcolumns)
+        self.unit_converter_out.pack()
+        self.unit_converter_in.bind("<<ComboboxSelected>>",self.refinecombo)
+
+        self.unitbutt = ttk.Button(self.unit_popup, text='Convert', command=self.convertunits)
+        self.unitbutt.pack()
+    def refinecombo(self,event):
+        in_units = self.unit_converter_in.get()
+        out_columns_press = ['psi','mmHg','ft','bar']
+        out_columns_temp = ['C','F']
+
+        if in_units in out_columns_press:
+            self.unit_converter_out['values'] = out_columns_press
+        else:
+            self.unit_converter_out['values'] = out_columns_temp
+    def convertunits(self):
+        key = self.selected_tab
+        self.add_graph_table(key)
+        in_units = self.unit_converter_in.get()
+        out_units = self.unit_converter_out.get()
+
+        print(in_units, out_units)
+        conversion_factor = 2
+        self.data[key][f"{self.field}_{out_units}"] = self.data[key][self.field]*conversion_factor
+        #new_column = list(self.data[key][f"{self.field}_{out_units}"].values)
+        new_column = list((self.data[key][self.field]*conversion_factor).values)
+        #self.end_edit_cell(key=key)
+        print(new_column)
+        #self.datatable[key].insert_column(values=new_column,
+        #                                  idx="end", deselect_all=False, equalize_data_row_lengths=True,
+        #                                  mod_column_positions=True, redraw=True)
+        self.end_edit_cell(key=key)
+        self.datatable[key].redraw(redraw_header=True, redraw_row_index=True)
+
+        self.make_chart(key=key)
+        self.unit_popup.destroy()
+
 
     def jump_fix_popup(self):
         if self.selected_tab:
@@ -1223,7 +1292,7 @@ class Feedback:
         panedframe.add(self.graphframe[key], weight=grph)
         labframe = ttk.Frame(self.graphframe[key])
         labframe.pack()
-        ttk.Label(labframe, text='Click on column of choice and then the Plot button!').pack()
+        ttk.Label(labframe, text='Click on column of choice to Plot column!').pack()
         return self.graphframe[key], self.tableframe[key]
 
     def make_chart(self, event=None, key=None):
@@ -1232,9 +1301,12 @@ class Feedback:
 
         if event:
             self.field = list(self.data[key].columns)[event[1] - 1]
-        #self.datajumptol.set(self.data[key][self.field].std()*5)
-        #self.dataminvar.set(self.data[key][self.field].mean() - self.data[key][self.field].std()*4)
-        #self.datamaxvar.set(self.data[key][self.field].mean() + self.data[key][self.field].std()*4)
+
+        if self.field:
+            pass
+        else:
+            self.field = list(self.data[key].columns)[0]
+
         print(self.field)
 
         # remove old widgets
@@ -1252,6 +1324,10 @@ class Feedback:
         x = self.data[key].index
         y = self.data[key][self.field]
         a.plot(x, y)
+
+        if key in self.flip_y_check.keys():
+            if self.flip_y_check[key].instate(['selected']):
+                a.invert_yaxis()
 
         a.set_ylabel(self.field)
         for label in a.get_xticklabels():
@@ -1295,6 +1371,9 @@ class Feedback:
         if event:
             return event.text
 
+    def flip_y(self, event=None, key=None):
+        self.make_chart(key=key)
+
     def add_graph_table(self, key):
         """
 
@@ -1321,6 +1400,15 @@ class Feedback:
         self.datatable[key].popup_menu_add_command("---------", self.placeholder_func)
         self.datatable[key].popup_menu_add_command("Trim Extrema", self.trim_extrema_popup)
         self.datatable[key].popup_menu_add_command("Jump Fix", self.jump_fix_popup)
+
+        #self.datatable[key].popup_menu_add_command("Convert Units", self.unit_converter_popup)
+
+        self.flip_y_check[key] = ttk.Checkbutton(self.graph_frame1[key], text='Flip y-axis',
+                                                 command=lambda: self.flip_y(key=key),
+                        variable=self.flip_y_status, onvalue=1,
+                        offvalue=0)
+        self.flip_y_check[key].pack()
+        self.make_chart(key=key)
         self.graph_frame1[key].pack()
 
         if key == 'well':
