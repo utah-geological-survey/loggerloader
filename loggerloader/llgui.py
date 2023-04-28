@@ -798,12 +798,12 @@ class Feedback:
 
         self.dataminvar = tk.DoubleVar(exframe, value=-9999.0)
         self.datamaxvar = tk.DoubleVar(exframe, value=9999.0)
-        self.datamin = ttk.Entry(exframe, textvariable=self.dataminvar, width=10, state='disabled')
+        self.datamin = ttk.Entry(exframe, textvariable=self.dataminvar, width=10)
         self.datamin.grid(column=1, row=2)
 
         dataminlab = ttk.Label(exframe, text='Max Allowed Value:')
         dataminlab.grid(column=0, row=3)
-        self.datamax = ttk.Entry(exframe, textvariable=self.datamaxvar, width=10, state='disabled')
+        self.datamax = ttk.Entry(exframe, textvariable=self.datamaxvar, width=10)
         self.datamax.grid(column=1, row=3)
         self.trimbutt = ttk.Button(exframe, text='Trim Extrema', command=self.trimextrema)
         self.trimbutt.grid(column=0, row=4,columnspan=2)
@@ -854,6 +854,7 @@ class Feedback:
         ttk.Label(frame_step5, textvariable=self.max_drift).grid(row=2, column=2)
         # self.locchk = ttk.Entry(self.frame_step5)
         # self.locchk.grid(column=1,row=0)
+
 
     def add_alignment_interface(self):
         # Align Manual and Baro Data
@@ -915,6 +916,7 @@ class Feedback:
                                                 values=['ft', 'm'], state="readonly")
         self.wellgroundelevunits.current(0)
         self.wellstickup = ttk.Entry(frame_step6, width=4)
+        self.wellstickup.insert(0,0)
         self.wellstickupunits = ttk.Combobox(frame_step6, width=5,
                                              values=['ft', 'm'], state="readonly")
         self.wellstickupunits.current(0)
@@ -967,6 +969,7 @@ class Feedback:
                 key2 = 'manual'
 
             self.end_edit_cell(key=key2)
+
             self.data[key2]['dtwbelowcasing'] = self.data[key2]['dtwbelowcasing'] * -1
             # self.end_edit_cell(key=key2)
             # self.datatable[key2].update()
@@ -1318,6 +1321,79 @@ class Feedback:
         plt.clf()
         # create new elements
 
+        fig = Figure(figsize=(5.5, 4.5))
+
+        a = fig.add_subplot(211)
+        x = self.data[key].index
+        if self.field in self.data[key].columns:
+            y = self.data[key][self.field]
+        else:
+            y = self.data[key][list(self.data[key].columns)[0]]
+
+
+        if key in self.flip_y_check.keys():
+            if self.flip_y_check[key].instate(['selected']):
+                a.invert_yaxis()
+
+        a.set_ylabel(self.field)
+
+        if key == 'well-baro':
+            if "corrwl" in self.data[key].columns:
+                a.plot(x, self.data[key]['corrwl'], label='Corrected Data')
+            if "Level" in self.data[key].columns:
+                a.plot(x, self.data[key]['Level'], label='Raw Data')
+            b = a.twinx()
+            if "barometer" in self.data[key].columns:
+                b.plot(x, self.data[key]['barometer'], label='Barometer', color='red')
+                a.plot([], [], label='Barometer', color='red')
+            a.legend(bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left",
+                mode="expand", borderaxespad=0, ncol=3)
+        elif key == "fixed-drift":
+            if 'manual-single' in self.data.keys():
+                a.scatter(self.data['manual-single'].index,self.data['manual-single']['dtwbelowcasing'],color='red')
+                a.plot(self.data['fixed-drift'].index,self.data['fixed-drift']['DTW_WL'])
+        else:
+            a.plot(x, y, label=self.field)
+            a.grid()
+
+        for label in a.get_xticklabels():
+            label.set_ha("right")
+            label.set_rotation(45)
+
+        a.set_xlabel("Date")
+        # fig.set_tight_layout(True)
+
+        canvas = FigureCanvasTkAgg(fig, self.graph_frame1[key])
+
+        self.toolbar = NavigationToolbar2Tk(canvas, self.graph_frame1[key])
+        # toolbar.update()
+
+        self.graphcanvas[key] = canvas.get_tk_widget()
+        self.graphcanvas[key].pack(fill=tk.BOTH)
+
+    def make_well_baro_chart(self, event=None, key=None):
+
+        self.end_edit_cell(key=key)
+
+        if event:
+            self.field = list(self.data[key].columns)[event[1] - 1]
+
+        if self.field:
+            pass
+        else:
+            self.field = list(self.data[key].columns)[0]
+
+        print(self.field)
+
+        # remove old widgets
+        if key in self.graphcanvas.keys():
+            self.graphcanvas[key].destroy()
+
+        if self.toolbar:
+            self.toolbar.destroy()
+        plt.clf()
+        # create new elements
+
         fig = Figure(figsize=(5.5, 4))
 
         a = fig.add_subplot(211)
@@ -1344,6 +1420,7 @@ class Feedback:
 
         self.graphcanvas[key] = canvas.get_tk_widget()
         self.graphcanvas[key].pack(fill=tk.BOTH)
+
 
 
     def end_edit_cell(self, event=None, key=None):
@@ -1449,8 +1526,8 @@ class Feedback:
             key2 = 'manual'
         if key == 'fixed-drift':
 
-            ax.plot(self.data[key]['DTW_WL'], color='green', label='unprocessed')
-            ax.scatter(self.data[key2].index, self.data[key2]['dtwbelowcasing'])
+            ax.plot(self.data[key]['DTW_WL']*-1, color='green', label='unprocessed')
+            ax.scatter(self.data[key2].index, self.data[key2]['dtwbelowcasing'],color='red')
             ax.set_ylabel(f"Depth to Water (ft)")
         elif key == 'wl-elev':
             ax.plot(self.data[key]['waterelevation'], color='green', label='unprocessed')
@@ -1625,7 +1702,6 @@ class Feedback:
         """
 
         Returns: notepad tab with aligned data;
-        TODO Add File type combo to improve csv processing
         """
         if 'well' in self.data.keys() and 'baro' in self.data.keys():
             key = 'well-baro'
@@ -2172,6 +2248,8 @@ class Feedback:
         codedtabname = self.notebook.select()
         self.selected_tab = self.notebook.tab(codedtabname, "text")
         print(self.selected_tab)
+        key = self.selected_tab
+        self.make_chart(key=key)
 
 
 
