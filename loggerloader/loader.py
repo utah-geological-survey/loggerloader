@@ -1046,6 +1046,8 @@ def read_troll_csv(filename):
                 df['Level'] = df[col]*2.3067
             elif "Hg" in col:
                 df['Level'] = df[col]*0.044603
+            elif "kPa" in col:
+                df['Level'] = df[col]*0.33455
             #df = df.rename(columns={col:"Level"})
         elif "Depth" in col or "Cond" in col or "Total" in col or "Salin" in col or "Dens" in col or "Temp" in col:
             df[col] = pd.to_numeric(df[col])
