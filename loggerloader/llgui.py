@@ -703,11 +703,11 @@ class Feedback:
             key = 'well'
         key = self.selected_tab
         self.unit_popup = tk.Toplevel()
-        self.unit_popup.geometry("300x200+200+200")
+        self.unit_popup.geometry("300x250+200+200")
         ttk.Label(self.unit_popup, text=f'Adds new field with converted units of selected field').pack()
         ttk.Label(self.unit_popup, text=f'from {self.selected_tab} {self.field}').pack()
 
-        incolumns = ['C','F','psi','mmHg','ft','bar']
+        incolumns = ['C','F','psi','mmHg','ft','bar','kPa']
         outcolumns = ['C','F','psi','mmHg','ft','bar']
 
         ttk.Label(self.unit_popup, text='Units of Selected Column').pack()
@@ -716,8 +716,15 @@ class Feedback:
 
         ttk.Label(self.unit_popup, text='Desired Units of New Column').pack()
         self.unit_converter_out = ttk.Combobox(self.unit_popup, values=outcolumns)
+        self.unit_converter_out.current(4)
         self.unit_converter_out.pack()
         self.unit_converter_in.bind("<<ComboboxSelected>>",self.refinecombo)
+        self.unit_converter_out.bind("<<ComboboxSelected>>",self.refine_outfield_combo)
+
+        ttk.Label(self.unit_popup, text='New Column Name').pack()
+        self.unit_converter_fieldname = ttk.Combobox(self.unit_popup, values=['Level'])
+        self.unit_converter_fieldname.current(0)
+        self.unit_converter_fieldname.pack()
 
         self.unitbutt = ttk.Button(self.unit_popup, text='Convert', command=self.convertunits)
         self.unitbutt.pack()
@@ -730,26 +737,69 @@ class Feedback:
             self.unit_converter_out['values'] = out_columns_press
         else:
             self.unit_converter_out['values'] = out_columns_temp
+            if in_units == 'C':
+                self.unit_converter_out.current(1)
+                self.unit_converter_fieldname['values'] = ['Level', f'{self.field}_F']
+            else:
+                self.unit_converter_out.current(0)
+                self.unit_converter_fieldname['values'] = ['Level', f'{self.field}_C']
+
+    def refine_outfield_combo(self, event):
+        out_units = self.unit_converter_out.get()
+        self.unit_converter_fieldname['values'] = ['Level',f'{self.field}_{out_units}']
+
     def convertunits(self):
         key = self.selected_tab
-        self.add_graph_table(key)
+
         in_units = self.unit_converter_in.get()
         out_units = self.unit_converter_out.get()
+        out_field = self.unit_converter_fieldname.get()
 
-        print(in_units, out_units)
-        conversion_factor = 2
-        self.data[key][f"{self.field}_{out_units}"] = self.data[key][self.field]*conversion_factor
-        #new_column = list(self.data[key][f"{self.field}_{out_units}"].values)
-        new_column = list((self.data[key][self.field]*conversion_factor).values)
-        #self.end_edit_cell(key=key)
-        print(new_column)
-        #self.datatable[key].insert_column(values=new_column,
-        #                                  idx="end", deselect_all=False, equalize_data_row_lengths=True,
-        #                                  mod_column_positions=True, redraw=True)
+        incolumns = ['psi','mmHg','ft','bar','kPa']
+        outcolumns = ['psi','mmHg','ft','bar']
+
+        conversion_factor = {'psi_ft':2.3072493927233,
+                             'mmHg_ft':0.044603347619955,
+                             'ft_ft':1.0,
+                             'bar_ft':33.455256555148,
+                             'kPa_ft':0.33455256555148,
+                             'psi_psi':1.0,
+                             'mmHg_psi':0.0193368,
+                             'ft_psi':0.43352750192825,
+                             'bar_psi':14.5038,
+                             'kPa_psi':0.145038,
+                             'mmHg_mmHg':1.0,
+                             'psi_mmHg':51.7149,
+                             'ft_mmHg':22.41984185852,
+                             'bar_bar':1.0,
+                             'mmHg_bar':0.00133322,
+                             'kPa_bar':0.01,
+                             'ft_bar':0.029890669
+                             }
+
+        if in_units == 'C':
+            self.data[key][out_field] = self.data[key][self.field] * 1.8 + 32.0
+        elif in_units == 'F':
+            self.data[key][out_field] = (self.data[key][self.field] - 32.0) * 0.555555555
+        elif f'{in_units}_{out_units}' in conversion_factor.keys():
+            self.data[key][out_field] = self.data[key][self.field]*conversion_factor[f'{in_units}_{out_units}']
+
+        self.datatable[key].set_sheet_data(data=self.data[key].reset_index().values.tolist(),
+                       reset_col_positions=True,
+                       reset_row_positions=True,
+                       redraw=True,
+                       verify=False,
+                       reset_highlights=False)
+        self.datatable[key].headers(self.data[key].reset_index().columns)
+        #self.datatable[key].redraw(redraw_header=True, redraw_row_index=True)
         self.end_edit_cell(key=key)
-        self.datatable[key].redraw(redraw_header=True, redraw_row_index=True)
 
-        self.make_chart(key=key)
+        if key == 'well':
+            self.wellalignfieldbox['values'] = list(self.data[key].columns)
+        elif key == 'baro':
+            self.baroalignfieldbox['values'] = list(self.data[key].columns)
+        #self.make_chart(key=key)
+        #self.add_graph_table(key)
         self.unit_popup.destroy()
 
 
@@ -864,12 +914,12 @@ class Feedback:
         ttk.Label(frame_step3, text="3. Align Baro and Well Data:").grid(row=0, column=0, columnspan=5)
 
         ttk.Label(frame_step3, text='Well field').grid(row=1, column=0, columnspan=1)
-        self.wellalignfieldbox = ttk.Combobox(frame_step3, width=5, values=['Level'])
+        self.wellalignfieldbox = ttk.Combobox(frame_step3, width=9, values=['Level'])
         self.wellalignfieldbox.grid(row=1, column=2)
         self.wellalignfieldbox.current(0)
 
         ttk.Label(frame_step3, text='Baro field').grid(row=1, column=3, columnspan=1)
-        self.baroalignfieldbox = ttk.Combobox(frame_step3, width=5, values=['Level'])
+        self.baroalignfieldbox = ttk.Combobox(frame_step3, width=9, values=['Level'])
         self.baroalignfieldbox.grid(row=1, column=4)
         self.baroalignfieldbox.current(0)
 
@@ -1477,7 +1527,7 @@ class Feedback:
         self.datatable[key].popup_menu_add_command("---------", self.placeholder_func)
         self.datatable[key].popup_menu_add_command("Trim Extrema", self.trim_extrema_popup)
         self.datatable[key].popup_menu_add_command("Jump Fix", self.jump_fix_popup)
-
+        self.datatable[key].popup_menu_add_command("Convert Units", self.unit_converter_popup)
         #self.datatable[key].popup_menu_add_command("Convert Units", self.unit_converter_popup)
 
         self.flip_y_check[key] = ttk.Checkbutton(self.graph_frame1[key], text='Flip y-axis',
@@ -2166,11 +2216,58 @@ class Feedback:
         for key in self.datatable.keys():
             self.datatable[key].change_theme(theme=self.sheettheme, redraw=True)
 
+    def exportalltoexel(self):
+        filename = filedialog.asksaveasfilename(filetypes=[('Excel', '.xlsx')],
+                                                defaultextension=".xlsx",
+                                                confirmoverwrite=True)
+        if filename is None:
+            print('no')
+            return
+        else:
+            filename, file_extension = os.path.splitext(filename)
+
+            if len(self.data.keys())>0:
+                with pd.ExcelWriter(filename+".xlsx") as writer:
+                    for key, values in self.data.items():
+                        values.to_excel(writer, sheet_name=key)
+        return
+    def exportcurrenttocsv(self):
+
+        filename = filedialog.asksaveasfilename(filetypes=[('csv', '.csv')],
+                                                defaultextension=".csv",
+                                                confirmoverwrite=True)
+        if filename is None:
+            print('no')
+            return
+        else:
+            self.end_edit_cell(key=self.selected_tab)
+
+            filename, file_extension = os.path.splitext(filename)
+            self.data[self.selected_tab].to_excel(filename+".csv", sheet_name=self.selected_tab)
+
+        return
+
+    def exportcurrenttoexcel(self):
+
+        filename = filedialog.asksaveasfilename(filetypes=[('Excel', '.xlsx')],
+                                                defaultextension=".xlsx",
+                                                confirmoverwrite=True)
+        if filename is None:
+            print('no')
+            return
+        else:
+            self.end_edit_cell(key=self.selected_tab)
+            filename, file_extension = os.path.splitext(filename)
+            self.data[self.selected_tab].to_excel(filename+".xlsx", sheet_name= self.selected_tab)
+
+        return
+
     def create_menu_bar(self):
         """Create the menu bar for the application. """
 
         self.menu = tk.Menu(self.main)
         file_menu = tk.Menu(self.menu, tearoff=0)
+        export_menu = tk.Menu(self.menu, tearoff=0)
         # add recent first
 
         filemenuitems = {'01Quit': {'cmd': self.quit}}
@@ -2180,6 +2277,13 @@ class Feedback:
         thememenuitems = {'01Dark Theme':{'cmd':self.darktheme},'02Lite Theme':{'cmd':self.lighttheme}}
         self.theme_menu = self.create_pulldown(self.menu, thememenuitems)
         self.menu.add_cascade(label='Theme', menu=self.theme_menu['var'])
+
+        exportmenuitems = {'01Export All Sheets to Excel':{'cmd':self.exportalltoexel},
+                           '02Export Active Sheet to CSV':{'cmd':self.exportcurrenttocsv},
+                           '03Export Active Sheet to Excel':{'cmd':self.exportcurrenttoexcel}
+                           }
+        self.export_menu = self.create_pulldown(self.menu, exportmenuitems, var=export_menu)
+        self.menu.add_cascade(label='Export Sheet', menu=self.export_menu['var'])
 
         self.help_menu = {'01Online Help': {'cmd': self.online_documentation},
                           '02About': {'cmd': self.about}}
