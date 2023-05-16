@@ -80,7 +80,6 @@ class Feedback:
 
         # Import the tcl file
         try:
-
             master.tk.call("source", resource_path("themes/forest-dark.tcl"))
             master.tk.call("source", resource_path("themes/forest-light.tcl"))
             self.style.theme_use("forest-light")
@@ -100,8 +99,6 @@ class Feedback:
         self.root = master
         self.main = master
         self.master = master
-
-
 
         # Set the theme with the theme_use method
 
@@ -127,8 +124,6 @@ class Feedback:
         self.currentdir = os.path.expanduser('~')
 
         self.create_menu_bar()
-
-
 
         ## -- MAKE EMPTY DICTIONARIES TO HOLD CLASS OBJECTS -- ##
 
@@ -427,6 +422,18 @@ class Feedback:
         ent = ttk.Entry(bulk_drift_frame, textvariable=self.max_allowed_drift, width=10)
         ent.grid(row=1, column=2)
 
+        # ONE WELL MANY FILES PROCESSING TAB for left side of application ---------------------------------------------
+        # Header image logo and Description seen by user
+        owmf_frame_header = ttk.Frame(self.manyfiletab)
+        owmf_frame_header.pack(pady=5)
+        # Included because some attachments fail when packaging code
+        ttk.Label(owmf_frame_header, wraplength=450,
+                  text=" Utah Geological Survey Scripts for Processing transducer data").grid(row=0, column=0)
+
+        self.filefinders('well-many')
+        self.filefinders('baro-many')
+
+
     def onFrameConfigure(self, event):
         """Reset the scroll region to encompass the inner frame"""
         self.canvas.configure(scrollregion=self.canvas.bbox("all"))
@@ -496,7 +503,7 @@ class Feedback:
         well_info_frame.pack()
         self.selected_tab = 'well-info-table'
         self.datastr[self.selected_tab] = tk.StringVar(well_info_frame)
-        self.datastr[self.selected_tab].set("ugs_ngwmn_monitoring_locations.csv")
+        self.datastr[self.selected_tab].set(resource_path("data_files/ugs_ngwmn_monitoring_locations.csv"))
 
         ttk.Label(well_info_frame, text='1. Input well info file (must be csv)').grid(row=0, column=0, columnspan=3)
 
@@ -667,9 +674,18 @@ class Feedback:
         """Adds the label and entry fields for single raw barometric or level files"""
         self.selected_tab = key
         datasets = {"well": "1. Select Well Data:",
-                    "baro": "2. Select Barometric Data:"}
-        ttk.Separator(self.onewelltab, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
-        filefinderframe = ttk.Frame(self.onewelltab)
+                    "baro": "2. Select Barometric Data:",
+                    "well-many":"1. Select Well Data Directory",
+                    "baro-many":"2. Select Baro Data Directory"
+                    }
+
+        if key in ("well","baro"):
+            placeframe = self.onewelltab
+        else:
+            placeframe = self.manyfiletab
+
+        ttk.Separator(placeframe, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
+        filefinderframe = ttk.Frame(placeframe)
         ttk.Label(filefinderframe, text=datasets[key]).grid(column=0, row=0, columnspan=3)
         #ttk.Label(filefinderframe, text='(Right click for refresh.)').grid(column=2, row=0, columnspan=3)
 
@@ -677,7 +693,10 @@ class Feedback:
         self.entry[key] = ttk.Entry(filefinderframe, textvariable=self.datastr[key], width=60)
         self.entry[key].grid(column=0, row=1, columnspan=2)
 
-        self.entry[key].bind('<Double-ButtonRelease-1>', lambda k: self.wellbarodiag(key))
+        if key in ("well","baro"):
+            self.entry[key].bind('<Double-ButtonRelease-1>', lambda k: self.wellbarodiag(key))
+        else:
+            self.entry[key].bind('<Double-ButtonRelease-1>', lambda k: self.wellbaromanydiag(key))
 
         self.filetype[key] = tk.StringVar(filefinderframe, value="xle")
         self.fileselectcombo[key] = ttk.Combobox(filefinderframe, width=10,
@@ -687,13 +706,6 @@ class Feedback:
 
         self.fileselectcombo[key].grid(column=2, row=1, columnspan=2)
 
-        # self.fileselectcombo[key].current(self.filetype)
-        #self.fileselectbutt[key] = ttk.Button(filefinderframe,
-        #                                      text='Import data',
-        #                                      command=lambda: self.wellbaroabb(key))
-        #self.fileselectbutt[key].grid(column=4, row=1, columnspan=1)
-
-        # self.entry[key].bind('<3>', lambda k: self.wellbaroabb(key))
         filefinderframe.pack()
 
     def unit_converter_popup(self):
@@ -1586,19 +1598,20 @@ class Feedback:
         ax.set_xlim(self.data[key2].first_valid_index() - pd.Timedelta('3 days'),
                     self.data[key2].last_valid_index() + pd.Timedelta('3 days'), )
 
+
     def wellbaroabb(self, key):
         if self.datastr[key].get() == '' or type(self.datastr[key].get()) == tuple or self.datastr[
             key].get() == f'Double-Click for {key} file':
             pass
         else:
             if key in ['well','baro']:
+
                 # 'xle','raw csv', 'Excel', 'modified csv'
                 if self.fileselectcombo[key].get() in ['xle', 'Global Water csv']:
                     self.data[key] = NewTransImp(self.datastr[key].get()).well.drop(['name'], axis=1)
                 elif self.fileselectcombo[key].get() in ['Excel']:
                     # self.data[key] = pd.read_excel(self.datastr[key].get())
                     self.wellbaroxl[key] = pd.ExcelFile(self.datastr[key].get())
-
                     self.openNewWindowxl(key)
                 elif self.fileselectcombo[key].get() in ['csv']:
                     self.data[key] = pd.read_csv(self.datastr[key].get())
@@ -1627,6 +1640,26 @@ class Feedback:
                     self.data[key] = pd.read_excel(self.datastr[key].get())
                 elif file_extension == '.csv':
                     self.data[key] = pd.read_csv(self.datastr[key].get())
+            elif key in ('well-many', 'baro-many'):
+                print(self.fileselectcombo[key].get())
+                file_extension = self.fileselectcombo[key].get()
+                dfs = {}
+                print((f"{self.currentdir}/*.{file_extension}"))
+                for file in glob.glob(f"{self.currentdir}/*.{file_extension}"):
+                    print(file)
+                    if file_extension in ['xle', 'Global Water csv']:
+                        dfs[file] = NewTransImp(file).well.drop(['name'], axis=1)
+                    elif file_extension in ['Excel']:
+                        # self.data[key] = pd.read_excel(self.datastr[key].get())
+                        self.wellbaroxl[key] = pd.ExcelFile(file)
+                    elif file_extension in ['csv']:
+                        dfs[file] = pd.read_csv(file)
+                    elif file_extension in ['Troll htm']:
+                        dfs[file] = read_troll_htm(file)
+                    elif file_extension in ['Troll csv']:
+                        dfs[file] = read_troll_csv(file)
+                    print(file)
+                self.data[key] = pd.concat(dfs, ignore_index=False)
             # add notepad tab
             self.graphframe[key], self.tableframe[key] = self.note_tab_add(key)
             # add graph and table to new tab
@@ -1747,6 +1780,15 @@ class Feedback:
         self.wellbaroabb(key)
         # Action if cancel in file dialog is pressed
         # self.wellbaroabb(key)
+
+    def wellbaromanydiag(self, key):
+        self.datastr[key].set(filedialog.askdirectory(initialdir=self.currentdir,
+                                                         title=f"Select {key} directory",
+                                                         ))
+        #self.currentdir = self.datastr[key].get()
+        self.currentdir = self.datastr[key].get()
+        #self.filetype[key].set(extdir.get(ext, 'xle'))
+        self.wellbaroabb(key)
 
     def alignedplot(self):
         """
