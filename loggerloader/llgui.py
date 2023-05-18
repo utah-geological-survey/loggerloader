@@ -1641,29 +1641,55 @@ class Feedback:
                 elif file_extension == '.csv':
                     self.data[key] = pd.read_csv(self.datastr[key].get())
             elif key in ('well-many', 'baro-many'):
-                print(self.fileselectcombo[key].get())
-                file_extension = self.fileselectcombo[key].get()
-                dfs = {}
-                print((f"{self.currentdir}/*.{file_extension}"))
-                for file in glob.glob(f"{self.currentdir}/*.{file_extension}"):
-                    print(file)
-                    if file_extension in ['xle', 'Global Water csv']:
-                        dfs[file] = NewTransImp(file).well.drop(['name'], axis=1)
-                    elif file_extension in ['Excel']:
-                        # self.data[key] = pd.read_excel(self.datastr[key].get())
-                        self.wellbaroxl[key] = pd.ExcelFile(file)
-                    elif file_extension in ['csv']:
-                        dfs[file] = pd.read_csv(file)
-                    elif file_extension in ['Troll htm']:
-                        dfs[file] = read_troll_htm(file)
-                    elif file_extension in ['Troll csv']:
-                        dfs[file] = read_troll_csv(file)
-                    print(file)
-                self.data[key] = pd.concat(dfs, ignore_index=False)
+                self.impmanyfiles(key)
+
             # add notepad tab
             self.graphframe[key], self.tableframe[key] = self.note_tab_add(key)
             # add graph and table to new tab
             self.add_graph_table(key)
+
+    def impmanyfiles(self, key):
+
+        popup = tk.Toplevel()
+        popup.geometry("400x100+200+200")
+        ttk.Label(popup, text="Examining Directory...").pack()
+        pg = ttk.Progressbar(popup, orient=tk.HORIZONTAL, mode='determinate', length=200)
+        pg.pack()
+
+        self.selected_tab = key
+
+        ht = HeaderTable(self.datastr['trans-dir'].get())
+
+        sv = tk.StringVar(popup, value='')
+        ttk.Label(popup, textvariable=sv).pack()
+
+        file_extension = self.fileselectcombo[key].get()
+        dfs = {}
+        pg.config(maximum=len(glob.glob(f"{self.currentdir}/*.{file_extension}")))
+        for file in glob.glob(f"{self.currentdir}/*.{file_extension}"):
+            popup.update()
+            base = os.path.basename(file)
+            if file_extension in ['xle', 'Global Water csv']:
+                dfs[file] = NewTransImp(file).well.drop(['name'], axis=1)
+            elif file_extension in ['Excel']:
+                # self.data[key] = pd.read_excel(self.datastr[key].get())
+                self.wellbaroxl[key] = pd.ExcelFile(file)
+            elif file_extension in ['csv']:
+                dfs[file] = pd.read_csv(file)
+            elif file_extension in ['Troll htm']:
+                dfs[file] = read_troll_htm(file)
+            elif file_extension in ['Troll csv']:
+                dfs[file] = read_troll_csv(file)
+            print(file)
+            pg.step()
+            sv.set(base)
+        popup.destroy()
+        dfa = pd.concat(dfs, ignore_index=False)
+        print(dfa.columns)
+        dfa = dfa.reset_index().drop('level_0',axis=1)
+        dfa = dfa.set_index(dfa.columns[0]).sort_index().drop_duplicates()
+        self.data[key] = dfa
+
 
     def openNewWindowcsv(self, key):
 

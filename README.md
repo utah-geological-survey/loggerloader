@@ -12,8 +12,8 @@ It has been tested most rigously on Python 3.7.
 It should work on both 32 and 64-bit platforms.  I have used it on Linux and Windows machines.
 
 Requirements for this python toolbox to work:
-* Pandas v. 1.00.0 or higher
-* Numpy v. 0.7.0 or higher
+* Pandas v. 1.5.0 or higher
+* Numpy v. 1.0.0 or higher
 * xlrd v. 0.5.4 or higher
 
 ## Description

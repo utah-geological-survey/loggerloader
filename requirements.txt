@@ -1,4 +1,4 @@
-Pandas >= 1.0
+Pandas >= 1.5
 Numpy >= 1.0
 Matplotlib >= 3.0
 xlrd >= 0.5.4
