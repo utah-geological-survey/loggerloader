@@ -232,7 +232,7 @@ class Feedback:
         self.filefinders('baro')  # Select and import baro data
 
         # Align Data
-        self.add_alignment_interface()
+        self.add_alignment_interface(self.onewelltab)
 
         # -----------Manual Data------------------------------------
         # Select Manual Table Interface
@@ -433,6 +433,7 @@ class Feedback:
         self.filefinders('well-many')
         self.filefinders('baro-many')
 
+        self.add_alignment_interface(self.manyfiletab)
 
     def onFrameConfigure(self, event):
         """Reset the scroll region to encompass the inner frame"""
@@ -918,10 +919,18 @@ class Feedback:
         # self.locchk.grid(column=1,row=0)
 
 
-    def add_alignment_interface(self):
+    def add_alignment_interface(self, masterframe):
         # Align Manual and Baro Data
-        ttk.Separator(self.onewelltab, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
-        frame_step3 = ttk.Frame(self.onewelltab)
+        if masterframe == self.onewelltab:
+            wellkey = 'well'
+            barokey = 'baro'
+        else:
+            wellkey = 'well-many'
+            barokey = 'baro-many'
+
+        ttk.Separator(masterframe, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
+
+        frame_step3 = ttk.Frame(masterframe)
         frame_step3.pack()
         ttk.Label(frame_step3, text="3. Align Baro and Well Data:").grid(row=0, column=0, columnspan=5)
 
@@ -944,7 +953,7 @@ class Feedback:
         self.freqtype.grid(row=3, column=1)
         self.freqtype.current(0)
         b = ttk.Button(frame_step3, text='Align Datasets',
-                       command=self.alignedplot)
+                       command=lambda:self.alignedplot(wellkey=wellkey,barokey=barokey))
         b.grid(row=3, column=2)
 
         self.export_wb = tk.IntVar(value=1)
@@ -1816,24 +1825,29 @@ class Feedback:
         #self.filetype[key].set(extdir.get(ext, 'xle'))
         self.wellbaroabb(key)
 
-    def alignedplot(self):
+    def alignedplot(self, wellkey='well', barokey='baro'):
         """
 
         Returns: notepad tab with aligned data;
         """
-        if 'well' in self.data.keys() and 'baro' in self.data.keys():
+        if wellkey == 'well':
             key = 'well-baro'
-            if self.is_vented.get() == 1:
-                sol = True
-            else:
-                sol = False
+        else:
+            key = 'well-baro-many'
+
+        if self.is_vented.get() == 1:
+            sol = True
+        else:
+            sol = False
+
+        if wellkey in self.data.keys() and barokey in self.data.keys():
 
             # dfwell = pd.DataFrame()
-            self.end_edit_cell(key='well')
-            self.end_edit_cell(key='baro')
+            self.end_edit_cell(key=wellkey)
+            self.end_edit_cell(key=barokey)
 
-            self.data[key] = well_baro_merge(self.data['well'],
-                                             self.data['baro'],
+            self.data[key] = well_baro_merge(self.data[wellkey],
+                                             self.data[barokey],
                                              wellcolumn=self.wellalignfieldbox.get(),
                                              barocolumn=self.baroalignfieldbox.get(),
                                              sampint=int(self.freqint.get()),
@@ -2311,7 +2325,7 @@ class Feedback:
             self.end_edit_cell(key=self.selected_tab)
 
             filename, file_extension = os.path.splitext(filename)
-            self.data[self.selected_tab].to_excel(filename+".csv", sheet_name=self.selected_tab)
+            self.data[self.selected_tab].to_csv(filename+".csv")
 
         return
 
