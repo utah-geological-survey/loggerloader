@@ -1,4 +1,5 @@
 import matplotlib
+import pandas as pd
 
 from tksheet import Sheet
 
@@ -135,6 +136,7 @@ class Feedback:
         self.entry = {}
         self.locidmatch = {}
         self.bulktransfilestr = {}  # dictionary to store trans file names
+        self.beg_end = {} # stores beginning and end of files
 
         # selecting files
         self.fileselectbutt = {}
@@ -392,7 +394,7 @@ class Feedback:
 
         self.proc_man_bulk_button = ttk.Button(self.bulk_manfileframe, text='Process Manual Data',
                                                command=self.proc_man_bulk)
-        self.proc_man_bulk_button.grid(column=1, row=5, columnspan=2)
+        self.proc_man_bulk_button.grid(column=1, row=6, columnspan=2)
         self.proc_man_bulk_button['state'] = 'disabled'
 
         ttk.Separator(dirselectframe, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
@@ -427,13 +429,67 @@ class Feedback:
         owmf_frame_header = ttk.Frame(self.manyfiletab)
         owmf_frame_header.pack(pady=5)
         # Included because some attachments fail when packaging code
-        ttk.Label(owmf_frame_header, wraplength=450,
-                  text=" Utah Geological Survey Scripts for Processing transducer data").grid(row=0, column=0)
+        ttk.Label(owmf_frame_header, wraplength=570,anchor="center",justify='center',
+                  text="This tab is used to process a folder with files that are exclusively from one well. It can only process one transducer type at a time.").grid(row=0, column=0)
+        ttk.Separator(self.manyfiletab, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
+
+        manyfinderframe = ttk.Frame(self.manyfiletab)
+        manyfinderframe.pack()
+        ttk.Label(manyfinderframe, text='0. Search for transducer files (optional)').grid(column=0, row=0,
+                                                                                            columnspan=4)
+        ttk.Label(manyfinderframe, text='Choose top level of area to search').grid(column=0, row=1,
+                                                                                          columnspan=2)
+
+        self.datastr['many-dir'] = tk.StringVar(manyfinderframe, value='Double-Click for search file directory')
+        self.manyfilefnd = ttk.Entry(manyfinderframe, textvariable=self.datastr['many-dir'], width=50)
+        self.manyfilefnd.grid(column=2, row=1, columnspan=2)
+        self.manyfilefnd.bind('<Double-ButtonRelease-1>', self.set_search_dir)
+
+        ttk.Label(manyfinderframe, text='Choose dir to place compiled files').grid(column=0, row=2,
+                                                                                          columnspan=2)
+
+
+        self.datastr['endmany-dir'] = tk.StringVar(manyfinderframe, value='Double-Click to set end directory')
+        self.manyfile_end = ttk.Entry(manyfinderframe, textvariable=self.datastr['endmany-dir'], width=50)
+        self.manyfile_end.grid(column=2, row=2, columnspan=2)
+        self.manyfile_end.bind('<Double-ButtonRelease-1>', self.set_end_dir)
+
+        ttk.Label(manyfinderframe, text='Wildcard').grid(column=0, row=3,columnspan=1)
+        self.datastr['many-wildcard'] = tk.StringVar(manyfinderframe, value='')
+        self.manyfile_card = ttk.Entry(manyfinderframe, textvariable=self.datastr['many-wildcard'], width=25)
+        self.manyfile_card.grid(column=1, row=3, columnspan=1)
+
+        ttk.Label(manyfinderframe, text='File Extension').grid(column=2, row=3,columnspan=1)
+        self.datastr['manyfiletype'] = tk.StringVar(manyfinderframe, value='xle')
+        self.manyfile_ext = ttk.Entry(manyfinderframe, textvariable=self.datastr['manyfiletype'], width=25)
+        self.manyfile_ext.grid(column=3, row=3, columnspan=1)
+
+        b = ttk.Button(manyfinderframe,
+                       text='Compile Transducer Files',
+                       command=self.compile_well_files)
+        b.grid(column=0, row=4, columnspan=4)
+
 
         self.filefinders('well-many')
         self.filefinders('baro-many')
-
+        ttk.Separator(self.manyfiletab, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
         self.add_alignment_interface(self.manyfiletab)
+        ttk.Separator(self.manyfiletab, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
+        ttk.Label(self.manyfiletab, text='4. Import Manual Data').pack()
+        # self.manfileframe(dirselectframe).pack()
+        self.many_manfileframe = ttk.Frame(self.manyfiletab)
+        self.many_manfileframe.pack()
+        self.man_file_frame(self.many_manfileframe, key='many-manual')
+
+        self.proc_man_many_button = ttk.Button(self.many_manfileframe, text='Process Manual Data',
+                                               command=self.proc_man_bulk)
+        self.proc_man_many_button.grid(column=1, row=6, columnspan=2)
+
+    def compile_well_files(self):
+        filecontains = self.datastr['many-wildcard'].get()
+        filecontains = str(filecontains).split(",")
+        filetype = self.datastr['manyfiletype'].get()
+        compilefiles(self.searchdir, self.enddir, filecontains, filetypes=[filetype])
 
     def onFrameConfigure(self, event):
         """Reset the scroll region to encompass the inner frame"""
@@ -676,8 +732,8 @@ class Feedback:
         self.selected_tab = key
         datasets = {"well": "1. Select Well Data:",
                     "baro": "2. Select Barometric Data:",
-                    "well-many":"1. Select Well Data Directory",
-                    "baro-many":"2. Select Baro Data Directory"
+                    "well-many" : "1. Select Well Data Directory",
+                    "baro-many" : "2. Select Baro Data Directory"
                     }
 
         if key in ("well","baro"):
@@ -1401,7 +1457,6 @@ class Feedback:
         else:
             y = self.data[key][list(self.data[key].columns)[0]]
 
-
         if key in self.flip_y_check.keys():
             if self.flip_y_check[key].instate(['selected']):
                 a.invert_yaxis()
@@ -1492,32 +1547,31 @@ class Feedback:
         self.graphcanvas[key] = canvas.get_tk_widget()
         self.graphcanvas[key].pack(fill=tk.BOTH)
 
-
-
     def end_edit_cell(self, event=None, key=None):
-        df = pd.DataFrame(self.datatable[key].get_sheet_data(return_copy=True, get_header=False, get_index=False))
-        df.index = self.data[key].index
+        if key in self.datatable.keys():
+            df = pd.DataFrame(self.datatable[key].get_sheet_data(return_copy=True, get_header=False, get_index=False))
+            df.index = self.data[key].index
 
-        if len(df.columns) == len(self.data[key].columns):
-            df.columns = self.data[key].columns
-        elif len(df.columns) - 1 == len(self.data[key].columns):
-            df = df.iloc[:, 1:]
-            df.columns = self.data[key].columns
-        else:
-            pass
-            print('Column transfer mismatch')
-
-        for col in df.columns:
-            try:
-                df[col] = pd.to_numeric(df[col])
-            except ValueError:
+            if len(df.columns) == len(self.data[key].columns):
+                df.columns = self.data[key].columns
+            elif len(df.columns) - 1 == len(self.data[key].columns):
+                df = df.iloc[:, 1:]
+                df.columns = self.data[key].columns
+            else:
                 pass
+                print('Column transfer mismatch')
 
-        self.data[key] = df
-        self.datatable[key].redraw(redraw_header=True, redraw_row_index=True)
+            for col in df.columns:
+                try:
+                    df[col] = pd.to_numeric(df[col])
+                except ValueError:
+                    pass
 
-        if event:
-            return event.text
+            self.data[key] = df
+            self.datatable[key].redraw(redraw_header=True, redraw_row_index=True)
+
+            if event:
+                return event.text
 
     def flip_y(self, event=None, key=None):
         self.make_chart(key=key)
@@ -1547,8 +1601,9 @@ class Feedback:
                                             ("end_edit_cell", lambda event: self.end_edit_cell(event, key=key))])
         self.datatable[key].popup_menu_add_command("---------", self.placeholder_func)
         self.datatable[key].popup_menu_add_command("Trim Extrema", self.trim_extrema_popup)
-        self.datatable[key].popup_menu_add_command("Jump Fix", self.jump_fix_popup)
+        self.datatable[key].popup_menu_add_command("Jump/Offset Fix", self.jump_fix_popup)
         self.datatable[key].popup_menu_add_command("Convert Units", self.unit_converter_popup)
+        self.datatable[key].popup_menu_add_command("Fix Unit Offsets", self.multi_trans_file_fix)
         #self.datatable[key].popup_menu_add_command("Convert Units", self.unit_converter_popup)
 
         self.flip_y_check[key] = ttk.Checkbutton(self.graph_frame1[key], text='Flip y-axis',
@@ -1676,22 +1731,33 @@ class Feedback:
         dfs = {}
         pg.config(maximum=len(glob.glob(f"{self.currentdir}/*.{file_extension}")))
         for file in glob.glob(f"{self.currentdir}/*.{file_extension}"):
-            popup.update()
-            base = os.path.basename(file)
-            if file_extension in ['xle', 'Global Water csv']:
-                dfs[file] = NewTransImp(file).well.drop(['name'], axis=1)
-            elif file_extension in ['Excel']:
-                # self.data[key] = pd.read_excel(self.datastr[key].get())
-                self.wellbaroxl[key] = pd.ExcelFile(file)
-            elif file_extension in ['csv']:
-                dfs[file] = pd.read_csv(file)
-            elif file_extension in ['Troll htm']:
-                dfs[file] = read_troll_htm(file)
-            elif file_extension in ['Troll csv']:
-                dfs[file] = read_troll_csv(file)
-            print(file)
-            pg.step()
-            sv.set(base)
+            try:
+                popup.update()
+                base = os.path.basename(file)
+                if file_extension in ['xle', 'Global Water csv']:
+                    dfs[file] = NewTransImp(file).well.drop(['name'], axis=1)
+                elif file_extension in ['Excel']:
+                    # self.data[key] = pd.read_excel(self.datastr[key].get())
+                    self.wellbaroxl[key] = pd.ExcelFile(file)
+                elif file_extension in ['csv']:
+                    dfs[file] = pd.read_csv(file)
+                elif file_extension in ['Troll htm']:
+                    dfs[file] = read_troll_htm(file)
+                elif file_extension in ['Troll csv']:
+                    dfs[file] = read_troll_csv(file)
+                print(file)
+                pg.step()
+                sv.set(base)
+            except ValueError:
+                pass
+        # get beginning and end dates from files
+        dflist = []
+        for dkey, val in dfs.items():
+            if len(val) > 0:
+                dflist.append((dkey, val.first_valid_index(), val.last_valid_index()))
+
+        self.beg_end[key] = pd.DataFrame(dflist, columns=['filename', 'beginning', 'end'])
+
         popup.destroy()
         dfa = pd.concat(dfs, ignore_index=False)
         print(dfa.columns)
@@ -1699,6 +1765,66 @@ class Feedback:
         dfa = dfa.set_index(dfa.columns[0]).sort_index().drop_duplicates()
         self.data[key] = dfa
 
+    def multi_trans_file_fix(self):
+        if self.selected_tab:
+            key = self.selected_tab
+        else:
+            key = 'well'
+
+        key = self.selected_tab
+        self.stationary_popup = tk.Toplevel()
+        self.stationary_popup.geometry("550x150+200+200")
+
+        #ttk.Separator(popup, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
+        frame_step_st = ttk.Frame(self.stationary_popup)
+        ttk.Label(frame_step_st, text='Fix stationarity issues caused by units (optional)').grid(column=0, row=0, columnspan=6)
+        self.stat_field = tk.StringVar(frame_step_st, value="Level")
+        self.statjump = ttk.Combobox(frame_step_st, textvariable=self.datajumptol, width=10, values=['Level'])
+        self.statjump['values'] = list(self.data[key].columns)
+        self.statjump.current(0)
+
+        self.statjump.grid(column=1, row=2)
+        self.statjumpbutt = ttk.Button(frame_step_st, text='Fix Jumps', command=lambda: self.fixstatjumps(key=key))
+        self.statjumpbutt.grid(column=2, row=2)
+        frame_step_st.pack()
+
+
+    def fixstatjumps(self, key):
+        if len(self.beg_end) > 0 and key in self.beg_end.keys():
+            split_data = self.beg_end[key]
+            field = self.statjump.get()
+
+            old_df = None
+
+            fixd_jump = {}
+
+            for ind in split_data.index:
+                beg = fcl(self.data[key], split_data.loc[ind,'beginning']).name
+                end = fcl(self.data[key], split_data.loc[ind,'end']).name
+                print(beg, end)
+                if old_df is None:
+                    old_df = self.data[key].loc[beg:end]
+                else:
+                    new_df = self.data[key].loc[beg:end]
+                    fixd_jump[beg] = fix_unit_change(old_df,new_df,field=field)
+                    old_df = new_df
+            dfx = pd.concat(fixd_jump, ignore_index=False)
+            print(dfx.columns)
+            dfx = dfx.reset_index().drop('level_0', axis=1)
+            dfx = dfx.set_index(dfx.columns[0]).sort_index().drop_duplicates()
+            self.data[key] = dfx
+
+            self.datatable[key].set_sheet_data(data=self.data[key].reset_index().values.tolist(),
+                                               reset_col_positions=True,
+                                               reset_row_positions=True,
+                                               redraw=True,
+                                               verify=False,
+                                               reset_highlights=False)
+            self.datatable[key].headers(self.data[key].reset_index().columns)
+            # self.datatable[key].redraw(redraw_header=True, redraw_row_index=True)
+            self.end_edit_cell(key=key)
+
+            self.stationary_popup.destroy()
 
     def openNewWindowcsv(self, key):
 
@@ -2069,6 +2195,29 @@ class Feedback:
         self.filefnd['state'] = 'normal'
         self.combo_source['state'] = 'normal'
         self.proc_man_bulk_button['state'] = 'normal'
+
+    def set_search_dir(self,event):
+        key = 'many-dir'
+        self.datastr[key].set(filedialog.askdirectory(initialdir=self.currentdir,
+                                                         title=f"Select {key} directory",
+                                                         mustexist=True))
+        if self.datastr[key].get() == '' or type(self.datastr[key].get()) == tuple or \
+                self.datastr[key].get() == 'Double-Click for search file directory':
+            self.datastr[key].set('Double-Click for search file directory')
+        else:
+            self.searchdir = self.datastr[key].get()
+
+    def set_end_dir(self,event):
+        key = 'endmany-dir'
+        self.datastr[key].set(filedialog.askdirectory(initialdir=self.currentdir,
+                                                         title=f"Select {key} directory",
+                                                         ))
+        if self.datastr[key].get() == '' or type(self.datastr[key].get()) == tuple or \
+                self.datastr[key].get() == 'Double-Click to set end directory':
+            self.datastr[key].set('Double-Click to set end directory')
+        else:
+            self.enddir = self.datastr[key].get()
+
 
     def grab_trans_dir(self, master):
         """grabs directory containing transducer files and inputs filenames into a scrollable canvas with comboboxes to

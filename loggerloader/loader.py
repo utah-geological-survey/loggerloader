@@ -780,6 +780,45 @@ def rollmeandiff(df1, p1, df2, p2, win):
     return diff
 
 
+def fix_unit_change(df1, df2, field='Level', tolerance=0.03):
+    """Fixes issues where units fail to converge between transducers. Common in some Solinst transducers (???).
+    Uses ratio of daily rolling standard devations to determine non stationarity between datasets.
+
+    Args:
+        df1 (pandas Dataframe): dataframe of first transducer record with datetime index; df2 will be converted to match this record
+        df2 (pandas Dataframe): dataframe of second transducer record with datetime index; best if df2 happens after df1 in timeseries
+        field (str): field in dataframes used to match units; default is Level
+        tolerance (float): amount of tolerance to match units; defaults to +/-3% of true conversion factor
+
+    Returns:
+        converted (pandas Dataframe):
+            converted series of df2[field] and prints conversion
+    """
+    conversion_factors = {'meters to feet': 3.28084, 'feet to meters': 0.3048,
+                          'psi to feet': 2.3066587, 'feet to psi': 0.4335275,
+                          'psi to bar': 0.0689, 'bar to psi': 14.5038,
+                          'kPa to psi': 0.145038, 'psi to kPa': 6.89476,
+                          'kPa to feet': 0.3345525655, 'feet to kPa': 2.9890669,
+                          'feet to bar': 0.02989, 'bar to feet': 33.4553,
+                          'feet to mmHg': 22.42, 'mmHg to feet': 0.0446,
+                          'no conversion': 1.0}
+
+    conversion = 'no conversion'
+    multiplier = 1
+
+    df1std = np.mean(df1[field].rolling(24).std())
+    df2std = np.mean(df2[field].rolling(24).std())
+    stdratio = df1std / df2std
+
+    for key, value in conversion_factors.items():
+        if np.abs((value - stdratio) / value) < tolerance:
+            print(key)
+            conversion = key
+            multiplier = value
+            break
+    df2[field] = df2[field] * multiplier
+    return df2
+
 def jumpfix(df, meas, threashold=0.005, return_jump=False):
     """Removes jumps or jolts in time series data (where offset is lasting)
     Args:
@@ -796,6 +835,7 @@ def jumpfix(df, meas, threashold=0.005, return_jump=False):
         jump: dataframe of jumps corrected in data
     """
     df1 = df.copy(deep=True)
+    df1 = df1.sort_index().drop_duplicates()
     df1['delta' + meas] = df1.loc[:, meas].diff()
     # designate jump based on a threshold
     jump = df1[abs(df1['delta' + meas]) > threashold]
@@ -1408,7 +1448,7 @@ def getfilename(path):
     return path.split('\\').pop().split('/').pop().rsplit('.', 1)[0]
 
 
-def compile_end_beg_dates(infile):
+def compile_end_beg_dates(infile, ext='xle'):
     """ Searches through directory and compiles transducer files, returning a dataframe of the file name,
     beginning measurement, and ending measurement. Complements xle_head_table, which derives these dates from an
     xle header.
@@ -1422,12 +1462,14 @@ def compile_end_beg_dates(infile):
 
 
     """
-    filelist = glob.glob(infile + "/*")
+    filelist = glob.glob(infile + f"/*{ext}")
     f = {}
 
     # iterate through list of relevant files
-    for infile in filelist:
-        f[getfilename(infile)] = NewTransImp(infile).well
+    if ext == 'xle':
+        for infile in filelist:
+            f[getfilename(infile)] = NewTransImp(infile).well
+    #elif ext == 'csv':
 
     dflist = []
     for key, val in f.items():
