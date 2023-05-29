@@ -485,6 +485,33 @@ class Feedback:
                                                command=self.proc_man_bulk)
         self.proc_man_many_button.grid(column=1, row=6, columnspan=2)
 
+        ttk.Separator(self.manyfiletab, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
+        many_drift_frame = ttk.Frame(self.manyfiletab)
+        many_drift_frame.pack()
+        self.mfdb = ttk.Button(many_drift_frame, text='5. Fix Drift', command=self.bulk_fix_drift)
+        self.mfdb.grid(column=0, row=0, columnspan=1, rowspan=2)
+        self.mfdb['state'] = 'disabled'
+        self.export_drift = tk.IntVar(value=1)
+        self.export_drift_check = ttk.Checkbutton(bulk_drift_frame,
+                                                  text="Export Drift Data?",
+                                                  variable=self.export_drift,
+                                                  )
+        self.export_drift_check.grid(row=0, column=1, sticky=tk.W)
+        # self.export_drift_check.select()
+
+        self.export_drift_graph = tk.IntVar(value=1)
+        self.export_drift_graph_check = ttk.Checkbutton(many_drift_frame,
+                                                        text="Graph Data?",
+                                                        variable=self.export_drift_graph,
+                                                        )
+        self.export_drift_graph_check.grid(row=1, column=1, sticky=tk.W)
+        # self.export_drift_graph_check.select()
+
+        ttk.Label(many_drift_frame, text='Max Allowed Drift (ft)').grid(row=0, column=2)
+        self.max_allowed_drift = tk.DoubleVar(many_drift_frame, value=0.3)
+        ent = ttk.Entry(many_drift_frame, textvariable=self.max_allowed_drift, width=10)
+        ent.grid(row=1, column=2)
+
     def compile_well_files(self):
         filecontains = self.datastr['many-wildcard'].get()
         filecontains = str(filecontains).split(",")
