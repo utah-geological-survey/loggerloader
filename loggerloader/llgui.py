@@ -1516,6 +1516,7 @@ class Feedback:
         a.set_xlabel("Date")
         # fig.set_tight_layout(True)
 
+
         canvas = FigureCanvasTkAgg(fig, self.graph_frame1[key])
 
         self.toolbar = NavigationToolbar2Tk(canvas, self.graph_frame1[key])
@@ -1613,6 +1614,7 @@ class Feedback:
             adds pandastable elements to a frame
 
         """
+
         self.selected_tab = key
         self.graph_frame1[key] = ttk.Frame(self.graphframe[key])
 
@@ -1638,8 +1640,11 @@ class Feedback:
                         variable=self.flip_y_status, onvalue=1,
                         offvalue=0)
         self.flip_y_check[key].pack()
-        self.make_chart(key=key)
-        self.graph_frame1[key].pack()
+        if key == 'well-info-table':
+            pass
+        else:
+            self.make_chart(key=key)
+            self.graph_frame1[key].pack()
 
         if key == 'well':
             self.wellalignfieldbox['values'] = list(self.data[key].columns)
@@ -2618,7 +2623,10 @@ class Feedback:
         self.selected_tab = self.notebook.tab(codedtabname, "text")
         print(self.selected_tab)
         key = self.selected_tab
-        self.make_chart(key=key)
+        if key == 'well-info-table':
+            pass
+        else:
+            self.make_chart(key=key)
 
 
 
