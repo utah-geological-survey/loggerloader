@@ -2272,15 +2272,16 @@ class Feedback:
             # TODO add excel sheet options to file selection
             filenm, file_extension = os.path.splitext(self.datastr[key].get())
             ttk.Label(master, text='4. Match id with list of files.').grid(row=1, column=0, columnspan=3)
-            ttk.Label(master, text='Filename').grid(row=2, column=0)
-            ttk.Label(master, text='Match Name').grid(row=2, column=1)
-            ttk.Label(master, text='Well ID').grid(row=2, column=2)#, sticky=tk.W)
+            ttk.Label(master, text='Filename').grid(row=2, column=0, sticky=tk.W)
+            ttk.Label(master, text='Match Name').grid(row=2, column=1,sticky=tk.W)
+            ttk.Label(master, text='Well ID').grid(row=2, column=2, sticky=tk.W)
             # https://blog.tecladocode.com/tkinter-scrollable-frames/
             container = ttk.Frame(master)
-            canvas = tk.Canvas(container)
+            canvas = tk.Canvas(container, width = 600)
             vsb = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
             hsb = ttk.Scrollbar(container, orient="horizontal", command=canvas.xview)
             scrollable_frame = ttk.Frame(canvas)
+            #scrollable_frame = canvas
             if 'well-info-table' in self.datatable.keys():
                 self.end_edit_cell(key='well-info-table')
                 df = self.data['well-info-table']
