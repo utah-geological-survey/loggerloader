@@ -2207,7 +2207,7 @@ class Feedback:
         self.data[key] = df
 
         self.graphframe[key], self.tableframe[key] = self.note_tab_add(key, tabw=5, grph=1)
-        self.datatable[key] = Sheet(self.tableframe[key], data=self.data[key].values.tolist(), theme=self.sheettheme)
+        self.datatable[key] = Sheet(self.tableframe[key], data=self.data[key].reset_index().values.tolist(), theme=self.sheettheme)
         # self.datatable[key].show()
 
         self.datatable[key].change_theme(theme=self.sheettheme)
@@ -2274,12 +2274,12 @@ class Feedback:
             ttk.Label(master, text='4. Match id with list of files.').grid(row=1, column=0, columnspan=3)
             ttk.Label(master, text='Filename').grid(row=2, column=0)
             ttk.Label(master, text='Match Name').grid(row=2, column=1)
-            ttk.Label(master, text='Well ID').grid(row=2, column=2, sticky=tk.W)
+            ttk.Label(master, text='Well ID').grid(row=2, column=2)#, sticky=tk.W)
             # https://blog.tecladocode.com/tkinter-scrollable-frames/
             container = ttk.Frame(master)
             canvas = tk.Canvas(container)
-            scrollbar = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
-            scrollbarx = ttk.Scrollbar(container, orient="horizontal", command=canvas.xview)
+            vsb = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
+            hsb = ttk.Scrollbar(container, orient="horizontal", command=canvas.xview)
             scrollable_frame = ttk.Frame(canvas)
             if 'well-info-table' in self.datatable.keys():
                 self.end_edit_cell(key='well-info-table')
@@ -2364,11 +2364,17 @@ class Feedback:
             # scrollable_frame.pack(fill='both',side='left')
             canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
 
-            canvas.configure(yscrollcommand=scrollbar.set, xscrollcommand=scrollbarx.set)
+            canvas.configure(yscrollcommand=vsb.set, xscrollcommand=hsb.set)
             container.grid(row=3, column=0, columnspan=3)
             canvas.pack(side="left", fill="both", expand=True)
-            scrollbar.pack(side="right", fill="y")
-            scrollbarx.pack(side="bottom", fill="x")
+            vsb.pack(side="right", fill="y")
+            hsb.pack(side="bottom", fill="x")
+
+            #canvas.grid(row=0, column=0, sticky="nsew")
+            #vsb.grid(row=0, column=1, sticky="ns")
+            #hsb.grid(row=1, column=0, sticky="ew")
+            container.grid_rowconfigure(0, weight=1)
+            container.grid_columnconfigure(0, weight=1)
 
     def update_location_dicts(self, filestr):
 
