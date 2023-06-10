@@ -128,7 +128,7 @@ class Feedback:
 
         ## -- MAKE EMPTY DICTIONARIES TO HOLD CLASS OBJECTS -- ##
 
-        self.datastr, self.data, self.datatable, self.combo = {}, {}, {}, {}
+        self.datastr, self.data, self.datatable, self.bcombo = {}, {}, {}, {}
 
         self.field = None
         self.toolbar = None
@@ -172,6 +172,10 @@ class Feedback:
 
         self.fig = {}
         self.ax = {}
+
+        self.combo = {}
+        self.combo_choice = {}
+        self.combo_label = {}
 
         ## -- WIDGET AREA -- ##
 
@@ -218,7 +222,7 @@ class Feedback:
         self.processing_notebook.add(self.frame, text='Single-Well Process')
         self.processing_notebook.add(self.bulkwelltab, text='Bulk Well Process')
         self.processing_notebook.add(self.manyfiletab, text='One Well Many files')
-        self.processing_notebook.bind("<<NotebookTabChanged>>", self.tab_update)
+        #self.processing_notebook.bind("<<NotebookTabChanged>>", self.tab_update)
 
         # SINGLE WELL PROCESSING TAB for left side of application ---------------------------------------------
         # Header image logo and Description seen by user
@@ -285,21 +289,22 @@ class Feedback:
 
         man_entry.bind('<Double-ButtonRelease-1>', lambda event: self.mandiag(event, key='manual-single'))
 
-        self.scombo, self.scombo_choice, self.scombo_label = {}, {}, {}
-        self.scombovals = {"Datetime": [3, 0, 15, self.fillervals, 4, 0],
-                           "DTW": [3, 1, 15, self.fillervals, 4, 1],
-                           "locationid": [3, 2, 15, self.fillervals, 4, 2],
-                           "Pick id": [5, 1, 15, [1001, 1002], 5, 2]}
+        self.man_file_frame(self.manfileframe, key='manual')
+        #self.scombo, self.scombo_choice, self.scombo_label = {}, {}, {}
+        #self.scombovals = {"Datetime": [3, 0, 15, self.fillervals, 4, 0],
+        #                   "DTW": [3, 1, 15, self.fillervals, 4, 1],
+        #                   "locationid": [3, 2, 15, self.fillervals, 4, 2],
+        #                   "Pick id": [5, 1, 15, [1001, 1002], 5, 2]}
 
-        for ky, vals in self.scombovals.items():
-            self.scombo_choice[ky] = tk.StringVar()
-            self.scombo_label[ky] = ttk.Label(self.manfileframe, text=ky)
-            self.scombo_label[ky].grid(row=vals[0], column=vals[1])
+        #for ky, vals in self.scombovals.items():
+        #    self.scombo_choice[ky] = tk.StringVar()
+        #    self.scombo_label[ky] = ttk.Label(self.manfileframe, text=ky)
+        #    self.scombo_label[ky].grid(row=vals[0], column=vals[1])
 
-            self.scombo[ky] = ttk.Combobox(self.manfileframe, width=vals[2], values=self.fillervals,
-                                           textvariable=self.scombo_choice[ky],
-                                           postcommand=lambda: self.man_col_select_single(self.scombo[ky]))
-            self.scombo[ky].grid(row=vals[4], column=vals[5])
+        #    self.scombo[ky] = ttk.Combobox(self.manfileframe, width=vals[2], values=self.fillervals,
+        #                                   textvariable=self.scombo_choice[ky],
+        #                                   postcommand=lambda: self.man_col_select_single(self.scombo[ky]))
+        #    self.scombo[ky].grid(row=vals[4], column=vals[5])
 
         self.mandiag(False, key='manual-single')
         ttk.Label(self.manfileframe, text="units").grid(row=3, column=3)
@@ -393,7 +398,7 @@ class Feedback:
         self.man_file_frame(self.bulk_manfileframe, key='bulk-manual')
 
         self.proc_man_bulk_button = ttk.Button(self.bulk_manfileframe, text='Process Manual Data',
-                                               command=self.proc_man_bulk)
+                                               command=lambda: self.proc_man_bulk(key = 'bulk-manual'))
         self.proc_man_bulk_button.grid(column=1, row=6, columnspan=2)
         self.proc_man_bulk_button['state'] = 'disabled'
 
@@ -482,7 +487,7 @@ class Feedback:
         self.man_file_frame(self.many_manfileframe, key='many-manual')
 
         self.proc_man_many_button = ttk.Button(self.many_manfileframe, text='Process Manual Data',
-                                               command=self.proc_man_bulk)
+                                               command=lambda: self.proc_man_bulk(key='many-manual'))
         self.proc_man_many_button.grid(column=1, row=6, columnspan=2)
 
         ttk.Separator(self.manyfiletab, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
@@ -535,19 +540,27 @@ class Feedback:
         man_entry.bind('<Double-ButtonRelease-1>', lambda e: self.mandiag(e, key=key))
 
         fillervals = ['readingdate', 'dtwbelowcasing', 'locid']
-        self.combo, self.combo_choice, self.combo_label = {}, {}, {}
+
         self.combovals = {"Datetime": [3, 0, 15, fillervals, 4, 0],
                           "DTW": [3, 1, 15, fillervals, 4, 1],
                           "locationid": [3, 2, 15, fillervals, 4, 2],
                           "Pick id": [5, 1, 15, [1001, 1002], 5, 2]}
 
-        for ky, vals in self.combovals.items():
-            self.man_combos(ky, vals, master)
+        self.combo[key] = {}
+        self.combo_choice[key] = {}
+        self.combo_label[key] = {}
 
-        if self.processing_notebook.index(self.processing_notebook.select()) == 1:
+
+        for ky, vals in self.combovals.items():
+            self.man_combos(ky, vals, master, key)
+
+        if key == 'manual':
+            pass
+        else:
+            #if self.processing_notebook.index(self.processing_notebook.select()) == 1:
             print('bulk')
-            self.combo["Pick id"]["state"] = "disabled"
-            self.combo["Pick id"].grid_forget()
+            self.combo[key]["Pick id"]["state"] = "disabled"
+            self.combo[key]["Pick id"].grid_forget()
 
         ttk.Label(master, text="units").grid(row=3, column=3)
         self.manunits = ttk.Combobox(master, width=5,
@@ -561,14 +574,14 @@ class Feedback:
             mancols = list(self.data[key].columns.values)
             for col in mancols:
                 if col.lower() in ['datetime', 'date', 'readingdate']:
-                    self.combo_choice["Datetime"].set(col)
+                    self.combo_choice[key]["Datetime"].set(col)
                     # self.combo["Datetime"].current(mancols.index(col))
                 elif col.lower() in ['dtw', 'waterlevel', 'depthtowater', 'water_level',
                                      'level', 'depth_to_water', 'water_depth', 'depth',
                                      'dtwbelowcasing', 'dtw_below_casing']:
-                    self.combo_choice["DTW"].set(col)
+                    self.combo_choice[key]["DTW"].set(col)
                 elif col.lower() in ['locationid', 'locid', 'id', 'location_id', 'lid']:
-                    self.combo_choice['locationid'].set(col)
+                    self.combo_choice[key]['locationid'].set(col)
         except FileNotFoundError:
             pass
 
@@ -576,8 +589,9 @@ class Feedback:
         index = event.widget.index('current')
         if 'combo_label' in self.__dict__:
             if index == 1:
-                self.combo_label["Pick id"].grid_forget()
-                self.combo["Pick id"].grid_forget()
+                for key in self.combo_label.keys():
+                    self.combo_label[key]["Pick id"].grid_forget()
+                    self.combo[key]["Pick id"].grid_forget()
             elif index == 0:
                 print("0")
 
@@ -641,7 +655,7 @@ class Feedback:
                 elif file_extension == '.csv':
                     fild[file], df = ht.csv_head(file)
                 fild[file]['locationid'] = pd.to_numeric(
-                    self.locnametoid.get(self.combo.get(fild[file]['file_name'], None).get(), None), errors="coerce",
+                    self.locnametoid.get(self.bcombo.get(fild[file]['file_name'], None).get(), None), errors="coerce",
                     downcast="integer")
                 wdf[fild[file]['locationid']] = df.sort_index()
                 sv.set(base)
@@ -681,29 +695,28 @@ class Feedback:
         else:
             return "water"
 
-    def man_combos(self, lab, vals, master):
+    def man_combos(self, lab, vals, master, key):
         """Generates Comboboxes for the manual file input sections"""
-        self.combo_choice[lab] = tk.StringVar()
-        self.combo_label[lab] = ttk.Label(master, text=lab)
-        self.combo_label[lab].grid(row=vals[0], column=vals[1])
-        self.combo[lab] = ttk.Combobox(master, width=vals[2],
-                                       textvariable=self.combo_choice[lab],
-                                       postcommand=lambda: self.man_col_select(self.combo[lab]))
-        self.combo[lab].grid(row=vals[4], column=vals[5])
+        self.combo_choice[key][lab] = tk.StringVar()
+        self.combo_label[key][lab] = ttk.Label(master, text=lab)
+        self.combo_label[key][lab].grid(row=vals[0], column=vals[1])
+        self.combo[key][lab] = ttk.Combobox(master, width=vals[2],
+                                       textvariable=self.combo_choice[key][lab],
+                                       postcommand=lambda: self.man_col_select(self.combo[key][lab], key))
+        self.combo[key][lab].grid(row=vals[4], column=vals[5])
 
-    def man_col_select(self, cmbo):
-        if 'manual' in self.data.keys() or 'bulk-manual' in self.data.keys() or 'manual-single' in self.data.keys():
-            if 'manual-single' in self.data.keys():
-                key = 'manual-single'
-            elif 'bulk-manual' in self.data.keys():
-                key = 'bulk-manual'
-            else:
-                key = 'manual'
+    def man_col_select(self, cmbo, key):
+
+        if 'manual' in self.data.keys() or 'bulk-manual' in self.data.keys() or 'manual-single' in self.data.keys() or 'many-manual' in self.data.keys():
+            #if 'manual-single' in self.data.keys():
+            #    key = 'manual-single'
+            #elif 'bulk-manual' in self.data.keys():
+            #    key = 'bulk-manual'
+            #else:
+            #    key = 'manual'
             mancols = list(self.data[key].columns.values)
-            if cmbo == self.combo['Pick id']:
-                locids = self.data[key][pd.to_numeric(self.combo['locationid'].get(),
-                                                      errors='coerce',
-                                                      downcast='integer')].unique()
+            if cmbo == self.combo[key]['Pick id']:
+                locids = self.data[key][self.combo[key]['locationid'].get()].unique()
                 # TODO this will cause problems later; change to handle multiple types
                 cmbo['values'] = list([pd.to_numeric(loc, downcast='integer', errors='coerce') for loc in locids])
             else:
@@ -722,9 +735,9 @@ class Feedback:
             else:
                 key = 'manual'
             mancols = list(self.data[key].columns.values)
-            print(self.scombo['locationid'].get())
-            if cmbo == self.scombo['Pick id']:
-                locids = self.data[key][self.scombo['locationid'].get()].unique()
+            print(self.combo[key]['locationid'].get())
+            if cmbo == self.combo[key]['Pick id']:
+                locids = self.data[key][self.combo[key]['locationid'].get()].unique()
                 # TODO this will cause problems later; change to handle multiple types
                 cmbo['values'] = list([pd.to_numeric(loc, downcast='integer') for loc in locids])
             else:
@@ -1328,9 +1341,9 @@ class Feedback:
             self.data[key] = df.set_index(['readingdate'])
             print(self.data[key])
         elif nbnum == 1:
-            df = self.data[key].rename(columns={self.scombo['Datetime'].get(): 'readingdate',
-                                                self.scombo['DTW'].get(): 'dtwbelowcasing',
-                                                self.scombo['locationid'].get(): 'locationid'})
+            df = self.data[key].rename(columns={self.combo[key]['Datetime'].get(): 'readingdate',
+                                                self.combo[key]['DTW'].get(): 'dtwbelowcasing',
+                                                self.combo[key]['locationid'].get(): 'locationid'})
             df['units'] = self.manunits.get()
             if self.manunits.get() == 'm':
                 df['dtwbelowcasing'] = df['dtwbelowcasing'] * 3.28084
@@ -1344,7 +1357,7 @@ class Feedback:
                 self.end_edit_cell(key='well')
                 df = df[df.index > self.data['well'].first_valid_index() - pd.DateOffset(days=8)]
 
-            self.data[key] = df[df['locationid'] == pd.to_numeric(self.scombo['Pick id'].get(), downcast='integer')]
+            self.data[key] = df[df['locationid'] == pd.to_numeric(self.combo[key]['Pick id'].get(), downcast='integer')]
 
         self.graphframe[key], self.tableframe[key] = self.note_tab_add(key)
         self.add_graph_table(key)
@@ -1355,8 +1368,8 @@ class Feedback:
         pg.step()
         return wl
 
-    def proc_man_bulk(self):
-        key = 'bulk-manual'
+    def proc_man_bulk(self,key = 'bulk-manual'):
+        #key = 'bulk-manual'
         # if 'bulk-manual' in self.data.keys():
         #    key = 'bulk-manual'
         # elif 'manual-single' in self.data.keys():
@@ -1365,9 +1378,10 @@ class Feedback:
         #    key = 'manual'
 
         try:
-            df = self.data[key].rename(columns={self.combo['Datetime'].get(): 'readingdate',
-                                                self.combo['DTW'].get(): 'dtwbelowcasing',
-                                                self.combo['locationid'].get(): 'locationid'})
+            #self.graphframe['bulk-manual'] = 'None'
+            df = self.data[key].rename(columns={self.combo[key]['Datetime'].get(): 'readingdate',
+                                                self.combo[key]['DTW'].get(): 'dtwbelowcasing',
+                                                self.combo[key]['locationid'].get(): 'locationid'})
             df['units'] = self.manunits.get()
             if self.manunits.get() == 'm':
                 df['dtwbelowcasing'] = df['dtwbelowcasing'] * 3.28084
@@ -1454,6 +1468,9 @@ class Feedback:
 
     def make_chart(self, event=None, key=None):
 
+        self.graph_frame1['file-info-table'] = None
+        self.graph_frame1['well-info-table'] = None
+
         self.end_edit_cell(key=key)
 
         if event:
@@ -1505,6 +1522,8 @@ class Feedback:
             if 'manual-single' in self.data.keys():
                 a.scatter(self.data['manual-single'].index,self.data['manual-single']['dtwbelowcasing'],color='red')
                 a.plot(self.data['fixed-drift'].index,self.data['fixed-drift']['DTW_WL'])
+        elif key in ('bulk-manual'):
+            pass
         else:
             a.plot(x, y, label=self.field)
             a.grid()
@@ -1960,6 +1979,12 @@ class Feedback:
     def wellbarodiag(self, key):
 
         ftypelist = (("Solinst xle", "*.xle*"), ("csv", "*.csv"), ("Excel", "*.xlsx"), ("Troll htm", "*.htm*"))
+        chosen_ext = self.fileselectcombo[key].get()
+        if chosen_ext:
+            if chosen_ext == 'Excel':
+                chosen_ext = 'xlsx'
+
+            ftypelist = [(f"{chosen_ext} file",f".{chosen_ext}")]
         self.datastr[key].set(filedialog.askopenfilename(initialdir=self.currentdir,
                                                          title=f"Select {key} file",
                                                          filetypes=ftypelist))
@@ -2100,13 +2125,14 @@ class Feedback:
         if event:
             self.datastr[key].set(filedialog.askopenfilename(initialdir=self.currentdir,
                                                              title=f"Select {key} file",
-                                                             filetypes=[('csv', '.csv')],
+                                                             filetypes=[('csv', '.csv'),('Excel','.xlsx')],
                                                              defaultextension=".csv"))
 
             self.currentdir = os.path.dirname(self.datastr[key].get())
 
             # https://stackoverflow.com/questions/45357174/tkinter-drop-down-menu-from-excel
             # TODO add excel sheet options to file selection
+
 
         # self.graph_frame1.pack()
         if self.datastr[key].get() == '' or self.datastr[key].get() == f'Double-Click for {key} file':
@@ -2123,23 +2149,23 @@ class Feedback:
                 self.fillervals = mancols
                 for col in mancols:
                     if col.lower() in ['datetime', 'date', 'readingdate']:
-                        if key == 'manual':
-                            self.combo_choice["Datetime"].set(col)
-                        else:
-                            self.scombo_choice["Datetime"].set(col)
+                        #if key == 'manual':
+                        self.combo_choice[key]["Datetime"].set(col)
+                        #else:
+                        #self.scombo_choice["Datetime"].set(col)
                         # self.combo["Datetime"].current(mancols.index(col))
                     elif col.lower() in ['dtw', 'waterlevel', 'depthtowater', 'water_level',
                                          'level', 'depth_to_water', 'water_depth', 'depth',
                                          'dtwbelowcasing', 'dtw_below_casing']:
-                        if key == 'manual' or key == 'bulk-manual':
-                            self.combo_choice["DTW"].set(col)
-                        else:
-                            self.scombo_choice["DTW"].set(col)
+                        #if key == 'manual' or key == 'bulk-manual':
+                        self.combo_choice[key]["DTW"].set(col)
+                        #else:
+                        #self.scombo_choice[key]["DTW"].set(col)
                     elif col.lower() in ['locationid', 'locid', 'id', 'location_id', 'lid']:
-                        if key == 'manual' or key == 'bulk-manual':
-                            self.combo_choice['locationid'].set(col)
-                        else:
-                            self.scombo_choice['locationid'].set(col)
+                        #if key == 'manual' or key == 'bulk-manual':
+                        self.combo_choice[key]['locationid'].set(col)
+                        #else:
+                        #    self.scombo_choice['locationid'].set(col)
             except FileNotFoundError:
                 pass
 
@@ -2200,13 +2226,13 @@ class Feedback:
         key = 'well-info-table'
 
         self.currentdir = os.path.dirname(self.datastr[key].get())
-        df = pd.read_csv(self.datastr[key].get())
+        df = pd.read_csv(self.datastr[key].get(),na_values=['<Null>','NaN','None',-9999])
+
         for col in df.columns:
             df = df.rename(columns={col: col.lower()})
         df = df[df['altlocationid'].notnull()]
         df['altlocationid'] = df['altlocationid'].apply(
-            lambda x: int(pd.to_numeric(x, downcast='integer', errors='coerce')),
-            1)
+            lambda x: int(pd.to_numeric(x, downcast='integer', errors='coerce')),1)
         df = df.set_index(['altlocationid']).sort_index()
         # df.index = df.index.astype('int64')
         self.data[key] = df
@@ -2335,7 +2361,7 @@ class Feedback:
                     a = re.split('_|\s', filestr)[0].lower()
                 elif self.combo_source.get() == 'Wetlands Piezos':
                     try:
-                        b = filestr.replace('-_', '-').split('_')[-4].split('-')[-1]
+                        b = filestr.lower().replace('-_', '-').split('_')[-4].split('-')[-1]
                         a = self.locdict[int(b)]
                     except:
                         a = filestr.lower()
@@ -2344,22 +2370,22 @@ class Feedback:
                 ttk.Label(scrollable_frame, text=filestr, width=35).grid(row=i, column=0)
                 self.locidmatch[filestr] = tk.StringVar(scrollable_frame)
                 self.bulktransfilestr[filestr] = tk.StringVar(scrollable_frame)
-                self.combo[filestr] = ttk.Combobox(scrollable_frame)
-                self.combo[filestr].grid(row=i, column=1)
+                self.bcombo[filestr] = ttk.Combobox(scrollable_frame)
+                self.bcombo[filestr].grid(row=i, column=1)
                 e = ttk.Entry(scrollable_frame, textvariable=self.locidmatch[filestr], width=6)
                 e.grid(row=i, column=2)
                 # populate each combobox with locationnames from the well info table
-                self.combo[filestr]['values'] = list(df.sort_values(['locationname'])['locationname'].unique())
+                self.bcombo[filestr]['values'] = list(df.sort_values(['locationname'])['locationname'].unique())
                 if 'locdict' in self.__dict__.keys():
                     # this fills in the boxes with best guess names
                     if a in self.locnamedict.keys():
                         self.bulktransfilestr[filestr].set(self.locnamedict[a])
-                        self.combo[filestr].set(self.locnamedict[a])
+                        self.bcombo[filestr].set(self.locnamedict[a])
                         self.locidmatch[filestr].set(self.welldict[a])
                         self.inputforheadertable[filew_ext] = self.welldict[a]
 
                     # this fills in the id number if a name is selected
-                    self.combo[filestr].bind("<<ComboboxSelected>>",
+                    self.bcombo[filestr].bind("<<ComboboxSelected>>",
                                              lambda event,
                                                     filestr=filestr: self.update_location_dicts(filestr))
 
@@ -2384,7 +2410,7 @@ class Feedback:
 
     def update_location_dicts(self, filestr):
 
-        self.locidmatch[filestr].set(self.locnametoid[self.combo[filestr].get()])
+        self.locidmatch[filestr].set(self.locnametoid[self.bcombo[filestr].get()])
 
     def dropmenu(self, master):
         # menu bars at the top of the main window
