@@ -97,7 +97,7 @@ class Feedback:
 
         self.sheettheme = "light blue"
 
-        self.version = "2.0.0"
+        self.version = "2.3.0"
 
         self.root = master
         self.main = master
