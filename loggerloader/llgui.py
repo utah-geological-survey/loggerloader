@@ -27,6 +27,8 @@ import platform
 import os
 import sys
 
+import logging
+
 #from pandas.plotting import register_matplotlib_converters
 
 try:
@@ -256,6 +258,7 @@ class Feedback:
         self.measvalidation = (self.manframe.register(self.only_meas), '%P')
 
         self.man_date, self.man_hour, self.man_min, self.man_meas, self.man_datetime = {}, {}, {}, {}, {}
+
         # labels and date, time, and measure entry for manual measurements
         ttk.Label(self.manframe, text="Date of Measure").grid(row=0, column=1)
         ttk.Label(self.manframe, text="HH").grid(row=0, column=2, columnspan=1, sticky='WENS')
@@ -290,21 +293,6 @@ class Feedback:
         man_entry.bind('<Double-ButtonRelease-1>', lambda event: self.mandiag(event, key='manual-single'))
 
         self.man_file_frame(self.manfileframe, key='manual')
-        #self.scombo, self.scombo_choice, self.scombo_label = {}, {}, {}
-        #self.scombovals = {"Datetime": [3, 0, 15, self.fillervals, 4, 0],
-        #                   "DTW": [3, 1, 15, self.fillervals, 4, 1],
-        #                   "locationid": [3, 2, 15, self.fillervals, 4, 2],
-        #                   "Pick id": [5, 1, 15, [1001, 1002], 5, 2]}
-
-        #for ky, vals in self.scombovals.items():
-        #    self.scombo_choice[ky] = tk.StringVar()
-        #    self.scombo_label[ky] = ttk.Label(self.manfileframe, text=ky)
-        #    self.scombo_label[ky].grid(row=vals[0], column=vals[1])
-
-        #    self.scombo[ky] = ttk.Combobox(self.manfileframe, width=vals[2], values=self.fillervals,
-        #                                   textvariable=self.scombo_choice[ky],
-        #                                   postcommand=lambda: self.man_col_select_single(self.scombo[ky]))
-        #    self.scombo[ky].grid(row=vals[4], column=vals[5])
 
         self.mandiag(False, key='manual-single')
         ttk.Label(self.manfileframe, text="units").grid(row=3, column=3)
@@ -648,7 +636,6 @@ class Feedback:
                 file_extension = os.path.splitext(file)[1]
                 base = os.path.basename(file)
                 filid = self.locnametoid.get(filestr, None)
-                print(filid)
 
                 if file_extension == '.xle':
                     fild[file], df = ht.xle_head(file)
@@ -668,8 +655,10 @@ class Feedback:
         # df['locationid'] = df['file_name'].apply(lambda x: f"{self.locnametoid.get(self.combo.get(x,None).get(),None)}",1)
         df['measuring_medium'] = df[['Model_number', 'Location', 'locationid']].apply(lambda x: self.detect_baro(x), 1)
         df = df.reset_index().set_index('file_name').rename(columns={'index': 'full_file_path'})
-        self.data[key] = df
+
+        self.data['file-info-table'] = df
         self.graphframe[key], self.tableframe[key] = self.note_tab_add(key, tabw=4, grph=1)
+
         # add graph and table to new tab
 
         self.datatable[key] = Sheet(self.tableframe[key], data=df.values.tolist(), theme=self.sheettheme)
@@ -708,12 +697,7 @@ class Feedback:
     def man_col_select(self, cmbo, key):
 
         if 'manual' in self.data.keys() or 'bulk-manual' in self.data.keys() or 'manual-single' in self.data.keys() or 'many-manual' in self.data.keys():
-            #if 'manual-single' in self.data.keys():
-            #    key = 'manual-single'
-            #elif 'bulk-manual' in self.data.keys():
-            #    key = 'bulk-manual'
-            #else:
-            #    key = 'manual'
+
             mancols = list(self.data[key].columns.values)
             if cmbo == self.combo[key]['Pick id']:
                 locids = self.data[key][self.combo[key]['locationid'].get()].unique()
@@ -1123,6 +1107,7 @@ class Feedback:
         self.data[key] = df
         self.graphframe[key], self.tableframe[key] = self.note_tab_add(key)
         self.add_graph_table(key)
+        print("line 1128")
         print(self.manelevs)
 
     def fix_drift(self):
@@ -1177,23 +1162,19 @@ class Feedback:
         sv = tk.StringVar(popup, value='')
         ttk.Label(popup, textvariable=sv).pack()
 
-        if 'bulk-manual' in self.data.keys():
-            key2 = 'bulk-manual'
-        elif 'manual-single' in self.data.keys():
-            key2 = 'manual-single'
-        else:
-            key2 = 'manual'
-
         # Check effect of this comment;
         #  Uncommented on 5/26/2021 in attempt to make consistent with single-well
-        #  Recommented as caused high drift
+        #  Recommened as caused high drift
+
 
         for i in self.data['bulk-well-baro'].index.get_level_values(0).unique():
+
             popup.update()
             if pd.notnull(i):
 
-                if int(i) in self.data[key2].index:
-                    mandf = self.data[key2].loc[int(i)]
+                if int(i) in self.data['bulk-manual'].index:
+                    mandf = self.data['bulk-manual'].loc[int(i)]
+
                     wellbaro = self.data['bulk-well-baro'].loc[int(i)]
 
                     try:
@@ -1325,7 +1306,7 @@ class Feedback:
             key = 'bulk-manual'
         else:
             key = 'manual'
-        if nbnum == 0:
+        if key == 'manual-single':
             for i in [0, 1]:
                 self.man_datetime[i] = pd.to_datetime(
                     f'{self.man_date[i].get()} {self.man_hour[i].get()}:{self.man_min[i].get()}',
@@ -1340,7 +1321,7 @@ class Feedback:
                 df['dtwbelowcasing'] = df['dtwbelowcasing'] * 3.28084
             self.data[key] = df.set_index(['readingdate'])
             print(self.data[key])
-        elif nbnum == 1:
+        elif key in ('manual'):
             df = self.data[key].rename(columns={self.combo[key]['Datetime'].get(): 'readingdate',
                                                 self.combo[key]['DTW'].get(): 'dtwbelowcasing',
                                                 self.combo[key]['locationid'].get(): 'locationid'})
@@ -1369,30 +1350,26 @@ class Feedback:
         return wl
 
     def proc_man_bulk(self,key = 'bulk-manual'):
-        #key = 'bulk-manual'
-        # if 'bulk-manual' in self.data.keys():
-        #    key = 'bulk-manual'
-        # elif 'manual-single' in self.data.keys():
-        #    key = 'manual-single'
-        # else:
-        #    key = 'manual'
 
         try:
-            #self.graphframe['bulk-manual'] = 'None'
+
             df = self.data[key].rename(columns={self.combo[key]['Datetime'].get(): 'readingdate',
                                                 self.combo[key]['DTW'].get(): 'dtwbelowcasing',
                                                 self.combo[key]['locationid'].get(): 'locationid'})
             df['units'] = self.manunits.get()
+
             if self.manunits.get() == 'm':
                 df['dtwbelowcasing'] = df['dtwbelowcasing'] * 3.28084
+
             df = df.reset_index()
+
             df['readingdate'] = df['readingdate'].apply(lambda x: pd.to_datetime(x, infer_datetime_format=True,
                                                                                  errors='ignore'))
             df['dtwbelowcasing'] = df['dtwbelowcasing'].apply(lambda x: -1 * pd.to_numeric(x, errors='coerce'))
-            # df = df.set_index(['locationid', 'readingdate'])
-            # df = df['dtwbelowcasing']
+
             info = self.data['well-info-table']
-            df = df[df['locationid'].isin(info.index)]
+
+            df = df[df['locationid'].isin(info.reset_index()['altlocationid'].unique())]
 
             popup = tk.Toplevel()
             popup.geometry("400x100+200+200")
@@ -1401,12 +1378,15 @@ class Feedback:
             pg.pack()
             pg.config(maximum=len(df.index.get_level_values(0)))
 
+            info = info.reset_index().set_index(['altlocationid'])
+
             df['waterelevation'] = df[['locationid', 'dtwbelowcasing']].apply(
                 lambda x: self.bulk_wlelev(x, info, pg, popup), 1)
             df = df.set_index(['locationid', 'readingdate'])
 
             popup.destroy()
             self.data[key] = df
+
             self.graphframe[key], self.tableframe[key] = self.note_tab_add(key)
             self.add_graph_table(key)
             self.export_drift_graph_check['state'] = 'normal'
@@ -1448,6 +1428,7 @@ class Feedback:
         if key in self.notelist.keys():
             self.notebook.forget(self.notelist[key])
             self.notelist[key] = 'old'
+
         new_frame = ttk.Frame(self.notebook)
         self.notebook.add(new_frame, text=key)
         for t in range(len(self.notebook.tabs())):
@@ -1522,7 +1503,7 @@ class Feedback:
             if 'manual-single' in self.data.keys():
                 a.scatter(self.data['manual-single'].index,self.data['manual-single']['dtwbelowcasing'],color='red')
                 a.plot(self.data['fixed-drift'].index,self.data['fixed-drift']['DTW_WL'])
-        elif key in ('bulk-manual'):
+        elif key in ('bulk-manual','drift-info','file-info-table','well-info-table'):
             pass
         else:
             a.plot(x, y, label=self.field)
@@ -1535,14 +1516,17 @@ class Feedback:
         a.set_xlabel("Date")
         # fig.set_tight_layout(True)
 
+        #TODO Add multichoice graph for multiwell files
+        if key in ('bulk-manual', 'drift-info', 'file-info-table', 'well-info-table'):
+            pass
+        else:
+            canvas = FigureCanvasTkAgg(fig, self.graph_frame1[key])
 
-        canvas = FigureCanvasTkAgg(fig, self.graph_frame1[key])
+            self.toolbar = NavigationToolbar2Tk(canvas, self.graph_frame1[key])
+            # toolbar.update()
 
-        self.toolbar = NavigationToolbar2Tk(canvas, self.graph_frame1[key])
-        # toolbar.update()
-
-        self.graphcanvas[key] = canvas.get_tk_widget()
-        self.graphcanvas[key].pack(fill=tk.BOTH)
+            self.graphcanvas[key] = canvas.get_tk_widget()
+            self.graphcanvas[key].pack(fill=tk.BOTH)
 
     def make_well_baro_chart(self, event=None, key=None):
 
@@ -1596,7 +1580,12 @@ class Feedback:
 
     def end_edit_cell(self, event=None, key=None):
         if key in self.datatable.keys():
+
             df = pd.DataFrame(self.datatable[key].get_sheet_data(return_copy=True, get_header=False, get_index=False))
+
+            print('line 1608')
+            print(df)
+            print("-------")
             df.index = self.data[key].index
 
             if len(df.columns) == len(self.data[key].columns):
@@ -1606,7 +1595,6 @@ class Feedback:
                 df.columns = self.data[key].columns
             else:
                 pass
-                print('Column transfer mismatch')
 
             for col in df.columns:
                 try:
@@ -1625,6 +1613,7 @@ class Feedback:
 
     def add_graph_table(self, key):
         """
+        Function to add table and graph for each sheet type
 
         Args:
             key (str): name of dataset; ex 'well','baro','well-baro','manual','fixed-drift'
@@ -1635,11 +1624,12 @@ class Feedback:
         """
 
         self.selected_tab = key
-        self.graph_frame1[key] = ttk.Frame(self.graphframe[key])
 
-        self.datatable[key] = Sheet(self.tableframe[key], data=self.data[key].reset_index().values.tolist(), theme=self.sheettheme)
+        self.datatable[key] = Sheet(self.tableframe[key], data=self.data[key].reset_index().values.tolist(),
+                                    theme=self.sheettheme)
 
         self.datatable[key].change_theme(theme=self.sheettheme)
+
         self.datatable[key].headers(self.data[key].reset_index().columns)
         self.datatable[key].enable_bindings()
 
@@ -1647,6 +1637,7 @@ class Feedback:
 
         self.datatable[key].extra_bindings([("column_select", lambda event: self.make_chart(event, key=key)),
                                             ("end_edit_cell", lambda event: self.end_edit_cell(event, key=key))])
+        # Right Click menu items in table
         self.datatable[key].popup_menu_add_command("---------", self.placeholder_func)
         self.datatable[key].popup_menu_add_command("Trim Extrema", self.trim_extrema_popup)
         self.datatable[key].popup_menu_add_command("Jump/Offset Fix", self.jump_fix_popup)
@@ -1654,16 +1645,25 @@ class Feedback:
         self.datatable[key].popup_menu_add_command("Fix Unit Offsets", self.multi_trans_file_fix)
         #self.datatable[key].popup_menu_add_command("Convert Units", self.unit_converter_popup)
 
-        self.flip_y_check[key] = ttk.Checkbutton(self.graph_frame1[key], text='Flip y-axis',
-                                                 command=lambda: self.flip_y(key=key),
-                        variable=self.flip_y_status, onvalue=1,
-                        offvalue=0)
-        self.flip_y_check[key].pack()
-        if key == 'well-info-table':
+        if key in ('well-info-table','bulk-manual','file-info-table'):
             pass
         else:
+            self.graph_frame1[key] = ttk.Frame(self.graphframe[key])
+            self.flip_y_check[key] = ttk.Checkbutton(self.graph_frame1[key], text='Flip y-axis',
+                                                     command=lambda: self.flip_y(key=key),
+                            variable=self.flip_y_status, onvalue=1,
+                            offvalue=0)
+
+
+            self.flip_y_check[key].pack()
+
             self.make_chart(key=key)
             self.graph_frame1[key].pack()
+
+        print('line 1681')
+        print(self.data[key].reset_index().columns)
+        print(key)
+        print("----")
 
         if key == 'well':
             self.wellalignfieldbox['values'] = list(self.data[key].columns)
@@ -1889,9 +1889,8 @@ class Feedback:
 
         # sets the geometry of toplevel
         self.newWindow.geometry("250x350")
-        # df = pd.read
+
         # A Label widget to show in toplevel
-        # self.data[key] =
         columns = list(self.data[key].columns.values)  # see all sheet names
 
         tk.Label(self.newWindow, text="Datetime Field").pack()
@@ -1922,9 +1921,8 @@ class Feedback:
 
         # sets the geometry of toplevel
         self.newWindow.geometry("250x400")
-        # df = pd.read
+
         # A Label widget to show in toplevel
-        # self.data[key] =
         tk.Label(self.newWindow, text="Excel Sheet with Data").pack()
         sheets = self.wellbaroxl[key].sheet_names  # see all sheet names
         self.sheetcombo = {}
@@ -2051,6 +2049,7 @@ class Feedback:
         if 'bulk-well' in self.data.keys():
             files = self.data['file-info-table']
             info = self.data['well-info-table']
+            print(info.index)
             wellids = self.data['bulk-well'].index.get_level_values(0).unique()
             mergedf = {}
             popup = tk.Toplevel()
@@ -2065,8 +2064,7 @@ class Feedback:
             for wellid in wellids:
                 popup.update()
                 if wellid is not None and pd.notna(wellid) and pd.notnull(wellid):
-                    if info.loc[int(wellid), 'barologgertype'] != "None" and info.loc[
-                        int(wellid), 'barologgertype'] != "":
+                    if info.loc[int(wellid), 'barologgertype'] != "None" and info.loc[int(wellid), 'barologgertype'] != "":
                         baroid = pd.to_numeric(info.loc[int(wellid), 'barologgertype'],
                                                downcast='integer', errors='coerce')
                         # medium = files[files['locationid'] == wellid]['measuring_medium'].values[0]
@@ -2115,7 +2113,6 @@ class Feedback:
             df = df.set_index(['locationid', 'DateTime'])
             df = df[['Level', 'Temperature', 'barometer', 'dbp', 'dwl', 'corrwl']]
             self.data['bulk-well-baro'] = df
-            # self.align_bulk_wb_button['fg'] = 'green'
 
             if self.export_align.get() == 1:
                 file = filedialog.asksaveasfilename(filetypes=[('csv', '.csv')], defaultextension=".csv")
@@ -2226,7 +2223,7 @@ class Feedback:
         key = 'well-info-table'
 
         self.currentdir = os.path.dirname(self.datastr[key].get())
-        df = pd.read_csv(self.datastr[key].get(),na_values=['<Null>','NaN','None',-9999])
+        df = pd.read_csv(self.datastr[key].get(), na_values=['<Null>','NaN','None',-9999])
 
         for col in df.columns:
             df = df.rename(columns={col: col.lower()})
@@ -2238,7 +2235,8 @@ class Feedback:
         self.data[key] = df
 
         self.graphframe[key], self.tableframe[key] = self.note_tab_add(key, tabw=5, grph=1)
-        self.datatable[key] = Sheet(self.tableframe[key], data=self.data[key].reset_index().values.tolist(), theme=self.sheettheme)
+        self.datatable[key] = Sheet(self.tableframe[key], data=self.data[key].reset_index().values.tolist(),
+                                    theme=self.sheettheme)
         # self.datatable[key].show()
 
         self.datatable[key].change_theme(theme=self.sheettheme)
@@ -2649,7 +2647,7 @@ class Feedback:
         self.selected_tab = self.notebook.tab(codedtabname, "text")
         print(self.selected_tab)
         key = self.selected_tab
-        if key == 'well-info-table':
+        if key in ('well-info-table','bulk-manual','file-info-table'):
             pass
         else:
             self.make_chart(key=key)
