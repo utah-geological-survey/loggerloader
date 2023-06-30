@@ -1110,7 +1110,7 @@ class Feedback:
             key2 = 'manual'
 
         self.end_edit_cell(key=key2)
-        self.data[key2]['waterelevation'] = self.data[key2]['dtwbelowcasing'] + mstickup + melev
+        self.data[key2]['waterelevation'] = -1*self.data[key2]['dtwbelowcasing'] + mstickup + melev
         self.datatable[key2].update()
         self.manelevs = self.data[key2]
         df['waterelevation'] = self.data['fixed-drift']['DTW_WL'] + mstickup + melev
@@ -1479,6 +1479,10 @@ class Feedback:
             self.field = list(self.data[key].columns)[0]
 
         #print(self.field)
+        if key:
+            pass
+        else:
+            key = self.selected_tab
 
         # remove old widgets
         if key in self.graphcanvas.keys():
@@ -1518,12 +1522,25 @@ class Feedback:
         elif key == "fixed-drift":
             if 'manual-single' in self.data.keys():
             #if self.manselected_tab == 'Manual Entry':
-                a.scatter(self.data['manual-single'].index,self.data['manual-single']['dtwbelowcasing'],color='red')
-                a.plot(self.data['fixed-drift'].index,self.data['fixed-drift']['DTW_WL'])
+                if self.field == 'DTW_WL':
+                    a.scatter(self.data['manual-single'].index, self.data['manual-single']['dtwbelowcasing'],color='red')
+                    a.plot(self.data['fixed-drift'].index, self.data['fixed-drift']['DTW_WL'])
+                    a.grid()
             elif 'manual' in self.data.keys():
             #elif self.manselected_tab == 'Data Import':
-                a.scatter(self.data['manual'].index, self.data['manual']['dtwbelowcasing'], color='red')
-                a.plot(self.data['fixed-drift'].index, self.data['fixed-drift']['DTW_WL'])
+                if self.field == 'DTW_WL':
+                    a.scatter(self.data['manual'].index, self.data['manual']['dtwbelowcasing'], color='red')
+                    a.plot(self.data['fixed-drift'].index, self.data['fixed-drift']['DTW_WL'])
+                    a.grid()
+            else:
+                a.plot(x, y, label=self.field)
+                a.grid()
+        elif key == "wl-elev":
+            if self.field == 'waterelevation':
+                a.scatter(self.manelevs.index, self.manelevs['waterelevation'], color='red')
+                a.plot(self.data["wl-elev"].index, self.data["wl-elev"]['waterelevation'])
+                a.ticklabel_format(axis='y', style='plain')
+                a.grid()
         elif key in ('bulk-manual','drift-info','file-info-table','well-info-table'):
             pass
         else:
