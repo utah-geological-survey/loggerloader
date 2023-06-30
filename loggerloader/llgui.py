@@ -97,7 +97,7 @@ class Feedback:
 
         self.sheettheme = "light blue"
 
-        self.version = "2.3.0"
+        self.version = "2.4.0"
 
         self.root = master
         self.main = master
@@ -184,6 +184,10 @@ class Feedback:
         self.export_well_baro = {}
         self.is_vented = {}
         self.trans_vented = {}
+
+        # Manual Datasets
+        self.manunits = {}
+
         ## -- WIDGET AREA -- ##
 
         # Create side by side panel areas
@@ -277,14 +281,14 @@ class Feedback:
         self.date_hours_min(1)  # 2nd manual measure
 
         # units
-        self.manunits = ttk.Combobox(self.manframe, width=5, values=['ft', 'm'], state="readonly")
-        self.manunits.grid(row=1, column=6, rowspan=3)
-        self.manunits.current(0)
+        self.manunits['manual-single'] = ttk.Combobox(self.manframe, width=5, values=['ft', 'm'], state="readonly")
+        self.manunits['manual-single'].grid(row=1, column=6, rowspan=3)
+        self.manunits['manual-single'].current(0)
 
         # locid
-        ttk.Label(self.manframe, text="Locationid").grid(row=0, column=6)
+        ttk.Label(self.manframe, text="Locationid").grid(row=0, column=7)
         self.man_locid = ttk.Entry(self.manframe, width=11)
-        self.man_locid.grid(row=1, column=6, rowspan=3)
+        self.man_locid.grid(row=1, column=7, rowspan=3)
 
         # Tab for entering manual data by file
         manfileframetext = """File with manual data must have datetime, reading, and locationid fields"""
@@ -303,11 +307,11 @@ class Feedback:
 
         self.mandiag(False, key='manual-single')
         ttk.Label(self.manfileframe, text="units").grid(row=3, column=3)
-        self.manunits = ttk.Combobox(self.manfileframe, width=5,
+        self.manunits['manual'] = ttk.Combobox(self.manfileframe, width=5,
                                      values=['ft', 'm'], state="readonly")
 
-        self.manunits.grid(row=4, column=3)
-        self.manunits.current(0)
+        self.manunits['manual'].grid(row=4, column=3)
+        self.manunits['manual'].current(0)
 
         b = ttk.Button(self.frame_step4,
                        text='Process Manual Data',
@@ -558,10 +562,10 @@ class Feedback:
             self.combo[key]["Pick id"].grid_forget()
 
         ttk.Label(master, text="units").grid(row=3, column=3)
-        self.manunits = ttk.Combobox(master, width=5,
+        self.manunits[key] = ttk.Combobox(master, width=5,
                                      values=['ft', 'm'], state="readonly")
-        self.manunits.grid(row=4, column=3)
-        self.manunits.current(0)
+        self.manunits[key].grid(row=4, column=3)
+        self.manunits[key].current(0)
 
         # Populates Comboboxes with default file on G drive; if different drive, then passes
         try:
@@ -709,7 +713,7 @@ class Feedback:
             if cmbo == self.combo[key]['Pick id']:
                 locids = self.data[key][self.combo[key]['locationid'].get()].unique()
                 # TODO this will cause problems later; change to handle multiple types
-                cmbo['values'] = list([pd.to_numeric(loc, downcast='integer', errors='coerce') for loc in locids])
+                cmbo['values'] = sorted(list([pd.to_numeric(loc, downcast='integer', errors='coerce') for loc in locids]))
             else:
                 cmbo['values'] = mancols
 
@@ -1327,18 +1331,18 @@ class Feedback:
                                'dtwbelowcasing': [float(self.man_meas[0].get()),
                                                   float(self.man_meas[1].get())],
                                'locationid': [self.man_locid.get()] * 2,
-                               'units': [self.manunits.get()] * 2})
-            #if self.manunits.get() == 'm':
-            #    df['dtwbelowcasing'] = df['dtwbelowcasing'] * 3.28084
+                               'units': [self.manunits[key].get()] * 2})
+            if self.manunits[key].get() == 'm':
+                df['dtwbelowcasing'] = df['dtwbelowcasing'] * 3.28084
             self.data[key] = df.set_index(['readingdate'])
             #print(self.data[key])
         elif key in ('manual'):
             df = self.data[key].rename(columns={self.combo[key]['Datetime'].get(): 'readingdate',
                                                 self.combo[key]['DTW'].get(): 'dtwbelowcasing',
                                                 self.combo[key]['locationid'].get(): 'locationid'})
-            df['units'] = self.manunits.get()
+            df['units'] = self.manunits[key].get()
 
-            if self.manunits.get() == 'm':
+            if self.manunits[key].get() == 'm':
                 df['dtwbelowcasing'] = df['dtwbelowcasing'] * 3.28084
             df = df.reset_index()
             df['readingdate'] = df['readingdate'].apply(lambda x: pd.to_datetime(x, infer_datetime_format=True,
@@ -1368,9 +1372,9 @@ class Feedback:
             df = self.data[key].rename(columns={self.combo[key]['Datetime'].get(): 'readingdate',
                                                 self.combo[key]['DTW'].get(): 'dtwbelowcasing',
                                                 self.combo[key]['locationid'].get(): 'locationid'})
-            df['units'] = self.manunits.get()
+            df['units'] = self.manunits[key].get()
 
-            if self.manunits.get() == 'm':
+            if self.manunits[key].get() == 'm':
                 df['dtwbelowcasing'] = df['dtwbelowcasing'] * 3.28084
 
             df = df.reset_index()
