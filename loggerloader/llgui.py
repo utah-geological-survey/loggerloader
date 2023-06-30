@@ -179,6 +179,11 @@ class Feedback:
         self.combo_choice = {}
         self.combo_label = {}
 
+        # Alignment Dicts
+        self.export_wb = {}
+        self.export_well_baro = {}
+        self.is_vented = {}
+        self.trans_vented = {}
         ## -- WIDGET AREA -- ##
 
         # Create side by side panel areas
@@ -204,6 +209,7 @@ class Feedback:
         # add tabs in the frame to the left
         self.processing_notebook = ttk.Notebook(self.process_frame)
         self.processing_notebook.pack(fill='both', expand=True)
+        self.processing_notebook.bind("<<NotebookTabChanged>>", self.procnbselect)
         # self.onewelltab = ttk.Frame(self.processing_notebook)
         # https://stackoverflow.com/questions/3085696/adding-a-scrollbar-to-a-group-of-widgets-in-tkinter
         self.frame = ttk.Frame(self.processing_notebook)
@@ -254,6 +260,7 @@ class Feedback:
         self.manfileframe = ttk.Frame(self.manbook)
         self.manbook.add(self.manframe, text='Manual Entry')
         self.manbook.add(self.manfileframe, text='Data Import')
+        self.manbook.bind("<<NotebookTabChanged>>", self.mannbselect)
         # validates time number inputs
         self.measvalidation = (self.manframe.register(self.only_meas), '%P')
 
@@ -719,7 +726,7 @@ class Feedback:
             else:
                 key = 'manual'
             mancols = list(self.data[key].columns.values)
-            print(self.combo[key]['locationid'].get())
+            #print(self.combo[key]['locationid'].get())
             if cmbo == self.combo[key]['Pick id']:
                 locids = self.data[key][self.combo[key]['locationid'].get()].unique()
                 # TODO this will cause problems later; change to handle multiple types
@@ -1033,22 +1040,22 @@ class Feedback:
         self.freqtype.grid(row=3, column=1)
         self.freqtype.current(0)
         b = ttk.Button(frame_step3, text='Align Datasets',
-                       command=lambda:self.alignedplot(wellkey=wellkey,barokey=barokey))
+                       command=lambda: self.alignedplot(wellkey=wellkey, barokey=barokey))
         b.grid(row=3, column=2)
 
-        self.export_wb = tk.IntVar(value=1)
-        self.export_single_well_baro = ttk.Checkbutton(frame_step3,
+        self.export_wb[wellkey] = tk.IntVar()
+        self.export_well_baro[wellkey] = ttk.Checkbutton(frame_step3,
                                                        text="Export Well-Baro Data?",
-                                                       variable=self.export_wb)
-        self.export_single_well_baro.grid(row=3, column=3, sticky=tk.W)
+                                                       variable=self.export_wb[wellkey])
+        self.export_well_baro[wellkey].grid(row=3, column=3, sticky=tk.W)
         # self.export_single_well_baro.select()
 
-        self.is_vented = tk.IntVar(value=0)
-        self.trans_vented = ttk.Checkbutton(frame_step3,
+        self.is_vented[wellkey] = tk.IntVar(value=0)
+        self.trans_vented[wellkey] = ttk.Checkbutton(frame_step3,
                                             text="Vented?",
-                                            variable=self.is_vented)
-        self.trans_vented.grid(row=3, column=4, sticky=tk.W)
-        self.is_vented.set(0)
+                                            variable=self.is_vented[wellkey])
+        self.trans_vented[wellkey].grid(row=3, column=4, sticky=tk.W)
+        self.is_vented[wellkey].set(0)
         # self.trans_vented.select()
 
     def add_elevation_interface(self, master):
@@ -1107,8 +1114,8 @@ class Feedback:
         self.data[key] = df
         self.graphframe[key], self.tableframe[key] = self.note_tab_add(key)
         self.add_graph_table(key)
-        print("line 1128")
-        print(self.manelevs)
+        #print("line 1128")
+        #print(self.manelevs)
 
     def fix_drift(self):
         key = 'fixed-drift'
@@ -1233,7 +1240,7 @@ class Feedback:
 
         df = self.data['bulk-fix-drift']
         df = df.reset_index()
-        print(df.columns)
+        #print(df.columns)
         df = df.rename(columns={'DateTime': 'readingdate', 'Level': 'measuredlevel', 'Temperature': 'temperature',
                                 'DTW_WL': 'measureddtw'})
         df = df[['locationid', 'readingdate', 'measuredlevel', 'temperature',
@@ -1305,7 +1312,11 @@ class Feedback:
         elif 'bulk-manual' in self.data.keys():
             key = 'bulk-manual'
         else:
-            key = 'manual'
+            if self.manselected_tab == 'Manual Entry':
+                key = 'manual-single'
+            else:
+                key = 'manual'
+
         if key == 'manual-single':
             for i in [0, 1]:
                 self.man_datetime[i] = pd.to_datetime(
@@ -1317,15 +1328,16 @@ class Feedback:
                                                   float(self.man_meas[1].get())],
                                'locationid': [self.man_locid.get()] * 2,
                                'units': [self.manunits.get()] * 2})
-            if self.manunits.get() == 'm':
-                df['dtwbelowcasing'] = df['dtwbelowcasing'] * 3.28084
+            #if self.manunits.get() == 'm':
+            #    df['dtwbelowcasing'] = df['dtwbelowcasing'] * 3.28084
             self.data[key] = df.set_index(['readingdate'])
-            print(self.data[key])
+            #print(self.data[key])
         elif key in ('manual'):
             df = self.data[key].rename(columns={self.combo[key]['Datetime'].get(): 'readingdate',
                                                 self.combo[key]['DTW'].get(): 'dtwbelowcasing',
                                                 self.combo[key]['locationid'].get(): 'locationid'})
             df['units'] = self.manunits.get()
+
             if self.manunits.get() == 'm':
                 df['dtwbelowcasing'] = df['dtwbelowcasing'] * 3.28084
             df = df.reset_index()
@@ -1462,7 +1474,7 @@ class Feedback:
         else:
             self.field = list(self.data[key].columns)[0]
 
-        print(self.field)
+        #print(self.field)
 
         # remove old widgets
         if key in self.graphcanvas.keys():
@@ -1501,8 +1513,13 @@ class Feedback:
                 mode="expand", borderaxespad=0, ncol=3)
         elif key == "fixed-drift":
             if 'manual-single' in self.data.keys():
+            #if self.manselected_tab == 'Manual Entry':
                 a.scatter(self.data['manual-single'].index,self.data['manual-single']['dtwbelowcasing'],color='red')
                 a.plot(self.data['fixed-drift'].index,self.data['fixed-drift']['DTW_WL'])
+            elif 'manual' in self.data.keys():
+            #elif self.manselected_tab == 'Data Import':
+                a.scatter(self.data['manual'].index, self.data['manual']['dtwbelowcasing'], color='red')
+                a.plot(self.data['fixed-drift'].index, self.data['fixed-drift']['DTW_WL'])
         elif key in ('bulk-manual','drift-info','file-info-table','well-info-table'):
             pass
         else:
@@ -1583,9 +1600,9 @@ class Feedback:
 
             df = pd.DataFrame(self.datatable[key].get_sheet_data(return_copy=True, get_header=False, get_index=False))
 
-            print('line 1608')
-            print(df)
-            print("-------")
+            #print('line 1608')
+            #print(df)
+            #print("-------")
             df.index = self.data[key].index
 
             if len(df.columns) == len(self.data[key].columns):
@@ -1660,10 +1677,10 @@ class Feedback:
             self.make_chart(key=key)
             self.graph_frame1[key].pack()
 
-        print('line 1681')
-        print(self.data[key].reset_index().columns)
-        print(key)
-        print("----")
+        #print('line 1681')
+        #print(self.data[key].reset_index().columns)
+        #print(key)
+        #print("----")
 
         if key == 'well':
             self.wellalignfieldbox['values'] = list(self.data[key].columns)
@@ -1695,17 +1712,26 @@ class Feedback:
 
     def add_manual_points(self, key, graph_frame1):
         ax = self.datatable[key].showPlotViewer(parent=graph_frame1).ax
+
+        #if self.procselected_tab == 'Bulk Well Process':
+        #self.manselected_tab
+        print(self.procselected_tab)
+        print(self.manselected_tab)
+
+
         if 'manual-single' in self.data.keys():
             key2 = 'manual-single'
         elif 'bulk-manual' in self.data.keys():
             key2 = 'bulk-manual'
         else:
             key2 = 'manual'
+
         if key == 'fixed-drift':
 
             ax.plot(self.data[key]['DTW_WL']*-1, color='green', label='unprocessed')
             ax.scatter(self.data[key2].index, self.data[key2]['dtwbelowcasing'],color='red')
             ax.set_ylabel(f"Depth to Water (ft)")
+
         elif key == 'wl-elev':
             ax.plot(self.data[key]['waterelevation'], color='green', label='unprocessed')
             ax.scatter(self.data[key2].index, self.data[key2]['waterelevation'])
@@ -2016,7 +2042,7 @@ class Feedback:
         else:
             key = 'well-baro-many'
 
-        if self.is_vented.get() == 1:
+        if self.is_vented[wellkey].get() == 1:
             sol = True
         else:
             sol = False
@@ -2027,16 +2053,25 @@ class Feedback:
             self.end_edit_cell(key=wellkey)
             self.end_edit_cell(key=barokey)
 
-            self.data[key] = well_baro_merge(self.data[wellkey],
-                                             self.data[barokey],
-                                             wellcolumn=self.wellalignfieldbox.get(),
-                                             barocolumn=self.baroalignfieldbox.get(),
-                                             sampint=int(self.freqint.get()),
-                                             vented=sol)
+            try:
+                self.data[key] = well_baro_merge(self.data[wellkey],
+                                                 self.data[barokey],
+                                                 wellcolumn=self.wellalignfieldbox.get(),
+                                                 barocolumn=self.baroalignfieldbox.get(),
+                                                 sampint=int(self.freqint.get()),
+                                                 vented=sol)
+            except IndexError:
+                popup = tk.Toplevel()
+                popup.geometry("400x100+200+200")
+                ttk.Label(popup, text="Datasets do not overlap").pack()
             self.graphframe[key], self.tableframe[key] = self.note_tab_add(key)
             self.add_graph_table(key)
 
-            if self.export_wb.get() == 1:
+
+            checkstatus = self.export_wb[wellkey].get()
+            print(f"Checkstatus is {checkstatus}")
+            #if checkstatus == 1:
+            if self.export_well_baro[wellkey].instate(['selected']):
                 df = self.data[key]
                 df.index.name = 'locationid'
                 df = df.reset_index()
@@ -2049,7 +2084,7 @@ class Feedback:
         if 'bulk-well' in self.data.keys():
             files = self.data['file-info-table']
             info = self.data['well-info-table']
-            print(info.index)
+            #print(info.index)
             wellids = self.data['bulk-well'].index.get_level_values(0).unique()
             mergedf = {}
             popup = tk.Toplevel()
@@ -2141,7 +2176,7 @@ class Feedback:
                     self.data[key] = pd.read_excel(self.datastr[key].get())
                 elif file_extension == '.csv':
                     self.data[key] = pd.read_csv(self.datastr[key].get())
-                print('file read')
+                #print('file read')
                 mancols = list(self.data[key].columns.values)
                 self.fillervals = mancols
                 for col in mancols:
@@ -2171,7 +2206,7 @@ class Feedback:
                                                 defaultextension=".csv",
                                                 confirmoverwrite=True)
         if filename is None:
-            print('no')
+            #print('no')
             return
         else:
             self.end_edit_cell(key='wl-elev')
@@ -2182,9 +2217,9 @@ class Feedback:
             df = df.drop(['DTW_WL'], axis=1)
             filename, file_extension = os.path.splitext(filename)
             if file_extension == '.csv':
-                df.to_csv(filename + ".csv")
+                df.reset_index().to_csv(filename + ".csv")
             else:
-                df.to_excel(filename + ".xlsx")
+                df.reset_index().to_excel(filename + ".xlsx")
             return
 
     def open_file(self, master):
@@ -2652,6 +2687,15 @@ class Feedback:
         else:
             self.make_chart(key=key)
 
+    def mannbselect(self, event):
+        codedtabname = self.manbook.select()
+        self.manselected_tab = self.manbook.tab(codedtabname, "text")
+        print(self.manselected_tab)
+
+    def procnbselect(self, event):
+        codedtabname = self.processing_notebook.select()
+        self.procselected_tab = self.processing_notebook.tab(codedtabname, "text")
+        print(self.procselected_tab)
 
 
 
