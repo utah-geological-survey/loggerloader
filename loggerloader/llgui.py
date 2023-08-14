@@ -161,6 +161,8 @@ class Feedback:
         self.flip_y_status = tk.IntVar(value=0)
         self.wellbarocsv = {}
 
+        self.selectedfreq = {}
+
         # jump fix dictionaries
         self.dataminvar = None
         self.datamaxvar = None
@@ -549,11 +551,10 @@ class Feedback:
         self.combo_choice[key] = {}
         self.combo_label[key] = {}
 
-
         for ky, vals in self.combovals.items():
             self.man_combos(ky, vals, master, key)
 
-        if key == 'manual':
+        if key == 'manual' or key == 'many-manual':
             pass
         else:
             #if self.processing_notebook.index(self.processing_notebook.select()) == 1:
@@ -1037,9 +1038,12 @@ class Feedback:
 
         ttk.Label(frame_step3, text='Pref. Data Freq.').grid(row=2, column=0, columnspan=2)
         # Boxes for data frequency
-        self.freqint = ttk.Combobox(frame_step3, width=4, values=list(range(1, 120)))
+        self.selectedfreq[wellkey] = tk.IntVar(frame_step3)
+        self.freqint = ttk.Combobox(frame_step3, textvariable=self.selectedfreq[wellkey],
+                                    width=4, values=[60, 15, 30] + list(range(1, 120)))
+
         self.freqint.grid(row=3, column=0)
-        self.freqint.current(59)
+        self.freqint.current(0)
         self.freqtype = ttk.Combobox(frame_step3, width=4, values=['min'])
         self.freqtype.grid(row=3, column=1)
         self.freqtype.current(0)
@@ -2075,11 +2079,12 @@ class Feedback:
             self.end_edit_cell(key=barokey)
 
             try:
+                freq = self.selectedfreq[wellkey].get()
                 self.data[key] = well_baro_merge(self.data[wellkey],
                                                  self.data[barokey],
                                                  wellcolumn=self.wellalignfieldbox.get(),
                                                  barocolumn=self.baroalignfieldbox.get(),
-                                                 sampint=int(self.freqint.get()),
+                                                 sampint=int(freq),
                                                  vented=sol)
             except IndexError:
                 popup = tk.Toplevel()
