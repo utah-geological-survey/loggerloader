@@ -97,7 +97,7 @@ class Feedback:
 
         self.sheettheme = "light blue"
 
-        self.version = "2.4.0"
+        self.version = "2.4.1"
 
         self.root = master
         self.main = master
@@ -1415,7 +1415,7 @@ class Feedback:
             # self.proc_man_bulk_button['fg'] = 'green'
         except KeyError as err:
             print(f"Key Error: {err}")
-            tk.messagebox.showerror(title='Process Well Info Table First', message="Process Well Info Table First")
+            tk.messagebox.showerror(title='Process Well Info Table First', message=f"Key Error: {err}n\Process Well Info Table First")
 
     def only_meas(self, value_if_allowed):
         try:

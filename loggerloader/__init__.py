@@ -3,7 +3,7 @@ try:
 except:
     from .llgui import *
 
-version = "2.4.0"
+version = "2.4.1"
 __version__ = version
 __author__ = 'Paul Inkenbrandt'
 __name__ = 'loggerloader'
