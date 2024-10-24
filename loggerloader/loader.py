@@ -1144,6 +1144,59 @@ class NewTransImp(object):
             print('Bad File')
             return
 
+    def read_troll_htm(self):
+        """given a path to the .htm (html) file, function will read in the data and produce pandas dataframe
+        Args:
+            filepath (str):
+                path to data file
+
+        Return:
+            df:
+                dataframe
+        """
+        with open(self.infile, 'r') as f:
+            html_string = f.read()
+
+        # use BeautifulSoup to parse the HTML content of the page
+        soup = BeautifulSoup(html_string, "html.parser")
+
+        # find all the table rows with class "data"
+        table_rows = soup.find_all('tr', {'class': 'data'})
+        header = soup.find_all('tr', {'class': 'dataHeader'})
+
+        heads = header[0].find_all('td')
+        colnames = [head.text.strip() for head in heads]
+
+        # create an empty list to hold the data
+        data = []
+
+        # loop through each row and extract the data into a list
+        for row in table_rows:
+            cols = row.find_all('td')
+            cols = [col.text.strip() for col in cols]
+            data.append(cols)
+
+        # convert the list of data into a pandas dataframe
+        df = pd.DataFrame(data)
+        df.columns = colnames
+
+        for col in df.columns:
+            if "Date" in col or "date" in col:
+                print(col)
+                df[col] = pd.to_datetime(df[col])
+                df = df.set_index(col)
+            elif "Press" in col:
+                df[col] = pd.to_numeric(df[col])
+                if "psi" in col:
+                    df['Level'] = df[col] * 2.3067
+                elif "Hg" in col:
+                    df['Level'] = df[col] * 0.044603
+                # df = df.rename(columns={col:"Level"})
+            elif "Depth" in col or "Cond" in col or "Total" in col or "Salin" in col or "Dens" in col or "Temp" in col:
+                df[col] = pd.to_numeric(df[col])
+
+        return df
+
     def new_csv_imp(self):
         """This function uses an exact file path to upload a csv transducer file.
 
@@ -1258,7 +1311,7 @@ class NewTransImp(object):
             # start_time = txt[inst_info_ind+6].split('=')[-1].strip()
             # stop_time = txt[inst_info_ind+7].split('=')[-1].strip()
 
-            df = pd.read_table(self.infile, parse_dates=[[0, 1]], sep='\s+', skiprows=data_ind + 2,
+            df = pd.read_table(self.infile, parse_dates=[[0, 1]], sep=r'\s+', skiprows=data_ind + 2,
                                names=['Date', 'Time', level, temp],
                                skipfooter=1, engine='python')
             df.rename(columns={'Date_Time': 'DateTime'}, inplace=True)
@@ -1607,11 +1660,12 @@ class HeaderTable(object):
 
 def getwellid(infile, wellinfo):
     """Specialized function that uses a well info table and file name to lookup a well's id number"""
-    m = re.search("\d", getfilename(infile))
-    s = re.search("\s", getfilename(infile))
+    m = re.search(r"\d", getfilename(infile))
+    s = re.search(r"\s", getfilename(infile))
     if m.start() > 3:
         wellname = getfilename(infile)[0:m.start()].strip().lower()
     else:
         wellname = getfilename(infile)[0:s.start()].strip().lower()
     wellid = wellinfo[wellinfo['Well'] == wellname]['wellid'].values[0]
     return wellname, wellid
+

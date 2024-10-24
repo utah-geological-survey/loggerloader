@@ -21,7 +21,7 @@ from tkinter import filedialog, messagebox, simpledialog, messagebox, ttk
 from tkcalendar import DateEntry
 
 from pylab import rcParams
-from PIL import ImageTk, Image
+#from PIL import ImageTk, Image
 
 import platform
 import os
