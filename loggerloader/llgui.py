@@ -58,6 +58,7 @@ try:
 except AttributeError:
     pass
 
+
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
     try:
@@ -105,7 +106,6 @@ class Feedback:
 
         # Set the theme with the theme_use method
 
-
         # Get platform into a variable
         self.setConfigDir()
         # if not hasattr(self,'defaultsavedir'):
@@ -138,7 +138,7 @@ class Feedback:
         self.entry = {}
         self.locidmatch = {}
         self.bulktransfilestr = {}  # dictionary to store trans file names
-        self.beg_end = {} # stores beginning and end of files
+        self.beg_end = {}  # stores beginning and end of files
 
         # selecting files
         self.fileselectbutt = {}
@@ -310,7 +310,7 @@ class Feedback:
         self.mandiag(False, key='manual-single')
         ttk.Label(self.manfileframe, text="units").grid(row=3, column=3)
         self.manunits['manual'] = ttk.Combobox(self.manfileframe, width=5,
-                                     values=['ft', 'm'], state="readonly")
+                                               values=['ft', 'm'], state="readonly")
 
         self.manunits['manual'].grid(row=4, column=3)
         self.manunits['manual'].current(0)
@@ -399,7 +399,7 @@ class Feedback:
         self.man_file_frame(self.bulk_manfileframe, key='bulk-manual')
 
         self.proc_man_bulk_button = ttk.Button(self.bulk_manfileframe, text='Process Manual Data',
-                                               command=lambda: self.proc_man_bulk(key = 'bulk-manual'))
+                                               command=lambda: self.proc_man_bulk(key='bulk-manual'))
         self.proc_man_bulk_button.grid(column=1, row=6, columnspan=2)
         self.proc_man_bulk_button['state'] = 'disabled'
 
@@ -435,16 +435,17 @@ class Feedback:
         owmf_frame_header = ttk.Frame(self.manyfiletab)
         owmf_frame_header.pack(pady=5)
         # Included because some attachments fail when packaging code
-        ttk.Label(owmf_frame_header, wraplength=570,anchor="center",justify='center',
-                  text="This tab is used to process a folder with files that are exclusively from one well. It can only process one transducer type at a time.").grid(row=0, column=0)
+        ttk.Label(owmf_frame_header, wraplength=570, anchor="center", justify='center',
+                  text="This tab is used to process a folder with files that are exclusively from one well. It can only process one transducer type at a time.").grid(
+            row=0, column=0)
         ttk.Separator(self.manyfiletab, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
 
         manyfinderframe = ttk.Frame(self.manyfiletab)
         manyfinderframe.pack()
         ttk.Label(manyfinderframe, text='0. Search for transducer files (optional)').grid(column=0, row=0,
-                                                                                            columnspan=4)
+                                                                                          columnspan=4)
         ttk.Label(manyfinderframe, text='Choose top level of area to search').grid(column=0, row=1,
-                                                                                          columnspan=2)
+                                                                                   columnspan=2)
 
         self.datastr['many-dir'] = tk.StringVar(manyfinderframe, value='Double-Click for search file directory')
         self.manyfilefnd = ttk.Entry(manyfinderframe, textvariable=self.datastr['many-dir'], width=50)
@@ -452,20 +453,19 @@ class Feedback:
         self.manyfilefnd.bind('<Double-ButtonRelease-1>', self.set_search_dir)
 
         ttk.Label(manyfinderframe, text='Choose dir to place compiled files').grid(column=0, row=2,
-                                                                                          columnspan=2)
-
+                                                                                   columnspan=2)
 
         self.datastr['endmany-dir'] = tk.StringVar(manyfinderframe, value='Double-Click to set end directory')
         self.manyfile_end = ttk.Entry(manyfinderframe, textvariable=self.datastr['endmany-dir'], width=50)
         self.manyfile_end.grid(column=2, row=2, columnspan=2)
         self.manyfile_end.bind('<Double-ButtonRelease-1>', self.set_end_dir)
 
-        ttk.Label(manyfinderframe, text='Wildcard').grid(column=0, row=3,columnspan=1)
+        ttk.Label(manyfinderframe, text='Wildcard').grid(column=0, row=3, columnspan=1)
         self.datastr['many-wildcard'] = tk.StringVar(manyfinderframe, value='')
         self.manyfile_card = ttk.Entry(manyfinderframe, textvariable=self.datastr['many-wildcard'], width=25)
         self.manyfile_card.grid(column=1, row=3, columnspan=1)
 
-        ttk.Label(manyfinderframe, text='File Extension').grid(column=2, row=3,columnspan=1)
+        ttk.Label(manyfinderframe, text='File Extension').grid(column=2, row=3, columnspan=1)
         self.datastr['manyfiletype'] = tk.StringVar(manyfinderframe, value='xle')
         self.manyfile_ext = ttk.Entry(manyfinderframe, textvariable=self.datastr['manyfiletype'], width=25)
         self.manyfile_ext.grid(column=3, row=3, columnspan=1)
@@ -474,7 +474,6 @@ class Feedback:
                        text='Compile Transducer Files',
                        command=self.compile_well_files)
         b.grid(column=0, row=4, columnspan=4)
-
 
         self.filefinders('well-many')
         self.filefinders('baro-many')
@@ -564,7 +563,7 @@ class Feedback:
 
         ttk.Label(master, text="units").grid(row=3, column=3)
         self.manunits[key] = ttk.Combobox(master, width=5,
-                                     values=['ft', 'm'], state="readonly")
+                                          values=['ft', 'm'], state="readonly")
         self.manunits[key].grid(row=4, column=3)
         self.manunits[key].current(0)
 
@@ -702,8 +701,8 @@ class Feedback:
         self.combo_label[key][lab] = ttk.Label(master, text=lab)
         self.combo_label[key][lab].grid(row=vals[0], column=vals[1])
         self.combo[key][lab] = ttk.Combobox(master, width=vals[2],
-                                       textvariable=self.combo_choice[key][lab],
-                                       postcommand=lambda: self.man_col_select(self.combo[key][lab], key))
+                                            textvariable=self.combo_choice[key][lab],
+                                            postcommand=lambda: self.man_col_select(self.combo[key][lab], key))
         self.combo[key][lab].grid(row=vals[4], column=vals[5])
 
     def man_col_select(self, cmbo, key):
@@ -714,7 +713,8 @@ class Feedback:
             if cmbo == self.combo[key]['Pick id']:
                 locids = self.data[key][self.combo[key]['locationid'].get()].unique()
                 # TODO this will cause problems later; change to handle multiple types
-                cmbo['values'] = sorted(list([pd.to_numeric(loc, downcast='integer', errors='coerce') for loc in locids]))
+                cmbo['values'] = sorted(
+                    list([pd.to_numeric(loc, downcast='integer', errors='coerce') for loc in locids]))
             else:
                 cmbo['values'] = mancols
 
@@ -768,11 +768,11 @@ class Feedback:
         self.selected_tab = key
         datasets = {"well": "1. Select Well Data:",
                     "baro": "2. Select Barometric Data:",
-                    "well-many" : "1. Select Well Data Directory",
-                    "baro-many" : "2. Select Baro Data Directory"
+                    "well-many": "1. Select Well Data Directory",
+                    "baro-many": "2. Select Baro Data Directory"
                     }
 
-        if key in ("well","baro"):
+        if key in ("well", "baro"):
             placeframe = self.onewelltab
         else:
             placeframe = self.manyfiletab
@@ -786,7 +786,7 @@ class Feedback:
         self.entry[key] = ttk.Entry(filefinderframe, textvariable=self.datastr[key], width=60)
         self.entry[key].grid(column=0, row=1, columnspan=2)
 
-        if key in ("well","baro"):
+        if key in ("well", "baro"):
             self.entry[key].bind('<Double-ButtonRelease-1>', lambda k: self.wellbarodiag(key))
         else:
             self.entry[key].bind('<Double-ButtonRelease-1>', lambda k: self.wellbaromanydiag(key))
@@ -812,8 +812,8 @@ class Feedback:
         ttk.Label(self.unit_popup, text=f'Adds new field with converted units of selected field').pack()
         ttk.Label(self.unit_popup, text=f'from {self.selected_tab} {self.field}').pack()
 
-        incolumns = ['C','F','psi','mmHg','ft','bar','kPa']
-        outcolumns = ['C','F','psi','mmHg','ft','bar']
+        incolumns = ['C', 'F', 'psi', 'mmHg', 'ft', 'bar', 'kPa']
+        outcolumns = ['C', 'F', 'psi', 'mmHg', 'ft', 'bar']
 
         ttk.Label(self.unit_popup, text='Units of Selected Column').pack()
         self.unit_converter_in = ttk.Combobox(self.unit_popup, values=incolumns)
@@ -823,8 +823,8 @@ class Feedback:
         self.unit_converter_out = ttk.Combobox(self.unit_popup, values=outcolumns)
         self.unit_converter_out.current(4)
         self.unit_converter_out.pack()
-        self.unit_converter_in.bind("<<ComboboxSelected>>",self.refinecombo)
-        self.unit_converter_out.bind("<<ComboboxSelected>>",self.refine_outfield_combo)
+        self.unit_converter_in.bind("<<ComboboxSelected>>", self.refinecombo)
+        self.unit_converter_out.bind("<<ComboboxSelected>>", self.refine_outfield_combo)
 
         ttk.Label(self.unit_popup, text='New Column Name').pack()
         self.unit_converter_fieldname = ttk.Combobox(self.unit_popup, values=['Level'])
@@ -833,10 +833,11 @@ class Feedback:
 
         self.unitbutt = ttk.Button(self.unit_popup, text='Convert', command=self.convertunits)
         self.unitbutt.pack()
-    def refinecombo(self,event):
+
+    def refinecombo(self, event):
         in_units = self.unit_converter_in.get()
-        out_columns_press = ['psi','mmHg','ft','bar']
-        out_columns_temp = ['C','F']
+        out_columns_press = ['psi', 'mmHg', 'ft', 'bar']
+        out_columns_temp = ['C', 'F']
 
         if in_units in out_columns_press:
             self.unit_converter_out['values'] = out_columns_press
@@ -851,7 +852,7 @@ class Feedback:
 
     def refine_outfield_combo(self, event):
         out_units = self.unit_converter_out.get()
-        self.unit_converter_fieldname['values'] = ['Level',f'{self.field}_{out_units}']
+        self.unit_converter_fieldname['values'] = ['Level', f'{self.field}_{out_units}']
 
     def convertunits(self):
         key = self.selected_tab
@@ -860,26 +861,26 @@ class Feedback:
         out_units = self.unit_converter_out.get()
         out_field = self.unit_converter_fieldname.get()
 
-        incolumns = ['psi','mmHg','ft','bar','kPa']
-        outcolumns = ['psi','mmHg','ft','bar']
+        incolumns = ['psi', 'mmHg', 'ft', 'bar', 'kPa']
+        outcolumns = ['psi', 'mmHg', 'ft', 'bar']
 
-        conversion_factor = {'psi_ft':2.3072493927233,
-                             'mmHg_ft':0.044603347619955,
-                             'ft_ft':1.0,
-                             'bar_ft':33.455256555148,
-                             'kPa_ft':0.33455256555148,
-                             'psi_psi':1.0,
-                             'mmHg_psi':0.0193368,
-                             'ft_psi':0.43352750192825,
-                             'bar_psi':14.5038,
-                             'kPa_psi':0.145038,
-                             'mmHg_mmHg':1.0,
-                             'psi_mmHg':51.7149,
-                             'ft_mmHg':22.41984185852,
-                             'bar_bar':1.0,
-                             'mmHg_bar':0.00133322,
-                             'kPa_bar':0.01,
-                             'ft_bar':0.029890669
+        conversion_factor = {'psi_ft': 2.3072493927233,
+                             'mmHg_ft': 0.044603347619955,
+                             'ft_ft': 1.0,
+                             'bar_ft': 33.455256555148,
+                             'kPa_ft': 0.33455256555148,
+                             'psi_psi': 1.0,
+                             'mmHg_psi': 0.0193368,
+                             'ft_psi': 0.43352750192825,
+                             'bar_psi': 14.5038,
+                             'kPa_psi': 0.145038,
+                             'mmHg_mmHg': 1.0,
+                             'psi_mmHg': 51.7149,
+                             'ft_mmHg': 22.41984185852,
+                             'bar_bar': 1.0,
+                             'mmHg_bar': 0.00133322,
+                             'kPa_bar': 0.01,
+                             'ft_bar': 0.029890669
                              }
 
         if in_units == 'C':
@@ -887,14 +888,14 @@ class Feedback:
         elif in_units == 'F':
             self.data[key][out_field] = (self.data[key][self.field] - 32.0) * 0.555555555
         elif f'{in_units}_{out_units}' in conversion_factor.keys():
-            self.data[key][out_field] = self.data[key][self.field]*conversion_factor[f'{in_units}_{out_units}']
+            self.data[key][out_field] = self.data[key][self.field] * conversion_factor[f'{in_units}_{out_units}']
 
         self.datatable[key].set_sheet_data(data=self.data[key].reset_index().values.tolist(),
-                       reset_col_positions=True,
-                       reset_row_positions=True,
-                       redraw=True,
-                       verify=False,
-                       reset_highlights=False)
+                                           reset_col_positions=True,
+                                           reset_row_positions=True,
+                                           redraw=True,
+                                           verify=False,
+                                           reset_highlights=False)
         self.datatable[key].headers(self.data[key].reset_index().columns)
         #self.datatable[key].redraw(redraw_header=True, redraw_row_index=True)
         self.end_edit_cell(key=key)
@@ -906,7 +907,6 @@ class Feedback:
         #self.make_chart(key=key)
         #self.add_graph_table(key)
         self.unit_popup.destroy()
-
 
     def jump_fix_popup(self):
         if self.selected_tab:
@@ -929,7 +929,7 @@ class Feedback:
         self.jumpbutt = ttk.Button(frame_step1_5, text='Fix Jumps', command=self.fixjumps)
         self.jumpbutt.grid(column=2, row=2)
         frame_step1_5.pack()
-        self.datajumptol.set(self.data[key][self.field].std()*5)
+        self.datajumptol.set(self.data[key][self.field].std() * 5)
 
     def placeholder_func(self):
         pass
@@ -947,9 +947,8 @@ class Feedback:
         #ttk.Separator(popup, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
         exframe = ttk.Frame(self.extreme_popup)
         ttk.Label(exframe, text=f'Remove extreme values').grid(column=0, row=0, columnspan=2)
-        dataminlab = ttk.Label(exframe, text='Min Allowed Value:').grid(column=0, row=2, columnspan= 1)
+        dataminlab = ttk.Label(exframe, text='Min Allowed Value:').grid(column=0, row=2, columnspan=1)
         ttk.Label(exframe, text=f'from {self.selected_tab} {self.field}').grid(column=0, row=1, columnspan=2)
-
 
         self.dataminvar = tk.DoubleVar(exframe, value=-9999.0)
         self.datamaxvar = tk.DoubleVar(exframe, value=9999.0)
@@ -961,11 +960,11 @@ class Feedback:
         self.datamax = ttk.Entry(exframe, textvariable=self.datamaxvar, width=10)
         self.datamax.grid(column=1, row=3)
         self.trimbutt = ttk.Button(exframe, text='Trim Extrema', command=self.trimextrema)
-        self.trimbutt.grid(column=0, row=4,columnspan=2)
+        self.trimbutt.grid(column=0, row=4, columnspan=2)
 
         exframe.pack()
-        self.dataminvar.set(round(self.data[key][self.field].mean() - self.data[key][self.field].std()*4,3))
-        self.datamaxvar.set(round(self.data[key][self.field].mean() + self.data[key][self.field].std()*4,3))
+        self.dataminvar.set(round(self.data[key][self.field].mean() - self.data[key][self.field].std() * 4, 3))
+        self.datamaxvar.set(round(self.data[key][self.field].mean() + self.data[key][self.field].std() * 4, 3))
         # self.data[key]
 
     def trimextrema(self):
@@ -1010,7 +1009,6 @@ class Feedback:
         # self.locchk = ttk.Entry(self.frame_step5)
         # self.locchk.grid(column=1,row=0)
 
-
     def add_alignment_interface(self, masterframe):
         # Align Manual and Baro Data
         if masterframe == self.onewelltab:
@@ -1053,15 +1051,15 @@ class Feedback:
 
         self.export_wb[wellkey] = tk.IntVar()
         self.export_well_baro[wellkey] = ttk.Checkbutton(frame_step3,
-                                                       text="Export Well-Baro Data?",
-                                                       variable=self.export_wb[wellkey])
+                                                         text="Export Well-Baro Data?",
+                                                         variable=self.export_wb[wellkey])
         self.export_well_baro[wellkey].grid(row=3, column=3, sticky=tk.W)
         # self.export_single_well_baro.select()
 
         self.is_vented[wellkey] = tk.IntVar(value=0)
         self.trans_vented[wellkey] = ttk.Checkbutton(frame_step3,
-                                            text="Vented?",
-                                            variable=self.is_vented[wellkey])
+                                                     text="Vented?",
+                                                     variable=self.is_vented[wellkey])
         self.trans_vented[wellkey].grid(row=3, column=4, sticky=tk.W)
         self.is_vented[wellkey].set(0)
         # self.trans_vented.select()
@@ -1082,7 +1080,7 @@ class Feedback:
                                                 values=['ft', 'm'], state="readonly")
         self.wellgroundelevunits.current(0)
         self.wellstickup = ttk.Entry(frame_step6, width=4)
-        self.wellstickup.insert(0,0)
+        self.wellstickup.insert(0, 0)
         self.wellstickupunits = ttk.Combobox(frame_step6, width=5,
                                              values=['ft', 'm'], state="readonly")
         self.wellstickupunits.current(0)
@@ -1114,7 +1112,7 @@ class Feedback:
             key2 = 'manual'
 
         self.end_edit_cell(key=key2)
-        self.data[key2]['waterelevation'] = -1*self.data[key2]['dtwbelowcasing'] + mstickup + melev
+        self.data[key2]['waterelevation'] = -1 * self.data[key2]['dtwbelowcasing'] + mstickup + melev
         self.datatable[key2].update()
         self.manelevs = self.data[key2]
         df['waterelevation'] = self.data['fixed-drift']['DTW_WL'] + mstickup + melev
@@ -1181,7 +1179,6 @@ class Feedback:
         #  Uncommented on 5/26/2021 in attempt to make consistent with single-well
         #  Recommened as caused high drift
 
-
         for i in self.data['bulk-well-baro'].index.get_level_values(0).unique():
 
             popup.update()
@@ -1228,7 +1225,8 @@ class Feedback:
         self.data[key] = pd.concat(drift_info, sort=True, ignore_index=True).set_index('name')
         self.graphframe[key], self.tableframe[key] = self.note_tab_add(key)
 
-        self.datatable[key] = Sheet(self.tableframe[key], data=self.data[key].reset_index().values.tolist(), theme=self.sheettheme)
+        self.datatable[key] = Sheet(self.tableframe[key], data=self.data[key].reset_index().values.tolist(),
+                                    theme=self.sheettheme)
 
         self.datatable[key].change_theme(theme=self.sheettheme)
         self.datatable[key].headers(self.data[key].reset_index().columns)
@@ -1369,7 +1367,7 @@ class Feedback:
         pg.step()
         return wl
 
-    def proc_man_bulk(self,key = 'bulk-manual'):
+    def proc_man_bulk(self, key='bulk-manual'):
 
         try:
 
@@ -1415,7 +1413,8 @@ class Feedback:
             # self.proc_man_bulk_button['fg'] = 'green'
         except KeyError as err:
             print(f"Key Error: {err}")
-            tk.messagebox.showerror(title='Process Well Info Table First', message=f"Key Error: {err}n\Process Well Info Table First")
+            tk.messagebox.showerror(title='Process Well Info Table First',
+                                    message=f"Key Error: {err}\nProcess Well Info Table First")
 
     def only_meas(self, value_if_allowed):
         try:
@@ -1522,16 +1521,17 @@ class Feedback:
                 b.plot(x, self.data[key]['barometer'], label='Barometer', color='red')
                 a.plot([], [], label='Barometer', color='red')
             a.legend(bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left",
-                mode="expand", borderaxespad=0, ncol=3)
+                     mode="expand", borderaxespad=0, ncol=3)
         elif key == "fixed-drift":
             if 'manual-single' in self.data.keys():
-            #if self.manselected_tab == 'Manual Entry':
+                #if self.manselected_tab == 'Manual Entry':
                 if self.field == 'DTW_WL':
-                    a.scatter(self.data['manual-single'].index, self.data['manual-single']['dtwbelowcasing'],color='red')
+                    a.scatter(self.data['manual-single'].index, self.data['manual-single']['dtwbelowcasing'],
+                              color='red')
                     a.plot(self.data['fixed-drift'].index, self.data['fixed-drift']['DTW_WL'])
                     a.grid()
             elif 'manual' in self.data.keys():
-            #elif self.manselected_tab == 'Data Import':
+                #elif self.manselected_tab == 'Data Import':
                 if self.field == 'DTW_WL':
                     a.scatter(self.data['manual'].index, self.data['manual']['dtwbelowcasing'], color='red')
                     a.plot(self.data['fixed-drift'].index, self.data['fixed-drift']['DTW_WL'])
@@ -1545,7 +1545,7 @@ class Feedback:
                 a.plot(self.data["wl-elev"].index, self.data["wl-elev"]['waterelevation'])
                 a.ticklabel_format(axis='y', style='plain')
                 a.grid()
-        elif key in ('bulk-manual','drift-info','file-info-table','well-info-table'):
+        elif key in ('bulk-manual', 'drift-info', 'file-info-table', 'well-info-table'):
             pass
         else:
             a.plot(x, y, label=self.field)
@@ -1687,15 +1687,14 @@ class Feedback:
         self.datatable[key].popup_menu_add_command("Fix Unit Offsets", self.multi_trans_file_fix)
         #self.datatable[key].popup_menu_add_command("Convert Units", self.unit_converter_popup)
 
-        if key in ('well-info-table','bulk-manual','file-info-table'):
+        if key in ('well-info-table', 'bulk-manual', 'file-info-table'):
             pass
         else:
             self.graph_frame1[key] = ttk.Frame(self.graphframe[key])
             self.flip_y_check[key] = ttk.Checkbutton(self.graph_frame1[key], text='Flip y-axis',
                                                      command=lambda: self.flip_y(key=key),
-                            variable=self.flip_y_status, onvalue=1,
-                            offvalue=0)
-
+                                                     variable=self.flip_y_status, onvalue=1,
+                                                     offvalue=0)
 
             self.flip_y_check[key].pack()
 
@@ -1743,7 +1742,6 @@ class Feedback:
         print(self.procselected_tab)
         print(self.manselected_tab)
 
-
         if 'manual-single' in self.data.keys():
             key2 = 'manual-single'
         elif 'bulk-manual' in self.data.keys():
@@ -1753,8 +1751,8 @@ class Feedback:
 
         if key == 'fixed-drift':
 
-            ax.plot(self.data[key]['DTW_WL']*-1, color='green', label='unprocessed')
-            ax.scatter(self.data[key2].index, self.data[key2]['dtwbelowcasing'],color='red')
+            ax.plot(self.data[key]['DTW_WL'] * -1, color='green', label='unprocessed')
+            ax.scatter(self.data[key2].index, self.data[key2]['dtwbelowcasing'], color='red')
             ax.set_ylabel(f"Depth to Water (ft)")
 
         elif key == 'wl-elev':
@@ -1764,13 +1762,12 @@ class Feedback:
         ax.set_xlim(self.data[key2].first_valid_index() - pd.Timedelta('3 days'),
                     self.data[key2].last_valid_index() + pd.Timedelta('3 days'), )
 
-
     def wellbaroabb(self, key):
         if self.datastr[key].get() == '' or type(self.datastr[key].get()) == tuple or self.datastr[
             key].get() == f'Double-Click for {key} file':
             pass
         else:
-            if key in ['well','baro']:
+            if key in ['well', 'baro']:
 
                 # 'xle','raw csv', 'Excel', 'modified csv'
                 if self.fileselectcombo[key].get() in ['xle', 'Global Water csv']:
@@ -1863,7 +1860,7 @@ class Feedback:
         popup.destroy()
         dfa = pd.concat(dfs, ignore_index=False)
         print(dfa.columns)
-        dfa = dfa.reset_index().drop('level_0',axis=1)
+        dfa = dfa.reset_index().drop('level_0', axis=1)
         dfa = dfa.set_index(dfa.columns[0]).sort_index().drop_duplicates()
         self.data[key] = dfa
 
@@ -1879,7 +1876,8 @@ class Feedback:
 
         #ttk.Separator(popup, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=5)
         frame_step_st = ttk.Frame(self.stationary_popup)
-        ttk.Label(frame_step_st, text='Fix stationarity issues caused by units (optional)').grid(column=0, row=0, columnspan=6)
+        ttk.Label(frame_step_st, text='Fix stationarity issues caused by units (optional)').grid(column=0, row=0,
+                                                                                                 columnspan=6)
         self.stat_field = tk.StringVar(frame_step_st, value="Level")
         self.statjump = ttk.Combobox(frame_step_st, textvariable=self.datajumptol, width=10, values=['Level'])
         self.statjump['values'] = list(self.data[key].columns)
@@ -1889,7 +1887,6 @@ class Feedback:
         self.statjumpbutt = ttk.Button(frame_step_st, text='Fix Jumps', command=lambda: self.fixstatjumps(key=key))
         self.statjumpbutt.grid(column=2, row=2)
         frame_step_st.pack()
-
 
     def fixstatjumps(self, key):
         if len(self.beg_end) > 0 and key in self.beg_end.keys():
@@ -1901,14 +1898,14 @@ class Feedback:
             fixd_jump = {}
 
             for ind in split_data.index:
-                beg = fcl(self.data[key], split_data.loc[ind,'beginning']).name
-                end = fcl(self.data[key], split_data.loc[ind,'end']).name
+                beg = fcl(self.data[key], split_data.loc[ind, 'beginning']).name
+                end = fcl(self.data[key], split_data.loc[ind, 'end']).name
                 print(beg, end)
                 if old_df is None:
                     old_df = self.data[key].loc[beg:end]
                 else:
                     new_df = self.data[key].loc[beg:end]
-                    fixd_jump[beg] = fix_unit_change(old_df,new_df,field=field)
+                    fixd_jump[beg] = fix_unit_change(old_df, new_df, field=field)
                     old_df = new_df
             dfx = pd.concat(fixd_jump, ignore_index=False)
             print(dfx.columns)
@@ -2012,7 +2009,7 @@ class Feedback:
         condcol = self.xlcols_cond_combo[key].get()
         self.data[key] = self.data[key].rename(columns={datecol: 'DateTime',
                                                         valcol: 'Level',
-                                                        tempcol: 'Temperature',condcol:'Cond'})
+                                                        tempcol: 'Temperature', condcol: 'Cond'})
         self.data[key] = self.data[key].reset_index()
         self.data[key]['DateTime'] = pd.to_datetime(self.data[key]['DateTime'])
         self.data[key] = self.data[key].set_index('DateTime')
@@ -2033,7 +2030,7 @@ class Feedback:
             if chosen_ext == 'Excel':
                 chosen_ext = 'xlsx'
 
-            ftypelist = [(f"{chosen_ext} file",f".{chosen_ext}")]
+            ftypelist = [(f"{chosen_ext} file", f".{chosen_ext}")]
         self.datastr[key].set(filedialog.askopenfilename(initialdir=self.currentdir,
                                                          title=f"Select {key} file",
                                                          filetypes=ftypelist))
@@ -2050,8 +2047,8 @@ class Feedback:
 
     def wellbaromanydiag(self, key):
         self.datastr[key].set(filedialog.askdirectory(initialdir=self.currentdir,
-                                                         title=f"Select {key} directory",
-                                                         ))
+                                                      title=f"Select {key} directory",
+                                                      ))
         #self.currentdir = self.datastr[key].get()
         self.currentdir = self.datastr[key].get()
         #self.filetype[key].set(extdir.get(ext, 'xle'))
@@ -2093,7 +2090,6 @@ class Feedback:
             self.graphframe[key], self.tableframe[key] = self.note_tab_add(key)
             self.add_graph_table(key)
 
-
             checkstatus = self.export_wb[wellkey].get()
             print(f"Checkstatus is {checkstatus}")
             #if checkstatus == 1:
@@ -2103,7 +2099,6 @@ class Feedback:
                 df = df.reset_index()
                 file = filedialog.asksaveasfilename(filetypes=[('csv', '.csv')], defaultextension=".csv")
                 df.to_csv(file)
-
 
     def align_well_baro_bulk(self):
         # TODO add feature to recognize global water transducers
@@ -2125,7 +2120,8 @@ class Feedback:
             for wellid in wellids:
                 popup.update()
                 if wellid is not None and pd.notna(wellid) and pd.notnull(wellid):
-                    if info.loc[int(wellid), 'barologgertype'] != "None" and info.loc[int(wellid), 'barologgertype'] != "":
+                    if info.loc[int(wellid), 'barologgertype'] != "None" and info.loc[
+                        int(wellid), 'barologgertype'] != "":
                         baroid = pd.to_numeric(info.loc[int(wellid), 'barologgertype'],
                                                downcast='integer', errors='coerce')
                         # medium = files[files['locationid'] == wellid]['measuring_medium'].values[0]
@@ -2183,14 +2179,13 @@ class Feedback:
         if event:
             self.datastr[key].set(filedialog.askopenfilename(initialdir=self.currentdir,
                                                              title=f"Select {key} file",
-                                                             filetypes=[('csv', '.csv'),('Excel','.xlsx')],
+                                                             filetypes=[('csv', '.csv'), ('Excel', '.xlsx')],
                                                              defaultextension=".csv"))
 
             self.currentdir = os.path.dirname(self.datastr[key].get())
 
             # https://stackoverflow.com/questions/45357174/tkinter-drop-down-menu-from-excel
             # TODO add excel sheet options to file selection
-
 
         # self.graph_frame1.pack()
         if self.datastr[key].get() == '' or self.datastr[key].get() == f'Double-Click for {key} file':
@@ -2284,13 +2279,13 @@ class Feedback:
         key = 'well-info-table'
 
         self.currentdir = os.path.dirname(self.datastr[key].get())
-        df = pd.read_csv(self.datastr[key].get(), na_values=['<Null>','NaN','None',-9999])
+        df = pd.read_csv(self.datastr[key].get(), na_values=['<Null>', 'NaN', 'None', -9999])
 
         for col in df.columns:
             df = df.rename(columns={col: col.lower()})
         df = df[df['altlocationid'].notnull()]
         df['altlocationid'] = df['altlocationid'].apply(
-            lambda x: int(pd.to_numeric(x, downcast='integer', errors='coerce')),1)
+            lambda x: int(pd.to_numeric(x, downcast='integer', errors='coerce')), 1)
         df = df.set_index(['altlocationid']).sort_index()
         # df.index = df.index.astype('int64')
         self.data[key] = df
@@ -2313,28 +2308,27 @@ class Feedback:
         self.combo_source['state'] = 'normal'
         self.proc_man_bulk_button['state'] = 'normal'
 
-    def set_search_dir(self,event):
+    def set_search_dir(self, event):
         key = 'many-dir'
         self.datastr[key].set(filedialog.askdirectory(initialdir=self.currentdir,
-                                                         title=f"Select {key} directory",
-                                                         mustexist=True))
+                                                      title=f"Select {key} directory",
+                                                      mustexist=True))
         if self.datastr[key].get() == '' or type(self.datastr[key].get()) == tuple or \
                 self.datastr[key].get() == 'Double-Click for search file directory':
             self.datastr[key].set('Double-Click for search file directory')
         else:
             self.searchdir = self.datastr[key].get()
 
-    def set_end_dir(self,event):
+    def set_end_dir(self, event):
         key = 'endmany-dir'
         self.datastr[key].set(filedialog.askdirectory(initialdir=self.currentdir,
-                                                         title=f"Select {key} directory",
-                                                         ))
+                                                      title=f"Select {key} directory",
+                                                      ))
         if self.datastr[key].get() == '' or type(self.datastr[key].get()) == tuple or \
                 self.datastr[key].get() == 'Double-Click to set end directory':
             self.datastr[key].set('Double-Click to set end directory')
         else:
             self.enddir = self.datastr[key].get()
-
 
     def grab_trans_dir(self, master):
         """grabs directory containing transducer files and inputs filenames into a scrollable canvas with comboboxes to
@@ -2363,11 +2357,11 @@ class Feedback:
             filenm, file_extension = os.path.splitext(self.datastr[key].get())
             ttk.Label(master, text='4. Match id with list of files.').grid(row=1, column=0, columnspan=3)
             ttk.Label(master, text='Filename').grid(row=2, column=0, sticky=tk.W)
-            ttk.Label(master, text='Match Name').grid(row=2, column=1,sticky=tk.W)
+            ttk.Label(master, text='Match Name').grid(row=2, column=1, sticky=tk.W)
             ttk.Label(master, text='Well ID').grid(row=2, column=2, sticky=tk.W)
             # https://blog.tecladocode.com/tkinter-scrollable-frames/
             container = ttk.Frame(master)
-            canvas = tk.Canvas(container, width = 600)
+            canvas = tk.Canvas(container, width=600)
             vsb = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
             hsb = ttk.Scrollbar(container, orient="horizontal", command=canvas.xview)
             scrollable_frame = ttk.Frame(canvas)
@@ -2398,7 +2392,7 @@ class Feedback:
                        75: ['Central Tule MX', ['ctvmx', 'centraltulemx', 'ctulemx', 'ctmx']],
                        51: ['PW20', ['pw20a']],
                        5053: ['Sliver Creek MX', ['scmx']],
-                       5052: ['USGS Snake Creek Well', ['usgsscw','snakecreek','Snake Creek Well']],
+                       5052: ['USGS Snake Creek Well', ['usgsscw', 'snakecreek', 'Snake Creek Well']],
                        5055: ['(C-13-17)03bcb-1 Simm', ['rsimm']],
                        5056: ['(C-11-17)12dcb-1 Callao South', ['Callao South']],
                        6001: ['T2', ['T2']],
@@ -2417,7 +2411,7 @@ class Feedback:
                 filestr = getfilename(file)
                 self.filetrace[filestr] = file
                 if self.combo_source.get() == 'Snake Valley Wells':
-                    a = re.split('_|\s', filestr)[0].lower()
+                    a = re.split(r'_|\s', filestr)[0].lower()
                 elif self.combo_source.get() == 'Wetlands Piezos':
                     try:
                         b = filestr.lower().replace('-_', '-').split('_')[-4].split('-')[-1]
@@ -2445,8 +2439,8 @@ class Feedback:
 
                     # this fills in the id number if a name is selected
                     self.bcombo[filestr].bind("<<ComboboxSelected>>",
-                                             lambda event,
-                                                    filestr=filestr: self.update_location_dicts(filestr))
+                                              lambda event,
+                                                     filestr=filestr: self.update_location_dicts(filestr))
 
                 i += 1
             # self.filefnd.bind('<Double-ButtonRelease-1>', lambda f: self.grab_dir(dirselectframe))
@@ -2534,7 +2528,6 @@ class Feedback:
 
     #### dataexplore-----------------------------------------------------------------------------------------------------
 
-
     def setConfigDir(self):
         """Set up config folder"""
 
@@ -2551,7 +2544,7 @@ class Feedback:
 
         self.style.theme_use("forest-dark")
 
-        self.sheettheme =  "dark green"
+        self.sheettheme = "dark green"
         self.canvas.configure(bg="#313131")
         self.menu.config(bg="#313131")
         plt.style.use('dark_background')
@@ -2581,11 +2574,12 @@ class Feedback:
         else:
             filename, file_extension = os.path.splitext(filename)
 
-            if len(self.data.keys())>0:
-                with pd.ExcelWriter(filename+".xlsx") as writer:
+            if len(self.data.keys()) > 0:
+                with pd.ExcelWriter(filename + ".xlsx") as writer:
                     for key, values in self.data.items():
                         values.to_excel(writer, sheet_name=key)
         return
+
     def exportcurrenttocsv(self):
 
         filename = filedialog.asksaveasfilename(filetypes=[('csv', '.csv')],
@@ -2598,7 +2592,7 @@ class Feedback:
             self.end_edit_cell(key=self.selected_tab)
 
             filename, file_extension = os.path.splitext(filename)
-            self.data[self.selected_tab].to_csv(filename+".csv")
+            self.data[self.selected_tab].to_csv(filename + ".csv")
 
         return
 
@@ -2613,7 +2607,7 @@ class Feedback:
         else:
             self.end_edit_cell(key=self.selected_tab)
             filename, file_extension = os.path.splitext(filename)
-            self.data[self.selected_tab].to_excel(filename+".xlsx", sheet_name= self.selected_tab)
+            self.data[self.selected_tab].to_excel(filename + ".xlsx", sheet_name=self.selected_tab)
 
         return
 
@@ -2629,13 +2623,13 @@ class Feedback:
         self.file_menu = self.create_pulldown(self.menu, filemenuitems, var=file_menu)
         self.menu.add_cascade(label='File', menu=self.file_menu['var'])
 
-        thememenuitems = {'01Dark Theme':{'cmd':self.darktheme},'02Lite Theme':{'cmd':self.lighttheme}}
+        thememenuitems = {'01Dark Theme': {'cmd': self.darktheme}, '02Lite Theme': {'cmd': self.lighttheme}}
         self.theme_menu = self.create_pulldown(self.menu, thememenuitems)
         self.menu.add_cascade(label='Theme', menu=self.theme_menu['var'])
 
-        exportmenuitems = {'01Export All Sheets to Excel':{'cmd':self.exportalltoexel},
-                           '02Export Active Sheet to CSV':{'cmd':self.exportcurrenttocsv},
-                           '03Export Active Sheet to Excel':{'cmd':self.exportcurrenttoexcel}
+        exportmenuitems = {'01Export All Sheets to Excel': {'cmd': self.exportalltoexel},
+                           '02Export Active Sheet to CSV': {'cmd': self.exportcurrenttocsv},
+                           '03Export Active Sheet to Excel': {'cmd': self.exportcurrenttoexcel}
                            }
         self.export_menu = self.create_pulldown(self.menu, exportmenuitems, var=export_menu)
         self.menu.add_cascade(label='Export Sheet', menu=self.export_menu['var'])
@@ -2647,7 +2641,6 @@ class Feedback:
 
         self.main.config(menu=self.menu)
         return
-
 
     def create_pulldown(self, menu, dict, var=None):
         """Create pulldown menu, returns a dict.
@@ -2683,7 +2676,6 @@ class Feedback:
         dict['var'] = var
         return dict
 
-
     def bring_to_foreground(self, set_focus=False):
         self.main.deiconify()
         self.main.attributes('-topmost', True)
@@ -2708,7 +2700,7 @@ class Feedback:
         self.selected_tab = self.notebook.tab(codedtabname, "text")
         print(self.selected_tab)
         key = self.selected_tab
-        if key in ('well-info-table','bulk-manual','file-info-table'):
+        if key in ('well-info-table', 'bulk-manual', 'file-info-table'):
             pass
         else:
             self.make_chart(key=key)
@@ -2722,9 +2714,6 @@ class Feedback:
         codedtabname = self.processing_notebook.select()
         self.procselected_tab = self.processing_notebook.tab(codedtabname, "text")
         print(self.procselected_tab)
-
-
-
 
     def pdfReport(self):
         """Create pdf report from stored plots"""
@@ -2831,7 +2820,6 @@ class Feedback:
 
 
 def main():
-
     root = tk.Tk()
     feedback = Feedback(root)
     root.mainloop()

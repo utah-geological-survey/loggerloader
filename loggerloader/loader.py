@@ -3,6 +3,7 @@ import os
 import glob
 import re
 import xml.etree.ElementTree as eletree
+from pathlib import Path
 import numpy as np
 import datetime
 from shutil import copyfile
@@ -898,12 +899,12 @@ def hourly_resample(df, bse=0, minutes=60):
         see http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases
     """
 
-    df = df.resample('1T').mean(numeric_only=True).interpolate(method='time', limit=90)
+    df = df.resample('1min').mean(numeric_only=True).interpolate(method='time', limit=90)
 
     if minutes == 60:
-        sampfrq = '1H'
+        sampfrq = '1h'
     else:
-        sampfrq = str(minutes) + 'T'
+        sampfrq = str(minutes) + 'min'
 
     df = df.resample(sampfrq, closed='right', label='right', offset=f'{bse:0.0f}min').asfreq()
     return df
@@ -1117,18 +1118,20 @@ class NewTransImp(object):
 
         self.well = None
         self.infile = infile
-        file_ext = os.path.splitext(self.infile)[1]
+        if type(self.infile) is str:
+            self.infile = Path(self.infile)
+        file_ext = self.infile.name.split(".")[-1]
         try:
-            if file_ext == '.xle':
+            if file_ext == 'xle':
                 try:
                     self.well = self.new_xle_imp()
                 except (ParseError, KeyError):
                     self.well = self.old_xle_imp()
-            elif file_ext == '.lev':
+            elif file_ext == 'lev':
                 self.well = self.new_lev_imp()
-            elif file_ext == '.csv':
+            elif file_ext == 'csv':
                 self.well = self.new_csv_imp()
-            elif file_ext == '.htm':
+            elif file_ext == 'htm':
                 self.well = self.read_troll_htm()
             else:
                 print('filetype not recognized')
@@ -1142,8 +1145,9 @@ class NewTransImp(object):
                 pass
             return
 
-        except AttributeError:
+        except AttributeError as e:
             print('Bad File')
+            print(e)
             return
 
     def read_troll_htm(self):
@@ -1156,7 +1160,7 @@ class NewTransImp(object):
             df:
                 dataframe
         """
-        with open(self.infile, 'r') as f:
+        with self.infile.open('r') as f:
             html_string = f.read()
 
         # use BeautifulSoup to parse the HTML content of the page
@@ -1205,11 +1209,12 @@ class NewTransImp(object):
         Returns:
             A Pandas DataFrame containing the transducer data
         """
-        with open(self.infile, "r") as fd:
+        nm = self.infile.name
+        with self.infile.open("r") as fd:
             txt = fd.readlines()
             if len(txt) > 1:
                 if 'Serial' in txt[0]:
-                    print('{:} is Solinst'.format(self.infile))
+                    print('{:} is Solinst'.format(nm))
                     if 'UNIT: ' in txt[7]:
                         level_units = str(txt[7])[5:].strip().lower()
                     if 'UNIT: ' in txt[12]:
@@ -1228,19 +1233,18 @@ class NewTransImp(object):
                         f[level] = pd.to_numeric(f[level])
                     elif level_units == "kpa":
                         f[level] = pd.to_numeric(f[level]) * 0.33456
-                        print("Units in kpa, converting {:} to ft...".format(os.path.basename(self.infile)))
+                        print("Units in kpa, converting {:} to ft...".format(nm))
                     elif level_units == "mbar":
                         f[level] = pd.to_numeric(f[level]) * 0.0334552565551
                     elif level_units == "psi":
                         f[level] = pd.to_numeric(f[level]) * 2.306726
-                        print("Units in psi, converting {:} to ft...".format(os.path.basename(self.infile)))
+                        print("Units in psi, converting {:} to ft...".format(nm))
                     elif level_units == "m" or level_units == "meters":
                         f[level] = pd.to_numeric(f[level]) * 3.28084
-                        print("Units in psi, converting {:} to ft...".format(os.path.basename(self.infile)))
+                        print("Units in psi, converting {:} to ft...".format(nm))
                     elif level_units == "???":
                         f[level] = pd.to_numeric(f[level])
-                        print("Units in ???, {:} is messed up...".format(
-                            os.path.basename(self.infile)))
+                        print("Units in ???, {:} is messed up...".format(nm))
                     else:
                         f[level] = pd.to_numeric(f[level])
                         print("Unknown units, no conversion")
@@ -1248,7 +1252,7 @@ class NewTransImp(object):
                     if temp_units == 'Deg C' or temp_units == u'\N{DEGREE SIGN}' + u'C':
                         f[temp] = f[temp]
                     elif temp_units == 'Deg F' or temp_units == u'\N{DEGREE SIGN}' + u'F':
-                        print('Temp in F, converting {:} to C...'.format(os.path.basename(self.infile)))
+                        print('Temp in F, converting {:} to C...'.format(nm))
                         f[temp] = (f[temp] - 32.0) * 5.0 / 9.0
                     return f
 
@@ -1295,7 +1299,8 @@ class NewTransImp(object):
                 print('{:} is unrecognized'.format(self.infile))
 
     def new_lev_imp(self):
-        with open(self.infile, "r") as fd:
+        nm = self.infile.name.split(".")[0]
+        with self.infile.open("r") as fd:
             txt = fd.readlines()
 
         try:
@@ -1313,9 +1318,13 @@ class NewTransImp(object):
             # start_time = txt[inst_info_ind+6].split('=')[-1].strip()
             # stop_time = txt[inst_info_ind+7].split('=')[-1].strip()
 
-            df = pd.read_table(self.infile, parse_dates=[[0, 1]], sep=r'\s+', skiprows=data_ind + 2,
+            df = pd.read_table(self.infile,
+                               parse_dates=[[0, 1]],
+                               sep=r'\s+',
+                               skiprows=data_ind + 2,
                                names=['Date', 'Time', level, temp],
-                               skipfooter=1, engine='python')
+                               skipfooter=1,
+                               engine='python',)
             df.rename(columns={'Date_Time': 'DateTime'}, inplace=True)
             df.set_index('DateTime', inplace=True)
 
@@ -1323,15 +1332,15 @@ class NewTransImp(object):
                 df[level] = pd.to_numeric(df[level])
             elif level_units == "kpa":
                 df[level] = pd.to_numeric(df[level]) * 0.33456
-                print("Units in kpa, converting {:} to ft...".format(os.path.basename(self.infile)))
+                print("Units in kpa, converting {:} to ft...".format(nm))
             elif level_units == "mbar":
                 df[level] = pd.to_numeric(df[level]) * 0.0334552565551
             elif level_units == "psi":
                 df[level] = pd.to_numeric(df[level]) * 2.306726
-                print("Units in psi, converting {:} to ft...".format(os.path.basename(self.infile)))
+                print("Units in psi, converting {:} to ft...".format(nm))
             elif level_units == "m" or level_units == "meters":
                 df[level] = pd.to_numeric(df[level]) * 3.28084
-                print("Units in psi, converting {:} to ft...".format(os.path.basename(self.infile)))
+                print("Units in psi, converting {:} to ft...".format(nm))
             else:
                 df[level] = pd.to_numeric(df[level])
                 print("Unknown units, no conversion")
@@ -1339,12 +1348,12 @@ class NewTransImp(object):
             if temp_units == 'Deg C' or temp_units == u'\N{DEGREE SIGN}' + u'C':
                 df[temp] = df[temp]
             elif temp_units == 'Deg F' or temp_units == u'\N{DEGREE SIGN}' + u'F':
-                print('Temp in F, converting {:} to C...'.format(os.path.basename(self.infile)))
+                print('Temp in F, converting {:} to C...'.format(nm))
                 df[temp] = (df[temp] - 32.0) * 5.0 / 9.0
             df['name'] = self.infile
             return df
         except ValueError:
-            print('File {:} has formatting issues'.format(self.infile))
+            print('File {:} has formatting issues'.format(nm))
 
     def old_xle_imp(self):
         """This function uses an exact file path to upload a xle transducer file.
@@ -1352,7 +1361,7 @@ class NewTransImp(object):
         Returns:
             A Pandas DataFrame containing the transducer data
         """
-        with io.open(self.infile, 'r', encoding="ISO-8859-1") as f:
+        with self.infile.open('r', encoding="ISO-8859-1") as f:
             contents = f.read()
             tree = eletree.fromstring(contents)
 
@@ -1416,7 +1425,7 @@ class NewTransImp(object):
             f[str(ch3ID).title()] = pd.to_numeric(f['ch3'])
 
         # add extension-free file name to dataframe
-        f['name'] = self.infile.split('\\').pop().split('/').pop().rsplit('.', 1)[0]
+        f['name'] = self.infile.name.split(".")[0]
         # combine Date and Time fields into one field
         f['DateTime'] = pd.to_datetime(f.apply(lambda x: x['Date'] + ' ' + x['Time'], 1))
         f[str(ch1ID).title()] = pd.to_numeric(f[str(ch1ID).title()])
@@ -1436,7 +1445,7 @@ class NewTransImp(object):
         tree = eletree.parse(self.infile, parser=eletree.XMLParser(encoding="ISO-8859-1"))
         root = tree.getroot()
 
-        ch1id = root.find('./Identification')
+        #ch1id = root.find('./Identification')
         dfdata = {}
         for item in root.findall('./Data/Log'):
             dfdata[item.attrib['id']] = {}
@@ -1481,7 +1490,7 @@ class NewTransImp(object):
                         print(f"CH. 2 units in {chunit}, converting to deg C...")
             elif col in ['ms', 'Date', 'Time', 'index']:
                 f = f.drop(col, axis=1)
-        f['name'] = self.infile.split('\\').pop().split('/').pop().rsplit('.', 1)[0]
+        f['name'] = self.infile.name.split(".")[0]
         return f
 
 
@@ -1500,7 +1509,7 @@ def getfilename(path):
     Returns:
         name of file as string
     """
-    return path.split('\\').pop().split('/').pop().rsplit('.', 1)[0]
+    return path.name.split(".")[0]
 
 
 def compile_end_beg_dates(infile, ext='xle'):
