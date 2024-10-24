@@ -1128,6 +1128,8 @@ class NewTransImp(object):
                 self.well = self.new_lev_imp()
             elif file_ext == '.csv':
                 self.well = self.new_csv_imp()
+            elif file_ext == '.htm':
+                self.well = self.read_troll_htm()
             else:
                 print('filetype not recognized')
                 self.well = None
