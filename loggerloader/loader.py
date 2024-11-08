@@ -835,8 +835,10 @@ def jumpfix(df, meas, threashold=0.005, return_jump=False):
         df1: dataframe of corrected data
         jump: dataframe of jumps corrected in data
     """
-    df1 = df.copy(deep=True)
-    df1 = df1.sort_index().drop_duplicates()
+    df_temp = df.copy(deep=True).sort_index()
+    df1 = df_temp[~df_temp.index.duplicated(keep='first')]
+    if df1.shape[0] != df_temp.shape[0]:
+        print(f'Dropped {df_temp.shape[0]-df1.shape[0]} records')
     df1['delta' + meas] = df1.loc[:, meas].diff()
     # designate jump based on a threshold
     jump = df1[abs(df1['delta' + meas]) > threashold]
