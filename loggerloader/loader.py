@@ -268,6 +268,9 @@ class Drifting(object):
 
     def drift_summary(self):
         self.drift_sum_table = pd.DataFrame(self.drift_features).T
+        self.drift_sum_table['drift'] = self.drift_sum_table['drift'].astype(float)
+        self.drift_sum_table['quality'] = (self.drift_sum_table['drift'] / 2).abs().round(2)
+        self.drift_sum_table.loc[(self.drift_sum_table['man_beg'].isna()) | (self.drift_sum_table['man_end'].isna()), 'quality'] = 0.3
         self.max_drift = self.drift_sum_table['drift'].abs().max()
 
     def slope_intercept(self, i):
