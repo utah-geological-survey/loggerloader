@@ -268,9 +268,6 @@ class Drifting(object):
 
     def drift_summary(self):
         self.drift_sum_table = pd.DataFrame(self.drift_features).T
-        self.drift_sum_table['drift'] = self.drift_sum_table['drift'].astype(float)
-        self.drift_sum_table['quality'] = (self.drift_sum_table['drift'] / 2).abs().round(2)
-        self.drift_sum_table.loc[(self.drift_sum_table['man_beg'].isna()) | (self.drift_sum_table['man_end'].isna()), 'quality'] = 0.3
         self.max_drift = self.drift_sum_table['drift'].abs().max()
 
     def slope_intercept(self, i):
@@ -838,10 +835,8 @@ def jumpfix(df, meas, threashold=0.005, return_jump=False):
         df1: dataframe of corrected data
         jump: dataframe of jumps corrected in data
     """
-    df_temp = df.copy(deep=True).sort_index()
-    df1 = df_temp[~df_temp.index.duplicated(keep='first')]
-    if df1.shape[0] != df_temp.shape[0]:
-        print(f'Dropped {df_temp.shape[0]-df1.shape[0]} records')
+    df1 = df.copy(deep=True)
+    df1 = df1.sort_index().drop_duplicates()
     df1['delta' + meas] = df1.loc[:, meas].diff()
     # designate jump based on a threshold
     jump = df1[abs(df1['delta' + meas]) > threashold]
