@@ -10,7 +10,9 @@ from shutil import copyfile
 from xml.etree.ElementTree import ParseError
 from bs4 import BeautifulSoup
 import pandas as pd
-
+from typing import Union, Tuple, Optional
+import pandas as pd
+import numpy as np
 
 ###################################################################################################################
 # MAIN CODE
@@ -820,40 +822,175 @@ def fix_unit_change(df1, df2, field='Level', tolerance=0.03):
     df2[field] = df2[field] * multiplier
     return df2
 
-def jumpfix(df, meas, threashold=0.005, return_jump=False):
-    """Removes jumps or jolts in time series data (where offset is lasting)
-    Args:
-        df (object):
-            dataframe to manipulate
-        meas (str):
-            name of field with jolts
-        threashold (float):
-            size of jolt to search for
-        return_jump (bool):
-            return the pandas dataframe of jumps corrected in data; defaults to false
-    Returns:
-        df1: dataframe of corrected data
-        jump: dataframe of jumps corrected in data
+
+
+def jumpfix(
+        df: pd.DataFrame,
+        meas: str,
+        threshold: float = 0.005,
+        return_jump: bool = False
+) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
     """
+    Removes jumps or jolts in time series data where offset is lasting.
+
+    Args:
+        df: DataFrame to manipulate. Must have datetime index.
+        meas: Name of field with jolts to correct
+        threshold: Size of jolt to search for
+        return_jump: If True, returns tuple of (corrected_data, jumps)
+
+    Returns:
+        If return_jump is False:
+            DataFrame with corrected data
+        If return_jump is True:
+            Tuple of (corrected_DataFrame, jumps_DataFrame)
+
+    Example:
+        >>> dates = pd.date_range('2024-01-01', periods=5)
+        >>> df = pd.DataFrame({
+        ...     'level': [10, 10.1, 15.1, 15.2, 15.3]
+        ... }, index=dates)
+        >>> corrected = jumpfix(df, 'level', threshold=1)
+        >>> corrected['level'].tolist()
+        [10.0, 10.1, 10.1, 10.2, 10.3]
+
+    Notes:
+        - The function detects sudden changes (jumps) in the data that exceed
+          the threshold value
+        - Each jump is corrected by subtracting the cumulative jump amount
+          from all subsequent values
+        - The original time ordering is preserved
+        - NaN values are preserved in their original positions
+    """
+    # Input validation
+    if not isinstance(df, pd.DataFrame):
+        raise TypeError("Input must be a pandas DataFrame")
+
+    if meas not in df.columns:
+        raise ValueError(f"Column '{meas}' not found in DataFrame")
+
+    if not isinstance(df.index, pd.DatetimeIndex):
+        raise TypeError("DataFrame index must be DatetimeIndex")
+
+    # Create copy and ensure it's sorted
     df1 = df.copy(deep=True)
     df1 = df1.sort_index().drop_duplicates()
-    df1['delta' + meas] = df1.loc[:, meas].diff()
-    # designate jump based on a threshold
-    jump = df1[abs(df1['delta' + meas]) > threashold]
-    # cumulative sum
-    jump['cumul'] = jump.loc[:, 'delta' + meas].cumsum()
-    df1['newVal'] = df1.loc[:, meas]
 
-    for i in range(len(jump)):
-        jt = jump.index[i]
-        ja = jump['cumul'][i]
-        df1.loc[jt:, 'newVal'] = df1[meas].apply(lambda x: x - ja, 1)
-    df1[meas] = df1['newVal']
-    if return_jump:
-        print(jump)
-        return df1, jump
-    else:
+    # Calculate differences between consecutive values
+    df1['delta'] = df1[meas].diff()
+
+    # Find jumps exceeding threshold
+    jump_mask = df1['delta'].abs() > threshold
+    jumps = df1[jump_mask].copy()
+
+    if len(jumps) == 0:
+        if return_jump:
+            return df1, pd.DataFrame()
         return df1
+
+    # Calculate cumulative sum of jumps
+    jumps['cumul'] = jumps['delta'].cumsum()
+
+    # Initialize new values column
+    df1['newVal'] = df1[meas].copy()
+
+    # Apply corrections
+    for idx in range(len(jumps.index)):
+        jump_time = jumps.index[idx]
+        jump_amount = jumps['cumul'].iloc[idx]  # Using iloc instead of [] for position access
+
+        # Create mask for all timestamps after the jump
+        mask = df1.index >= jump_time
+
+        # Apply correction
+        df1.loc[mask, 'newVal'] = df1.loc[mask, meas] - jump_amount
+
+    # Update original measurement column
+    df1[meas] = df1['newVal']
+
+    # Clean up temporary columns
+    df1 = df1.drop(columns=['delta', 'newVal'])
+
+    if return_jump:
+        # Clean up jumps DataFrame
+        jumps = jumps.drop(columns=['newVal'])
+        jumps = jumps.rename(columns={'delta': 'jump_size'})
+        return df1, jumps
+
+    return df1
+
+
+def detect_jumps(
+        df: pd.DataFrame,
+        meas: str,
+        threshold: float = 0.005
+) -> pd.DataFrame:
+    """
+    Detect jumps in time series data without applying corrections.
+
+    Args:
+        df: DataFrame with time series data
+        meas: Name of measurement column
+        threshold: Size of jump to detect
+
+    Returns:
+        DataFrame containing only the detected jumps with their properties
+    """
+    if not isinstance(df, pd.DataFrame):
+        raise TypeError("Input must be a pandas DataFrame")
+
+    if meas not in df.columns:
+        raise ValueError(f"Column '{meas}' not found in DataFrame")
+
+    # Calculate differences
+    diffs = df[meas].diff()
+
+    # Find jumps
+    jumps = df[abs(diffs) > threshold].copy()
+    jumps['jump_size'] = diffs[abs(diffs) > threshold]
+    jumps['cumulative_effect'] = jumps['jump_size'].cumsum()
+
+    return jumps
+
+
+def analyze_jumps(
+        df: pd.DataFrame,
+        meas: str,
+        threshold: float = 0.005
+) -> dict:
+    """
+    Analyze jumps in time series data and return statistics.
+
+    Args:
+        df: DataFrame with time series data
+        meas: Name of measurement column
+        threshold: Size of jump to detect
+
+    Returns:
+        Dictionary containing jump statistics
+    """
+    jumps = detect_jumps(df, meas, threshold)
+
+    if len(jumps) == 0:
+        return {
+            'num_jumps': 0,
+            'total_drift': 0,
+            'max_jump': 0,
+            'min_jump': 0,
+            'mean_jump': 0,
+            'jump_times': []
+        }
+
+    stats = {
+        'num_jumps': len(jumps),
+        'total_drift': jumps['jump_size'].sum(),
+        'max_jump': jumps['jump_size'].max(),
+        'min_jump': jumps['jump_size'].min(),
+        'mean_jump': jumps['jump_size'].mean(),
+        'jump_times': jumps.index.tolist()
+    }
+
+    return stats
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -1095,6 +1232,67 @@ def read_troll_csv(filename):
 
     return df
 
+
+def drop_duplicates_keep_max_by_field(df: pd.DataFrame,
+                                      field: str,
+                                      ignore_case: bool = True) -> pd.DataFrame:
+    """
+    Remove duplicate indices from a DataFrame while keeping the rows that have
+    the maximum value in the specified field.
+
+    Args:
+        df (pd.DataFrame): Input DataFrame with potential duplicate indices
+        field (str): Name of column to use for determining maximum values
+        ignore_case (bool): If True, ignore case when matching field name. Defaults to True.
+
+    Returns:
+        pd.DataFrame: New DataFrame with duplicates removed, keeping rows with maximum values
+
+    Raises:
+        TypeError: If input is not a pandas DataFrame
+        ValueError: If DataFrame is empty or field is not found
+
+    Examples:
+        >>> data = {
+        ...     'Level': [10.2, 10.5, 11.0],
+        ...     'Temperature': [20.1, 20.2, 20.3]
+        ... }
+        >>> index = ['2024-01-01', '2024-01-01', '2024-01-02']
+        >>> df = pd.DataFrame(data, index=index)
+        >>> drop_duplicates_keep_max_by_field(df, 'Level')
+                    Level  Temperature
+        2024-01-01  10.5         20.2
+        2024-01-02  11.0         20.3
+    """
+    # Input validation
+    if not isinstance(df, pd.DataFrame):
+        raise TypeError("Input must be a pandas DataFrame")
+
+    if df.empty:
+        raise ValueError("Input DataFrame cannot be empty")
+
+    # Find the field name accounting for case sensitivity
+    if ignore_case:
+        field_matches = df.columns[df.columns.str.lower() == field.lower()]
+        if len(field_matches) == 0:
+            raise ValueError(f"Field '{field}' not found in DataFrame")
+        field = field_matches[0]
+    elif field not in df.columns:
+        raise ValueError(f"Field '{field}' not found in DataFrame")
+
+    # Create a series of boolean masks that identify the maximum value
+    # for each duplicate index
+    idx_max = df.groupby(level=0)[field].transform('max') == df[field]
+
+    # If there are multiple rows with the same maximum value for an index,
+    # keep the first occurrence
+    deduped = df[idx_max].groupby(level=0).first()
+
+    # Sort index to maintain consistent ordering
+    deduped = deduped.sort_index()
+
+    return deduped
+
 class NewTransImp(object):
     """This class uses an imports and cleans the ends of transducer file.
 
@@ -1189,8 +1387,9 @@ class NewTransImp(object):
         for col in df.columns:
             if "Date" in col or "date" in col:
                 print(col)
-                df[col] = pd.to_datetime(df[col])
-                df = df.set_index(col)
+                df['DateTime'] = pd.to_datetime(df[col])
+                df = df.set_index('DateTime')
+                df.drop([col],axis=1)
             elif "Press" in col:
                 df[col] = pd.to_numeric(df[col])
                 if "psi" in col:
