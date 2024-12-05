@@ -1,7 +1,5 @@
-try:
-    from loggerloader.llgui import *
-except:
-    from .llgui import *
+from loggerloader.llgui import *
+from loggerloader.loader import *
 
 version = "2.4.3"
 __version__ = version
