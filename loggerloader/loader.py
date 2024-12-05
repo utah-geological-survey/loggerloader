@@ -746,7 +746,6 @@ def read_troll_htm(filepath):
                     print(f"CH. 2 units in {chunit}, converting to deg C...")
         elif "Depth" in col or "Cond" in col or "Total" in col or "Salin" in col or "Dens" in col:
             df[col] = pd.to_numeric(df[col])
-    df['name'] = filepath.stem
 
     return df
 
@@ -1391,14 +1390,14 @@ class NewTransImp(object):
                     df['Level'] = df[col] * 0.044603
                 df = df.drop(columns=[col])
             elif 'Temp' in col:
-                    df[col] = pd.to_numeric(df[col])
-                    df = df.rename(columns={col: "Temperature"})
-                    if 'F)' in col:
-                        df[col] = (df[col] - 32.0) * 5 / 9
-                        print(f"CH. 2 units in {chunit}, converting to deg C...")
+                df[col] = pd.to_numeric(df[col])
+                df = df.rename(columns={col: "Temperature"})
+                if 'F)' in col:
+                    df[col] = (df[col] - 32.0) * 5 / 9
+                    print(f"CH. 2 units in {chunit}, converting to deg C...")
             elif "Depth" in col or "Cond" in col or "Total" in col or "Salin" in col or "Dens" in col:
                 df[col] = pd.to_numeric(df[col])
-        df['name'] = filepath.stem
+        df['name'] = self.infile.stem
 
         return df
 
