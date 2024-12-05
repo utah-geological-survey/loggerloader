@@ -70,6 +70,8 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 
+
+
 class Feedback:
 
     def __init__(self, master):
@@ -986,7 +988,7 @@ class Feedback:
         key = self.selected_tab
         if key in self.data.keys():
             if self.field:
-                self.data[key] = jumpfix(self.data[key], self.field, self.datajumptol.get())
+                self.data[key][self.field] = jumpfix(self.data[key][self.field], self.datajumptol.get())
                 self.graphframe[key], self.tableframe[key] = self.note_tab_add(key)
                 self.add_graph_table(key)
         else:
@@ -1623,7 +1625,7 @@ class Feedback:
     def end_edit_cell(self, event=None, key=None):
         if key in self.datatable.keys():
 
-            df = pd.DataFrame(self.datatable[key].get_sheet_data(return_copy=True, get_header=False, get_index=False))
+            df = pd.DataFrame(self.datatable[key].get_sheet_data(get_header=False, get_index=False))
 
             #print('line 1608')
             #print(df)
