@@ -712,41 +712,42 @@ def read_troll_htm(filepath):
 
     # use BeautifulSoup to parse the HTML content of the page
     soup = BeautifulSoup(html_string, "html.parser")
-
-    # find all the table rows with class "data"
     table_rows = soup.find_all('tr', {'class': 'data'})
-    header = soup.find_all('tr',{'class':'dataHeader'})
-
+    header = soup.find_all('tr', {'class': 'dataHeader'})
     heads = header[0].find_all('td')
     colnames = [head.text.strip() for head in heads]
-
-    # create an empty list to hold the data
     data = []
-
-    # loop through each row and extract the data into a list
     for row in table_rows:
         cols = row.find_all('td')
         cols = [col.text.strip() for col in cols]
         data.append(cols)
-
-    # convert the list of data into a pandas dataframe
+    
+            # convert the list of data into a pandas dataframe
     df = pd.DataFrame(data)
     df.columns = colnames
-
+    
     for col in df.columns:
         if "Date" in col or "date" in col:
             print(col)
             df[col] = pd.to_datetime(df[col])
-            df = df.set_index(col)
+            df = df.rename(columns={col: "DateTime"})  # Renaming the column to match name from xle files
+            df = df.set_index("DateTime")  
         elif "Press" in col:
             df[col] = pd.to_numeric(df[col])
             if "psi" in col:
-                df['Level'] = df[col]*2.3067
+                df['Level'] = df[col] * 2.3067
             elif "Hg" in col:
-                df['Level'] = df[col]*0.044603
-            #df = df.rename(columns={col:"Level"})
-        elif "Depth" in col or "Cond" in col or "Total" in col or "Salin" in col or "Dens" in col or "Temp" in col:
+                df['Level'] = df[col] * 0.044603
+            df = df.drop(columns=[col])
+        elif 'Temp' in col:
+                df[col] = pd.to_numeric(df[col])
+                df = df.rename(columns={col: "Temperature"})
+                if 'F)' in col:
+                    df[col] = (df[col] - 32.0) * 5 / 9
+                    print(f"CH. 2 units in {chunit}, converting to deg C...")
+        elif "Depth" in col or "Cond" in col or "Total" in col or "Salin" in col or "Dens" in col:
             df[col] = pd.to_numeric(df[col])
+    df['name'] = filepath.stem
 
     return df
 
@@ -1170,41 +1171,42 @@ class NewTransImp(object):
 
         # use BeautifulSoup to parse the HTML content of the page
         soup = BeautifulSoup(html_string, "html.parser")
-
-        # find all the table rows with class "data"
         table_rows = soup.find_all('tr', {'class': 'data'})
         header = soup.find_all('tr', {'class': 'dataHeader'})
-
         heads = header[0].find_all('td')
         colnames = [head.text.strip() for head in heads]
-
-        # create an empty list to hold the data
         data = []
-
-        # loop through each row and extract the data into a list
         for row in table_rows:
             cols = row.find_all('td')
             cols = [col.text.strip() for col in cols]
             data.append(cols)
-
-        # convert the list of data into a pandas dataframe
+        
+                # convert the list of data into a pandas dataframe
         df = pd.DataFrame(data)
         df.columns = colnames
-
+        
         for col in df.columns:
             if "Date" in col or "date" in col:
                 print(col)
                 df[col] = pd.to_datetime(df[col])
-                df = df.set_index(col)
+                df = df.rename(columns={col: "DateTime"})  # Renaming the column to match name from xle files
+                df = df.set_index("DateTime")  
             elif "Press" in col:
                 df[col] = pd.to_numeric(df[col])
                 if "psi" in col:
                     df['Level'] = df[col] * 2.3067
                 elif "Hg" in col:
                     df['Level'] = df[col] * 0.044603
-                # df = df.rename(columns={col:"Level"})
-            elif "Depth" in col or "Cond" in col or "Total" in col or "Salin" in col or "Dens" in col or "Temp" in col:
+                df = df.drop(columns=[col])
+            elif 'Temp' in col:
+                    df[col] = pd.to_numeric(df[col])
+                    df = df.rename(columns={col: "Temperature"})
+                    if 'F)' in col:
+                        df[col] = (df[col] - 32.0) * 5 / 9
+                        print(f"CH. 2 units in {chunit}, converting to deg C...")
+            elif "Depth" in col or "Cond" in col or "Total" in col or "Salin" in col or "Dens" in col:
                 df[col] = pd.to_numeric(df[col])
+        df['name'] = filepath.stem
 
         return df
 
