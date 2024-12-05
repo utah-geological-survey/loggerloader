@@ -1022,20 +1022,20 @@ def compilation(inputfile, trm=True):
 
     # generate list of relevant files
     filelist = glob.glob(inputfile)
-
     # iterate through list of relevant files
     for infile in filelist:
         # run computations using lev files
         filename, file_extension = os.path.splitext(infile)
-        if file_extension in ['.csv', '.lev', '.xle']:
+        if file_extension in ['.csv', '.lev', '.xle', '.htm', '.html']:
             print(infile)
             nti = NewTransImp(infile, trim_end=trm).well
-            f[getfilename(infile)] = nti
+            file_name = Path(infile).stem # change instead of function to avoid issue with strings!
+            f[file_name] = nti
     # concatenate all of the DataFrames in dictionary f to one DataFrame: g
     g = pd.concat(f)
     # remove multiindex and replace with index=Datetime
     g = g.reset_index()
-    g['DateTime'] = g['DateTime'].apply(lambda x: pd.to_datetime(x, errors='coerce'), 1)
+    g['DateTime'] = pd.to_datetime(g['DateTime'], errors='coerce') ### change to address deprecation!
     g = g.set_index(['DateTime'])
     # drop old indexes
     g = g.drop(['level_0'], axis=1)
@@ -1136,7 +1136,7 @@ class NewTransImp(object):
                 self.well = self.new_lev_imp()
             elif file_ext == 'csv':
                 self.well = self.new_csv_imp()
-            elif file_ext == 'htm':
+            elif file_ext in ['htm', 'html']:
                 self.well = self.read_troll_htm()
             else:
                 print('filetype not recognized')
