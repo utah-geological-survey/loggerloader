@@ -47,25 +47,27 @@ class DataModel:
     """Handles data storage and manipulation"""
 
     def __init__(self):
-        self.data = {}
+        self.data: pd.DataFrame = None
+        self.well_data: pd.DataFrame = None
+        self.baro_data: pd.DataFrame = None
         self.datatable = {}
         self.bcombo = {}
         self.locidmatch = {}
         self.bulktransfilestr = {}
         self.beg_end = {}
 
-    def store_data(self, key, data):
+    def store_data(self, data):
         """Store data with given key"""
-        self.data[key] = data
+        self.data = data
 
-    def get_data(self, key):
+    def get_data(self):
         """Retrieve data for given key"""
-        return self.data.get(key)
+        return self.data
 
-    def clear_data(self, key):
+    def clear_data(self):
         """Clear data for given key"""
-        if key in self.data:
-            del self.data[key]
+        if self.data:
+            del self.data
 
 
 class LoggerLoaderApp:
