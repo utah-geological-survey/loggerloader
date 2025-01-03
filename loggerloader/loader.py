@@ -268,7 +268,7 @@ class Drifting(object):
         else:
             print("No Breakpoints can be established as manual data do not align with imported data")
 
-      def drift_summary(self):
+    def drift_summary(self):
         self.drift_sum_table = pd.DataFrame(self.drift_features).T
         self.drift_sum_table['drift'] = self.drift_sum_table['drift'].astype(float)
         self.drift_sum_table['quality'] = (self.drift_sum_table['drift'] / 2).abs().round(2)
