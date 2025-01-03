@@ -1,8 +1,13 @@
 import matplotlib
 import matplotlib.pyplot as plt
 from pylab import rcParams
+from matplotlib.backends.backend_tkagg import (
+    FigureCanvasTkAgg, NavigationToolbar2Tk)
+# Implement the default Matplotlib key bindings.
+from matplotlib.backend_bases import key_press_handler
+from matplotlib.figure import Figure
 matplotlib.use("TkAgg")
-
+from tksheet import Sheet
 import pandas as pd
 
 import sys
@@ -90,18 +95,26 @@ class ViewManager:
                                        width=200,
                                        height=400,
                                        relief='sunken')
-        self.create_processing_notebook()
 
+
+        self.process_frame.pack(fill='both', expand=True)
         # Create results frame
         self.results_frame = ttk.Frame(self.paned_window,
                                        width=200,
                                        height=400,
                                        relief='sunken')
+
+        self.results_frame.pack(fill='both', expand=True)
+
+        # processing notebooks use both the process and results frames
+        self.create_processing_notebook()
         self.create_notebook()
 
         # Add frames to paned window
         self.paned_window.add(self.process_frame, weight=2)
         self.paned_window.add(self.results_frame, weight=3)
+
+
 
 
     def create_notebook(self):
@@ -125,8 +138,7 @@ class ViewManager:
     def create_single_well_frame(self):
         """Create frame for single well processing"""
         frame = ttk.Frame(self.processing_notebook)
-        # self.single_well_view = SingleWellView(frame, controller=self.data_model)
-        self.single_well_view = WellDataView(frame)
+        self.single_well_view = WellDataView(frame, self.results_frame)
         self.processing_notebook.add(frame, text='Single-Well Process')
 
     def create_bulk_well_frame(self):
@@ -147,28 +159,56 @@ class ViewManager:
         self.selected_tab = event.widget.tab(tab, "text")
 
 
-class WellDataView  :# (ttk.Frame):
+class WellDataView:
     """View for displaying and editing well data"""
 
-    def __init__(self, master):
-        # super().__init__(master)
+    def __init__(self, master, results):
         self.master = master
-        self.controller = WellDataController
+        self.right_frame = results
+        self.data = {}  # Store dataframes
+        self.datatable = {}  # Store sheet widgets
+        self.selected_tab = None
+        self.field = None
+
+        # Create controller
+        self.controller = WellDataController(self)
+
         self.create_widgets()
 
-    def set_controller(self, controller):
-        """Set the controller for this view"""
-        self.controller = controller
-
     def create_widgets(self):
-        # Header
-        header_frame = ttk.Frame(self.master)
-        header_frame.pack(fill='x', padx=5, pady=5)
+        # Create paned window to split left/right panels
+        self.panedwindow = ttk.Panedwindow(self.master, orient='horizontal')
+        self.panedwindow.pack(fill='both', expand=True)
 
+        # Left panel for controls and charts
+        self.left_frame = ttk.Frame(self.panedwindow)
+
+        # Right panel for data sheet
+        #self.right_frame = ttk.Frame(self.panedwindow)
+
+        self.panedwindow.add(self.left_frame, weight=1)
+        #self.panedwindow.add(self.right_frame, weight=1)
+
+        # Add controls to left frame
+        self.create_control_widgets()
+
+        # Create notebook for table tabs on right
+        self.notebook = ttk.Notebook(self.right_frame)
+        self.notebook.pack(fill='both', expand=True)
+        self.notelist = {}
+
+        # These lines tell which tab is selected
+        self.notebook.bind("<<NotebookTabChanged>>", self.nbselect)
+
+    def create_control_widgets(self):
+        """Create control widgets in left panel"""
+        # Header
+        header_frame = ttk.Frame(self.left_frame)
+        header_frame.pack(fill='x', padx=5, pady=5)
         ttk.Label(header_frame, text="Well Data").pack(side='left')
 
         # Data entry frame
-        entry_frame = ttk.Frame(self.master)
+        entry_frame = ttk.Frame(self.left_frame)
         entry_frame.pack(fill='x', padx=5)
 
         # Well ID entry
@@ -187,134 +227,139 @@ class WellDataView  :# (ttk.Frame):
         ttk.Entry(entry_frame, textvariable=self.stickup_var).grid(row=2, column=1)
 
         # Buttons
-        button_frame = ttk.Frame(self.master)
+        button_frame = ttk.Frame(self.left_frame)
         button_frame.pack(fill='x', padx=5, pady=5)
 
         ttk.Button(button_frame, text="Import Well Data",
-                   command=self.import_data).pack(side='left', padx=5)
+                   command=self.controller.import_well_data).pack(side='left', padx=5)
+        ttk.Button(button_frame, text="Import Baro Data",
+                   command=self.controller.import_baro_data).pack(side='left', padx=5)
         ttk.Button(button_frame, text="Process Data",
-                   command=self.process_data).pack(side='left', padx=5)
+                   command=self.controller.process_data).pack(side='left', padx=5)
 
-        # Create visualization frame
-        self.viz_frame = ttk.Frame(self.master)
-        self.viz_frame.pack(fill='both', expand=True)
+        # Chart notebook in left panel
+        self.chart_notebook = ttk.Notebook(self.left_frame)
+        self.chart_notebook.pack(fill='both', expand=True)
 
-        # Create Plotly widget
-        self.plot_widget = PlotlyTkinterWidget(self.viz_frame)
+        # Matplotlib frame (default view)
+        self.matplotlib_frame = ttk.Frame(self.chart_notebook)
+        self.chart_notebook.add(self.matplotlib_frame, text='Default View')
 
+        # Plotly frame (interactive view)
+        self.plotly_frame = ttk.Frame(self.chart_notebook)
+        self.chart_notebook.add(self.plotly_frame, text='Interactive View')
 
-    def import_data(self):
-        """Import well data from one or multiple files"""
+        # Initialize chart manager
+        self.chart_manager = ChartManager(self.matplotlib_frame, self.plotly_frame)
+
+    def update_plot(self, data, key="well"):
+        """Update plots and sheet display"""
         try:
-            # Get file path
 
-            # Create and show the multi-file import dialog
-            filelist = filedialog.askopenfilenames(parent=self.master, title='Choose a file')
+            # Store the data
+            self.data = data
 
-            raw_trans_files = {}
-            file_data_df = {}
+            # Update charts
+            self.chart_manager.update_charts(data)
 
-            for i, file in enumerate(filelist):
-                df = NewTransImp(file).well
-                raw_trans_files[i] = df
-                first_date = df.first_valid_index()
-                last_date = df.last_valid_index()
-                file_mean = df['Level'].mean()
-                file_std = df['Level'].std()
-                file_max = df['Level'].max()
-                file_min = df['Level'].min()
-                file_range = file_max - file_min
-                file_len = df.count(numeric_only=True)
-                hours_dur = (last_date - first_date).total_seconds() / 3600
-                file_data_df[i] = pd.Series({'first_date': first_date,
-                                             'last_date': last_date,
-                                             'file_mean': file_mean,
-                                             'file_std': file_std,
-                                             'file_range': file_range,
-                                             'file_len': file_len,
-                                             'hours_dur': hours_dur,
-                                             'file_name': file,
-                                             })
-            self.data = pd.concat(raw_trans_files).reset_index().set_index('DateTime').sort_index()
-            self.data = drop_duplicates_keep_max_by_field(self.data ,'Level')
-            self.data = jumpfix(self.data, 'Level')
-            self.file_data = pd.concat(file_data_df)
-            # Update view
-            self.update_plot(self.data)
+            # Create/update sheet display
+            self.selected_tab = key
+
+            # Create new notebook tab frame if needed
+            if key not in self.notelist:
+                new_frame = ttk.Frame(self.notebook)
+                self.notebook.add(new_frame, text=key)
+                self.notelist[key] = len(self.notebook.tabs()) - 1
+
+            # Select the tab
+            self.notebook.select(self.notelist[key])
+
+            # Create sheet in the tab
+            tab_frame = self.notebook.select()
+            self.datatable[key] = Sheet(tab_frame,
+                                        data=self.data.reset_index().values.tolist(),
+                                        theme="light blue")
+
+            self.datatable[key].change_theme(theme="light blue")
+            self.datatable[key].headers(self.data.reset_index().columns)
+            self.datatable[key].enable_bindings()
+
+            self.datatable[key].pack(fill="both", expand=True)
+
+            # Bind sheet interactions
+            self.datatable[key].extra_bindings([
+                ("column_select", lambda event: self.make_chart(event, key=key)),
+                ("end_edit_cell", lambda event: self.end_edit_cell(event, key=key))
+            ])
 
         except Exception as e:
-            self.show_error(f"Error importing data: {str(e)}")
-
-    def process_data(self):
-        """Process well data"""
-        try:
-            if self.controller:
-                self.controller.process_data()
-            else:
-                self.show_error("Controller not set")
-
-        except Exception as e:
-            self.show_error(f"Error processing data: {str(e)}")
-
-    def update_plot(self, data):
-        """Update the plot with new data"""
-        try:
-            # Use Plotly widget to update plot
-            self.plot_widget.plot_water_levels(
-                data,
-                well_field='Level'
-            )
-
-        except Exception as e:
-            self.show_error(f"Error updating plot: {str(e)}")
+            self.show_error(f"Error updating display: {str(e)}")
 
     def show_error(self, message: str):
         """Display error message"""
-        tk.messagebox.showerror("Error", message)
+        messagebox.showerror("Error", message)
 
-    def get_well_id(self):
-        """Get well ID from entry"""
-        return self.well_id_var.get()
+    def nbselect(self, event):
+        """Handle notebook tab changes"""
+        codedtabname = self.notebook.select()
+        self.selected_tab = self.notebook.tab(codedtabname, "text")
+        if self.selected_tab in self.data:
+            self.chart_manager.update_charts(self.data[self.selected_tab])
 
-    def get_elevation(self):
-        """Get elevation from entry"""
-        try:
-            return self.elevation_var.get()
-        except:
-            return 0.0
+    def make_chart(self, event=None, key=None):
+        """Update chart when column is selected in sheet"""
+        if event:
+            self.field = list(self.data[key].columns)[event[1] - 1]
+            self.chart_manager.update_charts(self.data[key])
 
-    def get_stickup(self):
-        """Get stickup from entry"""
-        try:
-            return self.stickup_var.get()
-        except:
-            return 0.0
+    def end_edit_cell(self, event=None, key=None):
+        """Handle cell edits in sheet"""
+        if key in self.datatable.keys():
+            df = pd.DataFrame(self.datatable[key].get_sheet_data(get_header=False, get_index=False))
+            df.index = self.data[key].index
+
+            if len(df.columns) == len(self.data[key].columns):
+                df.columns = self.data[key].columns
+            elif len(df.columns) - 1 == len(self.data[key].columns):
+                df = df.iloc[:, 1:]
+                df.columns = self.data[key].columns
+
+            for col in df.columns:
+                try:
+                    df[col] = pd.to_numeric(df[col])
+                except ValueError:
+                    pass
+
+            self.data[key] = df
+            self.datatable[key].redraw(redraw_header=True, redraw_row_index=True)
+
 
 class WellDataController:
     """Controls well data operations"""
 
     def __init__(self, view: WellDataView):
         self.view = view
-        # self.processor = DataProcessor()
-        self.well_data: pd.DataFrame = None
-        self.baro_data: Optional[pd.DataFrame] = None
+        self.data = None
+        self.well_data = None
+        self.baro_data = None
 
     def import_data(self):
-        """Import well data from one or multiple files"""
+        """Import well data from file"""
         try:
             # Get file path
-
-            # Create and show the multi-file import dialog
-            filelist = filedialog.askopenfilenames(parent=WellDataView.master, title='Choose a file')
+            filelist = filedialog.askopenfilenames(
+                parent=self.view.master,
+                title='Choose well data file(s)'
+            )
 
             raw_trans_files = {}
             file_data_df = {}
 
             for i, file in enumerate(filelist):
-                print(file)
                 df = NewTransImp(file).well
-                print(df.head())
                 raw_trans_files[i] = df
+
+                # Calculate file statistics
                 first_date = df.first_valid_index()
                 last_date = df.last_valid_index()
                 file_mean = df['Level'].mean()
@@ -324,20 +369,20 @@ class WellDataController:
                 file_range = file_max - file_min
                 file_len = df.count(numeric_only=True)
                 hours_dur = (last_date - first_date).total_seconds() / 3600
-                file_data_df[i] = pd.Series({'first_date': first_date,
-                                             'last_date': last_date,
-                                             'file_mean': file_mean,
-                                             'file_std': file_std,
-                                             'file_range': file_range,
-                                             'file_len': file_len,
-                                             'hours_dur': hours_dur,
-                                             'file_name': file,
-                                             })
+
+                file_data_df[i] = pd.Series({
+                    'first_date': first_date,
+                    'last_date': last_date,
+                    'file_mean': file_mean,
+                    'file_std': file_std,
+                    'file_range': file_range,
+                    'file_len': file_len,
+                    'hours_dur': hours_dur,
+                    'file_name': file,
+                })
+
             self.data = pd.concat(raw_trans_files).reset_index().set_index('DateTime')
             self.file_data = pd.concat(file_data_df)
-
-            # Update view
-            self.view.update_plot(self.data['Level'])
 
         except Exception as e:
             self.view.show_error(f"Error importing data: {str(e)}")
@@ -345,20 +390,23 @@ class WellDataController:
     def import_baro_data(self):
         """Import barometric data"""
         try:
-            file_path = filedialog.askopenfilename(
-                title="Select Barometric Data File",
-                filetypes=[("CSV files", "*.csv"), ("Excel files", "*.xlsx")]
-            )
+            self.import_data()
+            # Update view
+            self.baro_data = self.data
+            self.view.update_plot(self.baro_data, key='Baro')
 
-            if not file_path:
-                return
+            self.baro_file_data = self.file_data
+        except Exception as e:
+            self.view.show_error(f"Error importing barometric data: {str(e)}")
 
-            if file_path.endswith('.csv'):
-                self.baro_data = pd.read_csv(file_path, parse_dates=['datetime'])
-            else:
-                self.baro_data = pd.read_excel(file_path, parse_dates=['datetime'])
-
-            self.baro_data.set_index('datetime', inplace=True)
+    def import_well_data(self):
+        """Import barometric data"""
+        try:
+            self.import_data()
+            self.well_data = self.data
+            self.well_file_data = self.file_data
+            # Update view
+            self.view.update_plot(self.well_data, key='well')
 
         except Exception as e:
             self.view.show_error(f"Error importing barometric data: {str(e)}")
@@ -371,103 +419,15 @@ class WellDataController:
             if self.baro_data is None:
                 raise ValueError("No barometric data loaded")
 
-            # Align data
-            aligned_data = self.processor.align_data(
-                self.well_data.measurements,
-                self.baro_data
-            )
+            # Apply baro correction and processing steps...
+            processed_data = self.well_data.copy()  # Placeholder
 
-            # Apply correction
-            processed_data = self.processor.apply_baro_correction(aligned_data)
-
-            # Update view
-            self.view.update_plot(processed_data)
+            # Update view with processed data
+            self.view.update_plot(processed_data, "processed")
 
         except Exception as e:
             self.view.show_error(f"Error processing data: {str(e)}")
-class SingleWellView:
-    """View for processing single well data"""
 
-
-    def __init__(self, master, controller=None):
-        super().__init__(master)
-        self.controller = controller
-        self.create_widgets()
-
-    def create_widgets(self):
-        # Header
-        header_frame = ttk.Frame(self)
-        header_frame.pack(fill='x', padx=5, pady=5)
-
-        ttk.Label(header_frame, text="Well Data").pack(side='left')
-
-        # Data entry frame
-        entry_frame = ttk.Frame(self)
-        entry_frame.pack(fill='x', padx=5)
-
-        # Well ID entry
-        ttk.Label(entry_frame, text="Well ID:").grid(row=0, column=0, padx=5)
-        self.well_id_var = tk.StringVar()
-        ttk.Entry(entry_frame, textvariable=self.well_id_var).grid(row=0, column=1)
-
-        # Elevation entry
-        ttk.Label(entry_frame, text="Elevation (ft):").grid(row=1, column=0, padx=5)
-        self.elevation_var = tk.DoubleVar()
-        ttk.Entry(entry_frame, textvariable=self.elevation_var).grid(row=1, column=1)
-
-        # Stickup entry
-        ttk.Label(entry_frame, text="Stickup (ft):").grid(row=2, column=0, padx=5)
-        self.stickup_var = tk.DoubleVar()
-        ttk.Entry(entry_frame, textvariable=self.stickup_var).grid(row=2, column=1)
-
-        # Buttons
-        button_frame = ttk.Frame(self)
-        button_frame.pack(fill='x', padx=5, pady=5)
-
-        ttk.Button(button_frame, text="Import Data",
-                   command=self.import_data).pack(side='left', padx=5)
-        ttk.Button(button_frame, text="Process Data",
-                   command=self.process_data).pack(side='left', padx=5)
-
-        # Create visualization frame
-        self.viz_frame = ttk.Frame(self)
-        self.viz_frame.pack(fill='both', expand=True)
-
-        # Create Plotly widget
-        self.plot_widget = PlotlyTkinterWidget(self.viz_frame)
-
-    def import_data(self):
-        """Import well data from file"""
-        try:
-            if self.controller:
-                self.controller.import_data()
-
-        except Exception as e:
-            self.show_error(f"Error importing data: {str(e)}")
-
-    def process_data(self):
-        """Process well data"""
-        try:
-            if self.controller:
-                self.controller.process_data()
-
-        except Exception as e:
-            self.show_error(f"Error processing data: {str(e)}")
-
-    def update_plot(self, data):
-        """Update the plot with new data"""
-        try:
-            # Use Plotly widget to update plot
-            self.plot_widget.plot_water_levels(
-                data,
-                well_field='Level')
-
-        except Exception as e:
-            self.show_error(f"Error updating plot: {str(e)}")
-
-    def show_error(self, message: str):
-        """Display error message"""
-        tk.messagebox.showerror("Error", message)
 
 class BulkWellView:
     """View for processing multiple wells in bulk"""
@@ -597,3 +557,124 @@ class ManyFilesView:
     def process_files(self):
         # Implementation for processing files
         pass
+
+
+
+
+class ChartManager:
+    """Manages both matplotlib and plotly charts with smart column detection"""
+
+    def __init__(self, matplotlib_frame, plotly_frame):
+        self.matplotlib_frame = matplotlib_frame
+        self.plotly_frame = plotly_frame
+
+        # Initialize matplotlib
+        self.fig = Figure(figsize=(8, 6))
+        self.ax = self.fig.add_subplot(111)
+        self.canvas = FigureCanvasTkAgg(self.fig, master=matplotlib_frame)
+        self.canvas.draw()
+        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+
+        # Add matplotlib toolbar
+        self.toolbar = NavigationToolbar2Tk(self.canvas, matplotlib_frame)
+        self.toolbar.update()
+
+        # Initialize plotly widget
+        self.plotly_widget = PlotlyTkinterWidget(plotly_frame)
+
+        # Define common column names
+        self.well_fields = ['Level', 'level', 'WaterLevel', 'water_level', 'well_level']
+        self.baro_fields = ['barometer', 'Barometer', 'baro', 'BarometricPressure']
+        self.corrected_fields = ['corrwl', 'CorrectedLevel', 'corrected_level']
+
+    def detect_columns(self, data):
+        """Detect measurement columns in the data"""
+        well_field = None
+        baro_field = None
+        corrected_field = None
+
+        # Detect well field
+        for field in self.well_fields:
+            if field in data.columns:
+                well_field = field
+                break
+
+        # Detect barometric field
+        for field in self.baro_fields:
+            if field in data.columns:
+                baro_field = field
+                break
+
+        # Detect corrected field
+        for field in self.corrected_fields:
+            if field in data.columns:
+                corrected_field = field
+                break
+
+        return well_field, baro_field, corrected_field
+
+    def update_charts(self, data):
+        """Update both matplotlib and plotly charts"""
+        # Print available columns for debugging
+        print("Available columns:", data.columns.tolist())
+
+        # Detect columns
+        well_field, baro_field, corrected_field = self.detect_columns(data)
+
+        # Update matplotlib
+        self.ax.clear()
+
+        if well_field or baro_field or corrected_field:
+            # Plot well level
+            if well_field:
+                self.ax.plot(data.index, data[well_field],
+                             label='Well Level', color='blue')
+
+            # Plot barometric level on secondary y-axis
+            if baro_field:
+                ax2 = self.ax.twinx()
+                ax2.plot(data.index, data[baro_field],
+                         label='Barometric', color='red')
+                ax2.set_ylabel('Barometric Level', color='red')
+
+            # Plot corrected level
+            if corrected_field:
+                self.ax.plot(data.index, data[corrected_field],
+                             label='Corrected', color='green')
+
+        else:
+            # If no recognized columns found, plot first numeric column
+            numeric_cols = data.select_dtypes(include=['float64', 'int64']).columns
+            if len(numeric_cols) > 0:
+                self.ax.plot(data.index, data[numeric_cols[0]],
+                             label=numeric_cols[0])
+            else:
+                raise ValueError("No numeric columns found in data")
+
+        # Format matplotlib chart
+        self.ax.set_xlabel('Date')
+        self.ax.set_ylabel('Water Level')
+        self.ax.grid(True)
+        self.fig.legend()
+        self.fig.autofmt_xdate()
+        self.canvas.draw()
+
+        # Update plotly
+        if well_field or baro_field or corrected_field:
+            self.plotly_widget.plot_water_levels(
+                data,
+                well_field=well_field,
+            )
+        else:
+            if len(numeric_cols) > 0:
+                self.plotly_widget.plot_single_series(
+                    data,
+                    numeric_cols[0],
+                    "Measurement Data"
+                )
+
+    def clear(self):
+        """Clear both charts"""
+        self.ax.clear()
+        self.canvas.draw()
+        # Plotly widget will clear on next update

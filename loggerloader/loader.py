@@ -1,26 +1,33 @@
+import datetime
+import glob
 import io
 import os
-import glob
 import re
 import xml.etree.ElementTree as eletree
 from pathlib import Path
-import numpy as np
-import datetime
 from shutil import copyfile
+from typing import Union, Tuple
 from xml.etree.ElementTree import ParseError
-from bs4 import BeautifulSoup
-import pandas as pd
-from typing import Union, Tuple, Optional
-import pandas as pd
+
+import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+from bs4 import BeautifulSoup
+
 
 ###################################################################################################################
 # MAIN CODE
 
 
 #####################################################################################################################
-def elevatewater(df, elevation, stickup,
-                 dtw_field='dtwbelowcasing', wtr_elev_field='waterelevation', flip=False):
+def elevatewater(
+    df,
+    elevation,
+    stickup,
+    dtw_field="dtwbelowcasing",
+    wtr_elev_field="waterelevation",
+    flip=False,
+):
     """treats both manual and transducer data; easiest to calculate manual elevations first
     and do fix-drift class on raw well pressure
 
@@ -58,8 +65,18 @@ def elevatewater(df, elevation, stickup,
 
 class Drifting(object):
 
-    def __init__(self, manual_df, transducer_df, drifting_field='corrwl', man_field='measureddtw', daybuffer=3,
-                 output_field='waterelevation', trim_end=False, well_id=None, engine=None):
+    def __init__(
+        self,
+        manual_df,
+        transducer_df,
+        drifting_field="corrwl",
+        man_field="measureddtw",
+        daybuffer=3,
+        output_field="waterelevation",
+        trim_end=False,
+        well_id=None,
+        engine=None,
+    ):
         """Remove transducer drift from nonvented transducer data. Faster and should produce same output as fix_drift_stepwise
 
         Args:
@@ -136,10 +153,10 @@ class Drifting(object):
         self.trim_end = trim_end
 
         self.manual_df = self.datesort(manual_df)
-        self.manual_df['julian'] = self.manual_df.index.to_julian_date()
+        self.manual_df["julian"] = self.manual_df.index.to_julian_date()
 
         self.transducer_df = self.datesort(transducer_df)
-        self.transducer_df['julian'] = self.transducer_df.index.to_julian_date()
+        self.transducer_df["julian"] = self.transducer_df.index.to_julian_date()
 
         self.drifting_field = drifting_field
         self.man_field = man_field
@@ -152,8 +169,10 @@ class Drifting(object):
             self.beginning_end(i)
             if len(self.bracketedwls[i]) > 0:
                 if self.trim_end:
-                    self.bracketedwls[i] = dataendclean(self.bracketedwls[i], self.drifting_field, jumptol=0.5)
-                #self.endpoint_import(i)
+                    self.bracketedwls[i] = dataendclean(
+                        self.bracketedwls[i], self.drifting_field, jumptol=0.5
+                    )
+                # self.endpoint_import(i)
                 self.endpoint_status(i)
                 self.slope_intercept(i)
                 self.drift_add(i)
@@ -165,27 +184,39 @@ class Drifting(object):
 
     def beginning_end(self, i):
         df = self.transducer_df[
-            (self.transducer_df.index >= self.breakpoints[i]) & (self.transducer_df.index < self.breakpoints[i + 1])]
+            (self.transducer_df.index >= self.breakpoints[i])
+            & (self.transducer_df.index < self.breakpoints[i + 1])
+        ]
         df = df.dropna(subset=[self.drifting_field])
         df = df.sort_index()
         # print(i)
         # print(df)
         if len(df) > 0:
-            self.manual_df['datetime'] = self.manual_df.index
+            self.manual_df["datetime"] = self.manual_df.index
 
-            self.first_man_julian_date[i] = self.fcl(self.manual_df['julian'], self.breakpoints[i])
-            self.last_man_julian_date[i] = self.fcl(self.manual_df['julian'], self.breakpoints[i + 1])
-            self.first_man_date[i] = self.fcl(self.manual_df['datetime'], self.breakpoints[i])
-            self.last_man_date[i] = self.fcl(self.manual_df['datetime'], self.breakpoints[i + 1])
-            self.first_man[i] = self.fcl(self.manual_df[self.man_field],
-                                         self.breakpoints[i])  # first manual measurement
-            self.last_man[i] = self.fcl(self.manual_df[self.man_field],
-                                        self.breakpoints[i + 1])  # last manual measurement
+            self.first_man_julian_date[i] = self.fcl(
+                self.manual_df["julian"], self.breakpoints[i]
+            )
+            self.last_man_julian_date[i] = self.fcl(
+                self.manual_df["julian"], self.breakpoints[i + 1]
+            )
+            self.first_man_date[i] = self.fcl(
+                self.manual_df["datetime"], self.breakpoints[i]
+            )
+            self.last_man_date[i] = self.fcl(
+                self.manual_df["datetime"], self.breakpoints[i + 1]
+            )
+            self.first_man[i] = self.fcl(
+                self.manual_df[self.man_field], self.breakpoints[i]
+            )  # first manual measurement
+            self.last_man[i] = self.fcl(
+                self.manual_df[self.man_field], self.breakpoints[i + 1]
+            )  # last manual measurement
 
             self.first_trans[i] = df.loc[df.first_valid_index(), self.drifting_field]
             self.last_trans[i] = df.loc[df.last_valid_index(), self.drifting_field]
-            self.first_trans_julian_date[i] = df.loc[df.first_valid_index(), 'julian']
-            self.last_trans_julian_date[i] = df.loc[df.last_valid_index(), 'julian']
+            self.first_trans_julian_date[i] = df.loc[df.first_valid_index(), "julian"]
+            self.last_trans_julian_date[i] = df.loc[df.last_valid_index(), "julian"]
             self.first_trans_date[i] = df.first_valid_index()
             self.last_trans_date[i] = df.last_valid_index()
             self.bracketedwls[i] = df
@@ -206,7 +237,9 @@ class Drifting(object):
 
         taken from: http://stackoverflow.com/questions/15115547/find-closest-row-of-dataframe-to-given-time-in-pandas
         """
-        return df.iloc[np.argmin(np.abs(pd.to_datetime(df.index) - dtobj))]  # remove to_pydatetime()
+        return df.iloc[
+            np.argmin(np.abs(pd.to_datetime(df.index) - dtobj))
+        ]  # remove to_pydatetime()
 
     @staticmethod
     def datesort(df):
@@ -236,10 +269,18 @@ class Drifting(object):
 
         wellnona = self.transducer_df.dropna(subset=[self.drifting_field]).sort_index()
         wellnona = wellnona[wellnona.index.notnull()]
-        self.manual_df = self.manual_df[self.manual_df.index.notnull()].dropna(subset=[self.man_field]).sort_index()
+        self.manual_df = (
+            self.manual_df[self.manual_df.index.notnull()]
+            .dropna(subset=[self.man_field])
+            .sort_index()
+        )
 
         self.manual_df = self.manual_df[
-            (self.manual_df.index >= wellnona.first_valid_index() - pd.Timedelta(f'{self.daybuffer:.0f}D'))]
+            (
+                self.manual_df.index
+                >= wellnona.first_valid_index() - pd.Timedelta(f"{self.daybuffer:.0f}D")
+            )
+        ]
 
         if len(self.manual_df) > 0:
 
@@ -262,14 +303,19 @@ class Drifting(object):
             # sort values in chronological order
             self.breakpoints = self.breakpoints.sort_values().drop_duplicates()
             # remove all duplicates
-            self.breakpoints = self.breakpoints[~self.breakpoints.index.duplicated(keep='first')]
+            self.breakpoints = self.breakpoints[
+                ~self.breakpoints.index.duplicated(keep="first")
+            ]
             # convert to list
             self.breakpoints = self.breakpoints.values
         else:
-            print("No Breakpoints can be established as manual data do not align with imported data")
+            print(
+                "No Breakpoints can be established as manual data do not align with imported data"
+            )
 
     def drift_summary(self):
         self.drift_sum_table = pd.DataFrame(self.drift_features).T
+
         self.drift_sum_table['drift'] = self.drift_sum_table['drift'].astype(float)
         self.drift_sum_table['quality'] = (self.drift_sum_table['drift'] / 2).abs().round(2)
         self.drift_sum_table.loc[(self.drift_sum_table['man_beg'].isna()) | (self.drift_sum_table['man_end'].isna()), 'quality'] = 0.3
@@ -313,7 +359,7 @@ class Drifting(object):
             try:
                 self.last_offset[i] = self.last_trans[i] - self.last_man[i]
             except TypeError:
-                print('Errorr')
+                print("Errorr")
                 self.last_offset[i] = 0
 
             self.first_man_julian_date[i] = self.first_trans_julian_date[i]
@@ -330,9 +376,11 @@ class Drifting(object):
             self.first_offset[i] = self.first_trans[i] - self.first_man[i]
             self.last_offset[i] = self.last_trans[i] - self.last_man[i]
             self.slope_man[i] = (self.first_man[i] - self.last_man[i]) / (
-                    self.first_man_julian_date[i] - self.last_man_julian_date[i])
+                self.first_man_julian_date[i] - self.last_man_julian_date[i]
+            )
             self.slope_trans[i] = (self.first_trans[i] - self.last_trans[i]) / (
-                    self.first_trans_julian_date[i] - self.last_trans_julian_date[i])
+                self.first_trans_julian_date[i] - self.last_trans_julian_date[i]
+            )
 
         self.slope[i] = self.slope_trans[i] - self.slope_man[i]
 
@@ -369,14 +417,16 @@ class Drifting(object):
         # datechange = amount of time between manual measurements
         df = self.bracketedwls[i]
 
-        total_date_change = self.last_trans_julian_date[i] - self.first_trans_julian_date[i]
+        total_date_change = (
+            self.last_trans_julian_date[i] - self.first_trans_julian_date[i]
+        )
         self.drift[i] = self.slope[i] * total_date_change
-        df['datechange'] = df['julian'] - self.first_trans_julian_date[i]
+        df["datechange"] = df["julian"] - self.first_trans_julian_date[i]
 
-        df['driftcorrection'] = df['datechange'].apply(lambda x: x * self.slope[i], 1)
-        df['driftcorrwoffset'] = df['driftcorrection'] + self.intercept[i]
-        df[self.output_field] = df[self.drifting_field] - df['driftcorrwoffset']
-        df = df.drop(['datechange'], axis=1)
+        df["driftcorrection"] = df["datechange"].apply(lambda x: x * self.slope[i], 1)
+        df["driftcorrwoffset"] = df["driftcorrection"] + self.intercept[i]
+        df[self.output_field] = df[self.drifting_field] - df["driftcorrwoffset"]
+        df = df.drop(["datechange"], axis=1)
         self.bracketedwls[i] = df
 
         return df, self.drift[i]
@@ -403,34 +453,37 @@ class Drifting(object):
             dictionary drift_features with standardized keys
         """
 
-        self.drift_features[i] = {'t_beg': self.first_trans_date[i],
-                                  'man_beg': self.first_man_date[i],
-                                  't_end': self.last_trans_date[i],
-                                  'man_end': self.last_man_date[i],
-                                  'slope_man': self.slope_man[i],
-                                  'slope_trans': self.slope_trans[i],
-                                  'intercept': self.intercept[i],
-                                  'slope': self.slope[i],
-                                  'first_meas': self.first_man[i],
-                                  'last_meas': self.last_man[i],
-                                  'first_trans': self.first_trans[i],
-                                  'last_trans': self.last_trans[i], 'drift': self.drift[i]}
+        self.drift_features[i] = {
+            "t_beg": self.first_trans_date[i],
+            "man_beg": self.first_man_date[i],
+            "t_end": self.last_trans_date[i],
+            "man_end": self.last_man_date[i],
+            "slope_man": self.slope_man[i],
+            "slope_trans": self.slope_trans[i],
+            "intercept": self.intercept[i],
+            "slope": self.slope[i],
+            "first_meas": self.first_man[i],
+            "last_meas": self.last_man[i],
+            "first_trans": self.first_trans[i],
+            "last_trans": self.last_trans[i],
+            "drift": self.drift[i],
+        }
 
     @staticmethod
     def ine(x, dtype):
         if x is None or pd.isna(x):
-            return ''
+            return ""
         else:
-            if dtype == 'f':
-                return '9.3f'
-            elif dtype == 'd':
-                return '%Y-%m-%d %H:%M'
-            elif dtype == 'sf':
-                return '.3f'
-            elif dtype == 'sl':
-                return '9.5f'
+            if dtype == "f":
+                return "9.3f"
+            elif dtype == "d":
+                return "%Y-%m-%d %H:%M"
+            elif dtype == "sf":
+                return ".3f"
+            elif dtype == "sl":
+                return "9.5f"
             else:
-                return ''
+                return ""
 
     def drift_print(self, i):
         a1 = self.first_man[i]
@@ -444,47 +497,77 @@ class Drifting(object):
         e1 = self.slope_man[i]
         e2 = self.slope_trans[i]
         if self.well_id:
-            print(f'Well ID {self.well_id}')
-        print("_____________________________________________________________________________________")
-        print("-----------|    First Day     |   First   |     Last Day     |   Last    |   Slope   |")
+            print(f"Well ID {self.well_id}")
         print(
-            f"    Manual | {'   No Data      ' if pd.isna(b1) else b1:{self.ine(b1, 'd')}} | {a1:{self.ine(a1, 'f')}} | {'   No Data        ' if pd.isna(b2) else b2:{self.ine(b2, 'd')}} | {a2:{self.ine(a2, 'f')}} | {e1:{self.ine(e1, 'sl')}} |")
+            "_____________________________________________________________________________________"
+        )
         print(
-            f"Transducer | {d1:{self.ine(d1, 'd')}} | {c1:{self.ine(c1, 'f')}} | {d2:{self.ine(d2, 'd')}} | {c2:{self.ine(c2, 'f')}} | {e2:{self.ine(e2, 'sl')}} |")
-        print("---------------------------------------------------------------------------------------------")
+            "-----------|    First Day     |   First   |     Last Day     |   Last    |   Slope   |"
+        )
         print(
-            f"Slope = {self.slope[i]:{self.ine(self.slope[i], 'sf')}} and Intercept = {self.intercept[i]:{self.ine(self.intercept[i], 'sf')}}")
+            f"    Manual | {'   No Data      ' if pd.isna(b1) else b1:{self.ine(b1, 'd')}} | {a1:{self.ine(a1, 'f')}} | {'   No Data        ' if pd.isna(b2) else b2:{self.ine(b2, 'd')}} | {a2:{self.ine(a2, 'f')}} | {e1:{self.ine(e1, 'sl')}} |"
+        )
+        print(
+            f"Transducer | {d1:{self.ine(d1, 'd')}} | {c1:{self.ine(c1, 'f')}} | {d2:{self.ine(d2, 'd')}} | {c2:{self.ine(c2, 'f')}} | {e2:{self.ine(e2, 'sl')}} |"
+        )
+        print(
+            "---------------------------------------------------------------------------------------------"
+        )
+        print(
+            f"Slope = {self.slope[i]:{self.ine(self.slope[i], 'sf')}} and Intercept = {self.intercept[i]:{self.ine(self.intercept[i], 'sf')}}"
+        )
         print(f"Drift = {self.drift[i]:}")
         print(" -------------------")
 
     def endpoint_status(self, i):
-        if np.abs(self.first_man_date[i] - self.first_trans_date[i]) > pd.Timedelta(f'{self.daybuffer:.0f}D'):
-            print(f'No initial actual manual measurement within {self.daybuffer:} days of {self.first_trans_date[i]:}.')
+        if np.abs(self.first_man_date[i] - self.first_trans_date[i]) > pd.Timedelta(
+            f"{self.daybuffer:.0f}D"
+        ):
+            print(
+                f"No initial actual manual measurement within {self.daybuffer:} days of {self.first_trans_date[i]:}."
+            )
 
             if (len(self.levdt) > 0) and (pd.notna(self.levdt[i])):
-                if (self.first_trans_date[i] - datetime.timedelta(days=self.daybuffer) < pd.to_datetime(self.levdt[i])):
+                if self.first_trans_date[i] - datetime.timedelta(
+                    days=self.daybuffer
+                ) < pd.to_datetime(self.levdt[i]):
                     print("Pulling first manual measurement from database")
                     self.first_man[i] = self.lev[i]
-                    self.first_man_julian_date[i] = pd.to_datetime(self.levdt[i]).to_julian_date()
+                    self.first_man_julian_date[i] = pd.to_datetime(
+                        self.levdt[i]
+                    ).to_julian_date()
             else:
-                print('No initial transducer measurement within {:} days of {:}.'.format(self.daybuffer,
-                                                                                         self.first_man_date[i]))
+                print(
+                    "No initial transducer measurement within {:} days of {:}.".format(
+                        self.daybuffer, self.first_man_date[i]
+                    )
+                )
                 self.first_man[i] = None
                 self.first_man_date[i] = None
 
-        if np.abs(self.last_trans_date[i] - self.last_man_date[i]) > pd.Timedelta(f'{self.daybuffer:.0f}D'):
-            print(f'No final manual measurement within {self.daybuffer:} days of {self.last_trans_date[i]:}.')
+        if np.abs(self.last_trans_date[i] - self.last_man_date[i]) > pd.Timedelta(
+            f"{self.daybuffer:.0f}D"
+        ):
+            print(
+                f"No final manual measurement within {self.daybuffer:} days of {self.last_trans_date[i]:}."
+            )
             self.last_man[i] = None
             self.last_man_date[i] = None
 
         # intercept of line = value of first manual measurement
         if pd.isna(self.first_man[i]):
-            print('First manual measurement missing between {:} and {:}'.format(self.breakpoints[i],
-                                                                                self.breakpoints[i + 1]))
+            print(
+                "First manual measurement missing between {:} and {:}".format(
+                    self.breakpoints[i], self.breakpoints[i + 1]
+                )
+            )
 
         elif pd.isna(self.last_man[i]):
-            print('Last manual measurement missing between {:} and {:}'.format(self.breakpoints[i],
-                                                                               self.breakpoints[i + 1]))
+            print(
+                "Last manual measurement missing between {:} and {:}".format(
+                    self.breakpoints[i], self.breakpoints[i + 1]
+                )
+            )
 
     def combine_brackets(self):
         dtnm = self.bracketedwls[0].index.name
@@ -527,14 +610,14 @@ def get_stickup(stdata, site_number, stable_elev=True, man=None):
     """
     if stable_elev:
         # Selects well stickup from well table; if its not in the well table, then sets value to zero
-        if pd.isna(stdata['stickup'].values[0]):
+        if pd.isna(stdata["stickup"].values[0]):
             stickup = 0
-            print('Well ID {:} missing stickup!'.format(site_number))
+            print("Well ID {:} missing stickup!".format(site_number))
         else:
-            stickup = float(stdata['stickup'].values[0])
+            stickup = float(stdata["stickup"].values[0])
     else:
         # uses measured stickup data from manual table
-        stickup = man.loc[man.last_valid_index(), 'current_stickup_height']
+        stickup = man.loc[man.last_valid_index(), "current_stickup_height"]
     return stickup
 
 
@@ -547,14 +630,14 @@ def trans_type(well_file):
     Returns:
         transducer type
     """
-    if os.path.splitext(well_file)[1] == '.xle':
-        t_type = 'Solinst'
-    elif os.path.splitext(well_file)[1] == '.lev':
-        t_type = 'Solinst'
+    if os.path.splitext(well_file)[1] == ".xle":
+        t_type = "Solinst"
+    elif os.path.splitext(well_file)[1] == ".lev":
+        t_type = "Solinst"
     else:
-        t_type = 'Global Water'
+        t_type = "Global Water"
 
-    print('Trans type for well is {:}.'.format(t_type))
+    print("Trans type for well is {:}.".format(t_type))
     return t_type
 
 
@@ -588,31 +671,40 @@ def first_last_indices(df, tmzone=None):
     return first_index, last_index
 
 
-
-
 def barodistance(wellinfo):
     """Determines Closest Barometer to Each Well using wellinfo DataFrame"""
-    barometers = {'barom': ['pw03', 'pw10', 'pw19'], 'X': [240327.49, 271127.67, 305088.9],
-                  'Y': [4314993.95, 4356071.98, 4389630.71], 'Z': [1623.079737, 1605.187759, 1412.673738]}
+    barometers = {
+        "barom": ["pw03", "pw10", "pw19"],
+        "X": [240327.49, 271127.67, 305088.9],
+        "Y": [4314993.95, 4356071.98, 4389630.71],
+        "Z": [1623.079737, 1605.187759, 1412.673738],
+    }
     barolocal = pd.DataFrame(barometers)
     barolocal = barolocal.reset_index()
-    barolocal.set_index('barom', inplace=True)
+    barolocal.set_index("barom", inplace=True)
 
-    wellinfo['pw03'] = np.sqrt((barolocal.loc['pw03', 'X'] - wellinfo['UTMEasting']) ** 2 +
-                               (barolocal.loc['pw03', 'Y'] - wellinfo['UTMNorthing']) ** 2 +
-                               (barolocal.loc['pw03', 'Z'] - wellinfo['G_Elev_m']) ** 2)
-    wellinfo['pw10'] = np.sqrt((barolocal.loc['pw10', 'X'] - wellinfo['UTMEasting']) ** 2 +
-                               (barolocal.loc['pw10', 'Y'] - wellinfo['UTMNorthing']) ** 2 +
-                               (barolocal.loc['pw10', 'Z'] - wellinfo['G_Elev_m']) ** 2)
-    wellinfo['pw19'] = np.sqrt((barolocal.loc['pw19', 'X'] - wellinfo['UTMEasting']) ** 2 +
-                               (barolocal.loc['pw19', 'Y'] - wellinfo['UTMNorthing']) ** 2 +
-                               (barolocal.loc['pw19', 'Z'] - wellinfo['G_Elev_m']) ** 2)
-    wellinfo['closest_baro'] = wellinfo[['pw03', 'pw10', 'pw19']].T.idxmin()
+    wellinfo["pw03"] = np.sqrt(
+        (barolocal.loc["pw03", "X"] - wellinfo["UTMEasting"]) ** 2
+        + (barolocal.loc["pw03", "Y"] - wellinfo["UTMNorthing"]) ** 2
+        + (barolocal.loc["pw03", "Z"] - wellinfo["G_Elev_m"]) ** 2
+    )
+    wellinfo["pw10"] = np.sqrt(
+        (barolocal.loc["pw10", "X"] - wellinfo["UTMEasting"]) ** 2
+        + (barolocal.loc["pw10", "Y"] - wellinfo["UTMNorthing"]) ** 2
+        + (barolocal.loc["pw10", "Z"] - wellinfo["G_Elev_m"]) ** 2
+    )
+    wellinfo["pw19"] = np.sqrt(
+        (barolocal.loc["pw19", "X"] - wellinfo["UTMEasting"]) ** 2
+        + (barolocal.loc["pw19", "Y"] - wellinfo["UTMNorthing"]) ** 2
+        + (barolocal.loc["pw19", "Z"] - wellinfo["G_Elev_m"]) ** 2
+    )
+    wellinfo["closest_baro"] = wellinfo[["pw03", "pw10", "pw19"]].T.idxmin()
     return wellinfo
 
 
 # -----------------------------------------------------------------------------------------------------------------------
 # These scripts remove outlier data and filter the time series of jumps and erratic measurements
+
 
 def dataendclean(df, x, inplace=False, jumptol=1.0):
     """Trims off ends and beginnings of datasets that exceed 2.0 standard deviations of the first and last 50 values
@@ -645,7 +737,7 @@ def dataendclean(df, x, inplace=False, jumptol=1.0):
                 df = df[df.index < jump.index[i]]
                 print("Dropped from end to " + str(jump.index[i]))
     except IndexError:
-        print('No Jumps')
+        print("No Jumps")
     return df
 
 
@@ -667,19 +759,23 @@ def smoother(df, p, win=30, sd=3):
         Pandas DataFrame with outliers removed
     """
     df1 = df
-    df1.loc[:, 'dp' + p] = df1.loc[:, p].diff()
-    df1.loc[:, 'ma' + p] = df1.loc[:, 'dp' + p].rolling(window=win, center=True).mean()
-    df1.loc[:, 'mst' + p] = df1.loc[:, 'dp' + p].rolling(window=win, center=True).std()
+    df1.loc[:, "dp" + p] = df1.loc[:, p].diff()
+    df1.loc[:, "ma" + p] = df1.loc[:, "dp" + p].rolling(window=win, center=True).mean()
+    df1.loc[:, "mst" + p] = df1.loc[:, "dp" + p].rolling(window=win, center=True).std()
     for i in df.index:
         try:
             # abs diff - moving average >= abs moving std * 2
-            if abs(df1.loc[i, 'dp' + p] - df1.loc[i, 'ma' + p]) >= abs(df1.loc[i, 'mst' + p] * sd):
+            if abs(df1.loc[i, "dp" + p] - df1.loc[i, "ma" + p]) >= abs(
+                df1.loc[i, "mst" + p] * sd
+            ):
                 df.loc[i, p] = np.nan
             else:
                 df.loc[i, p] = df.loc[i, p]
         except ValueError:
             try:
-                if abs(df1.loc[i, 'dp' + p] - df1.loc[i, 'ma' + p]) >= abs(df1.loc[:, 'dp' + p].std() * sd):
+                if abs(df1.loc[i, "dp" + p] - df1.loc[i, "ma" + p]) >= abs(
+                    df1.loc[:, "dp" + p].std() * sd
+                ):
                     df.loc[i, p] = np.nan
                 else:
                     df.loc[i, p] = df.loc[i, p]
@@ -687,17 +783,18 @@ def smoother(df, p, win=30, sd=3):
                 df.loc[i, p] = df.loc[i, p]
 
     try:
-        df1 = df1.drop(['dp' + p, 'ma' + p, 'mst' + p], axis=1)
-    except(NameError, ValueError):
+        df1 = df1.drop(["dp" + p, "ma" + p, "mst" + p], axis=1)
+    except (NameError, ValueError):
         pass
     del df1
     try:
-        df = df.drop(['dp' + p, 'ma' + p, 'mst' + p], axis=1)
-    except(NameError, ValueError):
+        df = df.drop(["dp" + p, "ma" + p, "mst" + p], axis=1)
+    except (NameError, ValueError):
         pass
-    df = df.interpolate(method='time', limit=30)
+    df = df.interpolate(method="time", limit=30)
     df = df[1:-1]
     return df
+
 
 def read_troll_htm(filepath):
     """given a path to the .htm (html) file, function will read in the data and produce pandas dataframe
@@ -709,7 +806,7 @@ def read_troll_htm(filepath):
         df:
             dataframe
     """
-    with open(filepath, 'r') as f:
+    with open(filepath, "r") as f:
         html_string = f.read()
 
     # use BeautifulSoup to parse the HTML content of the page
@@ -720,20 +817,20 @@ def read_troll_htm(filepath):
     colnames = [head.text.strip() for head in heads]
     data = []
     for row in table_rows:
-        cols = row.find_all('td')
+        cols = row.find_all("td")
         cols = [col.text.strip() for col in cols]
         data.append(cols)
-    
+
             # convert the list of data into a pandas dataframe
     df = pd.DataFrame(data)
     df.columns = colnames
-    
+
     for col in df.columns:
         if "Date" in col or "date" in col:
             print(col)
             df[col] = pd.to_datetime(df[col])
             df = df.rename(columns={col: "DateTime"})  # Renaming the column to match name from xle files
-            df = df.set_index("DateTime")  
+            df = df.set_index("DateTime")
         elif "Press" in col:
             df[col] = pd.to_numeric(df[col])
             if "psi" in col:
@@ -751,6 +848,7 @@ def read_troll_htm(filepath):
             df[col] = pd.to_numeric(df[col])
 
     return df
+
 
 def rollmeandiff(df1, p1, df2, p2, win):
     """Returns the rolling mean difference of two columns from two different dataframes
@@ -771,22 +869,22 @@ def rollmeandiff(df1, p1, df2, p2, win):
             difference
     """
     win = win * 60 * 24
-    df1 = df1.resample('1T').mean()
-    df1 = df1.interpolate(method='time')
-    df2 = df2.resample('1T').mean()
-    df2 = df2.interpolate(method='time')
-    df1['rm' + p1] = df1[p1].rolling(window=win, center=True).mean()
-    df2['rm' + p2] = df2[p2].rolling(window=win, center=True).mean()
-    df3 = pd.merge(df1, df2, left_index=True, right_index=True, how='outer')
-    df3 = df3[np.isfinite(df3['rm' + p1])]
-    df4 = df3[np.isfinite(df3['rm' + p2])]
-    df5 = df4['rm' + p1] - df4['rm' + p2]
+    df1 = df1.resample("1T").mean()
+    df1 = df1.interpolate(method="time")
+    df2 = df2.resample("1T").mean()
+    df2 = df2.interpolate(method="time")
+    df1["rm" + p1] = df1[p1].rolling(window=win, center=True).mean()
+    df2["rm" + p2] = df2[p2].rolling(window=win, center=True).mean()
+    df3 = pd.merge(df1, df2, left_index=True, right_index=True, how="outer")
+    df3 = df3[np.isfinite(df3["rm" + p1])]
+    df4 = df3[np.isfinite(df3["rm" + p2])]
+    df5 = df4["rm" + p1] - df4["rm" + p2]
     diff = round(df5.mean(), 3)
     del (df3, df4, df5)
     return diff
 
 
-def fix_unit_change(df1, df2, field='Level', tolerance=0.03):
+def fix_unit_change(df1, df2, field="Level", tolerance=0.03):
     """Fixes issues where units fail to converge between transducers. Common in some Solinst transducers (???).
     Uses ratio of daily rolling standard devations to determine non stationarity between datasets.
 
@@ -800,16 +898,25 @@ def fix_unit_change(df1, df2, field='Level', tolerance=0.03):
         converted (pandas Dataframe):
             converted series of df2[field] and prints conversion
     """
-    conversion_factors = {'meters to feet': 3.28084, 'feet to meters': 0.3048,
-                          'psi to feet': 2.3066587, 'feet to psi': 0.4335275,
-                          'psi to bar': 0.0689, 'bar to psi': 14.5038,
-                          'kPa to psi': 0.145038, 'psi to kPa': 6.89476,
-                          'kPa to feet': 0.3345525655, 'feet to kPa': 2.9890669,
-                          'feet to bar': 0.02989, 'bar to feet': 33.4553,
-                          'feet to mmHg': 22.42, 'mmHg to feet': 0.0446,
-                          'no conversion': 1.0}
+    conversion_factors = {
+        "meters to feet": 3.28084,
+        "feet to meters": 0.3048,
+        "psi to feet": 2.3066587,
+        "feet to psi": 0.4335275,
+        "psi to bar": 0.0689,
+        "bar to psi": 14.5038,
+        "kPa to psi": 0.145038,
+        "psi to kPa": 6.89476,
+        "kPa to feet": 0.3345525655,
+        "feet to kPa": 2.9890669,
+        "feet to bar": 0.02989,
+        "bar to feet": 33.4553,
+        "feet to mmHg": 22.42,
+        "mmHg to feet": 0.0446,
+        "no conversion": 1.0,
+    }
 
-    conversion = 'no conversion'
+    conversion = "no conversion"
     multiplier = 1
 
     df1std = np.mean(df1[field].rolling(24).std())
@@ -826,12 +933,8 @@ def fix_unit_change(df1, df2, field='Level', tolerance=0.03):
     return df2
 
 
-
 def jumpfix(
-        df: pd.DataFrame,
-        meas: str,
-        threshold: float = 0.005,
-        return_jump: bool = False
+    df: pd.DataFrame, meas: str, threshold: float = 0.005, return_jump: bool = False
 ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
     """
     Removes jumps or jolts in time series data where offset is lasting.
@@ -880,10 +983,10 @@ def jumpfix(
     df1 = df1.sort_index().drop_duplicates()
 
     # Calculate differences between consecutive values
-    df1['delta'] = df1[meas].diff()
+    df1["delta"] = df1[meas].diff()
 
     # Find jumps exceeding threshold
-    jump_mask = df1['delta'].abs() > threshold
+    jump_mask = df1["delta"].abs() > threshold
     jumps = df1[jump_mask].copy()
 
     if len(jumps) == 0:
@@ -892,42 +995,40 @@ def jumpfix(
         return df1
 
     # Calculate cumulative sum of jumps
-    jumps['cumul'] = jumps['delta'].cumsum()
+    jumps["cumul"] = jumps["delta"].cumsum()
 
     # Initialize new values column
-    df1['newVal'] = df1[meas].copy()
+    df1["newVal"] = df1[meas].copy()
 
     # Apply corrections
     for idx in range(len(jumps.index)):
         jump_time = jumps.index[idx]
-        jump_amount = jumps['cumul'].iloc[idx]  # Using iloc instead of [] for position access
+        jump_amount = jumps["cumul"].iloc[
+            idx
+        ]  # Using iloc instead of [] for position access
 
         # Create mask for all timestamps after the jump
         mask = df1.index >= jump_time
 
         # Apply correction
-        df1.loc[mask, 'newVal'] = df1.loc[mask, meas] - jump_amount
+        df1.loc[mask, "newVal"] = df1.loc[mask, meas] - jump_amount
 
     # Update original measurement column
-    df1[meas] = df1['newVal']
+    df1[meas] = df1["newVal"]
 
     # Clean up temporary columns
-    df1 = df1.drop(columns=['delta', 'newVal'])
+    df1 = df1.drop(columns=["delta", "newVal"])
 
     if return_jump:
         # Clean up jumps DataFrame
-        jumps = jumps.drop(columns=['newVal'])
-        jumps = jumps.rename(columns={'delta': 'jump_size'})
+        jumps = jumps.drop(columns=["newVal"])
+        jumps = jumps.rename(columns={"delta": "jump_size"})
         return df1, jumps
 
     return df1
 
 
-def detect_jumps(
-        df: pd.DataFrame,
-        meas: str,
-        threshold: float = 0.005
-) -> pd.DataFrame:
+def detect_jumps(df: pd.DataFrame, meas: str, threshold: float = 0.005) -> pd.DataFrame:
     """
     Detect jumps in time series data without applying corrections.
 
@@ -950,17 +1051,13 @@ def detect_jumps(
 
     # Find jumps
     jumps = df[abs(diffs) > threshold].copy()
-    jumps['jump_size'] = diffs[abs(diffs) > threshold]
-    jumps['cumulative_effect'] = jumps['jump_size'].cumsum()
+    jumps["jump_size"] = diffs[abs(diffs) > threshold]
+    jumps["cumulative_effect"] = jumps["jump_size"].cumsum()
 
     return jumps
 
 
-def analyze_jumps(
-        df: pd.DataFrame,
-        meas: str,
-        threshold: float = 0.005
-) -> dict:
+def analyze_jumps(df: pd.DataFrame, meas: str, threshold: float = 0.005) -> dict:
     """
     Analyze jumps in time series data and return statistics.
 
@@ -976,44 +1073,101 @@ def analyze_jumps(
 
     if len(jumps) == 0:
         return {
-            'num_jumps': 0,
-            'total_drift': 0,
-            'max_jump': 0,
-            'min_jump': 0,
-            'mean_jump': 0,
-            'jump_times': []
+            "num_jumps": 0,
+            "total_drift": 0,
+            "max_jump": 0,
+            "min_jump": 0,
+            "mean_jump": 0,
+            "jump_times": [],
         }
 
     stats = {
-        'num_jumps': len(jumps),
-        'total_drift': jumps['jump_size'].sum(),
-        'max_jump': jumps['jump_size'].max(),
-        'min_jump': jumps['jump_size'].min(),
-        'mean_jump': jumps['jump_size'].mean(),
-        'jump_times': jumps.index.tolist()
+        "num_jumps": len(jumps),
+        "total_drift": jumps["jump_size"].sum(),
+        "max_jump": jumps["jump_size"].max(),
+        "min_jump": jumps["jump_size"].min(),
+        "mean_jump": jumps["jump_size"].mean(),
+        "jump_times": jumps.index.tolist(),
     }
 
     return stats
 
 
+def detect_mean_offset(data, window_size, threshold, plot=True):
+    """
+    Detects offsets in mean average values in a time series.
+
+    Parameters:
+        data (pd.Series): The input time series data with a datetime index.
+        window_size (int): The size of the sliding window in terms of data points.
+        threshold (float): The threshold for detecting mean offsets.
+        plot (bool): Whether to plot the results.
+
+    Returns:
+        offset_timestamps (pd.DatetimeIndex): Timestamps where offsets are detected.
+    """
+    if len(data) < window_size:
+        raise ValueError("Window size must be smaller than the length of the data.")
+
+    # Calculate rolling mean
+    rolling_mean = data.rolling(window=window_size, center=True).mean()
+
+    # Calculate differences between consecutive rolling means
+    rolling_mean_diff = rolling_mean.diff().abs()
+
+    # Detect indices where the difference exceeds the threshold
+    offset_indices = rolling_mean_diff[rolling_mean_diff > threshold].dropna().index
+
+    # Plot the results
+    if plot:
+        plt.figure(figsize=(10, 6))
+        plt.plot(data.index, data.values, label="Time Series", color="blue")
+        plt.plot(
+            rolling_mean.index,
+            rolling_mean.values,
+            label="Rolling Mean",
+            color="orange",
+        )
+        plt.scatter(
+            offset_indices,
+            data.loc[offset_indices],
+            color="red",
+            label="Mean Offsets",
+            zorder=5,
+        )
+        plt.axhline(data.mean(), color="green", linestyle="--", label="Overall Mean")
+        plt.title("Mean Offset Detection")
+        plt.xlabel("Time")
+        plt.ylabel("Value")
+        plt.legend()
+        plt.show()
+
+    return offset_indices
+
+
 # -----------------------------------------------------------------------------------------------------------------------
 # The following scripts align and remove barometric pressure data
 
-def correct_be(site_number, well_table, welldata, be=None, meas='corrwl', baro='barometer'):
+
+def correct_be(
+    site_number, well_table, welldata, be=None, meas="corrwl", baro="barometer"
+):
     if be:
         be = float(be)
     else:
-        stdata = well_table[well_table['wellid'] == site_number]
-        be = stdata['BaroEfficiency'].values[0]
+        stdata = well_table[well_table["wellid"] == site_number]
+        be = stdata["BaroEfficiency"].values[0]
     if be is None:
         be = 0
     else:
         be = float(be)
 
     if be == 0:
-        welldata['baroefficiencylevel'] = welldata[meas]
+        welldata["baroefficiencylevel"] = welldata[meas]
     else:
-        welldata['baroefficiencylevel'] = welldata[[meas, baro]].apply(lambda x: x[0] + be * x[1], 1)
+        welldata["baroefficiencylevel"] = welldata[[meas, baro]].apply(
+            lambda x: x[0] + be * x[1], 1
+        )
 
     return welldata, be
 
@@ -1039,19 +1193,30 @@ def hourly_resample(df, bse=0, minutes=60):
         see http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases
     """
 
-    df = df.resample('1min').mean(numeric_only=True).interpolate(method='time', limit=90)
+    df = (
+        df.resample("1min").mean(numeric_only=True).interpolate(method="time", limit=90)
+    )
 
     if minutes == 60:
-        sampfrq = '1h'
+        sampfrq = "1h"
     else:
-        sampfrq = str(minutes) + 'min'
+        sampfrq = str(minutes) + "min"
 
-    df = df.resample(sampfrq, closed='right', label='right', offset=f'{bse:0.0f}min').asfreq()
+    df = df.resample(
+        sampfrq, closed="right", label="right", offset=f"{bse:0.0f}min"
+    ).asfreq()
     return df
 
 
-def well_baro_merge(wellfile, barofile, barocolumn='Level', wellcolumn='Level', outcolumn='corrwl',
-                    vented=False, sampint=60):
+def well_baro_merge(
+    wellfile,
+    barofile,
+    barocolumn="Level",
+    wellcolumn="Level",
+    outcolumn="corrwl",
+    vented=False,
+    sampint=60,
+):
     """Remove barometric pressure from nonvented transducers.
     Args:
         wellfile (pd.DataFrame):
@@ -1071,27 +1236,30 @@ def well_baro_merge(wellfile, barofile, barocolumn='Level', wellcolumn='Level', 
     well = hourly_resample(wellfile, bse=0, minutes=sampint)
 
     # reassign `Level` to reduce ambiguity
-    baro = baro.rename(columns={barocolumn: 'barometer'})
+    baro = baro.rename(columns={barocolumn: "barometer"})
 
-    if 'temp' in baro.columns:
-        baro = baro.drop('temp', axis=1)
-    elif 'Temperature' in baro.columns:
-        baro = baro.drop('Temperature', axis=1)
-    elif 'temperature' in baro.columns:
-        baro = baro.drop('temperature', axis=1)
+    if "temp" in baro.columns:
+        baro = baro.drop("temp", axis=1)
+    elif "Temperature" in baro.columns:
+        baro = baro.drop("Temperature", axis=1)
+    elif "temperature" in baro.columns:
+        baro = baro.drop("temperature", axis=1)
 
     if vented:
         wellbaro = well
         wellbaro[outcolumn] = wellbaro[wellcolumn]
     else:
         # combine baro and well data for easy calculations, graphing, and manipulation
-        wellbaro = pd.merge(well, baro, left_index=True, right_index=True, how='left')
-        wellbaro = wellbaro.dropna(subset=['barometer', wellcolumn], how='any')
-        wellbaro['dbp'] = wellbaro['barometer'].diff()
-        wellbaro['dwl'] = wellbaro[wellcolumn].diff()
-        #print(wellbaro)
-        first_well = wellbaro.loc[wellbaro.index[0],wellcolumn]
-        wellbaro[outcolumn] = wellbaro[['dbp', 'dwl']].apply(lambda x: x[1] - x[0], 1).cumsum() + first_well
+        wellbaro = pd.merge(well, baro, left_index=True, right_index=True, how="left")
+        wellbaro = wellbaro.dropna(subset=["barometer", wellcolumn], how="any")
+        wellbaro["dbp"] = wellbaro["barometer"].diff()
+        wellbaro["dwl"] = wellbaro[wellcolumn].diff()
+        # print(wellbaro)
+        first_well = wellbaro.loc[wellbaro.index[0], wellcolumn]
+        wellbaro[outcolumn] = (
+            wellbaro[["dbp", "dwl"]].apply(lambda x: x[1] - x[0], 1).cumsum()
+            + first_well
+        )
         wellbaro.loc[wellbaro.index[0], outcolumn] = first_well
     return wellbaro
 
@@ -1108,36 +1276,68 @@ def fcl(df, dtobj):
 
     taken from: http://stackoverflow.com/questions/15115547/find-closest-row-of-dataframe-to-given-time-in-pandas
     """
-    return df.iloc[np.argmin(np.abs(pd.to_datetime(df.index) - dtobj))]  # remove to_pydatetime()
+    return df.iloc[
+        np.argmin(np.abs(pd.to_datetime(df.index) - dtobj))
+    ]  # remove to_pydatetime()
 
 
-def compilefiles(searchdir, copydir, filecontains, filetypes=('lev', 'xle')):
-    filecontains = list(filecontains)
-    filetypes = list(filetypes)
-    for pack in os.walk(searchdir):
-        for name in filecontains:
-            for i in glob.glob(pack[0] + '/' + '*{:}*'.format(name)):
-                if i.split('.')[-1] in filetypes:
-                    dater = str(datetime.datetime.fromtimestamp(os.path.getmtime(i)).strftime('%Y-%m-%d'))
-                    rightfile = dater + "_" + os.path.basename(i)
-                    if not os.path.exists(copydir):
-                        print('Creating {:}'.format(copydir))
-                        os.makedirs(copydir)
-                    else:
-                        pass
-                    if os.path.isfile(os.path.join(copydir, rightfile)):
-                        pass
-                    else:
-                        print(os.path.join(copydir, rightfile))
-                        try:
-                            copyfile(i, os.path.join(copydir, rightfile))
-                        except:
-                            pass
-    print('Copy Complete!')
+def compilefiles(searchdir, copydir, filecontains, filetype=".xle"):
+    """
+    Copies files matching specified criteria from a source directory to a target directory.
+
+    Parameters:
+    - searchdir (str or Path): The root directory to search for files.
+    - copydir (str or Path): The directory where matching files will be copied.
+    - filecontains (list): A list of substrings to match in file names.
+    - filetype (str, optional): A string of file extension to filter files (default: "xle").
+
+    Behavior:
+    - Recursively searches for files in the `searchdir` that contain any of the substrings in `filecontains`.
+    - Filters files by the specified extensions in `filetypes`.
+    - Prepends the file's last modified date (in YYYY-MM-DD format) to its name before copying.
+    - Ensures the target directory exists before copying files.
+    - Skips files if they already exist in the target directory.
+
+    Returns:
+    None
+    """
+    # Ensure searchdir and copydir are Path objects
+    if not isinstance(searchdir, Path):
+        searchdir = Path(searchdir)
+    if not isinstance(copydir, Path):
+        copydir = Path(copydir)
+
+    if not isinstance(filecontains, list):
+        filecontains = list(filecontains)
+    # filetypes = set(filetypes)  # Use a set for faster lookups
+
+    for name in filecontains:
+        for file in searchdir.rglob(f"*{name}*{filetype}", case_sensitive=False):
+
+            # Find matching files
+            dater = file.stat().st_mtime
+            dater_str = datetime.datetime.fromtimestamp(dater).strftime("%Y-%m-%d")
+            rightfile = f"{dater_str}_{file.name}"
+
+            # Ensure the copy directory exists
+            if not copydir.exists():
+                print(f"Creating {copydir}")
+                copydir.mkdir(parents=True)
+
+            target_path = copydir / rightfile
+
+            if not target_path.is_file():
+                print(f"Copying to {target_path}")
+                try:
+                    copyfile(file, target_path)
+                except Exception as e:
+                    print(f"Error copying {file} to {target_path}: {e}")
+
+    print("Copy Complete!")
     return
 
 
-def compilation(inputfile, trm=True):
+def compilation(inputfile, trm=True, wildcard="*"):
     """This function reads multiple xle transducer files in a directory and generates a compiled Pandas DataFrame.
     Args:
         inputfile (file):
@@ -1155,8 +1355,12 @@ def compilation(inputfile, trm=True):
     # create empty dictionary to hold DataFrames
     f = {}
 
+    if not isinstance(inputfile, Path):
+        inputfile = Path(inputfile)
+
     # generate list of relevant files
-    filelist = glob.glob(inputfile)
+    filelist = inputfile.glob(wildcard)
+
     # iterate through list of relevant files
     for infile in filelist:
         # run computations using lev files
@@ -1173,11 +1377,11 @@ def compilation(inputfile, trm=True):
     g['DateTime'] = pd.to_datetime(g['DateTime'], errors='coerce') ### change to address deprecation!
     g = g.set_index(['DateTime'])
     # drop old indexes
-    g = g.drop(['level_0'], axis=1)
+    g = g.drop(["level_0"], axis=1)
     # remove duplicates based on index then sort by index
-    g['ind'] = g.index
-    g = g.drop_duplicates(subset='ind')
-    g = g.drop('ind', axis=1)
+    g["ind"] = g.index
+    g = g.drop_duplicates(subset="ind")
+    g = g.drop("ind", axis=1)
     g = g.sort_index()
     return g
 
@@ -1185,6 +1389,7 @@ def compilation(inputfile, trm=True):
 # ----------------------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
 # Raw transducer import functions - these convert raw lev, xle, and csv files to Pandas Dataframes for processing
+
 
 def get_line_num(filename, lookup="Date and Time,Seconds"):
     """This function will find the first instance of the string `lookup` and give the line number of that string.
@@ -1203,14 +1408,18 @@ def get_line_num(filename, lookup="Date and Time,Seconds"):
 
 
 def read_troll_csv(filename):
-    df = pd.read_csv(filename, skiprows=get_line_num(filename), parse_dates=True,
-                     encoding='unicode_escape')
+    df = pd.read_csv(
+        filename,
+        skiprows=get_line_num(filename),
+        parse_dates=True,
+        encoding="unicode_escape",
+    )
 
-    df['Date and Time'] = pd.to_datetime(df['Date and Time'])
+    df["Date and Time"] = pd.to_datetime(df["Date and Time"])
 
-    df.columns = df.columns.str.replace(' ', '')
-    df.columns = df.columns.str.replace('(', '_')
-    df.columns = df.columns.str.replace(')', '')
+    df.columns = df.columns.str.replace(" ", "")
+    df.columns = df.columns.str.replace("(", "_")
+    df.columns = df.columns.str.replace(")", "")
 
     # Get rid of duplicate data
     df = df.reset_index().drop_duplicates(["DateandTime"])
@@ -1224,21 +1433,28 @@ def read_troll_csv(filename):
         elif "Press" in col:
             df[col] = pd.to_numeric(df[col])
             if "psi" in col:
-                df['Level'] = df[col]*2.3067
+                df["Level"] = df[col] * 2.3067
             elif "Hg" in col:
-                df['Level'] = df[col]*0.044603
+                df["Level"] = df[col] * 0.044603
             elif "kPa" in col:
-                df['Level'] = df[col]*0.33455
-            #df = df.rename(columns={col:"Level"})
-        elif "Depth" in col or "Cond" in col or "Total" in col or "Salin" in col or "Dens" in col or "Temp" in col:
+                df["Level"] = df[col] * 0.33455
+            # df = df.rename(columns={col:"Level"})
+        elif (
+            "Depth" in col
+            or "Cond" in col
+            or "Total" in col
+            or "Salin" in col
+            or "Dens" in col
+            or "Temp" in col
+        ):
             df[col] = pd.to_numeric(df[col])
 
     return df
 
 
-def drop_duplicates_keep_max_by_field(df: pd.DataFrame,
-                                      field: str,
-                                      ignore_case: bool = True) -> pd.DataFrame:
+def drop_duplicates_keep_max_by_field(
+    df: pd.DataFrame, field: str, ignore_case: bool = True
+) -> pd.DataFrame:
     """
     Remove duplicate indices from a DataFrame while keeping the rows that have
     the maximum value in the specified field.
@@ -1285,7 +1501,7 @@ def drop_duplicates_keep_max_by_field(df: pd.DataFrame,
 
     # Create a series of boolean masks that identify the maximum value
     # for each duplicate index
-    idx_max = df.groupby(level=0)[field].transform('max') == df[field]
+    idx_max = df.groupby(level=0)[field].transform("max") == df[field]
 
     # If there are multiple rows with the same maximum value for an index,
     # keep the first occurrence
@@ -1295,6 +1511,7 @@ def drop_duplicates_keep_max_by_field(df: pd.DataFrame,
     deduped = deduped.sort_index()
 
     return deduped
+
 
 class NewTransImp(object):
     """This class uses an imports and cleans the ends of transducer file.
@@ -1323,31 +1540,31 @@ class NewTransImp(object):
             self.infile = Path(self.infile)
         file_ext = self.infile.name.split(".")[-1]
         try:
-            if file_ext == 'xle':
+            if file_ext == "xle":
                 try:
                     self.well = self.new_xle_imp()
                 except (ParseError, KeyError):
                     self.well = self.old_xle_imp()
-            elif file_ext == 'lev':
+            elif file_ext == "lev":
                 self.well = self.new_lev_imp()
-            elif file_ext == 'csv':
+            elif file_ext == "csv":
                 self.well = self.new_csv_imp()
             elif file_ext in ['htm', 'html']:
                 self.well = self.read_troll_htm()
             else:
-                print('filetype not recognized')
+                print("filetype not recognized")
                 self.well = None
 
             if self.well is None:
                 pass
             elif trim_end:
-                self.well = dataendclean(self.well, 'Level', jumptol=jumptol)
+                self.well = dataendclean(self.well, "Level", jumptol=jumptol)
             else:
                 pass
             return
 
         except AttributeError as e:
-            print('Bad File')
+            print("Bad File", e)
             print(e)
             return
 
@@ -1361,7 +1578,7 @@ class NewTransImp(object):
             df:
                 dataframe
         """
-        with self.infile.open('r') as f:
+        with self.infile.open("r") as f:
             html_string = f.read()
 
         # use BeautifulSoup to parse the HTML content of the page
@@ -1372,23 +1589,23 @@ class NewTransImp(object):
         colnames = [head.text.strip() for head in heads]
         data = []
         for row in table_rows:
-            cols = row.find_all('td')
+            cols = row.find_all("td")
             cols = [col.text.strip() for col in cols]
             data.append(cols)
-        
+
                 # convert the list of data into a pandas dataframe
         df = pd.DataFrame(data)
         df.columns = colnames
-        
+
         for col in df.columns:
             if "Date" in col or "date" in col:
                 df[col] = pd.to_datetime(df[col])
                 df = df.rename(columns={col: "DateTime"})  # Renaming the column to match name from xle files
-                df = df.set_index("DateTime")  
+                df = df.set_index("DateTime")
             elif "Press" in col:
                 df[col] = pd.to_numeric(df[col])
                 if "psi" in col:
-                    df['Level'] = df[col] * 2.3067
+                    df["Level"] = df[col] * 2.3067
                 elif "Hg" in col:
                     df['Level'] = df[col] * 0.044603
                 df = df.drop(columns=[col])
@@ -1414,21 +1631,29 @@ class NewTransImp(object):
         with self.infile.open("r") as fd:
             txt = fd.readlines()
             if len(txt) > 1:
-                if 'Serial' in txt[0]:
-                    print('{:} is Solinst'.format(nm))
-                    if 'UNIT: ' in txt[7]:
+                if "Serial" in txt[0]:
+                    print("{:} is Solinst".format(nm))
+                    if "UNIT: " in txt[7]:
                         level_units = str(txt[7])[5:].strip().lower()
-                    if 'UNIT: ' in txt[12]:
+                    if "UNIT: " in txt[12]:
                         temp_units = str(txt[12])[5:].strip().lower()
-                    f = pd.read_csv(self.infile, skiprows=13, parse_dates=[[0, 1]], usecols=[0, 1, 3, 4])
+                    f = pd.read_csv(
+                        self.infile,
+                        skiprows=13,
+                        parse_dates=[[0, 1]],
+                        usecols=[0, 1, 3, 4],
+                    )
                     print(f.columns)
-                    f['DateTime'] = pd.to_datetime(f['Date_Time'], errors='coerce')
-                    f.set_index('DateTime', inplace=True)
-                    f.drop('Date_Time', axis=1, inplace=True)
-                    f.rename(columns={'LEVEL': 'Level', 'TEMP': 'Temp', 'COND': 'Cond'}, inplace=True)
-                    level = 'Level'
-                    temp = 'Temp'
-                    cond = 'Cond'
+                    f["DateTime"] = pd.to_datetime(f["Date_Time"], errors="coerce")
+                    f.set_index("DateTime", inplace=True)
+                    f.drop("Date_Time", axis=1, inplace=True)
+                    f.rename(
+                        columns={"LEVEL": "Level", "TEMP": "Temp", "COND": "Cond"},
+                        inplace=True,
+                    )
+                    level = "Level"
+                    temp = "Temp"
+                    cond = "Cond"
 
                     if level_units == "feet" or level_units == "ft":
                         f[level] = pd.to_numeric(f[level])
@@ -1450,54 +1675,56 @@ class NewTransImp(object):
                         f[level] = pd.to_numeric(f[level])
                         print("Unknown units, no conversion")
 
-                    if temp_units == 'Deg C' or temp_units == u'\N{DEGREE SIGN}' + u'C':
+                    if temp_units == "Deg C" or temp_units == "\N{DEGREE SIGN}" + "C":
                         f[temp] = f[temp]
-                    elif temp_units == 'Deg F' or temp_units == u'\N{DEGREE SIGN}' + u'F':
-                        print('Temp in F, converting {:} to C...'.format(nm))
+                    elif temp_units == "Deg F" or temp_units == "\N{DEGREE SIGN}" + "F":
+                        print("Temp in F, converting {:} to C...".format(nm))
                         f[temp] = (f[temp] - 32.0) * 5.0 / 9.0
                     return f
 
-                elif 'Date' in txt[1]:
-                    print('{:} is Global'.format(self.infile))
-                    f = pd.read_csv(self.infile, skiprows=1, parse_dates={'DateTime': [0, 1]})
+                elif "Date" in txt[1]:
+                    print("{:} is Global".format(self.infile))
+                    f = pd.read_csv(
+                        self.infile, skiprows=1, parse_dates={"DateTime": [0, 1]}
+                    )
                     # f = f.reset_index()
                     # f['DateTime'] = pd.to_datetime(f.columns[0], errors='coerce')
                     f = f[f.DateTime.notnull()]
-                    if ' Feet' in list(f.columns.values):
-                        f['Level'] = f[' Feet']
-                        f.drop([' Feet'], inplace=True, axis=1)
-                    elif 'Feet' in list(f.columns.values):
-                        f['Level'] = f['Feet']
-                        f.drop(['Feet'], inplace=True, axis=1)
+                    if " Feet" in list(f.columns.values):
+                        f["Level"] = f[" Feet"]
+                        f.drop([" Feet"], inplace=True, axis=1)
+                    elif "Feet" in list(f.columns.values):
+                        f["Level"] = f["Feet"]
+                        f.drop(["Feet"], inplace=True, axis=1)
                     else:
-                        f['Level'] = f.iloc[:, 1]
+                        f["Level"] = f.iloc[:, 1]
                     # Remove first and/or last measurements if the transducer was out of the water
                     # f = dataendclean(f, 'Level')
                     flist = f.columns.tolist()
-                    if ' Temp C' in flist:
-                        f['Temperature'] = f[' Temp C']
-                        f['Temp'] = f['Temperature']
-                        f.drop([' Temp C', 'Temperature'], inplace=True, axis=1)
-                    elif ' Temp F' in flist:
-                        f['Temperature'] = (f[' Temp F'] - 32) * 5 / 9
-                        f['Temp'] = f['Temperature']
-                        f.drop([' Temp F', 'Temperature'], inplace=True, axis=1)
+                    if " Temp C" in flist:
+                        f["Temperature"] = f[" Temp C"]
+                        f["Temp"] = f["Temperature"]
+                        f.drop([" Temp C", "Temperature"], inplace=True, axis=1)
+                    elif " Temp F" in flist:
+                        f["Temperature"] = (f[" Temp F"] - 32) * 5 / 9
+                        f["Temp"] = f["Temperature"]
+                        f.drop([" Temp F", "Temperature"], inplace=True, axis=1)
                     else:
-                        f['Temp'] = np.nan
-                    f.set_index(['DateTime'], inplace=True)
-                    f['date'] = f.index.to_julian_date().values
-                    f['datediff'] = f['date'].diff()
-                    f = f[f['datediff'] > 0]
-                    f = f[f['datediff'] < 1]
+                        f["Temp"] = np.nan
+                    f.set_index(["DateTime"], inplace=True)
+                    f["date"] = f.index.to_julian_date().values
+                    f["datediff"] = f["date"].diff()
+                    f = f[f["datediff"] > 0]
+                    f = f[f["datediff"] < 1]
                     # bse = int(pd.to_datetime(f.index).minute[0])
                     # f = hourly_resample(f, bse)
-                    f.rename(columns={' Volts': 'Volts'}, inplace=True)
-                    for col in [u'date', u'datediff', u'Date_ Time', u'Date_Time']:
+                    f.rename(columns={" Volts": "Volts"}, inplace=True)
+                    for col in ["date", "datediff", "Date_ Time", "Date_Time"]:
                         if col in f.columns:
                             f = f.drop(col, axis=1)
                     return f
             else:
-                print('{:} is unrecognized'.format(self.infile))
+                print("{:} is unrecognized".format(self.infile))
 
     def new_lev_imp(self):
         nm = self.infile.name.split(".")[0]
@@ -1505,29 +1732,31 @@ class NewTransImp(object):
             txt = fd.readlines()
 
         try:
-            data_ind = txt.index('[Data]\n')
+            data_ind = txt.index("[Data]\n")
             # inst_info_ind = txt.index('[Instrument info from data header]\n')
-            ch1_ind = txt.index('[CHANNEL 1 from data header]\n')
-            ch2_ind = txt.index('[CHANNEL 2 from data header]\n')
-            level = txt[ch1_ind + 1].split('=')[-1].strip().title()
-            level_units = txt[ch1_ind + 2].split('=')[-1].strip().lower()
-            temp = txt[ch2_ind + 1].split('=')[-1].strip().title()
-            temp_units = txt[ch2_ind + 2].split('=')[-1].strip().lower()
+            ch1_ind = txt.index("[CHANNEL 1 from data header]\n")
+            ch2_ind = txt.index("[CHANNEL 2 from data header]\n")
+            level = txt[ch1_ind + 1].split("=")[-1].strip().title()
+            level_units = txt[ch1_ind + 2].split("=")[-1].strip().lower()
+            temp = txt[ch2_ind + 1].split("=")[-1].strip().title()
+            temp_units = txt[ch2_ind + 2].split("=")[-1].strip().lower()
             # serial_num = txt[inst_info_ind+1].split('=')[-1].strip().strip(".")
             # inst_num = txt[inst_info_ind+2].split('=')[-1].strip()
             # location = txt[inst_info_ind+3].split('=')[-1].strip()
             # start_time = txt[inst_info_ind+6].split('=')[-1].strip()
             # stop_time = txt[inst_info_ind+7].split('=')[-1].strip()
 
-            df = pd.read_table(self.infile,
-                               parse_dates=[[0, 1]],
-                               sep=r'\s+',
-                               skiprows=data_ind + 2,
-                               names=['Date', 'Time', level, temp],
-                               skipfooter=1,
-                               engine='python',)
-            df.rename(columns={'Date_Time': 'DateTime'}, inplace=True)
-            df.set_index('DateTime', inplace=True)
+            df = pd.read_table(
+                self.infile,
+                parse_dates=[[0, 1]],
+                sep=r"\s+",
+                skiprows=data_ind + 2,
+                names=["Date", "Time", level, temp],
+                skipfooter=1,
+                engine="python",
+            )
+            df.rename(columns={"Date_Time": "DateTime"}, inplace=True)
+            df.set_index("DateTime", inplace=True)
 
             if level_units == "feet" or level_units == "ft":
                 df[level] = pd.to_numeric(df[level])
@@ -1546,15 +1775,15 @@ class NewTransImp(object):
                 df[level] = pd.to_numeric(df[level])
                 print("Unknown units, no conversion")
 
-            if temp_units == 'Deg C' or temp_units == u'\N{DEGREE SIGN}' + u'C':
+            if temp_units == "Deg C" or temp_units == "\N{DEGREE SIGN}" + "C":
                 df[temp] = df[temp]
-            elif temp_units == 'Deg F' or temp_units == u'\N{DEGREE SIGN}' + u'F':
-                print('Temp in F, converting {:} to C...'.format(nm))
+            elif temp_units == "Deg F" or temp_units == "\N{DEGREE SIGN}" + "F":
+                print("Temp in F, converting {:} to C...".format(nm))
                 df[temp] = (df[temp] - 32.0) * 5.0 / 9.0
-            df['name'] = self.infile
+            df["name"] = self.infile
             return df
         except ValueError:
-            print('File {:} has formatting issues'.format(nm))
+            print("File {:} has formatting issues".format(nm))
 
     def old_xle_imp(self):
         """This function uses an exact file path to upload a xle transducer file.
@@ -1562,14 +1791,16 @@ class NewTransImp(object):
         Returns:
             A Pandas DataFrame containing the transducer data
         """
-        with self.infile.open('r', encoding="ISO-8859-1") as f:
+        with self.infile.open("r", encoding="ISO-8859-1") as f:
             contents = f.read()
             tree = eletree.fromstring(contents)
 
         dfdata = []
         for child in tree[5]:
             dfdata.append([child[i].text for i in range(len(child))])
-        f = pd.DataFrame(dfdata, columns=[tree[5][0][i].tag for i in range(len(tree[5][0]))])
+        f = pd.DataFrame(
+            dfdata, columns=[tree[5][0][i].tag for i in range(len(tree[5][0]))]
+        )
 
         try:
             ch1ID = tree[3][0].text.title()  # Level
@@ -1579,63 +1810,101 @@ class NewTransImp(object):
         ch1Unit = tree[3][1].text.lower()
 
         if ch1Unit == "feet" or ch1Unit == "ft":
-            f[str(ch1ID).title()] = pd.to_numeric(f['ch1'])
+            f[str(ch1ID).title()] = pd.to_numeric(f["ch1"])
         elif ch1Unit == "kpa":
-            print("CH. 1 units in {:}, converting {:} to ft...".format(ch1Unit, os.path.basename(self.infile)))
-            f[str(ch1ID).title()] = pd.to_numeric(f['ch1']) * 0.33456
+            print(
+                "CH. 1 units in {:}, converting {:} to ft...".format(
+                    ch1Unit, os.path.basename(self.infile)
+                )
+            )
+            f[str(ch1ID).title()] = pd.to_numeric(f["ch1"]) * 0.33456
         elif ch1Unit == "mbar":
-            print("CH. 1 units in {:}, converting {:} to ft...".format(ch1Unit, os.path.basename(self.infile)))
-            f[str(ch1ID).title()] = pd.to_numeric(f['ch1']) * 0.0334552565551
+            print(
+                "CH. 1 units in {:}, converting {:} to ft...".format(
+                    ch1Unit, os.path.basename(self.infile)
+                )
+            )
+            f[str(ch1ID).title()] = pd.to_numeric(f["ch1"]) * 0.0334552565551
         elif ch1Unit == "psi":
-            print("CH. 1 units in {:}, converting {:} to ft...".format(ch1Unit, os.path.basename(self.infile)))
-            f[str(ch1ID).title()] = pd.to_numeric(f['ch1']) * 2.306726
+            print(
+                "CH. 1 units in {:}, converting {:} to ft...".format(
+                    ch1Unit, os.path.basename(self.infile)
+                )
+            )
+            f[str(ch1ID).title()] = pd.to_numeric(f["ch1"]) * 2.306726
         elif ch1Unit == "m" or ch1Unit == "meters":
-            print("CH. 1 units in {:}, converting {:} to ft...".format(ch1Unit, os.path.basename(self.infile)))
-            f[str(ch1ID).title()] = pd.to_numeric(f['ch1']) * 3.28084
+            print(
+                "CH. 1 units in {:}, converting {:} to ft...".format(
+                    ch1Unit, os.path.basename(self.infile)
+                )
+            )
+            f[str(ch1ID).title()] = pd.to_numeric(f["ch1"]) * 3.28084
         elif ch1Unit == "???":
-            print("CH. 1 units in {:}, {:} messed up...".format(ch1Unit, os.path.basename(self.infile)))
-            f[str(ch1ID).title()] = pd.to_numeric(f['ch1'])
+            print(
+                "CH. 1 units in {:}, {:} messed up...".format(
+                    ch1Unit, os.path.basename(self.infile)
+                )
+            )
+            f[str(ch1ID).title()] = pd.to_numeric(f["ch1"])
         else:
-            f[str(ch1ID).title()] = pd.to_numeric(f['ch1'])
-            print("Unknown units {:}, no conversion for {:}...".format(ch1Unit, os.path.basename(self.infile)))
+            f[str(ch1ID).title()] = pd.to_numeric(f["ch1"])
+            print(
+                "Unknown units {:}, no conversion for {:}...".format(
+                    ch1Unit, os.path.basename(self.infile)
+                )
+            )
 
-        if 'ch2' in f.columns:
+        if "ch2" in f.columns:
             try:
                 ch2ID = tree[4][0].text.title()  # Level
             except AttributeError:
                 ch2ID = "Temperature"
 
             ch2Unit = tree[4][1].text
-            numCh2 = pd.to_numeric(f['ch2'])
+            numCh2 = pd.to_numeric(f["ch2"])
 
-            if ch2Unit == 'Deg C' or ch2Unit == 'Deg_C' or ch2Unit == u'\N{DEGREE SIGN}' + u'C':
+            if (
+                ch2Unit == "Deg C"
+                or ch2Unit == "Deg_C"
+                or ch2Unit == "\N{DEGREE SIGN}" + "C"
+            ):
                 f[str(ch2ID).title()] = numCh2
-            elif ch2Unit == 'Deg F' or ch2Unit == u'\N{DEGREE SIGN}' + u'F':
-                print("CH. 2 units in {:}, converting {:} to C...".format(ch2Unit, os.path.basename(self.infile)))
+            elif ch2Unit == "Deg F" or ch2Unit == "\N{DEGREE SIGN}" + "F":
+                print(
+                    "CH. 2 units in {:}, converting {:} to C...".format(
+                        ch2Unit, os.path.basename(self.infile)
+                    )
+                )
                 f[str(ch2ID).title()] = (numCh2 - 32) * 5 / 9
             else:
-                print("Unknown temp units {:}, no conversion for {:}...".format(ch2Unit, os.path.basename(self.infile)))
+                print(
+                    "Unknown temp units {:}, no conversion for {:}...".format(
+                        ch2Unit, os.path.basename(self.infile)
+                    )
+                )
                 f[str(ch2ID).title()] = numCh2
         else:
-            print('No channel 2 for {:}'.format(self.infile))
+            print("No channel 2 for {:}".format(self.infile))
 
-        if 'ch3' in f.columns:
+        if "ch3" in f.columns:
             # Usually Conductivity
             ch3ID = tree[5][0].text.title()  # Level
             ch3Unit = tree[5][1].text
-            f[str(ch3ID).title()] = pd.to_numeric(f['ch3'])
+            f[str(ch3ID).title()] = pd.to_numeric(f["ch3"])
 
         # add extension-free file name to dataframe
-        f['name'] = self.infile.name.split(".")[0]
+        f["name"] = self.infile.name.split(".")[0]
         # combine Date and Time fields into one field
-        f['DateTime'] = pd.to_datetime(f.apply(lambda x: x['Date'] + ' ' + x['Time'], 1))
+        f["DateTime"] = pd.to_datetime(
+            f.apply(lambda x: x["Date"] + " " + x["Time"], 1)
+        )
         f[str(ch1ID).title()] = pd.to_numeric(f[str(ch1ID).title()])
 
         f = f.reset_index()
-        f = f.set_index('DateTime')
-        f['Level'] = f[str(ch1ID).title()]
+        f = f.set_index("DateTime")
+        f["Level"] = f[str(ch1ID).title()]
 
-        droplist = ['Date', 'Time', 'ch1', 'ch2', 'index', 'ms']
+        droplist = ["Date", "Time", "ch1", "ch2", "index", "ms"]
         for item in droplist:
             if item in f.columns:
                 f = f.drop(item, axis=1)
@@ -1643,57 +1912,71 @@ class NewTransImp(object):
         return f
 
     def new_xle_imp(self):
-        tree = eletree.parse(self.infile, parser=eletree.XMLParser(encoding="ISO-8859-1"))
+        tree = eletree.parse(
+            self.infile, parser=eletree.XMLParser(encoding="ISO-8859-1")
+        )
         root = tree.getroot()
 
-        #ch1id = root.find('./Identification')
+        # ch1id = root.find('./Identification')
         dfdata = {}
-        for item in root.findall('./Data/Log'):
-            dfdata[item.attrib['id']] = {}
+        for item in root.findall("./Data/Log"):
+            dfdata[item.attrib["id"]] = {}
             for child in item:
-                dfdata[item.attrib['id']][child.tag] = child.text
+                dfdata[item.attrib["id"]][child.tag] = child.text
                 # print([child[i].text for i in range(len(child))])
         ch = {}
         for child in root:
-            if 'Ch' in child.tag:
+            if "Ch" in child.tag:
                 ch[child.tag[:3].lower()] = {}
                 for item in child:
                     if item.text is not None:
                         ch[child.tag[:3].lower()][item.tag] = item.text
 
-        f = pd.DataFrame.from_dict(dfdata, orient='index')
-        f['DateTime'] = f.apply(lambda x: pd.to_datetime(x['Date'] + ' ' + x['Time']),1)
+        f = pd.DataFrame.from_dict(dfdata, orient="index")
+        f["DateTime"] = f.apply(
+            lambda x: pd.to_datetime(x["Date"] + " " + x["Time"]), 1
+        )
 
         f = f.reset_index()
-        f = f.set_index('DateTime')
+        f = f.set_index("DateTime")
 
-        levelconv = {'feet': 1, 'ft': 1, 'kpa': 0.33456, 'mbar': 0.033455256555148,
-                     'm': 3.28084, 'meters': 3.28084, 'psi': 2.306726}
+        levelconv = {
+            "feet": 1,
+            "ft": 1,
+            "kpa": 0.33456,
+            "mbar": 0.033455256555148,
+            "m": 3.28084,
+            "meters": 3.28084,
+            "psi": 2.306726,
+        }
         for col in f:
             if col in ch.keys():
-                if col == 'ch1':
-                    chname = 'Level'
-                elif col == 'ch2':
-                    chname = 'Temperature'
-                elif 'Identification' in ch[col].keys():
-                    chname = ch[col]['Identification'].title()
+                if col == "ch1":
+                    chname = "Level"
+                elif col == "ch2":
+                    chname = "Temperature"
+                elif "Identification" in ch[col].keys():
+                    chname = ch[col]["Identification"].title()
 
-                chunit = ch[col]['Unit']
+                chunit = ch[col]["Unit"]
                 f = f.rename(columns={col: chname})
                 f[chname] = pd.to_numeric(f[chname])
-                if chname == 'Level':
+                if chname == "Level":
                     f[chname] = f[chname] * levelconv.get(chunit.lower(), 1)
                     print(f"CH. 1 units in {chunit}, converting to ft...")
-                elif chname == 'Temperature' or chname == 'Temp':
-                    if chunit[
-                        -1] == 'F' or chunit.title() == 'Fahrenheit' or chunit.title() == 'Deg F' or chunit.title() == 'Deg_F':
+                elif chname == "Temperature" or chname == "Temp":
+                    if (
+                        chunit[-1] == "F"
+                        or chunit.title() == "Fahrenheit"
+                        or chunit.title() == "Deg F"
+                        or chunit.title() == "Deg_F"
+                    ):
                         f[chname] = (f[chname] - 32.0) * 5 / 9
                         print(f"CH. 2 units in {chunit}, converting to deg C...")
-            elif col in ['ms', 'Date', 'Time', 'index']:
+            elif col in ["ms", "Date", "Time", "index"]:
                 f = f.drop(col, axis=1)
-        f['name'] = self.infile.name.split(".")[0]
+        f["name"] = self.infile.name.split(".")[0]
         return f
-
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -1713,8 +1996,8 @@ def getfilename(path):
     return path.name.split(".")[0]
 
 
-def compile_end_beg_dates(infile, ext='xle'):
-    """ Searches through directory and compiles transducer files, returning a dataframe of the file name,
+def compile_end_beg_dates(infile, ext="xle"):
+    """Searches through directory and compiles transducer files, returning a dataframe of the file name,
     beginning measurement, and ending measurement. Complements xle_head_table, which derives these dates from an
     xle header.
     Args:
@@ -1731,24 +2014,30 @@ def compile_end_beg_dates(infile, ext='xle'):
     f = {}
 
     # iterate through list of relevant files
-    if ext == 'xle':
+    if ext == "xle":
         for infile in filelist:
             f[getfilename(infile)] = NewTransImp(infile).well
-    #elif ext == 'csv':
+    # elif ext == 'csv':
 
     dflist = []
     for key, val in f.items():
         if val is not None:
             dflist.append((key, val.index[0], val.index[-1]))
 
-    df = pd.DataFrame(dflist, columns=['filename', 'beginning', 'end'])
+    df = pd.DataFrame(dflist, columns=["filename", "beginning", "end"])
     return df
 
 
 class HeaderTable(object):
-    def __init__(self, folder, filedict=None, filelist=None, workspace=None,
-                 conn_file_root=None,
-                 loc_table="ugs_ngwmn_monitoring_locations"):
+    def __init__(
+        self,
+        folder,
+        filedict=None,
+        filelist=None,
+        workspace=None,
+        conn_file_root=None,
+        loc_table="ugs_ngwmn_monitoring_locations",
+    ):
         """
 
         Args:
@@ -1763,7 +2052,7 @@ class HeaderTable(object):
         if filelist:
             self.filelist = filelist
         else:
-            self.filelist = glob.glob(self.folder + "/*")
+            self.filelist = folder.glob("/*")
 
         self.filedict = filedict
 
@@ -1773,10 +2062,10 @@ class HeaderTable(object):
             self.workspace = folder
 
     def get_ftype(self, x):
-        if x[1] == 'Solinst':
-            ft = '.xle'
+        if x[1] == "Solinst":
+            ft = ".xle"
         else:
-            ft = '.csv'
+            ft = ".csv"
         return self.filedict.get(x[0] + ft)
 
     # examine and tabulate header information from files
@@ -1788,33 +2077,41 @@ class HeaderTable(object):
         for file in self.filelist:
             file_extension = os.path.splitext(file)[1]
 
-            if file_extension == '.xle':
+            if file_extension == ".xle":
                 fild[file], dta = self.xle_head(file)
-            elif file_extension == '.csv':
+            elif file_extension == ".csv":
                 fild[file], dta = self.csv_head(file)
+            elif file_extension == ".htm":
+                fild[file], dta = self.html_head(file)
 
-        df = pd.DataFrame.from_dict(fild, orient='index')
+        df = pd.DataFrame.from_dict(fild, orient="index")
         return df
 
     def make_well_table(self):
         file_info_table = self.file_summary_table()
-        for i in ['Latitude', 'Longitude']:
+        for i in ["Latitude", "Longitude"]:
             if i in file_info_table.columns:
                 file_info_table.drop(i, axis=1, inplace=True)
         df = self.loc_table
-        well_table = pd.merge(file_info_table, df, right_on='locationname', left_on='wellname', how='left')
-        well_table.set_index('altlocationid', inplace=True)
-        well_table['wellid'] = well_table.index
-        well_table.dropna(subset=['wellname'], inplace=True)
-        well_table.to_csv(self.folder + '/file_info_table.csv')
-        print("Header Table with well information created at {:}/file_info_table.csv".format(self.folder))
+        well_table = pd.merge(
+            file_info_table, df, right_on="locationname", left_on="wellname", how="left"
+        )
+        well_table.set_index("altlocationid", inplace=True)
+        well_table["wellid"] = well_table.index
+        well_table.dropna(subset=["wellname"], inplace=True)
+        well_table.to_csv(self.folder + "/file_info_table.csv")
+        print(
+            "Header Table with well information created at {:}/file_info_table.csv".format(
+                self.folder
+            )
+        )
         return well_table
 
     def xle_csv_filelist(self):
-        exts = ('//*.xle', '//*.csv')  # the tuple of file types
+        exts = ("*.xle", "*.csv")  # the tuple of file types
         files_grabbed = []
         for ext in exts:
-            files_grabbed += (glob.glob(self.folder + ext))
+            files_grabbed += self.folder.glob(ext)
         return files_grabbed
 
     def xle_head(self, file):
@@ -1828,8 +2125,8 @@ class HeaderTable(object):
         """
         # open text file
         df1 = {}
-        df1['file_name'] = getfilename(file)
-        with io.open(file, 'r', encoding="ISO-8859-1") as f:
+        df1["file_name"] = getfilename(file)
+        with io.open(file, "r", encoding="ISO-8859-1") as f:
             contents = f.read()
             tree = eletree.fromstring(contents)
 
@@ -1839,30 +2136,130 @@ class HeaderTable(object):
             for child in tree[2]:
                 df1[child.tag] = child.text
 
-        df1['trans type'] = 'Solinst'
+        df1["trans type"] = "Solinst"
         xledata = NewTransImp(file).well.sort_index()
-        df1['beginning'] = xledata.first_valid_index()
-        df1['end'] = xledata.last_valid_index()
+        df1["beginning"] = xledata.first_valid_index()
+        df1["end"] = xledata.last_valid_index()
         # df = pd.DataFrame.from_dict(df1, orient='index').T
         return df1, xledata
+
+    def sum_list_values(self, series, freq="D"):
+        """
+        Sum the values in lists contained within a Pandas series.
+        Each list contains string values that need to be converted to floats.
+
+        Parameters:
+        series (pd.Series): Series containing lists of string values
+
+        Returns:
+        pd.Series: New series with the sum of values for each list
+        """
+
+        def convert_and_sum(lst):
+            try:
+                # Convert string values to floats and sum
+                if freq == "D":
+                    vals = [1, 0.0416666666, 0.000694]
+                else:
+                    vals = [1, 0.01666666, 0.0002777]
+                a = 0
+                for i, x in enumerate(lst):
+                    a += vals[i] * float(x)
+                return a
+            except ValueError as e:
+                # Handle cases where conversion fails
+                print(f"Error converting values in list {lst}: {e}")
+                return None
+
+        # Apply the conversion and summation to each list in the series
+        return series.apply(convert_and_sum)
+
+    def html_head(self, file):
+        """Parse ISI report sections into a pandas DataFrame with properties and values."""
+        with open(file, "r", encoding="utf-8") as f:
+            html_content = f.read()
+
+        soup = BeautifulSoup(html_content, "html.parser")
+
+        # Store section data
+        sections_data = {}
+        current_section = None
+
+        for row in soup.find_all("tr"):
+            if "sectionHeader" in row.get("class", []):
+                # Get section name from td with isi-group attribute
+                section_td = row.find("td", attrs={"isi-group": True})
+                if section_td:
+                    current_section = section_td.text.strip()
+
+            elif "sectionMember" in row.get("class", []):
+                if current_section:
+                    # Get property name from isi-property attribute
+                    property_td = row.find("td", attrs={"isi-property": True})
+                    if property_td:
+                        property_name = property_td["isi-property"]
+                        # Get value from the entire td text
+                        value = property_td.text.strip()
+                        # Extract just the value after the '=' if present
+                        if "=" in value:
+                            value = value.split("=")[1].strip()
+
+                        sections_data[property_name] = value
+            if not sections_data:
+                raise ValueError("No section data found")
+
+        df = pd.Series(sections_data)
+
+        df["StartTime"] = pd.to_datetime(df["StartTime"])
+        df["Days"] = self.sum_list_values(df["Duration"].str.split(":"))
+        df["ExpectedRecords"] = (
+            df["Days"]
+            / pd.to_numeric(
+                self.sum_list_values(df["Interval"].str.split(":"), freq="H")
+            )
+            * 24
+        ).round(0)
+        df["trans type"] = "Troll"
+        for i in df.index:
+            df.loc[i, "end"] = df.loc[i, "StartTime"] + pd.Timedelta(
+                df.loc[i, "Days"], unit="D"
+            )
+
+        rename_fields = {
+            "StartTime": "beginning",
+            "Model": "Model_number",
+            "SerialNumber": "Serial_number",
+            "Readings": "Num_log",
+            "Name": "Location",
+        }
+        df = df.rename(rename_fields)
+        dta = NewTransImp(file).well.sort_index()
+
+        return df, dta
 
     def csv_head(self, file):
         cfile = {}
         csvdata = pd.DataFrame()
         try:
-            cfile['file_name'] = getfilename(file)
+            cfile["file_name"] = getfilename(file)
             csvdata = NewTransImp(file).well.sort_index()
             if "Volts" in csvdata.columns:
-                cfile['Battery_level'] = int(
-                    round(csvdata.loc[csvdata.index[-1], 'Volts'] / csvdata.loc[csvdata.index[0], 'Volts'] * 100, 0))
-            cfile['Sample_rate'] = (csvdata.index[1] - csvdata.index[0]).seconds * 100
+                cfile["Battery_level"] = int(
+                    round(
+                        csvdata.loc[csvdata.index[-1], "Volts"]
+                        / csvdata.loc[csvdata.index[0], "Volts"]
+                        * 100,
+                        0,
+                    )
+                )
+            cfile["Sample_rate"] = (csvdata.index[1] - csvdata.index[0]).seconds * 100
             # cfile['filename'] = file
-            cfile['beginning'] = csvdata.first_valid_index()
-            cfile['end'] = csvdata.last_valid_index()
+            cfile["beginning"] = csvdata.first_valid_index()
+            cfile["end"] = csvdata.last_valid_index()
             # cfile['last_reading_date'] = csvdata.last_valid_index()
-            cfile['Location'] = ' '.join(cfile['file_name'].split(' ')[:-1])
-            cfile['trans type'] = 'Global Water'
-            cfile['Num_log'] = len(csvdata)
+            cfile["Location"] = " ".join(cfile["file_name"].split(" ")[:-1])
+            cfile["trans type"] = "Global Water"
+            cfile["Num_log"] = len(csvdata)
             # df = pd.DataFrame.from_dict(cfile, orient='index').T
 
         except (KeyError, AttributeError):
@@ -1870,14 +2267,14 @@ class HeaderTable(object):
 
         return cfile, csvdata
 
+
 def getwellid(infile, wellinfo):
     """Specialized function that uses a well info table and file name to lookup a well's id number"""
     m = re.search(r"\d", getfilename(infile))
     s = re.search(r"\s", getfilename(infile))
     if m.start() > 3:
-        wellname = getfilename(infile)[0:m.start()].strip().lower()
+        wellname = getfilename(infile)[0 : m.start()].strip().lower()
     else:
-        wellname = getfilename(infile)[0:s.start()].strip().lower()
-    wellid = wellinfo[wellinfo['Well'] == wellname]['wellid'].values[0]
+        wellname = getfilename(infile)[0 : s.start()].strip().lower()
+    wellid = wellinfo[wellinfo["Well"] == wellname]["wellid"].values[0]
     return wellname, wellid
-
