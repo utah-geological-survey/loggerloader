@@ -979,8 +979,11 @@ def jumpfix(
         raise TypeError("DataFrame index must be DatetimeIndex")
 
     # Create copy and ensure it's sorted
-    df1 = df.copy(deep=True)
-    df1 = df1.sort_index().drop_duplicates()
+    df_temp = df.copy(deep=True).sort_index()
+    df1 = df_temp[~df_temp.index.duplicated(keep='first')]
+    if df1.shape[0] != df_temp.shape[0]:
+        print(f'Dropped {df_temp.shape[0]-df1.shape[0]} records')
+
 
     # Calculate differences between consecutive values
     df1["delta"] = df1[meas].diff()
