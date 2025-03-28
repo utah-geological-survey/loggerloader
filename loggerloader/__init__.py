@@ -1,5 +1,7 @@
 from loggerloader.llgui import *
 from loggerloader.loader import *
+from loggerloader.processing_functions import *
+from loggerloader.processing_plots import *
 
 version = "2.4.3"
 __version__ = version
