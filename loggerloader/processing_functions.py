@@ -126,6 +126,28 @@ def jump_matching(old_data, new_data, old_value='measuredlevel', new_value="Leve
     add_value = (old_value-new_value).round(3)
     return(add_value)
 
+def drop_by_value_and_daterange(df, start_date, end_date, drop_value, drop_type):
+    """Drops records during a set date range that are either above or below a given drop_value
+    Useful for cleaning duplicates after examining on a plot.
+
+    Args:
+    df (Pandas dataframe): Pandas dataframe with unprocessed transducer data
+    start_date (timestamp): Start date range for dropping data
+    end_date (timestamp): End date range for dropping data
+    drop_value (int): Value above or below which all values should be dropped within given date range
+    drop_type (str): GT or LT to indicate whether values greater than or less than drop_value should be dropped
+
+    Returns:
+        Pandas dataframe
+    """
+    if drop_type =='LT':
+        df_clean = df[~((df.index>=start_date) & (df.index<=end_date) & (df.Level<drop_value))]
+    elif drop_type == 'GT':
+        df_clean = df[~((df.index>=start_date) & (df.index<=end_date) & (df.Level>drop_value))]
+    else: 
+        print('Drop type incorrect')
+    return(df_clean)
+
 # # DYNAMIC STICKUP HEIGHT AND DROPPING READINGS AFTER PUMPING
 
 import logging
