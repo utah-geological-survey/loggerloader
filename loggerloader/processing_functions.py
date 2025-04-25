@@ -227,6 +227,57 @@ def test_different_dtw(manual_df, point1, point2, point1_name, point2_name, well
     fig.show()  
 
 
+def linear_drift_correction(df: pd.DataFrame, 
+                     column: str, 
+                     start_date: pd.Timestamp, 
+                     end_date: pd.Timestamp) -> pd.DataFrame:
+    """
+    Correct a linear drift in a DataFrame column between two dates by calculating the offset
+    between the start date and the previous day, and the end date and the next day and then
+    correcting the value of the given column using a linear function.
+
+    Parameters:
+        df (pd.DataFrame): DataFrame with a DatetimeIndex.
+        column (str): Column name to apply the correction to; data must be numeric.
+        start_date (pd.Timestamp): Start of the affected section.
+        end_date (pd.Timestamp): End of the affected section (inclusive).
+
+    Returns:
+        pd.DataFrame: A new DataFrame with the correction applied to the specified column.
+    """
+    if column not in df.columns:
+        raise ValueError(f"Column '{column}' not found in DataFrame.")
+
+    # Copy to avoid modifying the original
+    corrected_df = df.copy()
+    ts = corrected_df[column]
+
+    # Ensure dates are in the index
+    if start_date not in ts.index or end_date not in ts.index:
+        raise ValueError("Start and end dates must be in the time series index.")
+    
+    try:
+        before_start = ts.index[ts.index.get_loc(start_date) - 1]
+        after_end = ts.index[ts.index.get_loc(end_date) + 1]
+    except IndexError:
+        raise IndexError("Start or end date is at the edge of the series; can't compare with neighbors.")
+
+    # Calculate offsets
+    offset_start = ts.loc[start_date] - ts.loc[before_start]
+    offset_end = ts.loc[end_date] - ts.loc[after_end]
+
+    # Create correction vector
+    affected_range = ts.loc[start_date:end_date]
+    n_points = len(affected_range)
+    correction = np.linspace(offset_start, offset_end, n_points)
+
+    # Apply correction
+    corrected_df.loc[start_date:end_date, column] -= correction
+
+    return corrected_df
+
+
+
 
 
 
