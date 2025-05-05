@@ -3,6 +3,7 @@ import numpy as np
 import plotly.express as px
 import shutil
 from pathlib import Path
+import plotly.graph_objs as go
 
 # # DATA PREP AND ORGANIZATION
 
@@ -29,11 +30,14 @@ def copy_recent_files(copydir, recent_years):
             shutil.copy(filename, destination_file)  # Copy the file to the 'recent' directory
             print(f'Copied: {filename.name}')
 
-def prep_datetime_data(input_data):
+def prep_datetime_data(input_data, mixed=False):
     '''Take dataset with readingdate field and make datetime,
     set as index, and sort index.
     '''
-    input_data['readingdate'] = pd.to_datetime(input_data['readingdate'])
+    if mixed==True:
+        input_data['readingdate'] = pd.to_datetime(input_data['readingdate'], format='mixed')
+    else:
+        input_data['readingdate'] = pd.to_datetime(input_data['readingdate'])
     input_data.set_index('readingdate', inplace=True)
     input_data.sort_index(inplace=True)
     return(input_data)
@@ -163,7 +167,7 @@ def drop_reading_after_pumping(manual_data, transducer_data, hours_to_drop, phra
     pattern = "|".join(phrases)
     pump_dates = list(manual_data.index[manual_data['notes'].str.contains(pattern, case=False, na=False)].round('h'))
     if len(pump_dates)>1:
-        hours_to_drop = 2
+        hours_to_drop = hours_to_drop
         after_pump_dates = []
         # Loop over each timestamp and create new timestamps for 1 to x hours later
         for ts in pump_dates:
@@ -229,9 +233,10 @@ def test_different_dtw(manual_df, point1, point2, point1_name, point2_name, well
 
 
 def linear_drift_correction(df: pd.DataFrame, 
-                     column: str, 
-                     start_date: pd.Timestamp, 
-                     end_date: pd.Timestamp) -> pd.DataFrame:
+                            column: str, 
+                            start_date: pd.Timestamp, 
+                            end_date: pd.Timestamp,
+                            subtract: bool):
     """
     Correct a linear drift in a DataFrame column between two dates by calculating the offset
     between the start date and the previous day, and the end date and the next day and then
@@ -273,9 +278,110 @@ def linear_drift_correction(df: pd.DataFrame,
     correction = np.linspace(offset_start, offset_end, n_points)
 
     # Apply correction
-    corrected_df.loc[start_date:end_date, column] -= correction
+    if subtract == True:
+        corrected_df.loc[start_date:end_date, column] -= correction
+    else:
+        corrected_df.loc[start_date:end_date, column] += correction
 
     return corrected_df
+
+def detect_sectional_offsets_indexed(
+    df1, df2, value_col1, value_col2,
+    freq='H', max_lag=24, window_size='7D'
+):
+    """
+    Evaluates time offsets between two time series data frames ((datetime-indexed) in
+    rolling sections. Returns the best lag with the best offset for each time window.
+
+    Parameters:
+    - df1, df2: DataFrames with datetime index.
+    - value_col1: name of the column with numerical values to compare for df1
+    - value__col2: name of the column with numerical values to compare for df2
+    - freq: resampling frequency (e.g., 'h' for hourly).
+    - max_lag: maximum lag (in units of freq) to test.
+    - window_size: time window for sectional comparison (e.g., '7D' or '12H').
+
+    Returns:
+    - DataFrame with lag information per window.
+    """
+
+    # Resample both series to ensure regular intervals
+    s1 = df1[value_col1].resample(freq).mean()
+    s2 = df2[value_col2].resample(freq).mean()
+
+    # Align both series to ensure same timestamps
+    s1, s2 = s1.align(s2, join='inner')
+    s1 = s1.fillna(method='ffill')
+    s2 = s2.fillna(method='ffill')
+
+    # Create window start times
+    window_starts = pd.date_range(s1.index.min(), s1.index.max(), freq=window_size)
+    results = []
+
+    for start in window_starts:
+        end = start + pd.to_timedelta(window_size)
+        seg1 = s1[start:end]
+        seg2 = s2[start:end]
+
+        if len(seg1) < max_lag * 2 or len(seg2) < max_lag * 2:
+            continue  # Skip short or empty windows
+
+        lags = np.arange(-max_lag, max_lag + 1)
+        correlations = [seg1.corr(seg2.shift(lag)) for lag in lags]
+
+        if all(pd.isna(correlations)):
+            continue
+
+        best_lag = lags[np.nanargmax(correlations)]
+        best_corr = np.nanmax(correlations)
+
+        results.append({
+            'window_start': start,
+            'best_lag': best_lag,
+            'correlation': best_corr
+        })
+
+    result_df = pd.DataFrame(results)
+
+    return result_df
+
+
+def plot_sectional_lags_plotly(corr_check, height=400):
+    """
+    Plots the results of the detect_sectional_offsets_indexed function,
+    showing the best lag for each timeperiod
+    """
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(
+        x=corr_check['window_start'],
+        y=corr_check['best_lag'],
+        mode='lines+markers',
+        name='Best Lag',
+        line=dict(color='royalblue'),
+        marker=dict(size=6)
+    ))
+
+    # Add zero-lag reference line
+    fig.add_trace(go.Scatter(
+        x=[corr_check['window_start'].min(), corr_check['window_start'].max()],
+        y=[0, 0],
+        mode='lines',
+        name='Zero Lag',
+        line=dict(color='gray', dash='dash')
+    ))
+
+    fig.update_layout(
+        title='Sectional Time Lag Detection',
+        xaxis_title='Window Start Time',
+        yaxis_title=f'Best Time Lag',
+        template='plotly_white',
+        hovermode='x unified',
+        height=height
+    )
+
+    fig.show()
+
 
 
 

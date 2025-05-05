@@ -111,10 +111,8 @@ def processed_vs_manual(siteid, processed_data, manual_data, plot_field='waterel
 
 def plotlystuff(datasets, colnames, chrttypes=None, datatitles=None, chrttitle='well', colors=None,
                 two_yaxes=False, axisdesig=None, axislabels=['Levels', 'Barometric Pressure'], opac=None, 
-                third_dataset=None, third_colname=None, plot_height=height):
+                plot_height=300):
     '''Plots one or more datasets on a shared set of axes
-    dataset listed under third_dataset will be points whereas 
-    other datasets are plotted as lines
     '''
     
     if chrttypes is None:
@@ -152,19 +150,6 @@ def plotlystuff(datasets, colnames, chrttypes=None, datatitles=None, chrttitle='
             yaxis=axisdesig[i]
         )
     
-    # Plot the third dataset as points if provided
-    if third_dataset is not None and third_colname is not None:
-        third_var_data = third_dataset[third_colname]
-        third_var_points = go.Scatter(
-            x=third_dataset.index,
-            y=third_var_data,
-            name='Manual Measurement',
-            mode='markers',
-            marker=dict(color='yellow', size=8),
-            yaxis='y1'
-        )
-        datum['third_variable'] = third_var_points
-    
     # Combine the data for plotting
     data = list(datum.values())
 
@@ -186,7 +171,7 @@ def plotlystuff(datasets, colnames, chrttypes=None, datatitles=None, chrttitle='
             tickfont=dict(color='#1f77b4'),
             range=[y_min, y_max]  # Set dynamic y-axis range
         ),
-        height=height,  # Increase the height for more vertical space
+        height=plot_height,  # Increase the height for more vertical space
         margin=dict(t=50, b=50, l=60, r=60)  # Adjust margins
     )
     
