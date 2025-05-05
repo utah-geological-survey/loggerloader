@@ -129,7 +129,7 @@ def plotlystuff(datasets, colnames, chrttypes=None, datatitles=None, chrttitle='
         
     if colors is None:
         if len(datasets) <= 5: 
-            colors = ['#228B22', '#FF1493', '#F7DC6F', '#663399', '#FF0000']
+            colors = ['#228B22', '#FF1493', '#5acafa', '#663399', '#FF0000']
         else:
             colors = []
             for i in range(len(datasets)):
