@@ -113,6 +113,15 @@ def plotlystuff(datasets, colnames, chrttypes=None, datatitles=None, chrttitle='
                 two_yaxes=False, axisdesig=None, axislabels=['Levels', 'Barometric Pressure'], opac=None, 
                 plot_height=300):
     '''Plots one or more datasets on a shared set of axes
+    datasets: list of one or more datasets to plot, must have datetime index
+    colnames: list of one or more column names to plot on the y-axis; must be one column name per dataset
+    chrttypes: list of types of characters to plot; defaults to line; can include lines and markers (points)
+    colors: list of colors to use in plots; defaults to ['#228B22', '#FF1493', '#5acafa', '#663399', '#FF0000']
+    two_yaxes: presumably whether data should show up with two axes or one
+    axisdesig:uncertain
+    axislabels: list of names to for legend to label y-value on each dataset
+    opac:list of values for opacity setting of datasets; default is 0.8
+    plot_height: integer value for height of plot; default is 300
     '''
     
     if chrttypes is None:
