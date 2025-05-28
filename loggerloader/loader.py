@@ -1624,7 +1624,7 @@ class NewTransImp(object):
                     print(f"CH. 2 units in {chunit}, converting to deg C...")
             elif "Depth" in col or "Cond" in col or "Total" in col or "Salin" in col or "Dens" in col:
                 df[col] = pd.to_numeric(df[col])
-        df['name'] = self.infile.stem
+        df['filename'] = self.infile.stem
 
         return df
 
@@ -1787,7 +1787,7 @@ class NewTransImp(object):
             elif temp_units == "Deg F" or temp_units == "\N{DEGREE SIGN}" + "F":
                 print("Temp in F, converting {:} to C...".format(nm))
                 df[temp] = (df[temp] - 32.0) * 5.0 / 9.0
-            df["name"] = self.infile
+            df["filename"] = self.infile
             return df
         except ValueError:
             print("File {:} has formatting issues".format(nm))
@@ -1900,7 +1900,7 @@ class NewTransImp(object):
             f[str(ch3ID).title()] = pd.to_numeric(f["ch3"])
 
         # add extension-free file name to dataframe
-        f["name"] = self.infile.name.split(".")[0]
+        f["filename"] = self.infile.name.split(".")[0]
         # combine Date and Time fields into one field
         f["DateTime"] = pd.to_datetime(
             f.apply(lambda x: x["Date"] + " " + x["Time"], 1)
@@ -1982,7 +1982,7 @@ class NewTransImp(object):
                         print(f"CH. 2 units in {chunit}, converting to deg C...")
             elif col in ["ms", "Date", "Time", "index"]:
                 f = f.drop(col, axis=1)
-        f["name"] = self.infile.name.split(".")[0]
+        f["filename"] = self.infile.name.split(".")[0]
         return f
 
 
