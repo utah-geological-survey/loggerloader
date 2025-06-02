@@ -111,15 +111,16 @@ def subset_final_processed_data(keep, processed_data, drift_info, old_reading=No
 
 # # CHECK AND FIX DATA ISSUES
 
-def check_for_jumps(df, check_field, quant=0.9999):
+def check_for_jumps(df, check_field, quant=0.9999, plot=False):
     '''Check for the difference in successive values for a given check_field in a dataframe (df).
     Return the value of the quantile (quant) indicated). Plot the differences in a histogram
     '''
     df['value_diff'] = df[check_field].diff().abs()
     diff_quant = df.value_diff.quantile(quant)
     print(f"The {quant*100}th quantile in the difference between successive {check_field} values is {diff_quant.round(3)}")
-    fig = px.histogram(df, x='value_diff', nbins=20, title=f"Timestep difference for {check_field}")
-    fig.show()
+    if plot ==True:
+        fig = px.histogram(df, x='value_diff', nbins=20, title=f"Timestep difference for {check_field}")
+        fig.show()
 
 def jump_matching(old_data, new_data, old_value='measuredlevel', new_value="Level"):
     '''Finds value to correct major jumps between old dataset and new dataset by finding the most 
