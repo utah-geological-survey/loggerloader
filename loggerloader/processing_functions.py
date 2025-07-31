@@ -167,7 +167,7 @@ def drop_reading_after_pumping(manual_data, transducer_data, hours_to_drop, phra
     '''
     pattern = "|".join(phrases)
     pump_dates = list(manual_data.index[manual_data['notes'].str.contains(pattern, case=False, na=False)].round('h'))
-    if len(pump_dates)>1:
+    if len(pump_dates)>0:
         hours_to_drop = hours_to_drop
         after_pump_dates = []
         # Loop over each timestamp and create new timestamps for 1 to x hours later
@@ -384,7 +384,23 @@ def plot_sectional_lags_plotly(corr_check, height=400):
     fig.show()
 
 
+def update_drift_info(drift_df, status_change_date, new_status, notes):
+    """
+    Updates the status on the drift table to a new status and adds a note
+    for the a particular data
 
+    drift_df (dataframe): standard drift dataframe from processing
+    status_change_date(str): t_beg date from drift table that needs to be updated
+    new_status(str): new status to assign to record
+    notes(str): new note to add to record
+
+    Returns dataframe with updated status and note
+    """
+
+    status_change_date = pd.to_datetime(status_change_date)
+    drift_df.loc[drift_df.t_beg.isin(status_change_date), 'datastatus'] = new_status
+    drift_df.loc[drift_df.t_beg.isin(status_change_date), 'notes'] = notes
+    return(drift_df)
 
 
 
