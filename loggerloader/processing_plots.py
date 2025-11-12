@@ -7,6 +7,69 @@ from plotly.subplots import make_subplots
 
 
 
+import plotly.express as px
+
+def scatterplot_by_data_status(old_data, new_data, field_name, title_text="", plot_height=300):
+    """
+    Generates and displays an interactive Plotly scatter plot comparing two
+    time-series datasets for a specified field, color-coded by 'datastatus'.
+
+    The plot shows both 'old_data' and 'new_data' on the same axes,
+    distinguishing them by marker shape. It assumes the input DataFrames
+    have a datetime index named 'readingdate' when reset and have a field called
+    'datastatus'.
+
+    Parameters
+    ----------
+    old_data : pandas.DataFrame
+        DataFrame representing the 'old data' series. Must have a datetime
+        index and 'datastatus' column.
+    new_data : pandas.DataFrame
+        DataFrame representing the 'new data' series. Must have a datetime
+        index and 'datastatus' column.
+    field_name : str
+        The name of the column to plot on the Y-axis (e.g., 'waterelevation').
+    title_text : str, optional
+        The main title for the plot. The default is an empty string.
+
+    Returns
+    -------
+    None
+        The function displays the Plotly figure but does not return it.
+        (See 'Improvements' for a suggestion on returning the figure).
+    """
+    old_data_temp = old_data.copy()
+    new_data_temp = new_data.copy()
+    old_data_temp['source'] = 'old data'
+    new_data_temp['source'] = 'new data'
+    df_combined = pd.concat([old_data_temp, new_data_temp])
+    df_combined = df_combined.reset_index().rename(columns={'index': 'readingdate'})
+
+    fig = px.scatter(
+        df_combined,
+        x='readingdate',
+        y=field_name,
+        color='datastatus', 
+        symbol='source',  
+        height = plot_height,
+        title=title_text,
+        labels={
+            'readingdate': 'readingdate',
+            'waterelevation': 'Water Elevation',
+            'datastatus': 'Data Status'
+        }
+    )
+
+    fig.update_traces(marker=dict(size=8, line=dict(width=1, color='DarkSlateGrey')))
+
+    fig.update_layout(
+        xaxis_title='Datetime Index',
+        yaxis_title=field_name.replace('_', ' ').title(), # Dynamically title Y-axis
+        legend_title='Data Status and Source',
+        hovermode='x unified' # Good for time series data
+    )
+    return fig
+
 def manual_vs_transducer(manual_data, corrected_wl, siteid):
     '''plot manual measurements for dtwbelowcasing versus corrected_wl data
     data taken directly from loggerloader output
