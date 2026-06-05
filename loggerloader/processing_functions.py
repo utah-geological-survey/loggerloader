@@ -64,6 +64,8 @@ def clean_up_reading_columns (dft, siteid):
     if "Temperature" in data_to_imp.columns:
         columns_to_select.append('Temperature')
         rename_dict['Temperature'] = 'temperature'
+    if 'conductivity' in data_to_imp.columns:
+        columns_to_select.append('conductivity')
     data_to_imp = data_to_imp[columns_to_select]
     data_to_imp = data_to_imp.rename(columns=rename_dict)
     data_to_imp = data_to_imp.round(4)
