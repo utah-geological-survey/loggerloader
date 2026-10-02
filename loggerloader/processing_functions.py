@@ -59,17 +59,20 @@ def clean_up_reading_columns (dft, siteid):
     siteid: unique identifier for site (ideally based on (alt)locationid from database)
     """
     data_to_imp = dft.reset_index()
-    columns_to_select = ['DateTime', 'Level', 'DTW_WL', 'driftcorrection', 'waterelevation']
-    rename_dict = {'DateTime': 'readingdate', 'Level': 'measuredlevel', 'DTW_WL': 'measureddtw'}
-    if "Temperature" in data_to_imp.columns:
-        columns_to_select.append('Temperature')
-        rename_dict['Temperature'] = 'temperature'
-    if 'conductivity' in data_to_imp.columns:
-        columns_to_select.append('conductivity')
-    data_to_imp = data_to_imp[columns_to_select]
-    data_to_imp = data_to_imp.rename(columns=rename_dict)
+    columns_to_select = ['DateTime', 'Level', 'DTW_WL', 'driftcorrection', 'waterelevation',
+                         'Temperature', 'specific_conductivity', 'measureddtw_freshwatercalc',
+                         'measuredlevel','measureddtw', 'conductivity']
+    final_cols = [col for col in columns_to_select if col in data_to_imp.columns]
+    rename_dict = {'DateTime': 'readingdate', 
+                   'Level': 'measuredlevel', 
+                   'DTW_WL': 'measureddtw',
+                   'Temperature': 'temperature',
+                   'specific_conductivity': 'conductivity'}
+    subset_dict = {k: v for k, v in rename_dict.items() if k in data_to_imp.columns}
+    data_to_imp = data_to_imp[final_cols]
+    data_to_imp = data_to_imp.rename(columns=subset_dict)
     data_to_imp = data_to_imp.round(4)
-    data_to_imp = data_to_imp.dropna(subset=['waterelevation'])
+    #data_to_imp = data_to_imp.dropna(subset=['waterelevation'])
     data_to_imp['locationid'] = siteid
     return(data_to_imp)
 
