@@ -842,12 +842,15 @@ def read_troll_htm(filepath):
             elif "Hg" in col:
                 df['Level'] = df[col] * 0.044603
             df = df.drop(columns=[col])
-        elif 'Temp' in col:
+        elif 'Specific Cond' in col or "specific cond" in col:
                 df[col] = pd.to_numeric(df[col])
-                df = df.rename(columns={col: "Temperature"})
-                if 'F)' in col:
-                    df[col] = (df[col] - 32.0) * 5 / 9
-                    print(f"CH. 2 units in {chunit}, converting to deg C...")
+                df = df.rename(columns={col: "specific_conductivity"})
+        elif 'Temp' in col:
+                        df[col] = pd.to_numeric(df[col])
+                        df = df.rename(columns={col: "Temperature"})
+                        if 'F)' in col:
+                            df[col] = (df[col] - 32.0) * 5 / 9
+                            print(f"CH. 2 units in {chunit}, converting to deg C...")
         elif "Depth" in col or "Cond" in col or "Total" in col or "Salin" in col or "Dens" in col:
             df[col] = pd.to_numeric(df[col])
 
@@ -1264,9 +1267,9 @@ def well_baro_merge(
         # print(wellbaro)
         first_well = wellbaro.loc[wellbaro.index[0], wellcolumn]
         wellbaro[outcolumn] = (
-            wellbaro[["dbp", "dwl"]].apply(lambda x: x[1] - x[0], 1).cumsum()
+            (wellbaro["dwl"] - wellbaro["dbp"]).cumsum()
             + first_well
-        )
+            )
         wellbaro.loc[wellbaro.index[0], outcolumn] = first_well
     return wellbaro
 
@@ -1446,6 +1449,9 @@ def read_troll_csv(filename):
             elif "kPa" in col:
                 df["Level"] = df[col] * 0.33455
             # df = df.rename(columns={col:"Level"})
+        elif 'Specific Cond' in col or "specific cond" in col:
+                df[col] = pd.to_numeric(df[col])
+                df = df.rename(columns={col: "specific_conductivity"})
         elif (
             "Depth" in col
             or "Cond" in col
@@ -1622,6 +1628,9 @@ class NewTransImp(object):
                 if 'F)' in col:
                     df[col] = (df[col] - 32.0) * 5 / 9
                     print(f"CH. 2 units in {chunit}, converting to deg C...")
+            elif 'Specific Cond' in col or "specific cond" in col:
+                df[col] = pd.to_numeric(df[col])
+                df = df.rename(columns={col: "specific_conductivity"})
             elif "Depth" in col or "Cond" in col or "Total" in col or "Salin" in col or "Dens" in col:
                 df[col] = pd.to_numeric(df[col])
         df['filename'] = self.infile.stem
