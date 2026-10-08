@@ -60,7 +60,7 @@ def clean_up_reading_columns (dft, siteid):
     """
     data_to_imp = dft.reset_index()
     columns_to_select = ['DateTime', 'Level', 'DTW_WL', 'driftcorrection', 'waterelevation',
-                         'Temperature', 'specific_conductivity', 'measureddtw_freshwatercalc',
+                         'Temperature', 'specific_conductivity', 'dtw_ref_fluid',
                          'measuredlevel','measureddtw', 'conductivity']
     final_cols = [col for col in columns_to_select if col in data_to_imp.columns]
     rename_dict = {'DateTime': 'readingdate', 

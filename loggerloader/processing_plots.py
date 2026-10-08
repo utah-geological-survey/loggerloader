@@ -172,47 +172,65 @@ def processed_vs_manual(siteid, processed_data, manual_data, plot_field='waterel
     fig.show()
 
 
-def plotlystuff(datasets, colnames, chrttypes=None, datatitles=None, chrttitle='well', colors=None,
-                two_yaxes=False, axisdesig=None, axislabels=['Levels', 'Barometric Pressure'], opac=None, 
-                plot_height=300):
-    '''Plots one or more datasets on a shared set of axes
-    datasets: list of one or more datasets to plot, must have datetime index
-    colnames: list of one or more column names to plot on the y-axis; must be one column name per dataset
-    chrttypes: list of types of characters to plot; defaults to line; can include lines and markers (points)
-    colors: list of colors to use in plots; defaults to ['#228B22', '#FF1493', '#5acafa', '#663399', '#FF0000']
-    two_yaxes: presumably whether data should show up with two axes or one
-    axisdesig:uncertain
-    axislabels: list of names to for legend to label y-value on each dataset
-    opac:list of values for opacity setting of datasets; default is 0.8
-    plot_height: integer value for height of plot; default is 300
+def plotlystuff(
+    datasets, 
+    colnames, 
+    chrttypes=None, 
+    datatitles=None, 
+    chrttitle='', 
+    colors=None,
+    two_yaxes=False, 
+    axisdesig=None, 
+    axislabels=['Levels', 'Barometric Pressure'], 
+    opac=None, 
+    plot_height=350,
+    reverse_y=False
+):
     '''
-    
+    Plots one or more datasets on a shared set of axes with optional dual y-axes and axis reversal.
+    '''
+    num_datasets = len(datasets)
+
+    # 1. Defaults for series attributes
     if chrttypes is None:
-        chrttypes = ['lines'] * len(datasets)
+        chrttypes = ['lines'] * num_datasets
 
     if opac is None:
-        opac = [0.8] * len(datasets)
+        opac = [0.8] * num_datasets
         
     if datatitles is None:
         datatitles = colnames
-    
+
+    # 2. Fix and auto-assign axisdesig
     if axisdesig is None:
-        axisdesig = ['y1'] * len(datasets)
-        
-    if colors is None:
-        if len(datasets) <= 5: 
-            colors = ['#228B22', '#FF1493', '#5acafa', '#663399', '#FF0000']
+        if two_yaxes and num_datasets > 1:
+            axisdesig = ['y'] + ['y2'] * (num_datasets - 1)
         else:
-            colors = []
-            for i in range(len(datasets)):
-                colors.append('#{:02x}{:02x}{:02x}'.format(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
-    
-    modetypes = ['markers', 'lines+markers', 'lines']
-    datum = {}
-    
-    # Plotting the line charts for the datasets
-    for i in range(len(datasets)):
-        datum['d' + str(i)] = go.Scatter(
+            axisdesig = ['y'] * num_datasets
+    else:
+        axisdesig = ['y' if a == 'y1' else a for a in axisdesig]
+
+    # 3. Default color assignment
+    if colors is None:
+        default_palette = ['#228B22', '#FF1493', '#5acafa', '#663399', '#FF0000']
+        if num_datasets <= len(default_palette):
+            colors = default_palette[:num_datasets]
+        else:
+            colors = [f'#{random.randint(0, 0xFFFFFF):06x}' for _ in range(num_datasets)]
+
+    # 4. Parse axis reversal inputs
+    if isinstance(reverse_y, bool):
+        rev_y1, rev_y2 = reverse_y, reverse_y
+    elif isinstance(reverse_y, (list, tuple)):
+        rev_y1 = reverse_y[0] if len(reverse_y) > 0 else False
+        rev_y2 = reverse_y[1] if len(reverse_y) > 1 else False
+    else:
+        rev_y1, rev_y2 = False, False
+
+    # 5. Build plot traces
+    data = []
+    for i in range(num_datasets):
+        trace = go.Scatter(
             x=datasets[i].index,
             y=datasets[i][colnames[i]],
             name=datatitles[i],
@@ -221,16 +239,15 @@ def plotlystuff(datasets, colnames, chrttypes=None, datatitles=None, chrttitle='
             opacity=opac[i],
             yaxis=axisdesig[i]
         )
-    
-    # Combine the data for plotting
-    data = list(datum.values())
+        data.append(trace)
 
-    # Calculate dynamic y-axis range
-    y_min = min([datasets[i][colnames[i]].min() for i in range(len(datasets))])
-    y_max = max([datasets[i][colnames[i]].max() for i in range(len(datasets))])
-    
-    # Layout definition with adjustments for vertical space and axis range
-    layout = dict(
+    has_secondary = two_yaxes or any(a == 'y2' for a in axisdesig)
+
+    # 6. Primary layout configuration
+    # Increase right margin to 140px to ensure long y2 numbers and vertical titles fit comfortably
+    right_margin = 140 if has_secondary else 60
+
+    layout = go.Layout(
         title=chrttitle,
         xaxis=dict(
             rangeslider=dict(visible=True),
@@ -238,26 +255,33 @@ def plotlystuff(datasets, colnames, chrttypes=None, datatitles=None, chrttitle='
             tickformat='%Y-%m-%d %H:%M'
         ),
         yaxis=dict(
-            title=axislabels[0],
-            titlefont=dict(color='#1f77b4'),
+            title=dict(
+                text=axislabels[0] if len(axislabels) > 0 else None,
+                font=dict(color='#1f77b4'),
+                standoff=10
+            ),
             tickfont=dict(color='#1f77b4'),
-            range=[y_min, y_max]  # Set dynamic y-axis range
+            autorange='reversed' if rev_y1 else None,
+            automargin=True
         ),
-        height=plot_height,  # Increase the height for more vertical space
-        margin=dict(t=50, b=50, l=60, r=60)  # Adjust margins
+        height=plot_height,
+        margin=dict(t=50, b=50, l=60, r=right_margin)
     )
-    
-    if two_yaxes:
-        layout['yaxis2'] = dict(
-            title=axislabels[1],
-            titlefont=dict(color='#ff7f0e'),
+
+    # 7. Secondary layout configuration
+    if has_secondary:
+        layout.yaxis2 = dict(
+            title=dict(
+                text=axislabels[1] if len(axislabels) > 1 else None,
+                font=dict(color='#ff7f0e'),
+                standoff=10  # Controls pixel distance between tick labels and axis title
+            ),
             tickfont=dict(color='#ff7f0e'),
-            anchor='x',
             overlaying='y',
             side='right',
-            position=0.15
+            autorange='reversed' if rev_y2 else None,
+            automargin=True
         )
 
-    fig = dict(data=data, layout=layout)
-    iplot(fig, filename='well')
-    return
+    fig = go.Figure(data=data, layout=layout)
+    fig.show()
