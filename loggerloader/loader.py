@@ -799,64 +799,6 @@ def smoother(df, p, win=30, sd=3):
     df = df[1:-1]
     return df
 
-
-def read_troll_htm(filepath):
-    """given a path to the .htm (html) file, function will read in the data and produce pandas dataframe
-    Args:
-        filepath (str):
-            path to data file
-
-    Return:
-        df:
-            dataframe
-    """
-    with open(filepath, "r") as f:
-        html_string = f.read()
-
-    # use BeautifulSoup to parse the HTML content of the page
-    soup = BeautifulSoup(html_string, "html.parser")
-    table_rows = soup.find_all('tr', {'class': 'data'})
-    header = soup.find_all('tr', {'class': 'dataHeader'})
-    heads = header[0].find_all('td')
-    colnames = [head.text.strip() for head in heads]
-    data = []
-    for row in table_rows:
-        cols = row.find_all("td")
-        cols = [col.text.strip() for col in cols]
-        data.append(cols)
-
-            # convert the list of data into a pandas dataframe
-    df = pd.DataFrame(data)
-    df.columns = colnames
-
-    for col in df.columns:
-        if "Date" in col or "date" in col:
-            print(col)
-            df[col] = pd.to_datetime(df[col])
-            df = df.rename(columns={col: "DateTime"})  # Renaming the column to match name from xle files
-            df = df.set_index("DateTime")
-        elif "Press" in col:
-            df[col] = pd.to_numeric(df[col])
-            if "psi" in col:
-                df['Level'] = df[col] * 2.3067
-            elif "Hg" in col:
-                df['Level'] = df[col] * 0.044603
-            df = df.drop(columns=[col])
-        elif 'Specific Cond' in col or "specific cond" in col:
-                df[col] = pd.to_numeric(df[col])
-                df = df.rename(columns={col: "specific_conductivity"})
-        elif 'Temp' in col:
-                        df[col] = pd.to_numeric(df[col])
-                        df = df.rename(columns={col: "Temperature"})
-                        if 'F)' in col:
-                            df[col] = (df[col] - 32.0) * 5 / 9
-                            print(f"CH. 2 units in {chunit}, converting to deg C...")
-        elif "Depth" in col or "Cond" in col or "Total" in col or "Salin" in col or "Dens" in col:
-            df[col] = pd.to_numeric(df[col])
-
-    return df
-
-
 def rollmeandiff(df1, p1, df2, p2, win):
     """Returns the rolling mean difference of two columns from two different dataframes
     Args:
@@ -893,7 +835,7 @@ def rollmeandiff(df1, p1, df2, p2, win):
 
 def fix_unit_change(df1, df2, field="Level", tolerance=0.03):
     """Fixes issues where units fail to converge between transducers. Common in some Solinst transducers (???).
-    Uses ratio of daily rolling standard devations to determine non stationarity between datasets.
+    Uses ratio of daily rolling standard deviations to determine non stationarity between datasets.
 
     Args:
         df1 (pandas Dataframe): dataframe of first transducer record with datetime index; df2 will be converted to match this record
@@ -1460,6 +1402,62 @@ def read_troll_csv(filename):
             or "Dens" in col
             or "Temp" in col
         ):
+            df[col] = pd.to_numeric(df[col])
+
+    return df
+
+def read_troll_htm(filepath):
+    """given a path to the .htm (html) file, function will read in the data and produce pandas dataframe
+    Args:
+        filepath (str):
+            path to data file
+
+    Return:
+        df:
+            dataframe
+    """
+    with open(filepath, "r") as f:
+        html_string = f.read()
+
+    # use BeautifulSoup to parse the HTML content of the page
+    soup = BeautifulSoup(html_string, "html.parser")
+    table_rows = soup.find_all('tr', {'class': 'data'})
+    header = soup.find_all('tr', {'class': 'dataHeader'})
+    heads = header[0].find_all('td')
+    colnames = [head.text.strip() for head in heads]
+    data = []
+    for row in table_rows:
+        cols = row.find_all("td")
+        cols = [col.text.strip() for col in cols]
+        data.append(cols)
+
+            # convert the list of data into a pandas dataframe
+    df = pd.DataFrame(data)
+    df.columns = colnames
+
+    for col in df.columns:
+        if "Date" in col or "date" in col:
+            print(col)
+            df[col] = pd.to_datetime(df[col])
+            df = df.rename(columns={col: "DateTime"})  # Renaming the column to match name from xle files
+            df = df.set_index("DateTime")
+        elif "Press" in col:
+            df[col] = pd.to_numeric(df[col])
+            if "psi" in col:
+                df['Level'] = df[col] * 2.3067
+            elif "Hg" in col:
+                df['Level'] = df[col] * 0.044603
+            df = df.drop(columns=[col])
+        elif 'Specific Cond' in col or "specific cond" in col:
+                df[col] = pd.to_numeric(df[col])
+                df = df.rename(columns={col: "specific_conductivity"})
+        elif 'Temp' in col:
+                        df[col] = pd.to_numeric(df[col])
+                        df = df.rename(columns={col: "Temperature"})
+                        if 'F)' in col:
+                            df[col] = (df[col] - 32.0) * 5 / 9
+                            print(f"CH. 2 units in {chunit}, converting to deg C...")
+        elif "Depth" in col or "Cond" in col or "Total" in col or "Salin" in col or "Dens" in col:
             df[col] = pd.to_numeric(df[col])
 
     return df
