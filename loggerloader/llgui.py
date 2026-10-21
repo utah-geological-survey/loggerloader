@@ -58,6 +58,108 @@ try:
 except AttributeError:
     pass
 
+def read_troll_csv(filename):
+    df = pd.read_csv(
+        filename,
+        skiprows=get_line_num(filename),
+        parse_dates=True,
+        encoding="unicode_escape",
+    )
+
+    df["Date and Time"] = pd.to_datetime(df["Date and Time"])
+
+    df.columns = df.columns.str.replace(" ", "")
+    df.columns = df.columns.str.replace("(", "_")
+    df.columns = df.columns.str.replace(")", "")
+
+    # Get rid of duplicate data
+    df = df.reset_index().drop_duplicates(["DateandTime"])
+    df = df.set_index(["DateandTime"]).sort_index()
+
+    for col in df.columns:
+        if "Date" in col or "date" in col:
+            print(col)
+            df[col] = pd.to_datetime(df[col])
+            df = df.set_index(col)
+        elif "Press" in col:
+            df[col] = pd.to_numeric(df[col])
+            if "psi" in col:
+                df["Level"] = df[col] * 2.3067
+            elif "Hg" in col:
+                df["Level"] = df[col] * 0.044603
+            elif "kPa" in col:
+                df["Level"] = df[col] * 0.33455
+            # df = df.rename(columns={col:"Level"})
+        elif 'Specific Cond' in col or "specific cond" in col:
+                df[col] = pd.to_numeric(df[col])
+                df = df.rename(columns={col: "specific_conductivity"})
+        elif (
+            "Depth" in col
+            or "Cond" in col
+            or "Total" in col
+            or "Salin" in col
+            or "Dens" in col
+            or "Temp" in col
+        ):
+            df[col] = pd.to_numeric(df[col])
+
+    return df
+
+def read_troll_htm(filepath):
+    """given a path to the .htm (html) file, function will read in the data and produce pandas dataframe
+    Args:
+        filepath (str):
+            path to data file
+
+    Return:
+        df:
+            dataframe
+    """
+    with open(filepath, "r") as f:
+        html_string = f.read()
+
+    # use BeautifulSoup to parse the HTML content of the page
+    soup = BeautifulSoup(html_string, "html.parser")
+    table_rows = soup.find_all('tr', {'class': 'data'})
+    header = soup.find_all('tr', {'class': 'dataHeader'})
+    heads = header[0].find_all('td')
+    colnames = [head.text.strip() for head in heads]
+    data = []
+    for row in table_rows:
+        cols = row.find_all("td")
+        cols = [col.text.strip() for col in cols]
+        data.append(cols)
+
+            # convert the list of data into a pandas dataframe
+    df = pd.DataFrame(data)
+    df.columns = colnames
+
+    for col in df.columns:
+        if "Date" in col or "date" in col:
+            print(col)
+            df[col] = pd.to_datetime(df[col])
+            df = df.rename(columns={col: "DateTime"})  # Renaming the column to match name from xle files
+            df = df.set_index("DateTime")
+        elif "Press" in col:
+            df[col] = pd.to_numeric(df[col])
+            if "psi" in col:
+                df['Level'] = df[col] * 2.3067
+            elif "Hg" in col:
+                df['Level'] = df[col] * 0.044603
+            df = df.drop(columns=[col])
+        elif 'Specific Cond' in col or "specific cond" in col:
+                df[col] = pd.to_numeric(df[col])
+                df = df.rename(columns={col: "specific_conductivity"})
+        elif 'Temp' in col:
+                        df[col] = pd.to_numeric(df[col])
+                        df = df.rename(columns={col: "Temperature"})
+                        if 'F)' in col:
+                            df[col] = (df[col] - 32.0) * 5 / 9
+                            print(f"CH. 2 units in {chunit}, converting to deg C...")
+        elif "Depth" in col or "Cond" in col or "Total" in col or "Salin" in col or "Dens" in col:
+            df[col] = pd.to_numeric(df[col])
+
+    return df
 
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
@@ -69,8 +171,292 @@ def resource_path(relative_path):
 
     return os.path.join(base_path, relative_path)
 
+def fix_unit_change(df1, df2, field="Level", tolerance=0.03):
+    """Fixes issues where units fail to converge between transducers. Common in some Solinst transducers (???).
+    Uses ratio of daily rolling standard deviations to determine non stationarity between datasets.
 
+    Args:
+        df1 (pandas Dataframe): dataframe of first transducer record with datetime index; df2 will be converted to match this record
+        df2 (pandas Dataframe): dataframe of second transducer record with datetime index; best if df2 happens after df1 in timeseries
+        field (str): field in dataframes used to match units; default is Level
+        tolerance (float): amount of tolerance to match units; defaults to +/-3% of true conversion factor
 
+    Returns:
+        converted (pandas Dataframe):
+            converted series of df2[field] and prints conversion
+    """
+    conversion_factors = {
+        "meters to feet": 3.28084,
+        "feet to meters": 0.3048,
+        "psi to feet": 2.3066587,
+        "feet to psi": 0.4335275,
+        "psi to bar": 0.0689,
+        "bar to psi": 14.5038,
+        "kPa to psi": 0.145038,
+        "psi to kPa": 6.89476,
+        "kPa to feet": 0.3345525655,
+        "feet to kPa": 2.9890669,
+        "feet to bar": 0.02989,
+        "bar to feet": 33.4553,
+        "feet to mmHg": 22.42,
+        "mmHg to feet": 0.0446,
+        "no conversion": 1.0,
+    }
+
+    conversion = "no conversion"
+    multiplier = 1
+
+    df1std = np.mean(df1[field].rolling(24).std())
+    df2std = np.mean(df2[field].rolling(24).std())
+    stdratio = df1std / df2std
+
+    for key, value in conversion_factors.items():
+        if np.abs((value - stdratio) / value) < tolerance:
+            print(key)
+            conversion = key
+            multiplier = value
+            break
+    df2[field] = df2[field] * multiplier
+    return df2
+
+class HeaderTable(object):
+    def __init__(
+        self,
+        folder,
+        filedict=None,
+        filelist=None,
+        workspace=None,
+        conn_file_root=None,
+        loc_table="ugs_ngwmn_monitoring_locations",
+    ):
+        """
+
+        Args:
+            folder: directory containing transducer files
+            filedict: dictionary matching filename to locationid
+            filelist: list of files in folder
+            workspace:
+            loc_table: Table of location table in the SDE
+        """
+        self.folder = folder
+
+        if filelist:
+            self.filelist = filelist
+        else:
+            self.filelist = folder.glob("/*")
+
+        self.filedict = filedict
+
+        if workspace:
+            self.workspace = workspace
+        else:
+            self.workspace = folder
+
+    def get_ftype(self, x):
+        if x[1] == "Solinst":
+            ft = ".xle"
+        else:
+            ft = ".csv"
+        return self.filedict.get(x[0] + ft)
+
+    # examine and tabulate header information from files
+
+    def file_summary_table(self):
+        # create temp directory and populate it with relevant files
+        self.filelist = self.xle_csv_filelist()
+        fild = {}
+        for file in self.filelist:
+            file_extension = os.path.splitext(file)[1]
+
+            if file_extension == ".xle":
+                fild[file], dta = self.xle_head(file)
+            elif file_extension == ".csv":
+                fild[file], dta = self.csv_head(file)
+            elif file_extension == ".htm":
+                fild[file], dta = self.html_head(file)
+
+        df = pd.DataFrame.from_dict(fild, orient="index")
+        return df
+
+    def make_well_table(self):
+        file_info_table = self.file_summary_table()
+        for i in ["Latitude", "Longitude"]:
+            if i in file_info_table.columns:
+                file_info_table.drop(i, axis=1, inplace=True)
+        df = self.loc_table
+        well_table = pd.merge(
+            file_info_table, df, right_on="locationname", left_on="wellname", how="left"
+        )
+        well_table.set_index("altlocationid", inplace=True)
+        well_table["wellid"] = well_table.index
+        well_table.dropna(subset=["wellname"], inplace=True)
+        well_table.to_csv(self.folder + "/file_info_table.csv")
+        print(
+            "Header Table with well information created at {:}/file_info_table.csv".format(
+                self.folder
+            )
+        )
+        return well_table
+
+    def xle_csv_filelist(self):
+        exts = ("*.xle", "*.csv")  # the tuple of file types
+        files_grabbed = []
+        for ext in exts:
+            files_grabbed += self.folder.glob(ext)
+        return files_grabbed
+
+    def xle_head(self, file):
+        """Creates a Pandas DataFrame containing header information from all xle files in a folder
+
+        Returns:
+            A Pandas DataFrame containing the transducer header data
+
+        Example:
+            >>> xle_head_table('C:/folder_with_xles/')
+        """
+        # open text file
+        df1 = {}
+        df1["file_name"] = getfilename(file)
+        with io.open(file, "r", encoding="ISO-8859-1") as f:
+            contents = f.read()
+            tree = eletree.fromstring(contents)
+
+            for child in tree[1]:
+                df1[child.tag] = child.text
+
+            for child in tree[2]:
+                df1[child.tag] = child.text
+
+        df1["trans type"] = "Solinst"
+        xledata = NewTransImp(file).well.sort_index()
+        df1["beginning"] = xledata.first_valid_index()
+        df1["end"] = xledata.last_valid_index()
+        # df = pd.DataFrame.from_dict(df1, orient='index').T
+        return df1, xledata
+
+    def sum_list_values(self, series, freq="D"):
+        """
+        Sum the values in lists contained within a Pandas series.
+        Each list contains string values that need to be converted to floats.
+
+        Parameters:
+        series (pd.Series): Series containing lists of string values
+
+        Returns:
+        pd.Series: New series with the sum of values for each list
+        """
+
+        def convert_and_sum(lst):
+            try:
+                # Convert string values to floats and sum
+                if freq == "D":
+                    vals = [1, 0.0416666666, 0.000694]
+                else:
+                    vals = [1, 0.01666666, 0.0002777]
+                a = 0
+                for i, x in enumerate(lst):
+                    a += vals[i] * float(x)
+                return a
+            except ValueError as e:
+                # Handle cases where conversion fails
+                print(f"Error converting values in list {lst}: {e}")
+                return None
+
+        # Apply the conversion and summation to each list in the series
+        return series.apply(convert_and_sum)
+
+    def html_head(self, file):
+        """Parse ISI report sections into a pandas DataFrame with properties and values."""
+        with open(file, "r", encoding="utf-8") as f:
+            html_content = f.read()
+
+        soup = BeautifulSoup(html_content, "html.parser")
+
+        # Store section data
+        sections_data = {}
+        current_section = None
+
+        for row in soup.find_all("tr"):
+            if "sectionHeader" in row.get("class", []):
+                # Get section name from td with isi-group attribute
+                section_td = row.find("td", attrs={"isi-group": True})
+                if section_td:
+                    current_section = section_td.text.strip()
+
+            elif "sectionMember" in row.get("class", []):
+                if current_section:
+                    # Get property name from isi-property attribute
+                    property_td = row.find("td", attrs={"isi-property": True})
+                    if property_td:
+                        property_name = property_td["isi-property"]
+                        # Get value from the entire td text
+                        value = property_td.text.strip()
+                        # Extract just the value after the '=' if present
+                        if "=" in value:
+                            value = value.split("=")[1].strip()
+
+                        sections_data[property_name] = value
+            if not sections_data:
+                raise ValueError("No section data found")
+
+        df = pd.Series(sections_data)
+
+        df["StartTime"] = pd.to_datetime(df["StartTime"])
+        df["Days"] = self.sum_list_values(df["Duration"].str.split(":"))
+        df["ExpectedRecords"] = (
+            df["Days"]
+            / pd.to_numeric(
+                self.sum_list_values(df["Interval"].str.split(":"), freq="H")
+            )
+            * 24
+        ).round(0)
+        df["trans type"] = "Troll"
+        for i in df.index:
+            df.loc[i, "end"] = df.loc[i, "StartTime"] + pd.Timedelta(
+                df.loc[i, "Days"], unit="D"
+            )
+
+        rename_fields = {
+            "StartTime": "beginning",
+            "Model": "Model_number",
+            "SerialNumber": "Serial_number",
+            "Readings": "Num_log",
+            "Name": "Location",
+        }
+        df = df.rename(rename_fields)
+        dta = NewTransImp(file).well.sort_index()
+
+        return df, dta
+
+    def csv_head(self, file):
+        cfile = {}
+        csvdata = pd.DataFrame()
+        try:
+            cfile["file_name"] = getfilename(file)
+            csvdata = NewTransImp(file).well.sort_index()
+            if "Volts" in csvdata.columns:
+                cfile["Battery_level"] = int(
+                    round(
+                        csvdata.loc[csvdata.index[-1], "Volts"]
+                        / csvdata.loc[csvdata.index[0], "Volts"]
+                        * 100,
+                        0,
+                    )
+                )
+            cfile["Sample_rate"] = (csvdata.index[1] - csvdata.index[0]).seconds * 100
+            # cfile['filename'] = file
+            cfile["beginning"] = csvdata.first_valid_index()
+            cfile["end"] = csvdata.last_valid_index()
+            # cfile['last_reading_date'] = csvdata.last_valid_index()
+            cfile["Location"] = " ".join(cfile["file_name"].split(" ")[:-1])
+            cfile["trans type"] = "Global Water"
+            cfile["Num_log"] = len(csvdata)
+            # df = pd.DataFrame.from_dict(cfile, orient='index').T
+
+        except (KeyError, AttributeError):
+            pass
+
+        return cfile, csvdata
 
 class Feedback:
 

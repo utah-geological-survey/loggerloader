@@ -19,10 +19,10 @@ from tkinter import filedialog, messagebox, ttk
 
 
 try:
-    from loader import NewTransImp, drop_duplicates_keep_max_by_field, jumpfix
+    from loader import NewTransImp, jumpfix
     from plotly_tk_vis import PlotlyTkinterWidget
 except:
-    from .loader import NewTransImp, drop_duplicates_keep_max_by_field, jumpfix
+    from .loader import NewTransImp, jumpfix
     from .plotly_tk_vis import PlotlyTkinterWidget
 
 
@@ -557,8 +557,6 @@ class ManyFilesView:
     def process_files(self):
         # Implementation for processing files
         pass
-
-
 
 
 class ChartManager:
