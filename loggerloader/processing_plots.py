@@ -5,8 +5,6 @@ import random
 from plotly.offline import iplot
 from plotly.subplots import make_subplots
 
-
-
 import plotly.express as px
 
 def scatterplot_by_data_status(old_data, new_data, field_name, title_text="", plot_height=300):
@@ -91,8 +89,6 @@ def manual_vs_transducer(manual_data, corrected_wl, siteid):
     ax2.legend(loc='upper left', bbox_to_anchor=(0.1, 0.95))  # Adjust legend position
     plt.tight_layout()
 
-
-
 def manual_vs_transducer_plotly(manual_data, well_data, siteid, corrected=True):
     '''plot manual measurements for dtwbelowcasing versus corrected_wl data
     data taken directly from loggerloader output
@@ -149,7 +145,6 @@ def stickup_plot(plot_data, locationid):
     ax.set_ylabel('Current Stickup Height')  # Y-axis label for the first plot
     plt.title(f"{locationid}")
 
-
 def processed_vs_manual(siteid, processed_data, manual_data, plot_field='waterelevation'):
     '''Plot of processed transducer data versus manual transducer data, using a common
     field in both datasets. Plot will be titled with the siteid
@@ -170,7 +165,6 @@ def processed_vs_manual(siteid, processed_data, manual_data, plot_field='waterel
         margin=dict(t=50, b=50, l=50, r=50)
     )
     fig.show()
-
 
 def plotlystuff(
     datasets, 

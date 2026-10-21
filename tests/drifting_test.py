@@ -1,3 +1,6 @@
+# This appaers to be testing for the new drifting.py class that Paul made (not currently 
+# used in our data flow)
+
 import unittest
 import pandas as pd
 import numpy as np

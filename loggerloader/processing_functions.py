@@ -4,6 +4,7 @@ import plotly.express as px
 import shutil
 from pathlib import Path
 import plotly.graph_objs as go
+import logging
 
 # # DATA PREP AND ORGANIZATION
 
@@ -41,7 +42,6 @@ def prep_datetime_data(input_data, mixed=False):
     input_data.set_index('readingdate', inplace=True)
     input_data.sort_index(inplace=True)
     return(input_data)
-
 
 def delete_dataframes_with_name(pattern):
     for name, obj in list(globals().items()):  # Or locals() for local scope
@@ -161,8 +161,6 @@ def drop_by_value_and_daterange(df, start_date, end_date, drop_value, drop_type)
 
 # # DYNAMIC STICKUP HEIGHT AND DROPPING READINGS AFTER PUMPING
 
-import logging
-
 def drop_reading_after_pumping(manual_data, transducer_data, hours_to_drop, phrases=["pump", "plung"]):
     '''
     manual_data: should be data pulled from database with index set on  reading date and notes field
@@ -214,7 +212,6 @@ def partial_dynamic_dtw(df, old_stickup, new_stickup, date1, date2, out_field):
     df.loc[row_filter, out_field] = df.loc[row_filter, 'dtwbelowcasing'] - (old_stickup - new_stickup)
     return(df)
 
-
 def test_different_dtw(manual_df, point1, point2, point1_name, point2_name, well_df, well_level_name):
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=manual_df.index, y=manual_df[point1], mode='markers', 
@@ -236,7 +233,6 @@ def test_different_dtw(manual_df, point1, point2, point1_name, point2_name, well
         height=600
     )
     fig.show()  
-
 
 def linear_drift_correction(df: pd.DataFrame, 
                             column: str, 
@@ -351,7 +347,6 @@ def detect_sectional_offsets_indexed(
 
     return result_df
 
-
 def plot_sectional_lags_plotly(corr_check, height=400):
     """
     Plots the results of the detect_sectional_offsets_indexed function,
@@ -387,7 +382,6 @@ def plot_sectional_lags_plotly(corr_check, height=400):
     )
 
     fig.show()
-
 
 def update_drift_info(drift_df, status_change_date, new_status, notes):
     """
