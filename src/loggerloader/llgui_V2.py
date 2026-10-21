@@ -17,9 +17,9 @@ from pylab import rcParams
 import logging
 
 #try:
-from loader import jumpfix
-from views import ViewManager
-from menu import ApplicationMenu
+from src.loggerloader.loader import jumpfix
+from src.loggerloader.views import ViewManager
+from src.loggerloader.menu import ApplicationMenu
 #except:
     #from .loader import NewTransImp, drop_duplicates_keep_max_by_field, jumpfix
     #from .plotly_tk_vis import PlotlyTkinterWidget

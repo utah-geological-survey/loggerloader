@@ -32,7 +32,7 @@ import logging
 #from pandas.plotting import register_matplotlib_converters
 
 try:
-    from loader import *
+    from src.loggerloader.loader import *
 except:
     from .loader import *
 

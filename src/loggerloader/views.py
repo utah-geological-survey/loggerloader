@@ -19,8 +19,8 @@ from tkinter import filedialog, messagebox, ttk
 
 
 try:
-    from loader import NewTransImp, jumpfix
-    from plotly_tk_vis import PlotlyTkinterWidget
+    from src.loggerloader.loader import NewTransImp, jumpfix
+    from src.loggerloader.plotly_tk_vis import PlotlyTkinterWidget
 except:
     from .loader import NewTransImp, jumpfix
     from .plotly_tk_vis import PlotlyTkinterWidget

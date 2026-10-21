@@ -11,9 +11,9 @@ import sys
 
 
 try:
-    from loggerloader.llgui import *
+    from src.loggerloader.llgui import *
 except:
-    from loggerloader import *
+    from src.loggerloader import *
 
 def testget_breakpoints():
     manual = {'dates':['6/11/1991','2/1/1999','8/5/2001','7/14/2000','8/19/2002','4/2/2005'],'man_read':[1,10,14,52,10,8]}

@@ -752,7 +752,8 @@ def jumpfix(
     return df1
 
 
-def detect_jumps(df: pd.DataFrame, meas: str, threshold: float = 0.005) -> pd.DataFrame:
+def detect_jumps(
+        df: pd.DataFrame, meas : str = 'Level', threshold: float = 0.1) -> pd.DataFrame:
     """
     Detect jumps in time series data without applying corrections.
 
@@ -777,6 +778,7 @@ def detect_jumps(df: pd.DataFrame, meas: str, threshold: float = 0.005) -> pd.Da
     jumps = df[abs(diffs) > threshold].copy()
     jumps["jump_size"] = diffs[abs(diffs) > threshold]
     jumps["cumulative_effect"] = jumps["jump_size"].cumsum()
+    jumps = jumps[[meas, 'jump_size', 'cumulative_effect']]
 
     return jumps
 

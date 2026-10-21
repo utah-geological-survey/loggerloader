@@ -1,11 +1,10 @@
-from loggerloader.loader import (
+from src.loggerloader.loader import (
     jumpfix,
     Drifting,
     detect_jumps,
     analyze_jumps,
     detect_mean_offset,
 )
-#from loggerloader.drifting import DriftFeatures, Drifting
 
 
 import unittest
