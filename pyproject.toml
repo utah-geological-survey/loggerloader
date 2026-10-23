@@ -3,10 +3,8 @@ requires = ["setuptools >= 61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-dynamic = ["version"]
-version = "2020.0.0"
-dependencies = {file = "requirements.txt"}
 name = "loggerloader"
+dynamic = ["version"]
 requires-python = ">= 3.8"
 authors = [{name = "Paul Inkenbrandt", email = "paulinkenbrandt@utah.gov"}]
 maintainers = [{name = "Paul Inkenbrandt", email = "paulinkenbrandt@utah.gov"}]
@@ -14,7 +12,49 @@ description = "Import and process transducer data; hydrograph analysis; hydrolog
 readme = "README.md"
 license = {file = "LICENSE.txt"}
 keywords = ["well", "groundwater", "transducer"]
+dependencies = [
+    "pandas >= 1.5",
+    "numpy >= 1.0",
+    "matplotlib >= 3.0",
+    "xlrd >= 0.5.4",
+    "openpyxl >= 2.4.0",
+    "tkcalendar",
+    "pytz",
+    "numexpr",
+    "babel",
+    "tksheet",
+    "beautifulsoup4",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest >= 7.0",
+    "pytest-cov",
+]
+lint = [
+    "ruff",
+    "black",
+    "mypy",
+]
+notebook = [
+    "jupyterlab",
+    "notebook",
+    "ipykernel",
+    "ipywidgets",
+]
+dev = [
+    "loggerloader[test,lint,notebook]",
+]
 
 [project.urls]
 Homepage = "https://github.com/utah-geological-survey/loggerloader"
 Issues = "https://github.com/utah-geological-survey/loggerloader/issues"
+
+[tool.setuptools.dynamic]
+version = {attr = "loggerloader.version"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
