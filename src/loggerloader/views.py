@@ -33,7 +33,7 @@ def resource_path(relative_path):
         # PyInstaller creates a temp folder and stores path in _MEIPASS
         base_path = sys._MEIPASS
     except Exception:
-        base_path = os.path.abspath(".")
+        base_path = os.path.dirname(os.path.abspath(__file__))
 
     return os.path.join(base_path, relative_path)
 
@@ -70,6 +70,20 @@ class ViewManager:
             except:
                 pass
         self.sheettheme = "light blue"
+
+    def set_theme(self, mode="light"):
+        """Switch between the forest light and dark themes"""
+        if mode == "system":
+            mode = "light"
+        dark = mode == "dark"
+        try:
+            self.style.theme_use("forest-dark" if dark else "forest-light")
+        except tk.TclError:
+            return
+        self.sheettheme = "dark green" if dark else "light blue"
+        plt.style.use('dark_background' if dark else 'default')
+        for sheet in getattr(self, "datatable", {}).values():
+            sheet.change_theme(theme=self.sheettheme, redraw=True)
 
     def add_icon(self):
         try:
@@ -277,7 +291,7 @@ class WellDataView:
                                         data=self.data.reset_index().values.tolist(),
                                         theme="light blue")
 
-            self.datatable[key].change_theme(theme="light blue")
+            self.datatable[key].change_theme(theme=getattr(self, "sheettheme", "light blue"))
             self.datatable[key].headers(self.data.reset_index().columns)
             self.datatable[key].enable_bindings()
 

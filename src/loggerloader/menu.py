@@ -17,8 +17,7 @@ rcParams['figure.figsize'] = 15, 10
 
 import pandas as pd
 
-import __init__
-version = __init__.__version__
+from loggerloader import __version__ as version
 
 
 class ApplicationMenu:
