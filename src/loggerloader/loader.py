@@ -427,7 +427,7 @@ class Drifting(object):
         self.drift[i] = self.slope[i] * total_date_change
         df["datechange"] = df["julian"] - self.first_trans_julian_date[i]
 
-        df["driftcorrection"] = df["datechange"].apply(lambda x: x * self.slope[i], 1)
+        df["driftcorrection"] = df["datechange"] * self.slope[i]
         df["driftcorrwoffset"] = df["driftcorrection"] + self.intercept[i]
         df[self.output_field] = df[self.drifting_field] - df["driftcorrwoffset"]
         df = df.drop(["datechange"], axis=1)
@@ -1042,6 +1042,91 @@ def get_line_num(filename, lookup="Date and Time,Seconds"):
                 linenum = num - 1
 
     return linenum
+
+
+def fix_unit_change(df1, df2, field="Level", tolerance=0.03):
+    """Rescale df2 when its logger recorded in different units than df1 (common in some Solinst files).
+
+    The ratio of the two records' mean daily rolling standard deviations is compared to known
+    unit conversion factors; if one matches within `tolerance`, df2[field] is multiplied by it.
+
+    Args:
+        df1 (pd.DataFrame): earlier record with a datetime index; df2 is converted to match it
+        df2 (pd.DataFrame): later record with a datetime index
+        field (str): column used to match units; default is Level
+        tolerance (float): allowed relative difference from a conversion factor; default 3%
+
+    Returns:
+        pd.DataFrame: a copy of df2 with field converted
+    """
+    conversion_factors = {
+        "meters to feet": 3.28084,
+        "feet to meters": 0.3048,
+        "psi to feet": 2.3066587,
+        "feet to psi": 0.4335275,
+        "psi to bar": 0.0689,
+        "bar to psi": 14.5038,
+        "kPa to psi": 0.145038,
+        "psi to kPa": 6.89476,
+        "kPa to feet": 0.3345525655,
+        "feet to kPa": 2.9890669,
+        "feet to bar": 0.02989,
+        "bar to feet": 33.4553,
+        "feet to mmHg": 22.42,
+        "mmHg to feet": 0.0446,
+    }
+    df2 = df2.copy()
+    df1std = np.mean(df1[field].rolling(24).std())
+    df2std = np.mean(df2[field].rolling(24).std())
+    if not df2std or np.isnan(df1std) or np.isnan(df2std):
+        return df2
+    stdratio = df1std / df2std
+
+    for name, value in conversion_factors.items():
+        if np.abs((value - stdratio) / value) < tolerance:
+            print(name)
+            df2[field] = df2[field] * value
+            break
+    return df2
+
+
+def read_troll_csv(filename):
+    """Read an In-Situ (Aqua TROLL / Level TROLL) csv export into a DataFrame indexed by DateTime.
+
+    Pressure columns are converted to feet of water in a new ``Level`` column, and
+    specific conductivity is renamed ``specific_conductivity``.
+    """
+    df = pd.read_csv(
+        filename,
+        skiprows=get_line_num(filename),
+        encoding="unicode_escape",
+    )
+    df.columns = (
+        df.columns.str.replace(" ", "").str.replace("(", "_").str.replace(")", "")
+    )
+    date_col = next((c for c in df.columns if "date" in c.lower()), None)
+    if date_col is None:
+        raise ValueError(f"No date column found in {Path(filename).name}")
+    df["DateTime"] = pd.to_datetime(df[date_col])
+    df = df.drop(columns=date_col).drop_duplicates("DateTime")
+    df = df.set_index("DateTime").sort_index()
+
+    for col in list(df.columns):
+        if "Press" in col:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+            if "psi" in col:
+                df["Level"] = df[col] * 2.3067
+            elif "Hg" in col:
+                df["Level"] = df[col] * 0.044603
+            elif "kPa" in col:
+                df["Level"] = df[col] * 0.33455
+        elif "specificcond" in col.lower():
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+            df = df.rename(columns={col: "specific_conductivity"})
+        elif any(k in col for k in ("Depth", "Cond", "Total", "Salin", "Dens", "Temp")):
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+    df["filename"] = Path(filename).stem
+    return df
 
 
 class NewTransImp(object):

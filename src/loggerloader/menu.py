@@ -12,12 +12,14 @@ import platform
 
 from typing import Any, Dict, Optional
 from pathlib import Path
+from dataclasses import asdict
 
 rcParams['figure.figsize'] = 15, 10
 
 import pandas as pd
 
 from loggerloader import __version__ as version
+from loggerloader.config import ProcessingSettings
 
 
 class ApplicationMenu:
@@ -70,14 +72,16 @@ class ApplicationMenu:
         self.update_recent_files()
 
         # Add all submenus to File menu
+        self.file_menu.add_command(label="Open Project...", command=self.app.open_project)
+        self.file_menu.add_separator()
         self.file_menu.add_cascade(label="Import", menu=import_menu)
         self.file_menu.add_cascade(label="Export", menu=export_menu)
         self.file_menu.add_separator()
         self.file_menu.add_cascade(label="Recent Files", menu=self.recent_menu)
         self.file_menu.add_separator()
-        #self.file_menu.add_command(label="Save Project", command=self.app.save_config)
-        #self.file_menu.add_command(label="Save Project As...",
-        #                           command=self.app.save_project_as)
+        self.file_menu.add_command(label="Save Project", command=self.app.save_project)
+        self.file_menu.add_command(label="Save Project As...",
+                                   command=self.app.save_project_as)
         self.file_menu.add_separator()
         self.file_menu.add_command(label="Exit", command=self.root.quit)
 
@@ -95,6 +99,11 @@ class ApplicationMenu:
                                command=lambda: self.app.clean_data('gaps'))
         clean_menu.add_command(label="Smooth Data",
                                command=lambda: self.app.clean_data('smooth'))
+        clean_menu.add_separator()
+        clean_menu.add_command(label="Trim Extrema...",
+                               command=lambda: self.app.clean_data('trim'))
+        clean_menu.add_command(label="Convert Units...",
+                               command=lambda: self.app.clean_data('units'))
 
 
         self.edit_menu.add_cascade(label="Clean Data", menu=clean_menu)
@@ -111,20 +120,20 @@ class ApplicationMenu:
 
         # Theme submenu
         theme_menu = tk.Menu(self.view_menu, tearoff=0)
-        theme_menu.add_radiobutton(label="Light",
-                                   command=lambda: self.app.set_theme('light'))
-        theme_menu.add_radiobutton(label="Dark",
-                                   command=lambda: self.app.set_theme('dark'))
-        theme_menu.add_radiobutton(label="System",
-                                   command=lambda: self.app.set_theme('system'))
+        self.theme_var = tk.StringVar(self.root, value=self.settings.get('theme', 'light'))
+        for label, mode in (("Light", 'light'), ("Dark", 'dark'), ("System", 'system')):
+            theme_menu.add_radiobutton(label=label, value=mode, variable=self.theme_var,
+                                       command=lambda m=mode: self.app.set_theme(m))
 
         # Chart options submenu
         chart_menu = tk.Menu(self.view_menu, tearoff=0)
-        chart_menu.add_checkbutton(label="Show Grid")
-        chart_menu.add_checkbutton(label="Show Legend")
-        chart_menu.add_separator()
-        #chart_menu.add_command(label="Customize...",
-        #                       command=self.app.customize_chart)
+        charts = self.app.chart_manager
+        chart_menu.add_checkbutton(label="Show Grid", variable=charts.grid,
+                                   command=self.app.refresh_chart)
+        chart_menu.add_checkbutton(label="Show Legend", variable=charts.legend,
+                                   command=self.app.refresh_chart)
+        chart_menu.add_checkbutton(label="Flip Y Axis", variable=charts.flip_y,
+                                   command=self.app.refresh_chart)
 
         self.view_menu.add_cascade(label="Theme", menu=theme_menu)
         self.view_menu.add_cascade(label="Chart Options", menu=chart_menu)
@@ -351,28 +360,48 @@ class ApplicationMenu:
         return
 
     def show_options(self):
-        """Show options dialog"""
-        # Create options dialog window
+        """Edit the processing settings used by Clean Data (saved in config.json)"""
+        config = self.app.config
         options = tk.Toplevel(self.root)
         options.title("Options")
-        options.geometry("500x400")
         options.transient(self.root)
         options.grab_set()
 
-        notebook = ttk.Notebook(options)
-        notebook.pack(fill='both', expand=True, padx=5, pady=5)
+        frame = ttk.LabelFrame(options, text="Processing", padding=5)
+        frame.pack(fill='both', expand=True, padx=5, pady=5)
+        labels = {
+            'sampling_interval': 'Sampling interval (min)',
+            'max_gap': 'Max gap (min)',
+            'outlier_threshold': 'Outlier threshold (std. dev. of changes)',
+            'smoothing_window': 'Smoothing window (readings)',
+            'drift_tolerance': 'Drift tolerance (ft/day)',
+            'interpolation_limit': 'Interpolation limit (min)',
+        }
+        current = asdict(config.processing)
+        entries = {}
+        for row, (name, label) in enumerate(labels.items()):
+            ttk.Label(frame, text=label).grid(row=row, column=0, sticky='w', pady=2)
+            entries[name] = ttk.Entry(frame, width=10)
+            entries[name].insert(0, str(current[name]))
+            entries[name].grid(row=row, column=1, padx=5)
 
-        # Processing options tab
-        processing = ttk.Frame(notebook)
-        notebook.add(processing, text="Processing")
+        def save():
+            try:
+                values = {name: type(current[name])(float(entry.get()))
+                          for name, entry in entries.items()}
+            except ValueError:
+                messagebox.showwarning("Options", "Enter numbers for every setting.", parent=options)
+                return
+            settings = ProcessingSettings(**values)
+            if not settings.validate():
+                messagebox.showwarning("Options", "Those settings are out of range "
+                                       "(max gap must be at least the sampling interval).", parent=options)
+                return
+            config.processing = settings
+            config.save_config()
+            options.destroy()
 
-        # Analysis options tab
-        analysis = ttk.Frame(notebook)
-        notebook.add(analysis, text="Analysis")
-
-        # Export options tab
-        export = ttk.Frame(notebook)
-        notebook.add(export, text="Export")
-
-        # Add options controls
-        ttk.Button(options, text="OK", command=options.destroy).pack(pady=5)
+        buttons = ttk.Frame(options)
+        buttons.pack(pady=5)
+        ttk.Button(buttons, text="OK", command=save).pack(side='left', padx=5)
+        ttk.Button(buttons, text="Cancel", command=options.destroy).pack(side='left', padx=5)
