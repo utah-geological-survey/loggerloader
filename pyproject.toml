@@ -14,19 +14,20 @@ license = {file = "LICENSE.txt"}
 keywords = ["well", "groundwater", "transducer"]
 dependencies = [
     "pandas >= 1.5",
-    "numpy >= 1.0",
+    "numpy",
     "matplotlib >= 3.0",
-    "xlrd >= 0.5.4",
+    "plotly >= 5.0",
     "openpyxl >= 2.4.0",
+    "xlrd >= 2.0",
     "tkcalendar",
-    "pytz",
-    "numexpr",
-    "babel",
     "tksheet",
     "beautifulsoup4",
 ]
 
 [project.optional-dependencies]
+export = [
+    "kaleido",
+]
 test = [
     "pytest >= 7.0",
     "pytest-cov",
