@@ -2,3 +2,4 @@
 /.idea/
 build/
 /src/loggerloader.egg-info/*
+/tests/__pycache__/*

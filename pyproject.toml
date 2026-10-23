@@ -58,3 +58,6 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+    "gui: tests that open Tk windows (deselect with -m \"not gui\")",
+]
