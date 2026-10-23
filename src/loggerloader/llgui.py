@@ -254,12 +254,18 @@ class LoggerLoaderApp:
 
     def write_project(self, filename):
         view = self.well_view
+        bulk = self.view_manager.bulk_well_view
         tables = {'data': dict(view.data)}
-        if view.workflow.manual_table is not None:
-            tables['inputs'] = {'manual-file': view.workflow.manual_table}
+        inputs = {'manual-file': view.workflow.manual_table,
+                  'bulk-info-file': bulk.info_table,
+                  'bulk-manual-file': bulk.manual_table}
+        inputs = {k: df for k, df in inputs.items() if df is not None}
+        if inputs:
+            tables['inputs'] = inputs
         settings = {
             'workflow': view.workflow.get_state(),
             'many_files': self.view_manager.many_files_view.get_state(),
+            'bulk': bulk.get_state(),
             'view': {
                 'selected_tab': view.selected_tab,
                 'field': view.field,
@@ -290,9 +296,12 @@ class LoggerLoaderApp:
         view.clear_tables()
         for key, df in tables.get('data', {}).items():
             view.set_table(key, df, select=False)
-        view.workflow.set_state(settings.get('workflow', {}),
-                                manual_table=tables.get('inputs', {}).get('manual-file'))
+        inputs = tables.get('inputs', {})
+        view.workflow.set_state(settings.get('workflow', {}), manual_table=inputs.get('manual-file'))
         self.view_manager.many_files_view.set_state(settings.get('many_files', {}))
+        self.view_manager.bulk_well_view.set_state(settings.get('bulk', {}),
+                                                   info_table=inputs.get('bulk-info-file'),
+                                                   manual_table=inputs.get('bulk-manual-file'))
 
         options = settings.get('view', {})
         for name in ('flip_y', 'grid', 'legend'):

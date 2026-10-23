@@ -221,8 +221,10 @@ class ViewManager:
 
     def create_bulk_well_frame(self):
         """Create frame for bulk well processing"""
+        from loggerloader.bulk import BulkWellView  # bulk imports from this module
+
         frame = ttk.Frame(self.processing_notebook)
-        self.bulk_well_view = BulkWellView(frame, self.data_model)
+        self.bulk_well_view = BulkWellView(frame, self.single_well_view)
         self.processing_notebook.add(frame, text='Bulk Well Process')
 
     def create_many_files_frame(self):
@@ -322,6 +324,17 @@ class WellDataView:
         self.data, self.datatable, self.tabs = {}, {}, {}
         self.selected_tab = None
         self.chart_manager.clear()
+
+    def remove_table(self, key):
+        """Remove one table and its tab, if it exists"""
+        frame = self.tabs.pop(key, None)
+        if frame is not None:
+            self.notebook.forget(frame)
+            frame.destroy()
+        self.data.pop(key, None)
+        self.datatable.pop(key, None)
+        if self.selected_tab == key:
+            self.selected_tab = None
 
     def current_table(self):
         """(key, DataFrame) of the selected tab, or (None, None)"""
@@ -599,45 +612,6 @@ class WellDataController:
             raise ValueError(f"Can't convert {in_units} to {out_units}.")
         self.view.set_table(key, df)
         return df
-
-
-class BulkWellView:
-    """View for processing multiple wells in bulk"""
-
-    def __init__(self, master, data_model):
-        self.master = master
-        self.data_model = data_model
-        self.create_widgets()
-
-    def create_widgets(self):
-        """Create widgets for bulk processing"""
-        ttk.Label(self.master, text="Bulk Well Processing").pack()
-
-        # Well info frame
-        info_frame = ttk.LabelFrame(self.master, text="Well Information")
-        info_frame.pack(fill='x', padx=5, pady=5)
-
-        ttk.Button(info_frame, text="Import Well Info",
-                   command=self.import_well_info).pack(side='left', padx=5)
-
-        # Processing frame
-        process_frame = ttk.LabelFrame(self.master, text="Bulk Processing")
-        process_frame.pack(fill='x', padx=5, pady=5)
-
-        ttk.Button(process_frame, text="Process All Wells",
-                   command=self.process_wells).pack(side='left', padx=5)
-
-    def import_well_info(self):
-        self.not_ported()
-
-    def process_wells(self):
-        self.not_ported()
-
-    @staticmethod
-    def not_ported():
-        messagebox.showinfo("Bulk Well Process",
-                            "Bulk processing has not been ported to this version yet; "
-                            "use the classic GUI (git history: llgui.py) for bulk wells.")
 
 
 class ManyFilesView:
