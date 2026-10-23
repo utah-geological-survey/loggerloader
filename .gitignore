@@ -1,2 +1,4 @@
 /.idea/
 /.idea/
+build/
+/src/loggerloader.egg-info/*

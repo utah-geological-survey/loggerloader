@@ -1,0 +1,2 @@
+well_id,location_name,latitude,longitude,ground_elevation,stickup,total_depth,well_type,installation_date,notes
+WELL-01,Example Well,40.7608,-111.891,4500.0,2.5,150.0,monitoring,2022-12-31,Example well for testing
