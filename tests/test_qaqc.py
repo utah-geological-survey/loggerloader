@@ -75,7 +75,7 @@ def test_drop_duplicates_exact_matches():
     df = pd.DataFrame(
         {"Level": [1.5, 1.5, 1.6], "Temperature": [12.0, 12.0, 12.1]}, index=dates
     )
-    result = drop_duplicates_with_index(df, subset=["Level", "Temperature"])[cite: 4]
+    result = drop_duplicates_with_index(df, subset=["Level", "Temperature"])
     assert len(result) == 2
     assert result.index[0] == pd.Timestamp("2024-01-01 10:00")
     assert result.index[1] == pd.Timestamp("2024-01-01 11:00")
@@ -84,7 +84,7 @@ def test_drop_duplicates_exact_matches():
 def test_drop_duplicates_keeps_last():
     dates = pd.to_datetime(["2024-01-01 10:00", "2024-01-01 10:00"])
     df = pd.DataFrame({"Level": [1.5, 1.5], "note": ["first", "last"]}, index=dates)
-    result = drop_duplicates_with_index(df, subset=["Level"], keep="last")[cite: 4]
+    result = drop_duplicates_with_index(df, subset=["Level"], keep="last")
     assert len(result) == 1
     assert result["note"].iloc[0] == "last"
 
@@ -92,12 +92,12 @@ def test_drop_duplicates_keeps_last():
 def test_drop_duplicates_missing_column_raises_keyerror():
     df = pd.DataFrame({"Level": [1.0, 2.0]})
     with pytest.raises(KeyError):
-        drop_duplicates_with_index(df, subset=["NonExistentColumn"])[cite: 4]
+        drop_duplicates_with_index(df, subset=["NonExistentColumn"])
 
 
 def test_drop_duplicates_empty_dataframe():
     df = pd.DataFrame(columns=["Level", "Temperature"])
-    result = drop_duplicates_with_index(df)[cite: 4]
+    result = drop_duplicates_with_index(df)
     assert result.empty
 
 
@@ -111,10 +111,10 @@ def test_resolve_duplicates_drop_retains_replacement(overlapping_loggers_df):
         source_col="filename",
         action="drop",
         keep="last",
-    )[cite: 4]
+    )
 
-    assert len(summary) == 1[cite: 4]
-    assert summary.iloc[0]["unique_timestamps"] == 3  # 12:00, 13:00, 14:00 overlap[cite: 4]
+    assert len(summary) == 1
+    assert summary.iloc[0]["unique_timestamps"] == 3  # 12:00, 13:00, 14:00 overlap
 
     # Verification: Overlapping timestamps must belong to logger_new
     overlap_period = clean_df.loc["2024-01-01 12:00":"2024-01-01 14:00"]
@@ -126,26 +126,26 @@ def test_resolve_duplicates_flag_mode(overlapping_loggers_df):
         overlapping_loggers_df,
         source_col="filename",
         action="flag",
-    )[cite: 4]
+    )
 
-    assert len(flagged_df) == len(overlapping_loggers_df)[cite: 4]
-    assert "is_duplicate_timestamp" in flagged_df.columns[cite: 4]
-    assert flagged_df["is_duplicate_timestamp"].sum() == 6  # 3 pairs of overlap[cite: 4]
+    assert len(flagged_df) == len(overlapping_loggers_df)
+    assert "is_duplicate_timestamp" in flagged_df.columns
+    assert flagged_df["is_duplicate_timestamp"].sum() == 6  # 3 pairs of overlap
 
 
 def test_resolve_duplicates_no_conflicts(clean_transducer_series):
     result_df, summary = resolve_duplicate_transducer_records(
         clean_transducer_series,
         source_col="filename",
-    )[cite: 4]
-    assert len(result_df) == len(clean_transducer_series)[cite: 4]
-    assert summary.empty[cite: 4]
+    )
+    assert len(result_df) == len(clean_transducer_series)
+    assert summary.empty
 
 
 def test_resolve_duplicates_missing_datetime_raises_value_error():
     df_no_dt = pd.DataFrame({"Level": [1, 2, 3], "filename": ["a", "b", "c"]})
     with pytest.raises(ValueError):
-        resolve_duplicate_transducer_records(df_no_dt)[cite: 4]
+        resolve_duplicate_transducer_records(df_no_dt)
 
 
 # ==========================================
@@ -161,7 +161,7 @@ def test_resolve_duplicates_missing_datetime_raises_value_error():
     ],
 )
 def test_spike_default_thresholds(param_name, expected_threshold):
-    assert DEFAULT_SPIKE_THRESHOLDS[param_name] == expected_threshold[cite: 4]
+    assert DEFAULT_SPIKE_THRESHOLDS[param_name] == expected_threshold
 
 
 def test_detect_spikes_without_manual_filtering(spiky_water_level_df):
@@ -171,10 +171,10 @@ def test_detect_spikes_without_manual_filtering(spiky_water_level_df):
         threshold=1.0,
         action="drop",
         drop_near_manual_only=False,
-    )[cite: 4]
+    )
 
-    assert len(summary) == 2[cite: 4]
-    assert len(clean_df) == 18[cite: 4]
+    assert len(summary) == 2
+    assert len(clean_df) == 18
     assert 14.5 not in clean_df["Level"].values
     assert 16.0 not in clean_df["Level"].values
 
@@ -191,24 +191,24 @@ def test_detect_spikes_correlated_to_manual_visit(spiky_water_level_df):
         manual_window="30min",
         action="drop",
         drop_near_manual_only=True,
-    )[cite: 4]
+    )
 
     # Only the spike at 02:00 should drop; the spike at 03:45 should be retained
-    assert len(clean_df) == 19[cite: 4]
+    assert len(clean_df) == 19
     assert 14.5 not in clean_df["Level"].values
-    assert 16.0 in clean_df["Level"].values[cite: 4]
+    assert 16.0 in clean_df["Level"].values
 
     dropped_row = summary[summary["measured_value"] == 14.5].iloc[0]
     retained_row = summary[summary["measured_value"] == 16.0].iloc[0]
-    assert dropped_row["dropped"] is True[cite: 4]
-    assert dropped_row["near_manual_visit"] is True[cite: 4]
-    assert retained_row["dropped"] is False[cite: 4]
-    assert retained_row["near_manual_visit"] is False[cite: 4]
+    assert dropped_row["dropped"] is True
+    assert dropped_row["near_manual_visit"] is True
+    assert retained_row["dropped"] is False
+    assert retained_row["near_manual_visit"] is False
 
 
 def test_detect_spikes_missing_value_column(clean_transducer_series):
     with pytest.raises(KeyError):
-        detect_transducer_spikes(clean_transducer_series, value_col="InvalidCol")[cite: 4]
+        detect_transducer_spikes(clean_transducer_series, value_col="InvalidCol")
 
 
 # ==========================================
@@ -228,12 +228,12 @@ def test_detect_flatlines_exact():
         min_duration=None,
         tolerance=0.0,
         action="drop",
-    )[cite: 4]
+    )
 
-    assert len(summary) == 1[cite: 4]
-    assert summary.iloc[0]["reading_count"] == 8[cite: 4]
-    assert summary.iloc[0]["flatline_value"] == 5.0[cite: 4]
-    assert len(clean_df) == 12[cite: 4]
+    assert len(summary) == 1
+    assert summary.iloc[0]["reading_count"] == 8
+    assert summary.iloc[0]["flatline_value"] == 5.0
+    assert len(clean_df) == 12
 
 
 def test_detect_flatlines_with_noise_tolerance():
@@ -249,11 +249,11 @@ def test_detect_flatlines_with_noise_tolerance():
         min_duration=None,
         tolerance=0.005,
         action="drop",
-    )[cite: 4]
+    )
 
-    assert len(summary) == 1[cite: 4]
-    assert summary.iloc[0]["reading_count"] == 7[cite: 4]
-    assert len(clean_df) == 3[cite: 4]
+    assert len(summary) == 1
+    assert summary.iloc[0]["reading_count"] == 7
+    assert len(clean_df) == 3
 
 
 def test_detect_flatlines_broken_by_max_gap():
@@ -275,9 +275,9 @@ def test_detect_flatlines_broken_by_max_gap():
         min_duration=None,
         max_gap="2h",
         action="report",
-    )[cite: 4]
+    )
 
-    assert summary.empty[cite: 4]
+    assert summary.empty
 
 
 def test_detect_flatlines_requires_criteria():
@@ -285,4 +285,4 @@ def test_detect_flatlines_requires_criteria():
     with pytest.raises(ValueError):
         detect_transducer_flatlines(
             df, value_col="Level", min_duration=None, min_consecutive=None
-        )[cite: 4]
+        )

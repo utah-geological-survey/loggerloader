@@ -75,7 +75,7 @@ def test_jumpfix_with_jumps(jump_data):
     np.testing.assert_array_almost_equal(result["value"].values, expected_values, decimal=5)
 
 def test_jumpfix_with_return_jumps(jump_data):
-    result, jumps = jumpfix(jump_data, "value", threshold=1.0, return_jump=True)
+    jumps, return = jumpfix(jump_data, "value", threshold=1.0, return_jump=True)
     assert len(jumps) == 2, "Should detect exactly 2 major jumps"
     assert "jump_size" in jumps.columns
 
