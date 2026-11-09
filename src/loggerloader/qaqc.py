@@ -4,8 +4,8 @@ from typing import Iterable, Literal, Optional, Tuple, Union
 import numpy as np
 
 DEFAULT_SPIKE_THRESHOLDS = {
-    "Level": 0.5,
-    "Temperature": 1.0,
+    "level": 0.5,
+    "temperature": 1.0,
     "specific_conductivity": 50.0
 }
 
