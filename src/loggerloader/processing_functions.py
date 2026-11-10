@@ -8,42 +8,6 @@ from typing import Iterable, Union
 
 # # DATA PREP AND ORGANIZATION
 
-def copy_recent_files(copydir, recent_years):
-    """Copies matching recent files into a dedicated subdirectory.
-
-    Creates a subfolder named 'recent' inside `copydir`, purges any existing
-    files inside it, and copies over files from `copydir` whose filenames
-    start with any of the prefixes defined in `recent_years`.
-
-    Args:
-        copydir (str or pathlib.Path): Directory containing the source files
-            to evaluate and where the 'recent' destination folder will be created.
-        recent_years (iterable of str): Collection of year strings (e.g.,
-            ['2024', '2025', '2026']) to match against the start of filenames.
-
-    Returns:
-        None
-
-    Raises:
-        FileNotFoundError: If `copydir` does not exist.
-        NotADirectoryError: If `copydir` is not a directory.
-    """
-    # Use Path objects for paths
-    recent_dir = Path(copydir) / 'recent'
-    if not recent_dir.exists():
-        recent_dir.mkdir(parents=True, exist_ok=True)  
-
-    for filename in recent_dir.iterdir():
-        if filename.is_file():
-            filename.unlink()  # Delete the file
-
-    # Copy the relevant files from the source directory
-    for filename in Path(copydir).iterdir():
-        if filename.name.startswith(tuple(recent_years)): 
-            destination_file = recent_dir / filename.name
-            shutil.copy(filename, destination_file)  # Copy the file to the 'recent' directory
-            print(f'Copied: {filename.name}')
-
 def prep_datetime_data(
     input_data: pd.DataFrame,
     mixed: bool = False,

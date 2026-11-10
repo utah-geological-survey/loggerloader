@@ -6,6 +6,7 @@ from loggerloader.loader import *
 from loggerloader.qaqc import *
 from loggerloader.processing_functions import *
 from loggerloader.processing_plots import *
+from loggerloader.data_organization import *
 
 try:
     from loggerloader.llgui import *
