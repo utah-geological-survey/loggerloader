@@ -103,6 +103,30 @@ def compilefiles(searchdir, copydir, filecontains, filetype=".xle"):
     print("Copy Complete!")
     return
 
+def check_file_completeness(searchdir, well_dict):
+    """
+        Checks matches between files in the searchdir and values in the well_dict
+    
+        Parameters:
+        - searchdir (str or Path): The root directory to search for files.
+        - well_dict: dictionary with well unique name as key and names used in file as values
+    """
+    file_list = os.listdir(searchdir)
+
+    all_values = {val for patterns in well_dict.values() for val in patterns}
+
+    unmatched_files = [
+        f for f in file_list 
+        if not any(val in f for val in all_values)
+    ]
+
+    unmatched_keys = [
+        key for key, patterns in well_dict.items() 
+        if not any(pattern in f for f in file_list for pattern in patterns)
+    ]
+
+    print("File in folder not in data dictionary:", unmatched_files) # file in folder that isn't in the dictionary
+    print("Key in dictionary without matching file:", unmatched_keys) # key in dictionary with no matching file
 # compile transducer files into a single dastaframe
 
 class NewTransImp(object):
@@ -654,3 +678,33 @@ def dataendclean(df, x, inplace=False, jumptol=1.0):
     except IndexError:
         print("No Jumps")
     return df
+
+def barodistance(wellinfo):
+    """Determines Closest Barometer to Each Well using wellinfo DataFrame"""
+    barometers = {
+        "barom": ["pw03", "pw10", "pw19"],
+        "X": [240327.49, 271127.67, 305088.9],
+        "Y": [4314993.95, 4356071.98, 4389630.71],
+        "Z": [1623.079737, 1605.187759, 1412.673738],
+    }
+    barolocal = pd.DataFrame(barometers)
+    barolocal = barolocal.reset_index()
+    barolocal.set_index("barom", inplace=True)
+
+    wellinfo["pw03"] = np.sqrt(
+        (barolocal.loc["pw03", "X"] - wellinfo["UTMEasting"]) ** 2
+        + (barolocal.loc["pw03", "Y"] - wellinfo["UTMNorthing"]) ** 2
+        + (barolocal.loc["pw03", "Z"] - wellinfo["G_Elev_m"]) ** 2
+    )
+    wellinfo["pw10"] = np.sqrt(
+        (barolocal.loc["pw10", "X"] - wellinfo["UTMEasting"]) ** 2
+        + (barolocal.loc["pw10", "Y"] - wellinfo["UTMNorthing"]) ** 2
+        + (barolocal.loc["pw10", "Z"] - wellinfo["G_Elev_m"]) ** 2
+    )
+    wellinfo["pw19"] = np.sqrt(
+        (barolocal.loc["pw19", "X"] - wellinfo["UTMEasting"]) ** 2
+        + (barolocal.loc["pw19", "Y"] - wellinfo["UTMNorthing"]) ** 2
+        + (barolocal.loc["pw19", "Z"] - wellinfo["G_Elev_m"]) ** 2
+    )
+    wellinfo["closest_baro"] = wellinfo[["pw03", "pw10", "pw19"]].T.idxmin()
+    return wellinfo

@@ -1,60 +1,29 @@
 import datetime
-from pathlib import Path
-from shutil import copyfile
-from typing import Union, Tuple
 
 import numpy as np
 import pandas as pd
+import logging
 
-from data_organization import dataendclean
+from .data_organization import dataendclean
 
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
-###################################################################################################################
-# MAIN CODE
-
-
-#####################################################################################################################
-def elevatewater(
-    df,
-    elevation,
-    stickup,
-    dtw_field="dtwbelowcasing",
-    wtr_elev_field="waterelevation",
-    flip=False,
-):
-    """treats both manual and transducer data; easiest to calculate manual elevations first
-    and do fix-drift class on raw well pressure
+def fcl(df, dtobj):
+    """
+    Finds closest date index in a dataframe to a date object
 
     Args:
-        df: pandas dataframe containing water elevation data
-        elevation: ground elevation at wellsite
-        stickup: stickup of casing above ground surface; can be float or series
-        dtw_field: field in df that denotes depth to water (should be negative for below ground)
-        wtr_elev_field: field to store groundwater elevation in
-        flip = if True, multiplies dataset by -1; use this if inputing pressure data
+        df (pd.DataFrame):
+            DataFrame
+        dtobj (datetime.datetime):
+            date object
 
-    Notes:
-        increase in pressure = increase in water elevation;
-        increase in pressure = decrease in depth to water;
-        increase in depth to water = decrease in water elevation;
-
-    Examples:
-        >>> manual = {'dates':['6/11/1991','2/1/1999','8/5/2001','7/14/2000','8/19/2002','4/2/2005'], 'dtwbelowcasing':[1,10,14,52,10,8]}
-        >>> df = pd.DataFrame(manual)
-        >>> ew = ElevateWater(df, 4000, 1)
-        >>> ew.stickup
-        1
-        >>> ew.elevation
-        4000
+    taken from: http://stackoverflow.com/questions/15115547/find-closest-row-of-dataframe-to-given-time-in-pandas
     """
-
-    if flip:
-        df[dtw_field] = df[dtw_field] * -1
-    else:
-        pass
-
-    df[wtr_elev_field] = df[dtw_field] + elevation + stickup
-    return df
+    return df.iloc[
+        np.argmin(np.abs(pd.to_datetime(df.index) - dtobj))
+    ]  # remove to_pydatetime()
 
 
 class Drifting(object):
@@ -575,372 +544,83 @@ class Drifting(object):
         df = df.set_index(dtnm)
         self.wellbarofixed = df.sort_index()
 
-def barodistance(wellinfo):
-    """Determines Closest Barometer to Each Well using wellinfo DataFrame"""
-    barometers = {
-        "barom": ["pw03", "pw10", "pw19"],
-        "X": [240327.49, 271127.67, 305088.9],
-        "Y": [4314993.95, 4356071.98, 4389630.71],
-        "Z": [1623.079737, 1605.187759, 1412.673738],
-    }
-    barolocal = pd.DataFrame(barometers)
-    barolocal = barolocal.reset_index()
-    barolocal.set_index("barom", inplace=True)
 
-    wellinfo["pw03"] = np.sqrt(
-        (barolocal.loc["pw03", "X"] - wellinfo["UTMEasting"]) ** 2
-        + (barolocal.loc["pw03", "Y"] - wellinfo["UTMNorthing"]) ** 2
-        + (barolocal.loc["pw03", "Z"] - wellinfo["G_Elev_m"]) ** 2
-    )
-    wellinfo["pw10"] = np.sqrt(
-        (barolocal.loc["pw10", "X"] - wellinfo["UTMEasting"]) ** 2
-        + (barolocal.loc["pw10", "Y"] - wellinfo["UTMNorthing"]) ** 2
-        + (barolocal.loc["pw10", "Z"] - wellinfo["G_Elev_m"]) ** 2
-    )
-    wellinfo["pw19"] = np.sqrt(
-        (barolocal.loc["pw19", "X"] - wellinfo["UTMEasting"]) ** 2
-        + (barolocal.loc["pw19", "Y"] - wellinfo["UTMNorthing"]) ** 2
-        + (barolocal.loc["pw19", "Z"] - wellinfo["G_Elev_m"]) ** 2
-    )
-    wellinfo["closest_baro"] = wellinfo[["pw03", "pw10", "pw19"]].T.idxmin()
-    return wellinfo
+def convert_pressure_to_dtw_below_ground(
+        df, 
+        mandf,
+        siteid,
+        stickup,
+        verticalmeasure,
+        has_packer = 'no',
+        sensor_depth_below_casing = None,
+        mandf_dtwbelowground_column = 'dtwbelowground',
+        barocorrected_column = 'corrwl',
+        day_buffer = 1
+        ):
 
+        if has_packer == 'no':
+                logging.info('Correcting site using manual measurements')
+                mandf_flipped = mandf.copy()
+                mandf_flipped['dtw_below_ground_flipped'] = mandf_flipped[mandf_dtwbelowground_column]*-1
 
-# -----------------------------------------------------------------------------------------------------------------------
-# These scripts remove outlier data and filter the time series of jumps and erratic measurements
+                dft, drift_info, mxdrft = Drifting(mandf_flipped, df, 
+                                                        drifting_field=barocorrected_column,
+                                                        man_field='dtw_below_ground_flipped',
+                                                        daybuffer=day_buffer,
+                                                        output_field='measureddtw',
+                                                        well_id=siteid, 
+                                                        trim_end=False).process_drift()
+                dft['measureddtw'] = dft['measureddtw']*-1
+                drift_info['notes'] = ""
+                num_fields = ['slope_man', 'slope_trans','intercept', 'slope', 'first_meas', 'last_meas', 'first_trans', 'last_trans', 'drift', 'quality']
+                drift_info[num_fields] = drift_info[num_fields].apply(lambda x: x.astype(float)).round(4)
+                drift_info['locationid'] = siteid
+        elif has_packer == 'yes':
+                logging.info('Well with packer; calculated dtw below ground using sensor depth')
+                if pd.notna(sensor_depth_below_casing) and pd.notna(stickup):
+                        sensor_depth_below_ground = sensor_depth_below_casing-stickup
+                        dft = df.copy()
+                        dft['measureddtw'] = sensor_depth_below_ground - dft[barocorrected_column]
+                else:
+                        logging.warning(f'Missing stickup or sensor depth values; cannot calculate measureddtw')
+                drift_dict = {
+                        'drift': np.nan,
+                        'locationid': siteid,
+                        'quality': 0.3,
+                        'notes': 'packered well; no manual measurements',
+                    }
+                drift_info = pd.DataFrame([drift_dict])
+        else:
+                logging.warning(f'Packer status not yes or no; unsure how to correct data')
 
+        dft['waterelevation'] = verticalmeasure - dft['measureddtw']
+        return(dft, drift_info)
 
+def review_drift_values(drift_info):
+    logging.info(f"max drift: {drift_info.drift.abs().max().round(3)}")
+    bad_drift = drift_info[(drift_info.drift.abs()>0.3) | (drift_info.drift.isna())]
+    if len(bad_drift)>0:
+        print('Rows with bad or na drift')
+        print(drift_info.loc[(drift_info.drift.abs()>0.3) | (drift_info.drift.isna()), ['t_beg', 't_end', 'drift']])
+    else:
+        logging.info("No NA or drift over 0.3")
 
-
-
-
-
-
-def jumpfix(
-    df: pd.DataFrame, meas: str, threshold: float = 0.005, return_jump: bool = False
-) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
-    """
-    Removes jumps or jolts in time series data where offset is lasting.
-
-    Args:
-        df: DataFrame to manipulate. Must have datetime index.
-        meas: Name of field with jolts to correct
-        threshold: Size of jolt to search for
-        return_jump: If True, returns tuple of (corrected_data, jumps)
-
-    Returns:
-        If return_jump is False:
-            DataFrame with corrected data
-        If return_jump is True:
-            Tuple of (corrected_DataFrame, jumps_DataFrame)
-
-    Example:
-        >>> dates = pd.date_range('2024-01-01', periods=5)
-        >>> df = pd.DataFrame({
-        ...     'level': [10, 10.1, 15.1, 15.2, 15.3]
-        ... }, index=dates)
-        >>> corrected = jumpfix(df, 'level', threshold=1)
-        >>> corrected['level'].tolist()
-        [10.0, 10.1, 10.1, 10.2, 10.3]
-
-    Notes:
-        - The function detects sudden changes (jumps) in the data that exceed
-          the threshold value
-        - Each jump is corrected by subtracting the cumulative jump amount
-          from all subsequent values
-        - The original time ordering is preserved
-        - NaN values are preserved in their original positions
-    """
-    # Input validation
-    if not isinstance(df, pd.DataFrame):
-        raise TypeError("Input must be a pandas DataFrame")
-
-    if meas not in df.columns:
-        raise ValueError(f"Column '{meas}' not found in DataFrame")
-
-    if not isinstance(df.index, pd.DatetimeIndex):
-        raise TypeError("DataFrame index must be DatetimeIndex")
-
-    # Create copy and ensure it's sorted
-    df_temp = df.copy(deep=True).sort_index()
-    df1 = df_temp[~df_temp.index.duplicated(keep='first')]
-    if df1.shape[0] != df_temp.shape[0]:
-        print(f'Dropped {df_temp.shape[0]-df1.shape[0]} records')
-
-
-    # Calculate differences between consecutive values
-    df1["delta"] = df1[meas].diff()
-
-    # Find jumps exceeding threshold
-    jump_mask = df1["delta"].abs() > threshold
-    jumps = df1[jump_mask].copy()
-
-    if len(jumps) == 0:
-        if return_jump:
-            return df1, pd.DataFrame()
-        return df1
-
-    # Calculate cumulative sum of jumps
-    jumps["cumul"] = jumps["delta"].cumsum()
-
-    # Initialize new values column
-    df1["newVal"] = df1[meas].copy()
-
-    # Apply corrections
-    for idx in range(len(jumps.index)):
-        jump_time = jumps.index[idx]
-        jump_amount = jumps["cumul"].iloc[
-            idx
-        ]  # Using iloc instead of [] for position access
-
-        # Create mask for all timestamps after the jump
-        mask = df1.index >= jump_time
-
-        # Apply correction
-        df1.loc[mask, "newVal"] = df1.loc[mask, meas] - jump_amount
-
-    # Update original measurement column
-    df1[meas] = df1["newVal"]
-
-    # Clean up temporary columns
-    df1 = df1.drop(columns=["delta", "newVal"])
-
-    if return_jump:
-        # Clean up jumps DataFrame
-        jumps = jumps.drop(columns=["newVal"])
-        jumps = jumps.rename(columns={"delta": "jump_size"})
-        return df1, jumps
-
-    return df1
-
-
-def detect_jumps(
-        df: pd.DataFrame, meas : str = 'Level', threshold: float = 0.1) -> pd.DataFrame:
-    """
-    Detect jumps in time series data without applying corrections.
-
-    Args:
-        df: DataFrame with time series data
-        meas: Name of measurement column
-        threshold: Size of jump to detect
-
-    Returns:
-        DataFrame containing only the detected jumps with their properties
-    """
-    if not isinstance(df, pd.DataFrame):
-        raise TypeError("Input must be a pandas DataFrame")
-
-    if meas not in df.columns:
-        raise ValueError(f"Column '{meas}' not found in DataFrame")
-
-    # Calculate differences
-    diffs = df[meas].diff()
-
-    # Find jumps
-    jumps = df[abs(diffs) > threshold].copy()
-    jumps["jump_size"] = diffs[abs(diffs) > threshold]
-    jumps["cumulative_effect"] = jumps["jump_size"].cumsum()
-    jumps = jumps[[meas, 'jump_size', 'cumulative_effect']]
-
-    return jumps
-
-# -----------------------------------------------------------------------------------------------------------------------
-# The following scripts align and remove barometric pressure data
-
-
-def correct_be(
-    site_number, well_table, welldata, be=None, meas="corrwl", baro="barometer"
+def calc_freshwater_equivalent_head(
+        df,
+        density_correction,
+        screen,
+        density,
+        dtwbelowground_column = 'measureddtw'
 ):
-    if be:
-        be = float(be)
+    dft = df.copy()
+    if density_correction == 'constant':
+        if pd.notna(screen) and pd.notna(density):  
+            logging.info(f'Calculating freshwater head equivalent using screen midpoint: {screen} and density: {density}')
+            dft['dtw_ref_fluid']= screen- ((screen-dft[dtwbelowground_column])*density)
+        else:
+            logging.warning(f'Missing screen depth and/or fluid density values; cannot calculate freshwater head')
+    elif density_correction == 'variable':
+        logging.warning('Warning: Must conduct a variable-density density correction to calculate freshwater head')
     else:
-        stdata = well_table[well_table["wellid"] == site_number]
-        be = stdata["BaroEfficiency"].values[0]
-    if be is None:
-        be = 0
-    else:
-        be = float(be)
-
-    if be == 0:
-        welldata["baroefficiencylevel"] = welldata[meas]
-    else:
-        welldata["baroefficiencylevel"] = welldata[[meas, baro]].apply(
-            lambda x: x[0] + be * x[1], 1
-        )
-
-    return welldata, be
-
-
-def hourly_resample(df, bse=0, minutes=60):
-    """
-    resamples data to hourly on the hour
-    Args:
-        df:
-            pandas dataframe containing time series needing resampling
-        bse (int):
-            base time to set in minutes; optional; default is zero (on the hour);
-        minutes (int):
-            sampling recurrence interval in minutes; optional; default is 60 (hourly samples)
-    Returns:
-        A Pandas DataFrame that has been resampled to every hour, at the minute defined by the base (bse)
-    Description:
-        see http://pandas.pydata.org/pandas-docs/dev/generated/pandas.DataFrame.resample.html for more info
-        This function uses pandas powerful time-series manipulation to upsample to every minute, then downsample to
-        every hour, on the hour.
-        This function will need adjustment if you do not want it to return hourly samples, or iusgsGisf you are
-        sampling more frequently than once per minute.
-        see http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases
-    """
-
-    df = (
-        df.resample("1min").mean(numeric_only=True).interpolate(method="time", limit=90)
-    )
-
-    if minutes == 60:
-        sampfrq = "1h"
-    else:
-        sampfrq = str(minutes) + "min"
-
-    df = df.resample(
-        sampfrq, closed="right", label="right", offset=f"{bse:0.0f}min"
-    ).asfreq()
-    return df
-
-
-def well_baro_merge(
-    wellfile,
-    barofile,
-    barocolumn="Level",
-    wellcolumn="Level",
-    outcolumn="corrwl",
-    vented=False,
-    sampint=60,
-):
-    """Remove barometric pressure from nonvented transducers.
-    Args:
-        wellfile (pd.DataFrame):
-            Pandas DataFrame of water level data labeled 'Level'; index must be datetime
-        barofile (pd.DataFrame):
-            Pandas DataFrame barometric data labeled 'Level'; index must be datetime
-        sampint (int):
-            sampling interval in minutes; default 60
-
-    Returns:
-        wellbaro (Pandas DataFrame):
-           corrected water levels with bp removed
-    """
-
-    # resample data to make sample interval consistent
-    baro = hourly_resample(barofile, bse=0, minutes=sampint)
-    well = hourly_resample(wellfile, bse=0, minutes=sampint)
-
-    # reassign `Level` to reduce ambiguity
-    baro = baro.rename(columns={barocolumn: "barometer"})
-
-    if "temp" in baro.columns:
-        baro = baro.drop("temp", axis=1)
-    elif "Temperature" in baro.columns:
-        baro = baro.drop("Temperature", axis=1)
-    elif "temperature" in baro.columns:
-        baro = baro.drop("temperature", axis=1)
-
-    if vented:
-        wellbaro = well
-        wellbaro[outcolumn] = wellbaro[wellcolumn]
-    else:
-        # combine baro and well data for easy calculations, graphing, and manipulation
-        wellbaro = pd.merge(well, baro, left_index=True, right_index=True, how="left")
-        wellbaro = wellbaro.dropna(subset=["barometer", wellcolumn], how="any")
-        wellbaro["dbp"] = wellbaro["barometer"].diff()
-        wellbaro["dwl"] = wellbaro[wellcolumn].diff()
-        # print(wellbaro)
-        first_well = wellbaro.loc[wellbaro.index[0], wellcolumn]
-        wellbaro[outcolumn] = (
-            (wellbaro["dwl"] - wellbaro["dbp"]).cumsum()
-            + first_well
-            )
-        wellbaro.loc[wellbaro.index[0], outcolumn] = first_well
-    return wellbaro
-
-
-def fcl(df, dtobj):
-    """
-    Finds closest date index in a dataframe to a date object
-
-    Args:
-        df (pd.DataFrame):
-            DataFrame
-        dtobj (datetime.datetime):
-            date object
-
-    taken from: http://stackoverflow.com/questions/15115547/find-closest-row-of-dataframe-to-given-time-in-pandas
-    """
-    return df.iloc[
-        np.argmin(np.abs(pd.to_datetime(df.index) - dtobj))
-    ]  # remove to_pydatetime()
-
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-# ----------------------------------------------------------------------------------------------------------------------
-# Raw transducer import functions - these convert raw lev, xle, and csv files to Pandas Dataframes for processing
-
-
-
-
-
-def fix_unit_change(df1, df2, field="Level", tolerance=0.03):
-    """Rescale df2 when its logger recorded in different units than df1 (common in some Solinst files).
-
-    The ratio of the two records' mean daily rolling standard deviations is compared to known
-    unit conversion factors; if one matches within `tolerance`, df2[field] is multiplied by it.
-
-    Args:
-        df1 (pd.DataFrame): earlier record with a datetime index; df2 is converted to match it
-        df2 (pd.DataFrame): later record with a datetime index
-        field (str): column used to match units; default is Level
-        tolerance (float): allowed relative difference from a conversion factor; default 3%
-
-    Returns:
-        pd.DataFrame: a copy of df2 with field converted
-    """
-    conversion_factors = {
-        "meters to feet": 3.28084,
-        "feet to meters": 0.3048,
-        "psi to feet": 2.3066587,
-        "feet to psi": 0.4335275,
-        "psi to bar": 0.0689,
-        "bar to psi": 14.5038,
-        "kPa to psi": 0.145038,
-        "psi to kPa": 6.89476,
-        "kPa to feet": 0.3345525655,
-        "feet to kPa": 2.9890669,
-        "feet to bar": 0.02989,
-        "bar to feet": 33.4553,
-        "feet to mmHg": 22.42,
-        "mmHg to feet": 0.0446,
-    }
-    df2 = df2.copy()
-    df1std = np.mean(df1[field].rolling(24).std())
-    df2std = np.mean(df2[field].rolling(24).std())
-    if not df2std or np.isnan(df1std) or np.isnan(df2std):
-        return df2
-    stdratio = df1std / df2std
-
-    for name, value in conversion_factors.items():
-        if np.abs((value - stdratio) / value) < tolerance:
-            print(name)
-            df2[field] = df2[field] * value
-            break
-    return df2
-
-
-
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-# Summary scripts - these extract transducer headers and summarize them in tables
-
-
-
-
+        logging.info(f'Density correction: {density_correction}; freshwater head not calculated')
+    return(dft)

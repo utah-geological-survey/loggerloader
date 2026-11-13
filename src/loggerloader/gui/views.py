@@ -16,7 +16,8 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
 
-from loggerloader.loader import NewTransImp, Drifting, fix_unit_change, read_troll_csv, well_baro_merge
+from loggerloader.loader import Drifting, read_troll_csv, well_baro_merge
+from loggerloader.data_organization import NewTransImp
 from loggerloader.plotly_tk_vis import PlotlyTkinterWidget
 from loggerloader.workflow import (ColumnMatchDialog, SingleWellWorkflow, FILE_TYPES,
                                    normalize_id, run_step)
@@ -44,6 +45,53 @@ CONVERSION_FACTORS = {
     'bar_bar': 1.0, 'mmHg_bar': 0.00133322, 'kPa_bar': 0.01, 'ft_bar': 0.029890669,
     'psi_bar': 0.0689476,
 }
+
+
+
+def fix_unit_change(df1, df2, field="Level", tolerance=0.03):
+    """Rescale df2 when its logger recorded in different units than df1 (common in some Solinst files).
+
+    The ratio of the two records' mean daily rolling standard deviations is compared to known
+    unit conversion factors; if one matches within `tolerance`, df2[field] is multiplied by it.
+
+    Args:
+        df1 (pd.DataFrame): earlier record with a datetime index; df2 is converted to match it
+        df2 (pd.DataFrame): later record with a datetime index
+        field (str): column used to match units; default is Level
+        tolerance (float): allowed relative difference from a conversion factor; default 3%
+
+    Returns:
+        pd.DataFrame: a copy of df2 with field converted
+    """
+    conversion_factors = {
+        "meters to feet": 3.28084,
+        "feet to meters": 0.3048,
+        "psi to feet": 2.3066587,
+        "feet to psi": 0.4335275,
+        "psi to bar": 0.0689,
+        "bar to psi": 14.5038,
+        "kPa to psi": 0.145038,
+        "psi to kPa": 6.89476,
+        "kPa to feet": 0.3345525655,
+        "feet to kPa": 2.9890669,
+        "feet to bar": 0.02989,
+        "bar to feet": 33.4553,
+        "feet to mmHg": 22.42,
+        "mmHg to feet": 0.0446,
+    }
+    df2 = df2.copy()
+    df1std = np.mean(df1[field].rolling(24).std())
+    df2std = np.mean(df2[field].rolling(24).std())
+    if not df2std or np.isnan(df1std) or np.isnan(df2std):
+        return df2
+    stdratio = df1std / df2std
+
+    for name, value in conversion_factors.items():
+        if np.abs((value - stdratio) / value) < tolerance:
+            print(name)
+            df2[field] = df2[field] * value
+            break
+    return df2
 
 
 def resource_path(relative_path):
