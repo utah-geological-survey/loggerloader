@@ -765,4 +765,337 @@ def detect_transducer_flatlines(
         data = data.sort_values(by=datetime_col)
     return data, summary_df
 
+def jump_matching(old_data, new_data, old_value='measuredlevel', new_value="Level"):
+    '''Finds value to correct major jumps between old dataset and new dataset by finding the most 
+    recent old_value in the old_data and the oldest new_value in the new_data and returning
+    the difference between the two values. This is essentially a specific case of jumpfix, where
+    we are only trying to fix a jump where two separate records will meet'''
+    old_value = old_data.loc[old_data.index.max(), old_value]
+    new_value = new_data.loc[new_data.index.max(), new_value]
+    add_value = (old_value-new_value).round(3)
+    return(add_value)
+
+def drop_by_value_and_daterange(df, start_date, end_date, drop_value, drop_type):
+    """Drops records during a set date range that are either above or below a given drop_value
+    Useful for cleaning duplicates after examining on a plot.
+
+    Args:
+    df (Pandas dataframe): Pandas dataframe with unprocessed transducer data
+    start_date (timestamp): Start date range for dropping data
+    end_date (timestamp): End date range for dropping data
+    drop_value (int): Value above or below which all values should be dropped within given date range
+    drop_type (str): GT or LT to indicate whether values greater than or less than drop_value should be dropped
+
+    Returns:
+        Pandas dataframe
+    """
+    if drop_type =='LT':
+        df_clean = df[~((df.index>=start_date) & (df.index<=end_date) & (df.Level<drop_value))]
+    elif drop_type == 'GT':
+        df_clean = df[~((df.index>=start_date) & (df.index<=end_date) & (df.Level>drop_value))]
+    else: 
+        print('Drop type incorrect')
+    return(df_clean)
+
+def linear_drift_correction(df: pd.DataFrame, 
+                            column: str, 
+                            start_date: pd.Timestamp, 
+                            end_date: pd.Timestamp,
+                            subtract: bool):
+    """
+    Correct a linear drift in a DataFrame column between two dates by calculating the offset
+    between the start date and the previous day, and the end date and the next day and then
+    correcting the value of the given column using a linear function.
+
+    Parameters:
+        df (pd.DataFrame): DataFrame with a DatetimeIndex.
+        column (str): Column name to apply the correction to; data must be numeric.
+        start_date (pd.Timestamp): Start of the affected section.
+        end_date (pd.Timestamp): End of the affected section (inclusive).
+
+    Returns:
+        pd.DataFrame: A new DataFrame with the correction applied to the specified column.
+    """
+    if column not in df.columns:
+        raise ValueError(f"Column '{column}' not found in DataFrame.")
+
+    # Copy to avoid modifying the original
+    corrected_df = df.copy()
+    ts = corrected_df[column]
+
+    # Ensure dates are in the index
+    if start_date not in ts.index or end_date not in ts.index:
+        raise ValueError("Start and end dates must be in the time series index.")
+    
+    try:
+        before_start = ts.index[ts.index.get_loc(start_date) - 1]
+        after_end = ts.index[ts.index.get_loc(end_date) + 1]
+    except IndexError:
+        raise IndexError("Start or end date is at the edge of the series; can't compare with neighbors.")
+
+    # Calculate offsets
+    offset_start = ts.loc[start_date] - ts.loc[before_start]
+    offset_end = ts.loc[end_date] - ts.loc[after_end]
+
+    # Create correction vector
+    affected_range = ts.loc[start_date:end_date]
+    n_points = len(affected_range)
+    correction = np.linspace(offset_start, offset_end, n_points)
+
+    # Apply correction
+    if subtract == True:
+        corrected_df.loc[start_date:end_date, column] -= correction
+    else:
+        corrected_df.loc[start_date:end_date, column] += correction
+
+    return corrected_df
+
+def drop_reading_after_pumping(manual_data, transducer_data, hours_to_drop, phrases=["pump", "plung"]):
+    '''
+    manual_data: should be data pulled from database with index set on reading date and notes field
+    transducer_data: should be data from combined transducers; does not need to be cleaned but index on timestamp
+    hours_to_drop: number of records after the pumping that should be dropped (2 would equal the two readings after pumping)
+    phrases: phrases to search for notes to identify pumping events
+    '''
+    pattern = "|".join(phrases)
+    pump_dates = list(manual_data.index[manual_data['notes'].str.contains(pattern, case=False, na=False)].round('h'))
+    if len(pump_dates)>0:
+        hours_to_drop = hours_to_drop
+        after_pump_dates = []
+        # Loop over each timestamp and create new timestamps for 1 to x hours later
+        for ts in pump_dates:
+            # Add 1 to x hours to the timestamp and append to the list
+            new_timestamps = [ts + pd.Timedelta(hours=i) for i in range(1, hours_to_drop + 1)]
+            after_pump_dates.extend([ts.round('h') for ts in new_timestamps])
+        new_transducer_data = transducer_data[~transducer_data.index.isin(after_pump_dates)]
+        logging.info(f"Dropping {len(transducer_data) - len(new_transducer_data)} records total due to pumping")
+        return(new_transducer_data)
+    else:
+        print("No pumping recorded")
+        return(transducer_data)
+
+def detect_sectional_offsets_indexed(
+    df1, df2, value_col1, value_col2,
+    freq='h', max_lag=24, window_size='7D'
+):
+    """
+    Evaluates time offsets between two time series data frames ((datetime-indexed) in
+    rolling sections. Returns the best lag with the best offset for each time window.
+
+    Parameters:
+    - df1, df2: DataFrames with datetime index.
+    - value_col1: name of the column with numerical values to compare for df1
+    - value__col2: name of the column with numerical values to compare for df2
+    - freq: resampling frequency (e.g., 'h' for hourly).
+    - max_lag: maximum lag (in units of freq) to test.
+    - window_size: time window for sectional comparison (e.g., '7D' or '12H').
+
+    Returns:
+    - DataFrame with lag information per window.
+    """
+
+    # Resample both series to ensure regular intervals
+    s1 = df1[value_col1].resample(freq).mean()
+    s2 = df2[value_col2].resample(freq).mean()
+
+    # Align both series to ensure same timestamps
+    s1, s2 = s1.align(s2, join='inner')
+    s1 = s1.ffill()
+    s2 = s2.ffill()
+
+    # Create window start times
+    window_starts = pd.date_range(s1.index.min(), s1.index.max(), freq=window_size)
+    results = []
+
+    for start in window_starts:
+        end = start + pd.to_timedelta(window_size)
+        seg1 = s1[start:end]
+        seg2 = s2[start:end]
+
+        if len(seg1) < max_lag * 2 or len(seg2) < max_lag * 2:
+            continue  # Skip short or empty windows
+
+        lags = np.arange(-max_lag, max_lag + 1)
+        correlations = [seg1.corr(seg2.shift(lag)) for lag in lags]
+
+        if all(pd.isna(correlations)):
+            continue
+
+        best_lag = lags[np.nanargmax(correlations)]
+        best_corr = np.nanmax(correlations)
+
+        results.append({
+            'window_start': start,
+            'best_lag': best_lag,
+            'correlation': best_corr
+        })
+
+    result_df = pd.DataFrame(results)
+
+    return result_df
+
+def plot_sectional_lags_plotly(corr_check, height=400):
+    """
+    Plots the results of the detect_sectional_offsets_indexed function,
+    showing the best lag for each timeperiod
+    """
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(
+        x=corr_check['window_start'],
+        y=corr_check['best_lag'],
+        mode='lines+markers',
+        name='Best Lag',
+        line=dict(color='royalblue'),
+        marker=dict(size=6)
+    ))
+
+    # Add zero-lag reference line
+    fig.add_trace(go.Scatter(
+        x=[corr_check['window_start'].min(), corr_check['window_start'].max()],
+        y=[0, 0],
+        mode='lines',
+        name='Zero Lag',
+        line=dict(color='gray', dash='dash')
+    ))
+
+    fig.update_layout(
+        title='Sectional Time Lag Detection',
+        xaxis_title='Window Start Time',
+        yaxis_title=f'Best Time Lag',
+        template='plotly_white',
+        hovermode='x unified',
+        height=height
+    )
+
+    fig.show()
+
+# from loader
+
+def jumpfix(
+    df: pd.DataFrame, meas: str, threshold: float = 0.005, return_jump: bool = False
+) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
+    """
+    Removes jumps or jolts in time series data where offset is lasting.
+
+    Args:
+        df: DataFrame to manipulate. Must have datetime index.
+        meas: Name of field with jolts to correct
+        threshold: Size of jolt to search for
+        return_jump: If True, returns tuple of (corrected_data, jumps)
+
+    Returns:
+        If return_jump is False:
+            DataFrame with corrected data
+        If return_jump is True:
+            Tuple of (corrected_DataFrame, jumps_DataFrame)
+
+    Example:
+        >>> dates = pd.date_range('2024-01-01', periods=5)
+        >>> df = pd.DataFrame({
+        ...     'level': [10, 10.1, 15.1, 15.2, 15.3]
+        ... }, index=dates)
+        >>> corrected = jumpfix(df, 'level', threshold=1)
+        >>> corrected['level'].tolist()
+        [10.0, 10.1, 10.1, 10.2, 10.3]
+
+    Notes:
+        - The function detects sudden changes (jumps) in the data that exceed
+          the threshold value
+        - Each jump is corrected by subtracting the cumulative jump amount
+          from all subsequent values
+        - The original time ordering is preserved
+        - NaN values are preserved in their original positions
+    """
+    # Input validation
+    if not isinstance(df, pd.DataFrame):
+        raise TypeError("Input must be a pandas DataFrame")
+
+    if meas not in df.columns:
+        raise ValueError(f"Column '{meas}' not found in DataFrame")
+
+    if not isinstance(df.index, pd.DatetimeIndex):
+        raise TypeError("DataFrame index must be DatetimeIndex")
+
+    # Create copy and ensure it's sorted
+    df_temp = df.copy(deep=True).sort_index()
+    df1 = df_temp[~df_temp.index.duplicated(keep='first')]
+    if df1.shape[0] != df_temp.shape[0]:
+        print(f'Dropped {df_temp.shape[0]-df1.shape[0]} records')
+
+
+    # Calculate differences between consecutive values
+    df1["delta"] = df1[meas].diff()
+
+    # Find jumps exceeding threshold
+    jump_mask = df1["delta"].abs() > threshold
+    jumps = df1[jump_mask].copy()
+
+    if len(jumps) == 0:
+        if return_jump:
+            return df1, pd.DataFrame()
+        return df1
+
+    # Calculate cumulative sum of jumps
+    jumps["cumul"] = jumps["delta"].cumsum()
+
+    # Initialize new values column
+    df1["newVal"] = df1[meas].copy()
+
+    # Apply corrections
+    for idx in range(len(jumps.index)):
+        jump_time = jumps.index[idx]
+        jump_amount = jumps["cumul"].iloc[
+            idx
+        ]  # Using iloc instead of [] for position access
+
+        # Create mask for all timestamps after the jump
+        mask = df1.index >= jump_time
+
+        # Apply correction
+        df1.loc[mask, "newVal"] = df1.loc[mask, meas] - jump_amount
+
+    # Update original measurement column
+    df1[meas] = df1["newVal"]
+
+    # Clean up temporary columns
+    df1 = df1.drop(columns=["delta", "newVal"])
+
+    if return_jump:
+        # Clean up jumps DataFrame
+        jumps = jumps.drop(columns=["newVal"])
+        jumps = jumps.rename(columns={"delta": "jump_size"})
+        return df1, jumps
+
+    return df1
+
+def detect_jumps(
+        df: pd.DataFrame, meas : str = 'Level', threshold: float = 0.1) -> pd.DataFrame:
+    """
+    Detect jumps in time series data without applying corrections.
+
+    Args:
+        df: DataFrame with time series data
+        meas: Name of measurement column
+        threshold: Size of jump to detect
+
+    Returns:
+        DataFrame containing only the detected jumps with their properties
+    """
+    if not isinstance(df, pd.DataFrame):
+        raise TypeError("Input must be a pandas DataFrame")
+
+    if meas not in df.columns:
+        raise ValueError(f"Column '{meas}' not found in DataFrame")
+
+    # Calculate differences
+    diffs = df[meas].diff()
+
+    # Find jumps
+    jumps = df[abs(diffs) > threshold].copy()
+    jumps["jump_size"] = diffs[abs(diffs) > threshold]
+    jumps["cumulative_effect"] = jumps["jump_size"].cumsum()
+    jumps = jumps[[meas, 'jump_size', 'cumulative_effect']]
+
+    return jumps
 
