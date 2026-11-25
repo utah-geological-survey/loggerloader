@@ -162,11 +162,11 @@ def prep_barometer(df, locationid):
                                           'DateTime':'readingdate',
                                           'Temperature':'temperature',
                                           'Level':'measuredlevel'})
+    df['locationid'] = locationid
     numeric_cols = df.select_dtypes(include="number").columns
     df[numeric_cols] = df[numeric_cols].round(4)    
     df = df[['readingdate','measuredlevel','temperature','locationid']]
     df = df.drop_duplicates(subset=['readingdate','locationid'])
-    df['locationid'] = locationid
     return df
 
 def subset_final_processed_data(
@@ -212,7 +212,7 @@ def subset_final_processed_data(
         reading_export = processed_data[processed_data.index>=keep_date]
         drift_export = drift_info[drift_info.t_beg>= keep_date]
     else:
-        print('Error, retention strategy not one of new, all or keep_date')
+        raise ValueError('Error, retention strategy not one of new, all or keep_date')
     return(reading_export, drift_export)
 
 def update_drift_info(

@@ -16,7 +16,7 @@ def correct_be(
     else:
         stdata = well_table[well_table["wellid"] == site_number]
         be = stdata["BaroEfficiency"].values[0]
-    if be is None:
+    if pd.isna(be):
         be = 0
     else:
         be = float(be)
@@ -167,7 +167,7 @@ def remove_baro_pressure(well,
             logging.warning(
                 'Minimum barometer pressure below 20 ft; may need to correct for an offset')
         logging.info('Adjusted barometric pressure using method for well with packer')
-        corrwl['corrwl'] = corrwl['Level'] - corrwl['barometer']
+        corrwl[outcolumn] = corrwl[wellcolumn] - corrwl['barometer']
     return(corrwl)
 
 def point_head_density_correction(df, 
